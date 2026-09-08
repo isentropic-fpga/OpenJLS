@@ -63,6 +63,21 @@ coverage:
 ./build_reports.sh        # same regression + reports, without coverage instrumentation
 ```
 
+For byte-stuffer timing optimizations, an additional comparison checks the
+current RTL against a saved baseline on every cycle:
+
+```bash
+./compare_byte_stuffer.sh /absolute/path/to/baseline/byte_stuffer.vhd
+```
+
+This standalone NVC test needs no OSVVM libraries. It runs 2,000 images for
+each combination of 32/48/64-bit input and randomized/continuously-ready
+flow control, including full-width zero/one streams and reset during an
+unfinished image. It compares valid output bytes, bytes per cycle, output
+valid, almost-full, and flush-done timing. Invalid output lanes are ignored.
+The regular OSVVM scoreboard remains the independent functional oracle.
+Logs are written under `build/byte_stuffer_equivalence/`.
+
 This is "the OSVVM intended way": `OpenJls.pro` drives the vendored tcl
 scripts (`build` → `library`/`analyze`/`TestSuite`/`RunTest`), every TB's
 `end_of_test` emits YAML via `EndOfTestReports`, and the scripts render it to
