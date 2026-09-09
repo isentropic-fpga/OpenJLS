@@ -373,9 +373,6 @@ architecture rtl of openjls_top is
   signal sS3CqBase                          : signed(C_WIDTH - 1 downto 0);
   signal sS3CqP1                            : signed(C_WIDTH - 1 downto 0);
   signal sS3CqM1                            : signed(C_WIDTH - 1 downto 0);
-  signal sS3PxC                             : unsigned(BITNESS - 1 downto 0);
-  signal sS3PxP                             : unsigned(BITNESS - 1 downto 0);
-  signal sS3PxM                             : unsigned(BITNESS - 1 downto 0);
   signal sS3Err7C                           : signed(BITNESS downto 0);
   signal sS3Err7P                           : signed(BITNESS downto 0);
   signal sS3Err7M                           : signed(BITNESS downto 0);
@@ -1043,26 +1040,19 @@ begin
   sS3CqM1 <= to_signed(MIN_C, C_WIDTH) when sS3CqBase = to_signed(MIN_C, C_WIDTH) else
              sS3CqBase - 1;
 
+  -- A.6 clipping and A.7 error arithmetic run in parallel inside each
+  -- candidate. The forwarded Cq no longer crosses a corrected-Px adder,
+  -- saturation mux, and then a second full-width error subtractor.
   -- Central chain (DeltaCq = 0)
-  u_a6_c : entity work.a6_prediction_correction(behavioral)
+  u_a6a7_c : entity work.a6_a7_prediction_error(behavioral)
     generic map (
       BITNESS => BITNESS, MAX_VAL => MAX_VAL
     )
     port map (
-      iPx     => sS3Px,
-      iSign   => sReg2.Sign,
-      iCq     => sS3CqBase,
-      oPx     => sS3PxC
-    );
-
-  u_a7_c : entity work.a7_prediction_error(behavioral)
-    generic map (
-      BITNESS   => BITNESS
-    )
-    port map (
       iIx       => sReg2.Ix(BITNESS - 1 downto 0),
-      iPx       => sS3PxC,
+      iPx       => sS3Px,
       iSign     => sReg2.Sign,
+      iCq       => sS3CqBase,
       oErrorVal => sS3Err7C
     );
 
@@ -1076,25 +1066,15 @@ begin
     );
 
   -- +1 chain (DeltaCq = +1)
-  u_a6_p : entity work.a6_prediction_correction(behavioral)
+  u_a6a7_p : entity work.a6_a7_prediction_error(behavioral)
     generic map (
       BITNESS => BITNESS, MAX_VAL => MAX_VAL
     )
     port map (
-      iPx     => sS3Px,
-      iSign   => sReg2.Sign,
-      iCq     => sS3CqP1,
-      oPx     => sS3PxP
-    );
-
-  u_a7_p : entity work.a7_prediction_error(behavioral)
-    generic map (
-      BITNESS   => BITNESS
-    )
-    port map (
       iIx       => sReg2.Ix(BITNESS - 1 downto 0),
-      iPx       => sS3PxP,
+      iPx       => sS3Px,
       iSign     => sReg2.Sign,
+      iCq       => sS3CqP1,
       oErrorVal => sS3Err7P
     );
 
@@ -1108,25 +1088,15 @@ begin
     );
 
   -- −1 chain (DeltaCq = −1)
-  u_a6_m : entity work.a6_prediction_correction(behavioral)
+  u_a6a7_m : entity work.a6_a7_prediction_error(behavioral)
     generic map (
       BITNESS => BITNESS, MAX_VAL => MAX_VAL
     )
     port map (
-      iPx     => sS3Px,
-      iSign   => sReg2.Sign,
-      iCq     => sS3CqM1,
-      oPx     => sS3PxM
-    );
-
-  u_a7_m : entity work.a7_prediction_error(behavioral)
-    generic map (
-      BITNESS   => BITNESS
-    )
-    port map (
       iIx       => sReg2.Ix(BITNESS - 1 downto 0),
-      iPx       => sS3PxM,
+      iPx       => sS3Px,
       iSign     => sReg2.Sign,
+      iCq       => sS3CqM1,
       oErrorVal => sS3Err7M
     );
 

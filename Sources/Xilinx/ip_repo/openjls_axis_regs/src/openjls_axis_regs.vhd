@@ -109,7 +109,7 @@ end entity openjls_axis_regs;
 
 architecture rtl of openjls_axis_regs is
 
-  constant VERSION     : std_logic_vector(31 downto 0) := x"00010200"; -- 1.2.0
+  constant VERSION     : std_logic_vector(31 downto 0) := x"00010300"; -- 1.3.0
 
   -- Word-address decode (byte offset / 4)
   constant REG_ID      : natural := 0;

@@ -13,7 +13,7 @@
 --
 --   Per T.87: every 0xFF byte in the encoded bitstream must be followed by a
 --   stuffed '0' bit so decoders can distinguish payload from markers (an FF
---   followed by a non-zero byte = marker).
+--   followed by a byte with MSB='1' denotes a marker).
 --
 --   Three internal stages:
 --
@@ -30,14 +30,12 @@
 --     Stage 2 — BRAM-backed sync FIFO
 --
 --     Stage 3 — FF stuffer + output emit:
---       Refills a holding register from FIFO pops. Each cycle forms up to
---       OUT_BYTES_PER_CYCLE output bytes via:
---         (a) a parallel pre-compute of FF-equality flags over the 8 fixed
---             candidate byte windows that any of the 4 slots could ever
---             read from (offsets 0, 7, 8, 15, 16, 22, 23, 24);
---         (b) a 4-step chain over the slots that resolves each slot's input
---             prev_FF and selects the correct candidate flag/bits via a
---             small mux.
+--       Refills a holding register using the nine fixed alignments allowed
+--       by the refill contract (0..8 old bits). Each cycle forms up to four
+--       output bytes by decoding all eight legal stuffing layouts in
+--       parallel. Each layout uses fixed bit slices and constant valid-bit
+--       thresholds. One-hot selection chooses the output, the last FF state,
+--       and a fixed-shift remainder without a serial lane-resolution chain.
 --
 --       The end-of-image terminal beat (sub-byte residue, a pending stuff
 --       bit with no follow-up data, or a byte-aligned clean end) is split
@@ -59,8 +57,7 @@
 --
 -- Generics:
 --   IN_WIDTH            : bit_packer worst-case word width (= LIMIT).
---   OUT_BYTES_PER_CYCLE : output bytes/cycle. Bounds the Stage 3 FF chain
---                         depth (4 bytes/cycle -> 4 levels).
+--   OUT_BYTES_PER_CYCLE : output bytes/cycle; must be 4 (fixed layout table).
 --   BURST_DEPTH         : depth of the BRAM-backed FIFO (in wide words).
 --
 ----------------------------------------------------------------------------------
@@ -132,6 +129,27 @@ architecture behavioral of byte_stuffer is
   -- stored MSB-first (oldest emitted first).
   constant HOLD_BYTES             : natural := FIFO_BYTES + 1;
   constant HOLD_BITS              : natural := HOLD_BYTES * 8;
+
+  -- A stuffed byte starts with zero, so two adjacent output bytes cannot
+  -- both stuff. These are all eight possible four-byte layouts, including
+  -- both incoming sPrevFF states. A '1' means that lane consumes seven bits.
+  type layout_array is array (0 to 7) of std_logic_vector(0 to 3);
+  constant STUFF_LAYOUT : layout_array := (
+    "0000", "0001", "0010", "0100", "0101", "1000", "1001", "1010"
+  );
+  type lane_count_array is array (0 to 7, 0 to 3) of natural range 0 to 32;
+  constant LANE_START : lane_count_array := (
+    (0, 8, 16, 24), (0, 8, 16, 24), (0, 8, 16, 23),
+    (0, 8, 15, 23), (0, 8, 15, 23), (0, 7, 15, 23),
+    (0, 7, 15, 23), (0, 7, 15, 22)
+  );
+  constant LANE_END : lane_count_array := (
+    (8, 16, 24, 32), (8, 16, 24, 31), (8, 16, 23, 31),
+    (8, 15, 23, 31), (8, 15, 23, 30), (7, 15, 23, 31),
+    (7, 15, 23, 30), (7, 15, 22, 30)
+  );
+  type consume_array is array (natural range <>) of natural range 0 to 32;
+  constant CONSUME_BITS : consume_array := (0, 7, 8, 15, 16, 22, 23, 24, 30, 31, 32);
 
   -- Signals ---------------------------------------------------------------------
   -- Input register
@@ -505,29 +523,32 @@ begin
     variable vStuffBufferLast : std_logic;
     variable vPrevFF          : std_logic;
 
-    variable vValidBytesInt : natural range 0 to FIFO_BYTES;
     variable vValidBitsInt  : natural range 0 to FIFO_BITS;
+    variable vRefillBuffer  : std_logic_vector(HOLD_BITS - 1 downto 0);
+    variable vRefillWord    : std_logic_vector(HOLD_BITS - 1 downto 0);
+    variable vRefillMask    : std_logic_vector(HOLD_BITS - 1 downto 0);
 
-    -- Parallel-precomputed FF-equality flags for the 8 fixed candidate
-    -- byte windows the chain can ever pick from.
+    -- Fixed-window FF flags used to decode the layout. The final emitted
+    -- lane's FF state is computed independently in the candidate loop.
     variable ff0        : std_logic; -- offset 0
     variable ff1a, ff1b : std_logic; -- offsets 7, 8
     variable ff2a, ff2b : std_logic; -- offsets 15, 16
-    variable ff3a       : std_logic;
-    variable ff3b       : std_logic;
-    variable ff3c       : std_logic; -- offsets 22, 23, 24
 
-    type byte_array is array (natural range <>) of std_logic_vector(7 downto 0);
-
-    type cumulative_array is array (natural range <>) of natural range 0 to 32;
-
-    variable vByte    : byte_array(0 to 3);
-    variable vCumu    : cumulative_array(0 to 3);
-    variable vStuffed : std_logic_vector(3 downto 0);
+    variable vPath          : std_logic_vector(0 to 7);
+    variable vTakeShift     : std_logic_vector(CONSUME_BITS'range);
+    variable vPathMask      : std_logic_vector(OUT_WIDTH - 1 downto 0);
+    variable vCandidateWord : std_logic_vector(OUT_WIDTH - 1 downto 0);
+    variable vCandidateByte : std_logic_vector(7 downto 0);
+    variable vLaneSelected  : std_logic;
+    variable vBytesMask     : unsigned(sOutBytesValidReg'range);
+    variable vEmitBytesBits : unsigned(sOutBytesValidReg'range);
+    variable vBufferMask    : std_logic_vector(HOLD_BITS - 1 downto 0);
+    variable vNextBuffer    : std_logic_vector(HOLD_BITS - 1 downto 0);
+    variable vCountMask     : unsigned(sStuffBufferBits'range);
+    variable vNextCount     : unsigned(sStuffBufferBits'range);
 
     variable vEmitData   : std_logic_vector(OUT_WIDTH - 1 downto 0);
     variable vEmitBytes  : natural range 0 to OUT_BYTES_PER_CYCLE;
-    variable vConsumed   : natural range 0 to 32;
     variable vEmitLastFF : std_logic;
     variable vPadByte    : std_logic_vector(7 downto 0);
 
@@ -545,7 +566,7 @@ begin
         sFlushDone        <= '0';
         sLastPending      <= '0';
       elsif (sLastPending = '1') then
-        -- EOI terminal beat, assembled outside the main chain (1 extra cycle,
+        -- EOI terminal beat, assembled outside the layout decoder (1 extra cycle,
         -- absorbed by the stage 2 FIFO). Sub-byte residue or dangling 0xFF
         -- emits one padded byte; a byte-aligned clean end emits a 0-byte beat.
 
@@ -589,7 +610,6 @@ begin
         vPrevFF          := sPrevFF;
         vEmitBytes       := 0;
         vEmitData        := (others => '0');
-        vConsumed        := 0;
         sFlushDone       <= '0';
 
         ----------------------------------------------------------------------
@@ -597,220 +617,137 @@ begin
         -- Only the final word may be partial.
         ----------------------------------------------------------------------
         if (sSkidTaken = '1') then
+          -- The refill contract allows at most eight old bits. Express the
+          -- nine legal alignments as fixed wiring, including a final FIFO word.
+          -- Invalid trailing bits may be copied: the real-bit count below
+          -- prevents their emission, and the next refill overwrites them.
+          vRefillBuffer := (others => '0');
+          for offset in 0 to HOLD_BITS - FIFO_BITS loop
+
+            vRefillWord := (others => '0');
+            if (offset > 0) then
+              vRefillWord(HOLD_BITS - 1 downto HOLD_BITS - offset) :=
+                sStuffBuffer(HOLD_BITS - 1 downto HOLD_BITS - offset);
+            end if;
+            vRefillWord(HOLD_BITS - 1 - offset downto HOLD_BITS - offset - FIFO_BITS) := sSkidData;
+            vRefillMask := (others => bool2bit(vStuffBufferBits = offset));
+            vRefillBuffer := vRefillBuffer or (vRefillWord and vRefillMask);
+
+          end loop;
+          vStuffBuffer := vRefillBuffer;
           if (sSkidLast = '0') then
-            vStuffBuffer(HOLD_BITS - 1 - vStuffBufferBits downto HOLD_BITS - vStuffBufferBits - FIFO_BITS) := sSkidData;
-            vStuffBufferBits                                                                               := vStuffBufferBits + FIFO_BITS;
+            vValidBitsInt := FIFO_BITS;
           else
-            -- Last data beat, may be partial. The sideband carries the real
-            -- bit count; stage 1's byte-boundary pad lives in the top byte(s)
-            -- but is excluded here so the stuffer never emits it.
-            vValidBitsInt  := to_integer(unsigned(sBvQueueOutData));
-            vValidBytesInt := (vValidBitsInt + 7) / 8; -- bytes physically present
-
-            for k in 0 to FIFO_BYTES - 1 loop
-
-              -- Write partial word to buffer
-              if (k < vValidBytesInt) then
-                vStuffBuffer(HOLD_BITS - 1 - vStuffBufferBits - k * 8 downto HOLD_BITS - vStuffBufferBits - (k + 1) * 8)
- := sSkidData(FIFO_BITS - 1 - k * 8 downto FIFO_BITS - (k + 1) * 8);
-              end if;
-
-            end loop;
-
-            vStuffBufferBits := vStuffBufferBits + vValidBitsInt;
+            vValidBitsInt := to_integer(unsigned(sBvQueueOutData));
             vStuffBufferLast := '1';
           end if;
+          vStuffBufferBits := vStuffBufferBits + vValidBitsInt;
         end if;
 
         ----------------------------------------------------------------------
-        -- (2) Parallel-precompute FF flags for the 8 fixed candidate byte
-        --     windows.
+        -- (2) Parallel-precompute the layout decoder's fixed-window FF flags.
         ----------------------------------------------------------------------
         ff0  := bool2bit(vStuffBuffer(HOLD_BITS - 1 downto HOLD_BITS - 8) = x"FF");
         ff1a := bool2bit(vStuffBuffer(HOLD_BITS - 8 downto HOLD_BITS - 15) = x"FF");
         ff1b := bool2bit(vStuffBuffer(HOLD_BITS - 9 downto HOLD_BITS - 16) = x"FF");
         ff2a := bool2bit(vStuffBuffer(HOLD_BITS - 16 downto HOLD_BITS - 23) = x"FF");
         ff2b := bool2bit(vStuffBuffer(HOLD_BITS - 17 downto HOLD_BITS - 24) = x"FF");
-        ff3a := bool2bit(vStuffBuffer(HOLD_BITS - 23 downto HOLD_BITS - 30) = x"FF");
-        ff3b := bool2bit(vStuffBuffer(HOLD_BITS - 24 downto HOLD_BITS - 31) = x"FF");
-        ff3c := bool2bit(vStuffBuffer(HOLD_BITS - 25 downto HOLD_BITS - 32) = x"FF");
 
         ----------------------------------------------------------------------
-        -- (3) Resolve the 4-slot stuffer chain from (vPrevFF, ff flags, vStuffBuffer).
+        -- (3) Decode all layouts in parallel. Each predicate depends only on
+        --     the incoming FF state and fixed-window comparisons, never on
+        --     a byte or consumption count selected by another lane.
         ----------------------------------------------------------------------
-        case vPrevFF is
+        vPath(0) := not vPrevFF and not ff0 and not ff1b and not ff2b;
+        vPath(1) := not vPrevFF and not ff0 and not ff1b and     ff2b;
+        vPath(2) := not vPrevFF and not ff0 and     ff1b;
+        vPath(3) := not vPrevFF and     ff0 and not ff2a;
+        vPath(4) := not vPrevFF and     ff0 and     ff2a;
+        vPath(5) :=     vPrevFF and not ff1a and not ff2a;
+        vPath(6) :=     vPrevFF and not ff1a and     ff2a;
+        vPath(7) :=     vPrevFF and     ff1a;
 
-          when '1' =>
+        vEmitData      := (others => '0');
+        vEmitBytesBits := (others => '0');
+        vEmitLastFF    := '0';
+        vTakeShift     := (others => '0');
 
-            -- byte0 stuffs: '0' + 7 real bits at offset 0.
-            vByte(0)    := '0' & vStuffBuffer(HOLD_BITS - 1 downto HOLD_BITS - 7);
-            vStuffed(0) := '0';
-            vCumu(0)    := 7;
-            -- byte1 reads 8 bits at offset 7.
-            vByte(1)    := vStuffBuffer(HOLD_BITS - 8 downto HOLD_BITS - 15);
-            vStuffed(1) := ff1a;
-            vCumu(1)    := 15;
+        for p in STUFF_LAYOUT'range loop
 
-            case vStuffed(1) is
+          vCandidateWord := (others => '0');
+          vPathMask      := (others => vPath(p));
 
-              when '1' =>
+          for lane in 0 to OUT_BYTES_PER_CYCLE - 1 loop
 
-                -- byte1 = FF → byte2 stuffs at offset 15 (7 bits).
-                vByte(2)    := '0' & vStuffBuffer(HOLD_BITS - 16 downto HOLD_BITS - 22);
-                vStuffed(2) := '0';
-                vCumu(2)    := 22;
-                vByte(3)    := vStuffBuffer(HOLD_BITS - 23 downto HOLD_BITS - 30);
-                vStuffed(3) := ff3a;
-                vCumu(3)    := 30;
-
-              when others =>
-
-                -- byte1 ≠ FF → byte2 reads 8 bits at offset 15.
-                vByte(2)    := vStuffBuffer(HOLD_BITS - 16 downto HOLD_BITS - 23);
-                vStuffed(2) := ff2a;
-                vCumu(2)    := 23;
-
-                case vStuffed(2) is
-
-                  when '1' =>
-
-                    vByte(3)    := '0' & vStuffBuffer(HOLD_BITS - 24 downto HOLD_BITS - 30);
-                    vStuffed(3) := '0';
-                    vCumu(3)    := 30;
-
-                  when others =>
-
-                    vByte(3)    := vStuffBuffer(HOLD_BITS - 24 downto HOLD_BITS - 31);
-                    vStuffed(3) := ff3b;
-                    vCumu(3)    := 31;
-
-                end case;
-
-            end case;
-
-          when others =>
-
-            -- byte0 reads 8 bits at offset 0.
-            vByte(0)    := vStuffBuffer(HOLD_BITS - 1 downto HOLD_BITS - 8);
-            vStuffed(0) := ff0;
-            vCumu(0)    := 8;
-
-            case ff0 is
-
-              when '1' =>
-
-                -- byte0 = FF → byte1 stuffs at offset 8 (7 bits).
-                vByte(1)    := '0' & vStuffBuffer(HOLD_BITS - 9 downto HOLD_BITS - 15);
-                vStuffed(1) := '0';
-                vCumu(1)    := 15;
-                vByte(2)    := vStuffBuffer(HOLD_BITS - 16 downto HOLD_BITS - 23);
-                vStuffed(2) := ff2a;
-                vCumu(2)    := 23;
-
-                case vStuffed(2) is
-
-                  when '1' =>
-
-                    vByte(3)    := '0' & vStuffBuffer(HOLD_BITS - 24 downto HOLD_BITS - 30);
-                    vStuffed(3) := '0';
-                    vCumu(3)    := 30;
-
-                  when others =>
-
-                    vByte(3)    := vStuffBuffer(HOLD_BITS - 24 downto HOLD_BITS - 31);
-                    vStuffed(3) := ff3b;
-                    vCumu(3)    := 31;
-
-                end case;
-
-              when others =>
-
-                -- byte0 ≠ FF → byte1 reads 8 bits at offset 8.
-                vByte(1)    := vStuffBuffer(HOLD_BITS - 9 downto HOLD_BITS - 16);
-                vStuffed(1) := ff1b;
-                vCumu(1)    := 16;
-
-                case vStuffed(1) is
-
-                  when '1' =>
-
-                    -- byte1 = FF → byte2 stuffs at offset 16.
-                    vByte(2)    := '0' & vStuffBuffer(HOLD_BITS - 17 downto HOLD_BITS - 23);
-                    vStuffed(2) := '0';
-                    vCumu(2)    := 23;
-                    vByte(3)    := vStuffBuffer(HOLD_BITS - 24 downto HOLD_BITS - 31);
-                    vStuffed(3) := ff3b;
-                    vCumu(3)    := 31;
-
-                  when others =>
-
-                    -- byte1 ≠ FF → byte2 reads 8 bits at offset 16.
-                    vByte(2)    := vStuffBuffer(HOLD_BITS - 17 downto HOLD_BITS - 24);
-                    vStuffed(2) := ff2b;
-                    vCumu(2)    := 24;
-
-                    case vStuffed(2) is
-
-                      when '1' =>
-
-                        vByte(3)    := '0' & vStuffBuffer(HOLD_BITS - 25 downto HOLD_BITS - 31);
-                        vStuffed(3) := '0';
-                        vCumu(3)    := 31;
-
-                      when others =>
-
-                        vByte(3)    := vStuffBuffer(HOLD_BITS - 25 downto HOLD_BITS - 32);
-                        vStuffed(3) := ff3c;
-                        vCumu(3)    := 32;
-
-                    end case;
-
-                end case;
-
-            end case;
-
-        end case;
-
-        ----------------------------------------------------------------------
-        -- (4) Pick emit count from how much of the chain's consumption is
-        --     covered by vStuffBufferBits. This is the *only* place sStuffBufferBits gates
-        --     output, so partial fills naturally degrade to 1..3 byte beats.
-        ----------------------------------------------------------------------
-        vEmitBytes  := 0;
-        vConsumed   := 0;
-        vEmitLastFF := vPrevFF;
-
-        if (iReady = '1') then
-
-          for i in 0 to OUT_BYTES_PER_CYCLE - 1 loop
-
-            if (vStuffBufferBits >= vCumu(i)) then
-              vEmitBytes  := i + 1;
-              vConsumed   := vCumu(i);
-              vEmitLastFF := vStuffed(i);
+            if (STUFF_LAYOUT(p)(lane) = '1') then
+              vCandidateByte := '0' & vStuffBuffer(HOLD_BITS - 1 - LANE_START(p, lane)
+                                                   downto HOLD_BITS - LANE_END(p, lane));
+            else
+              vCandidateByte := vStuffBuffer(HOLD_BITS - 1 - LANE_START(p, lane)
+                                            downto HOLD_BITS - LANE_END(p, lane));
             end if;
+            vCandidateWord(OUT_WIDTH - 1 - lane * 8 downto OUT_WIDTH - (lane + 1) * 8) := vCandidateByte;
+
+            -- Select the last complete lane using constant thresholds. The
+            -- end thresholds increase strictly, so exactly one lane wins.
+            vLaneSelected := vPath(p) and iReady and
+                             bool2bit(vStuffBufferBits >= LANE_END(p, lane));
+            if (lane < OUT_BYTES_PER_CYCLE - 1) then
+              vLaneSelected := vLaneSelected and
+                               bool2bit(vStuffBufferBits < LANE_END(p, lane + 1));
+            end if;
+            vBytesMask     := (others => vLaneSelected);
+            vEmitBytesBits := vEmitBytesBits or (to_unsigned(lane + 1, vEmitBytesBits'length) and vBytesMask);
+            vEmitLastFF    := vEmitLastFF or (vLaneSelected and bool2bit(vCandidateByte = x"FF"));
+
+            for k in CONSUME_BITS'range loop
+
+              if (CONSUME_BITS(k) = LANE_END(p, lane)) then
+                vTakeShift(k) := vTakeShift(k) or vLaneSelected;
+              end if;
+
+            end loop;
 
           end loop;
 
-        end if;
-
-        ----------------------------------------------------------------------
-        -- (5) Pack output and shift buffer by the total bits consumed.
-        ----------------------------------------------------------------------
-        for i in 0 to OUT_BYTES_PER_CYCLE - 1 loop
-
-          vEmitData(OUT_WIDTH - 1 - (i * 8) downto OUT_WIDTH - ((i + 1) * 8)) := vByte(i);
+          vEmitData := vEmitData or (vCandidateWord and vPathMask);
 
         end loop;
 
+        ----------------------------------------------------------------------
+        -- (4) Select fixed shifts and constant count decrements in parallel.
+        --     No general barrel shifter follows a late selected integer count.
+        --     Include the no-emission case so stalls preserve all input bits.
+        ----------------------------------------------------------------------
+        vEmitBytes := to_integer(vEmitBytesBits);
+        -- No complete first byte: this decision does not depend on the
+        -- layout decoder or the selected output count.
+        vTakeShift(0) := not iReady or bool2bit(vStuffBufferBits < 7) or
+                         (not vPrevFF and bool2bit(vStuffBufferBits = 7));
+        vNextBuffer := (others => '0');
+        vNextCount  := (others => '0');
+
+        for k in CONSUME_BITS'range loop
+
+          vBufferMask := (others => vTakeShift(k));
+          vCountMask  := (others => vTakeShift(k));
+          vNextBuffer := vNextBuffer or
+                         (std_logic_vector(shift_left(unsigned(vStuffBuffer), CONSUME_BITS(k))) and vBufferMask);
+          -- Unsigned arithmetic deliberately wraps on unselected candidates
+          -- with too few bits. Their mask is zero; only a legal count wins.
+          vNextCount := vNextCount or
+                        ((to_unsigned(vStuffBufferBits, vNextCount'length) - CONSUME_BITS(k)) and vCountMask);
+
+        end loop;
+
+        vStuffBuffer     := vNextBuffer;
+        vStuffBufferBits := to_integer(vNextCount);
         if (vEmitBytes > 0) then
-          vStuffBuffer     := std_logic_vector(shift_left(unsigned(vStuffBuffer), vConsumed));
-          vStuffBufferBits := vStuffBufferBits - vConsumed;
-          vPrevFF          := vEmitLastFF;
+          vPrevFF := vEmitLastFF;
         end if;
 
         ----------------------------------------------------------------------
-        -- (6) Output register and flush-done / drain entry.
+        -- (5) Output register and flush-done / drain entry.
         ----------------------------------------------------------------------
         if (vEmitBytes > 0) then
           sOutWordReg       <= vEmitData;
