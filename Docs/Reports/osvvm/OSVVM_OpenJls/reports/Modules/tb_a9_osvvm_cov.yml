@@ -31,31 +31,31 @@ Models:
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
-        Count: 54
+        Count: 2050
         AtLeast: 1
-        PercentCov: 5400.0000
+        PercentCov: 205000.0000
       - Name: "wrapNeg x geHalf"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
-        Count: 51
+        Count: 2050
         AtLeast: 1
-        PercentCov: 5100.0000
+        PercentCov: 205000.0000
       - Name: "wrapNeg x geHalf"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 54
+        Count: 2049
         AtLeast: 1
-        PercentCov: 5400.0000
+        PercentCov: 204900.0000
       - Name: "wrapNeg x geHalf"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 48
+        Count: 2049
         AtLeast: 1
-        PercentCov: 4800.0000
+        PercentCov: 204900.0000
 

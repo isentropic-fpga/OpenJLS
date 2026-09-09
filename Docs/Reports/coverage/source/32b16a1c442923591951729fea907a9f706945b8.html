@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>NVC code coverage report</title>
+  <style>
+:root {
+    --table-row-color: #e8e8e8;
+    --margin-left: 20%;
+}
+
+body {
+    background-color: #f0f0e0ff;
+}
+
+header {
+    padding: 0.5em;
+    text-align: center;
+    font-size: 14pt;
+}
+
+h1 {
+    text-align: center;
+}
+
+h2 {
+    word-wrap: break-word;
+}
+
+h3 {
+    word-wrap: break-word;
+    margin-bottom: 0px;
+}
+
+hr {
+    border:none;
+    height: 2px;
+    background: black;
+}
+
+footer {
+    display: table;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+nav {
+    float: left;
+    background-color: var(--table-row-color);
+    width: 17%;
+    overflow: auto;
+    padding: 10px;
+    margin-top: -2px;
+    border: 2px solid black;
+}
+nav details details {
+    margin-left: 1rem;
+}
+nav details > a {
+    padding-left: 1.9rem;
+    display: block;
+}
+nav summary {
+    display: inline-flex;
+    cursor: pointer;
+    align-items: center;
+}
+nav summary::before {
+    content: '▶';
+    font-size: 0.7em;
+    margin-right: 0.4em;
+}
+nav details[open] > summary::before {
+    transform: rotate(90deg);
+}
+
+table {
+    table-layout: fixed;
+}
+
+table, th, td {
+    border: 2px solid black;
+    border-collapse: collapse;
+    word-wrap: break-word;
+}
+
+.tabcontent {
+    display: none;
+    padding: 0px 0px;
+    border: 2px solid #ccc;
+    border-top: none;
+    word-wrap: break-word;
+}
+
+.tab {
+    overflow: hidden;
+    border: 2px solid;
+    margin-left: var(--margin-left);
+    margin-top: 10px;
+}
+
+.cbg:hover {
+    background-color: #dddddd;
+}
+.cbg {
+    background-color: #bbbbbb;
+    text-align: center;
+}
+
+.cbt {
+    margin-top: 8px;
+}
+.cbt th {
+    background-color: #bbbbbb;
+    text-align: center;
+}
+.cbt td, .cbt th {
+    width: 50px;
+    text-align: center;
+}
+.cbt td + td, .cbt th + th {
+    width: 150px;
+}
+.cbt td + td + td, .cbt th + th + th {
+    width: 150px;
+}
+.cbt td + td + td + td, .cbt th + th + th + th {
+    width: 150px;
+}
+
+.percent100 {
+    background-color: #00cc00;
+}
+.percent90 {
+    background-color: #e6e600;
+}
+.percent80 {
+    background-color: #ff9900;
+}
+.percent0 {
+    background-color: #ff0000;
+}
+.percentna {
+    background-color: #cccccc;
+}
+
+.nav-sel {
+    font-weight: bold;
+}
+  </style>
+</head>
+<body style="font-family: verdana">
+
+<header><h1 style="text-align: center;">NVC code coverage report
+</h1></header>
+
+<h2 style="text-align: left;">
+   File:&nbsp; ../../Sources/A6_A7_prediction_error.vhd
+</h2><pre><code>     0: &nbsp; --&nbsp;Copyright&nbsp;(C)&nbsp;2026&nbsp;Vitor&nbsp;Mendes&nbsp;Camilo&nbsp;
+     1: &nbsp; --&nbsp;SPDX-License-Identifier:&nbsp;GPL-3.0-only&nbsp;
+     2: &nbsp; --&nbsp;
+     3: &nbsp; --&nbsp;Combined&nbsp;T.87&nbsp;A.6/A.7&nbsp;regular-mode&nbsp;prediction&nbsp;correction&nbsp;and&nbsp;error.&nbsp;
+     4: &nbsp; --&nbsp;Compute&nbsp;the&nbsp;unclipped&nbsp;error&nbsp;in&nbsp;parallel&nbsp;with&nbsp;prediction&nbsp;clipping,&nbsp;keeping&nbsp;
+     5: &nbsp; --&nbsp;the&nbsp;late&nbsp;context&nbsp;bias&nbsp;off&nbsp;a&nbsp;serial&nbsp;corrected-prediction/error&nbsp;adder&nbsp;chain.&nbsp;
+     6: &nbsp; &nbsp;
+     7: &nbsp; library&nbsp;ieee;&nbsp;
+     8: &nbsp; &nbsp;&nbsp;use&nbsp;ieee.std_logic_1164.all;&nbsp;
+     9: &nbsp; &nbsp;&nbsp;use&nbsp;ieee.numeric_std.all;&nbsp;
+    10: &nbsp; &nbsp;&nbsp;use&nbsp;work.openjls_pkg.all;&nbsp;
+    11: &nbsp; &nbsp;
+    12: &nbsp; entity&nbsp;a6_a7_prediction_error&nbsp;is&nbsp;
+    13: &nbsp; &nbsp;&nbsp;generic&nbsp;(&nbsp;
+    14: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;BITNESS&nbsp;:&nbsp;natural&nbsp;range&nbsp;8&nbsp;to&nbsp;16&nbsp;:=&nbsp;CO_BITNESS_STD;&nbsp;
+    15: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;MAX_VAL&nbsp;:&nbsp;natural&nbsp;:=&nbsp;CO_MAX_VAL_STD&nbsp;
+    16: &nbsp; &nbsp;&nbsp;);&nbsp;
+    17: &nbsp; &nbsp;&nbsp;port&nbsp;(&nbsp;
+    18: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;iIx&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;unsigned(BITNESS&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+    19: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;iPx&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;unsigned(BITNESS&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+    20: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;iSign&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;std_logic;&nbsp;
+    21: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;iCq&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;signed(CO_CQ_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+    22: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;oErrorVal&nbsp;:&nbsp;out&nbsp;&nbsp;&nbsp;signed(BITNESS&nbsp;downto&nbsp;0)&nbsp;
+    23: &nbsp; &nbsp;&nbsp;);&nbsp;
+    24: &nbsp; end&nbsp;entity&nbsp;a6_a7_prediction_error;&nbsp;
+    25: &nbsp; &nbsp;
+    26: &nbsp; architecture&nbsp;behavioral&nbsp;of&nbsp;a6_a7_prediction_error&nbsp;is&nbsp;
+    27: &nbsp; &nbsp;&nbsp;constant&nbsp;EXT_WIDTH&nbsp;:&nbsp;natural&nbsp;:=&nbsp;BITNESS&nbsp;+&nbsp;2;&nbsp;
+    28: &nbsp; &nbsp;&nbsp;constant&nbsp;MAX_S&nbsp;:&nbsp;signed(EXT_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0)&nbsp;:=&nbsp;to_signed(MAX_VAL,&nbsp;EXT_WIDTH);&nbsp;
+    29: &nbsp; &nbsp;
+    30: &nbsp; &nbsp;&nbsp;signal&nbsp;sPxPlusCq,&nbsp;sPxMinusCq,&nbsp;sCorrectedPx&nbsp;:&nbsp;signed(EXT_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+    31: &nbsp; &nbsp;&nbsp;signal&nbsp;sDeltaPos,&nbsp;sDeltaNeg,&nbsp;sDelta,&nbsp;sRawError&nbsp;:&nbsp;signed(BITNESS&nbsp;downto&nbsp;0);&nbsp;
+    32: &nbsp; &nbsp;&nbsp;signal&nbsp;sAtZero,&nbsp;sAtMax&nbsp;:&nbsp;signed(BITNESS&nbsp;downto&nbsp;0);&nbsp;
+    33: &nbsp; begin&nbsp;
+    34: &nbsp; &nbsp;&nbsp;assert&nbsp;MAX_VAL&nbsp;&lt;&nbsp;2&nbsp;**&nbsp;BITNESS&nbsp;
+    35: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"a6_a7_prediction_error:&nbsp;MAX_VAL&nbsp;must&nbsp;fit&nbsp;BITNESS"&nbsp;
+    36: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;severity&nbsp;failure;&nbsp;
+    37: &nbsp; &nbsp;
+    38: &nbsp; &nbsp;&nbsp;--&nbsp;A.6&nbsp;clipping&nbsp;decision.&nbsp;Neither&nbsp;sum&nbsp;feeds&nbsp;the&nbsp;error&nbsp;subtraction.&nbsp;
+    39: &nbsp; &nbsp;&nbsp;sPxPlusCq&nbsp;&nbsp;&lt;=&nbsp;resize(signed('0'&nbsp;&amp;&nbsp;iPx),&nbsp;EXT_WIDTH)&nbsp;+&nbsp;resize(iCq,&nbsp;EXT_WIDTH);&nbsp;
+    40: &nbsp; &nbsp;&nbsp;sPxMinusCq&nbsp;&lt;=&nbsp;resize(signed('0'&nbsp;&amp;&nbsp;iPx),&nbsp;EXT_WIDTH)&nbsp;-&nbsp;resize(iCq,&nbsp;EXT_WIDTH);&nbsp;
+    41: &nbsp; &nbsp;&nbsp;sCorrectedPx&nbsp;&lt;=&nbsp;sPxPlusCq&nbsp;when&nbsp;iSign&nbsp;=&nbsp;CO_SIGN_POS&nbsp;else&nbsp;sPxMinusCq;&nbsp;
+    42: &nbsp; &nbsp;
+    43: &nbsp; &nbsp;&nbsp;--&nbsp;Before&nbsp;clipping:&nbsp;
+    44: &nbsp; &nbsp;&nbsp;--&nbsp;positive&nbsp;sign:&nbsp;Ix&nbsp;-&nbsp;(Px&nbsp;+&nbsp;Cq)&nbsp;=&nbsp;(Ix&nbsp;-&nbsp;Px)&nbsp;-&nbsp;Cq&nbsp;
+    45: &nbsp; &nbsp;&nbsp;--&nbsp;negative&nbsp;sign:&nbsp;(Px&nbsp;-&nbsp;Cq)&nbsp;-&nbsp;Ix&nbsp;=&nbsp;(Px&nbsp;-&nbsp;Ix)&nbsp;-&nbsp;Cq&nbsp;
+    46: &nbsp; &nbsp;&nbsp;--&nbsp;The&nbsp;pixel-only&nbsp;difference&nbsp;can&nbsp;settle&nbsp;before&nbsp;the&nbsp;forwarded&nbsp;context&nbsp;bias.&nbsp;
+    47: &nbsp; &nbsp;&nbsp;sDeltaPos&nbsp;&lt;=&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;iPx);&nbsp;
+    48: &nbsp; &nbsp;&nbsp;sDeltaNeg&nbsp;&lt;=&nbsp;signed('0'&nbsp;&amp;&nbsp;iPx)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx);&nbsp;
+    49: &nbsp; &nbsp;&nbsp;sDelta&nbsp;&lt;=&nbsp;sDeltaPos&nbsp;when&nbsp;iSign&nbsp;=&nbsp;CO_SIGN_POS&nbsp;else&nbsp;sDeltaNeg;&nbsp;
+    50: &nbsp; &nbsp;&nbsp;sRawError&nbsp;&lt;=&nbsp;sDelta&nbsp;-&nbsp;resize(iCq,&nbsp;sRawError'length);&nbsp;
+    51: &nbsp; &nbsp;
+    52: &nbsp; &nbsp;&nbsp;--&nbsp;Errors&nbsp;for&nbsp;the&nbsp;two&nbsp;clipped&nbsp;predictions&nbsp;depend&nbsp;only&nbsp;on&nbsp;the&nbsp;input&nbsp;pixel.&nbsp;
+    53: &nbsp; &nbsp;&nbsp;sAtZero&nbsp;&lt;=&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx)&nbsp;when&nbsp;iSign&nbsp;=&nbsp;CO_SIGN_POS&nbsp;else&nbsp;-signed('0'&nbsp;&amp;&nbsp;iIx);&nbsp;
+    54: &nbsp; &nbsp;&nbsp;sAtMax&nbsp;&lt;=&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx)&nbsp;-&nbsp;to_signed(MAX_VAL,&nbsp;sAtMax'length)&nbsp;when&nbsp;iSign&nbsp;=&nbsp;CO_SIGN_POS&nbsp;else&nbsp;
+    55: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to_signed(MAX_VAL,&nbsp;sAtMax'length)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx);&nbsp;
+    56: &nbsp; &nbsp;
+    57: &nbsp; &nbsp;&nbsp;--&nbsp;Any&nbsp;overflow&nbsp;of&nbsp;sRawError&nbsp;occurs&nbsp;only&nbsp;when&nbsp;the&nbsp;prediction&nbsp;is&nbsp;clipped,&nbsp;
+    58: &nbsp; &nbsp;&nbsp;--&nbsp;in&nbsp;which&nbsp;case&nbsp;the&nbsp;corresponding&nbsp;boundary&nbsp;error&nbsp;is&nbsp;selected&nbsp;instead.&nbsp;
+    59: &nbsp; &nbsp;&nbsp;oErrorVal&nbsp;&lt;=&nbsp;sAtZero&nbsp;when&nbsp;sCorrectedPx&nbsp;&lt;&nbsp;0&nbsp;else&nbsp;
+    60: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sAtMax&nbsp;when&nbsp;sCorrectedPx&nbsp;&gt;&nbsp;MAX_S&nbsp;else&nbsp;
+    61: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sRawError;&nbsp;
+    62: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
+</code></pre>

@@ -11,7 +11,7 @@ OpenJLS is an open, verification-signed JPEG-LS encoder IP core for FPGAs - the 
 
 It implements the JPEG-LS standard (ISO/IEC 14495-1 / ITU-T T.87), a low-complexity lossless image codec with compression ratios comparable to JPEG 2000 lossless at a fraction of the computational cost. Every release is checked byte-exact against an independent reference encoder across 287 images, including post-synthesis (see [Verification report](https://isentropic-fpga.github.io/OpenJLS/)).
 
-OpenJLS reaches ~240 MHz on a Xilinx UltraScale+ ZU7EG (the MPSoC family used in onboard processors such as the Xiphos Q8), processing one pixel per clock (~240 Mpixel/s) for ~8k LUTs and no external memory. It handles single-component (grayscale) data, so a multi-band sensor instantiates one compressor per band - resource usage is low enough that all bands run in parallel cheaply.
+OpenJLS reaches ~280 MHz on a Xilinx UltraScale+ ZU7EG (the MPSoC family used in onboard processors such as the Xiphos Q8), processing one pixel per clock (~280 Mpixel/s) for ~6.4k LUTs and no external memory. It handles single-component (grayscale) data, so a multi-band sensor instantiates one compressor per band - resource usage is low enough that all bands run in parallel cheaply.
 
 The RTL is vendor-neutral by construction (plain VHDL-1993 on open-logic memory primitives, which are VHDL-2008) and builds in any synthesis tool; the figures above were characterized on Xilinx.
 
@@ -53,13 +53,13 @@ OpenJLS is verified by simulation with [NVC](https://www.nickg.me.uk/nvc/) using
 | Suite | Status | Test/Cov | Summary |
 |---|---|---|---|
 | NVC code coverage | info | 99.8% | Per-DUT-file statement breakdown |
-| OSVVM suite | PASS | 100% | 44 tests, 139,393 affirmations (module + top + AXI wrappers) |
+| OSVVM suite | PASS | 100% | 60 tests, 2,877,433 affirmations (module + top + AXI wrappers) |
 | Golden model | PASS | 100% | 287/287 images byte-exact vs CharLS |
 | Post-synth OSVVM | PASS | 100% | Control-plane stress on the gate-level netlist |
 | Post-synth golden model | PASS | 100% | 156/156 images byte-exact vs CharLS |
 | Hardware-in-the-loop | PASS | 100% | 287/287 images byte-exact vs CharLS on PYNQ-Z2 silicon |
 
-- **OSVVM** — 28 module testbenches check each module against an independent behavioral reference derived from ITU-T T.87; a top-level testbench stresses the control plane (reset injection, backpressure, back-to-back images, dimension fallback); AXI wrapper testbenches drive the AXI4-Stream and AXI4-Lite wrappers with OSVVM verification components (byte-exact pass-through at 8- and 12-bit, register map, live reconfiguration, mid-image abort) — all with requirements tracking.
+- **OSVVM** — 29 module testbenches check each module against an independent behavioral reference derived from ITU-T T.87; a top-level testbench stresses the control plane (reset injection, backpressure, back-to-back images, dimension fallback); AXI wrapper testbenches drive the AXI4-Stream and AXI4-Lite wrappers with OSVVM verification components (byte-exact pass-through at 8- and 12-bit, register map, live reconfiguration, mid-image abort) — all with requirements tracking.
 - **Coverage** — OSVVM functional coverage plus NVC structural code coverage (99%+ statements).
 - **Golden model** — Output bitstream compared byte-exact against [CharLS](https://github.com/team-charls/charls), an independent C++ reference encoder, plus the official ISO/IEC 14495-1 reference vectors.
 - **Design contracts** — Embedded PSL assertions (ready/valid and internal handshakes) checked every run.
@@ -194,22 +194,22 @@ For driver code the map ships as a copy/paste C header — [`Sources/Xilinx/ojls
 
 ## Performance & Resources
 
-Characterized on a Xilinx Zynq UltraScale+ `xczu7eg-fbvb900-1-e` (speed grade −1, slowest), Vivado 2025.2, 12-bit grayscale. Frequencies are *true fmax* — read by over-constraining the clock until the design failed timing. Results are RTL-only, no floorplanning or vendor-specific optimizations, and vary with device, tool version, and implementation strategy; treat them as representative, not guaranteed. At one pixel/clock, ~240 MHz is ~240 Mpixel/s.
+Characterized on a Xilinx Zynq UltraScale+ `xczu7eg-fbvb900-1-e` (speed grade −1, slowest), Vivado 2025.2, 12-bit grayscale. Frequencies are *true fmax* — read by over-constraining the clock until the design failed timing. Results are RTL-only, no floorplanning or vendor-specific optimizations, and vary with device, tool version, and implementation strategy; treat them as representative, not guaranteed. At one pixel/clock, ~280 MHz is ~280 Mpixel/s.
 
 ### Maximum frequency vs `MAX_IMAGE_WIDTH`
 
 <img src="Docs/Images/fmax_vs_size.png" alt="Maximum frequency vs MAX_IMAGE_WIDTH" width="600">
 
-No single strategy wins at every size: the design is congestion-bound, so the best implementation strategy shifts with the image's on-chip BRAM footprint. `NetDelay_high` is the most consistent, winning across the small-to-mid range, while congestion-spreading and post-route optimisation each take a large size. Taking the best strategy per size, fmax stays in the **~241–253 MHz** band; the Default strategy ranges ~198–238 MHz.
+No single strategy wins at every size: the design is congestion-bound, so the best implementation strategy shifts with the image's on-chip BRAM footprint. `NetDelay_high` takes the small-to-mid range, while the Default strategy, post-route optimisation and congestion-spreading each take a size of their own. Taking the best strategy per size, fmax stays in the **~282–289 MHz** band; the Default strategy ranges ~249–285 MHz. Strategy choice also matters much less than it used to — the spread within a size is now typically 7–22 MHz, so a default run lands close to the best-of number at most sizes.
 
 | `MAX_IMAGE_WIDTH` | Default | ExplorePostRoutePhysOpt | NetDelay_high | Congestion_SpreadLogic_high |
 |------------------:|--------:|------------------------:|--------------:|----------------------------:|
-| 4096 | 238.2 | 247.9 | **248.9** | 238.9 |
-| 8192 | 197.8 | 245.2 | **248.8** | 240.6 |
-| 12288 | 220.0 | 236.8 | **247.4** | 196.8 |
-| 16384 | 227.4 | 234.6 | **253.0** | 236.7 |
-| 32768 | 220.9 | 225.6 | 234.8 | **241.1** |
-| 65535 | 235.0 | **246.2** | 243.1 | 243.8 |
+| 4096 | **282.7** | 276.2 | 281.5 | 279.2 |
+| 8192 | 249.0 | 256.7 | **284.4** | 270.7 |
+| 12288 | 273.1 | 284.0 | **289.4** | 274.9 |
+| 16384 | **283.0** | 277.8 | 282.2 | 273.0 |
+| 32768 | 284.9 | **288.4** | 274.1 | 266.2 |
+| 65535 | 271.5 | 269.2 | 279.4 | **282.3** |
 
 Maximum frequency (MHz) by `MAX_IMAGE_WIDTH` and implementation strategy; best per row in bold. A given netlist is deterministic (re-running a size/strategy reproduces the number exactly), but because the design is congestion-bound the per-size winner is placement-sensitive and can shift when the netlist changes — treat the best-of band as the headline number rather than any single cell.
 
@@ -217,16 +217,16 @@ Maximum frequency (MHz) by `MAX_IMAGE_WIDTH` and implementation strategy; best p
 
 <img src="Docs/Images/util_vs_size.png" alt="Resource usage vs MAX_IMAGE_WIDTH" width="600">
 
-Logic is essentially constant across image size — LUTs (~8k) and flip-flops (~2.1k) are set by the encoder, not the image. Only Block RAM scales: the line buffer holds one image row, so it grows ~linearly with image width and pixel bit depth.
+Logic is essentially constant across image size — LUTs (~6.4k) and flip-flops (~2.0k) are set by the encoder, not the image. Only Block RAM scales: the line buffer holds one image row, so it grows ~linearly with image width and pixel bit depth.
 
 | `MAX_IMAGE_WIDTH` | LUTs | FFs | BRAM tiles |
 |------------------:|-----:|----:|-----------:|
-| 4096 | 7517 | 2075 | 1.5 |
-| 8192 | 7600 | 2099 | 3.0 |
-| 12288 | 7604 | 2088 | 4.5 |
-| 16384 | 7652 | 2103 | 5.5 |
-| 32768 | 7667 | 2126 | 11.0 |
-| 65535 | 7781 | 2162 | 22.0 |
+| 4096 | 6563 | 2013 | 2.5 |
+| 8192 | 6429 | 2032 | 4.0 |
+| 12288 | 6327 | 2033 | 5.5 |
+| 16384 | 6389 | 2039 | 6.5 |
+| 32768 | 6350 | 2053 | 12.0 |
+| 65535 | 6407 | 2072 | 23.0 |
 
 Resource usage by `MAX_IMAGE_WIDTH` (default strategy; near-identical across strategies). Reproduce both tables with [`Scripts/run_fmax_sweep.sh`](Scripts/run_fmax_sweep.sh).
 
