@@ -43,9 +43,13 @@ bram  = [r[3] for r in rows]
 fig, ax1 = plt.subplots(figsize=(8, 5))
 ax2 = ax1.twinx()
 
-l_lut,  = ax1.plot(sizes, lut, marker="o", color="C0", label="LUTs")
-l_ff,   = ax1.plot(sizes, ff,  marker="s", color="C1", label="Flip-flops")
-l_bram, = ax2.plot(sizes, bram, marker="^", color="C2", label="Block RAM")
+# Redundant encoding: dash pattern and marker separate the series without
+# colour, so the figure survives greyscale printing and colour-vision
+# deficiency. Colours are the Okabe-Ito colour-blind-safe palette.
+kw = dict(lw=1.6, ms=6, mfc="white", mew=1.4)
+l_lut,  = ax1.plot(sizes, lut,  ls="-",  marker="o", color="#0072B2", label="LUTs", **kw)
+l_ff,   = ax1.plot(sizes, ff,   ls="--", marker="s", color="#D55E00", label="Flip-flops", **kw)
+l_bram, = ax2.plot(sizes, bram, ls="-.", marker="^", color="#009E73", label="Block RAM", **kw)
 
 # X axis: linear spacing so the BRAM line (~proportional to width) reads straight.
 ax1.set_xticks(sizes)
@@ -59,7 +63,8 @@ ax2.set_ylim(bottom=0)
 
 # No in-figure title: the LaTeX float caption supplies it.
 ax1.grid(True, which="major", ls=":", alpha=0.5)
-ax1.legend(handles=[l_lut, l_ff, l_bram], title="Resource", loc="center left")
+ax1.legend(handles=[l_lut, l_ff, l_bram], title="Resource", loc="center left",
+           framealpha=0.95)
 
 plt.tight_layout()
 plt.savefig(out_png, dpi=150)
