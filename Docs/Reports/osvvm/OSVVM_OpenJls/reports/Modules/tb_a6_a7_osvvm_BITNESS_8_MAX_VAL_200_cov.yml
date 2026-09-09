@@ -1,0 +1,77 @@
+Version: "0.1"
+Coverage: 100.00
+Settings: 
+  WritePassFail: 0
+Models: 
+  - Name: "sign x clipping region"
+    TestCases: 
+      - "tb_a6_a7_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [499436715, 378101220]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 6
+      TotalCovGoal: 6
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "Bin1"
+        - "Bin2"
+      NumBins: 6
+    Bins: 
+      - Name: "sign x clipping region"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 0, Max: 0}
+        Count: 67327
+        AtLeast: 1
+        PercentCov: 6732700.0000
+      - Name: "sign x clipping region"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 1, Max: 1}
+        Count: 371840
+        AtLeast: 1
+        PercentCov: 37184000.0000
+      - Name: "sign x clipping region"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 2, Max: 2}
+        Count: 152409
+        AtLeast: 1
+        PercentCov: 15240900.0000
+      - Name: "sign x clipping region"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 0, Max: 0}
+        Count: 66318
+        AtLeast: 1
+        PercentCov: 6631800.0000
+      - Name: "sign x clipping region"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 1, Max: 1}
+        Count: 371057
+        AtLeast: 1
+        PercentCov: 37105700.0000
+      - Name: "sign x clipping region"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 2, Max: 2}
+        Count: 154056
+        AtLeast: 1
+        PercentCov: 15405600.0000
+

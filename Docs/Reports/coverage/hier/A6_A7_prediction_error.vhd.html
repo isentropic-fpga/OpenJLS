@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>NVC code coverage report</title>
+  <style>
+:root {
+    --table-row-color: #e8e8e8;
+    --margin-left: 20%;
+}
+
+body {
+    background-color: #f0f0e0ff;
+}
+
+header {
+    padding: 0.5em;
+    text-align: center;
+    font-size: 14pt;
+}
+
+h1 {
+    text-align: center;
+}
+
+h2 {
+    word-wrap: break-word;
+}
+
+h3 {
+    word-wrap: break-word;
+    margin-bottom: 0px;
+}
+
+hr {
+    border:none;
+    height: 2px;
+    background: black;
+}
+
+footer {
+    display: table;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+nav {
+    float: left;
+    background-color: var(--table-row-color);
+    width: 17%;
+    overflow: auto;
+    padding: 10px;
+    margin-top: -2px;
+    border: 2px solid black;
+}
+nav details details {
+    margin-left: 1rem;
+}
+nav details > a {
+    padding-left: 1.9rem;
+    display: block;
+}
+nav summary {
+    display: inline-flex;
+    cursor: pointer;
+    align-items: center;
+}
+nav summary::before {
+    content: '▶';
+    font-size: 0.7em;
+    margin-right: 0.4em;
+}
+nav details[open] > summary::before {
+    transform: rotate(90deg);
+}
+
+table {
+    table-layout: fixed;
+}
+
+table, th, td {
+    border: 2px solid black;
+    border-collapse: collapse;
+    word-wrap: break-word;
+}
+
+.tabcontent {
+    display: none;
+    padding: 0px 0px;
+    border: 2px solid #ccc;
+    border-top: none;
+    word-wrap: break-word;
+}
+
+.tab {
+    overflow: hidden;
+    border: 2px solid;
+    margin-left: var(--margin-left);
+    margin-top: 10px;
+}
+
+.cbg:hover {
+    background-color: #dddddd;
+}
+.cbg {
+    background-color: #bbbbbb;
+    text-align: center;
+}
+
+.cbt {
+    margin-top: 8px;
+}
+.cbt th {
+    background-color: #bbbbbb;
+    text-align: center;
+}
+.cbt td, .cbt th {
+    width: 50px;
+    text-align: center;
+}
+.cbt td + td, .cbt th + th {
+    width: 150px;
+}
+.cbt td + td + td, .cbt th + th + th {
+    width: 150px;
+}
+.cbt td + td + td + td, .cbt th + th + th + th {
+    width: 150px;
+}
+
+.percent100 {
+    background-color: #00cc00;
+}
+.percent90 {
+    background-color: #e6e600;
+}
+.percent80 {
+    background-color: #ff9900;
+}
+.percent0 {
+    background-color: #ff0000;
+}
+.percentna {
+    background-color: #cccccc;
+}
+
+.nav-sel {
+    font-weight: bold;
+}
+  </style>
+</head>
+<body style="font-family: verdana">
+
+<header><h1 style="text-align: center;">NVC code coverage report
+</h1></header>
+
+<h2 style="float: left; margin-bottom: 0px; margin-top: 0px;"><a href=../index.html>Back to summary</a></h2>
+<h2 style="float: left; clear: left;">Coverage report for file:</h2>
+<nav style="clear: left">
+<p style="margin-left: 10px"><a href=A12_variables_update.vhd.html>A12_variables_update.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a15_a16_osvvm.vhd.html>tb_a15_a16_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A18_run_interruption_prediction_error.vhd.html>A18_run_interruption_prediction_error.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a9_osvvm.vhd.html>tb_a9_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a11_2_osvvm.vhd.html>tb_a11_2_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A22_errval_mapping.vhd.html>A22_errval_mapping.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a4_1_osvvm.vhd.html>tb_a4_1_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A4_quantization_gradients.vhd.html>A4_quantization_gradients.vhd</a></p>
+<p style="margin-left: 10px"><a href=olo_base_ram_sdp.vhd.html>olo_base_ram_sdp.vhd</a></p>
+<p style="margin-left: 10px"><a href=AxiStreamTransmitter.vhd.html>AxiStreamTransmitter.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a20_osvvm.vhd.html>tb_a20_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_line_buffer_osvvm.vhd.html>tb_line_buffer_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=Axi4LiteManager.vhd.html>Axi4LiteManager.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a13_osvvm.vhd.html>tb_a13_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A15_A16_encode_run.vhd.html>A15_A16_encode_run.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a6_osvvm.vhd.html>tb_a6_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A9_modulo_reduction.vhd.html>A9_modulo_reduction.vhd</a></p>
+<p style="margin-left: 10px"><a href=A11_2_bit_packer.vhd.html>A11_2_bit_packer.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a23_osvvm.vhd.html>tb_a23_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A4_1_quant_gradient_merging.vhd.html>A4_1_quant_gradient_merging.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a10_osvvm.vhd.html>tb_a10_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a19_osvvm.vhd.html>tb_a19_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A20_compute_temp.vhd.html>A20_compute_temp.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a5_osvvm.vhd.html>tb_a5_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=line_buffer.vhd.html>line_buffer.vhd</a></p>
+<p style="margin-left: 10px"><a href=A13_update_bias.vhd.html>A13_update_bias.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a17_osvvm.vhd.html>tb_a17_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A6_prediction_correction.vhd.html>A6_prediction_correction.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_byte_stuffer_osvvm.vhd.html>tb_byte_stuffer_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_context_ram_osvvm.vhd.html>tb_context_ram_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=AxiStreamReceiver.vhd.html>AxiStreamReceiver.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a11_osvvm.vhd.html>tb_a11_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A23_run_interruption_update.vhd.html>A23_run_interruption_update.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_openjls_top_osvvm.vhd.html>tb_openjls_top_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A10_compute_k.vhd.html>A10_compute_k.vhd</a></p>
+<p style="margin-left: 10px"><a href=A19_run_interruption_error.vhd.html>A19_run_interruption_error.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a21_osvvm.vhd.html>tb_a21_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a4_2_osvvm.vhd.html>tb_a4_2_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A5_edge_detecting_predictor.vhd.html>A5_edge_detecting_predictor.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_openjls_axis_osvvm.vhd.html>tb_openjls_axis_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a14_osvvm.vhd.html>tb_a14_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A17_run_interruption_index.vhd.html>A17_run_interruption_index.vhd</a></p>
+<p style="margin-left: 10px"><a href=byte_stuffer.vhd.html>byte_stuffer.vhd</a></p>
+<p style="margin-left: 10px"><a href=context_ram.vhd.html>context_ram.vhd</a></p>
+<p style="margin-left: 10px"><a href=A11_error_mapping.vhd.html>A11_error_mapping.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a7_osvvm.vhd.html>tb_a7_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a11_1_osvvm.vhd.html>tb_a11_1_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A21_compute_map.vhd.html>A21_compute_map.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a3_osvvm.vhd.html>tb_a3_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A4_2_Q_mapping.vhd.html>A4_2_Q_mapping.vhd</a></p>
+<p style="margin-left: 10px"><a href=openjls_axis.vhd.html>openjls_axis.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_openjls_axis_regs_osvvm.vhd.html>tb_openjls_axis_regs_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A14_run_length_determination.vhd.html>A14_run_length_determination.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a1_osvvm.vhd.html>tb_a1_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a6_a7_osvvm.vhd.html>tb_a6_a7_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=olo_base_fifo_sync.vhd.html>olo_base_fifo_sync.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_jls_framer_osvvm.vhd.html>tb_jls_framer_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a12_osvvm.vhd.html>tb_a12_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a18_osvvm.vhd.html>tb_a18_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A7_prediction_error.vhd.html>A7_prediction_error.vhd</a></p>
+<p style="margin-left: 10px"><a href=A11_1_golomb_encoder.vhd.html>A11_1_golomb_encoder.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a22_osvvm.vhd.html>tb_a22_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A3_mode_selection.vhd.html>A3_mode_selection.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a4_osvvm.vhd.html>tb_a4_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=openjls_top.vhd.html>openjls_top.vhd</a></p>
+<p style="margin-left: 10px"><a href=openjls_axis_regs.vhd.html>openjls_axis_regs.vhd</a></p>
+<p style="margin-left: 10px"><a href=A1_gradient_comp.vhd.html>A1_gradient_comp.vhd</a></p>
+<p style="margin-left: 10px"><a href=A6_A7_prediction_error.vhd.html>A6_A7_prediction_error.vhd</a></p>
+<p style="margin-left: 10px"><a href=jls_framer.vhd.html>jls_framer.vhd</a></p>
+</nav>
+
+<h2 style="margin-left: var(--margin-left); width: 76%;">
+   File:&nbsp; <a href="../source/32b16a1c442923591951729fea907a9f706945b8.html">../../Sources/A6_A7_prediction_error.vhd</a>
+</h2>
+
+<h2 style="margin-left: var(--margin-left);">
+  Current File:
+</h2>
+
+<table id="cur_file_table" style="width: 76%;margin-left:var(--margin-left);margin-right:auto;"> 
+  <tr style="height:40px">
+    <th class="cbg" onclick="sortTable(0, &quot;cur_file_table&quot;)"  style="width:30%">File</th>
+    <th class="cbg" onclick="sortTable(1, &quot;cur_file_table&quot;)"  style="width:8%">Statement</th>
+    <th class="cbg" onclick="sortTable(2, &quot;cur_file_table&quot;)"  style="width:8%">Branch</th>
+    <th class="cbg" onclick="sortTable(3, &quot;cur_file_table&quot;)"  style="width:8%">Toggle</th>
+    <th class="cbg" onclick="sortTable(4, &quot;cur_file_table&quot;)"  style="width:8%">Expression</th>
+    <th class="cbg" onclick="sortTable(5, &quot;cur_file_table&quot;)"  style="width:8%">FSM state</th>
+    <th class="cbg" onclick="sortTable(6, &quot;cur_file_table&quot;)"  style="width:8%">Functional</th>
+    <th class="cbg" onclick="sortTable(7, &quot;cur_file_table&quot;)"  style="width:8%">Average</th>
+  </tr>
+  <tr>
+    <td style="background-color:var(--table-row-color)">
+<a href="A6_A7_prediction_error.vhd.html">A6_A7_prediction_error.vhd</a></td>
+    <td class="percent100">100.0 % (22/22)</td>
+    <td class="percent100">100.0 % (6/6)</td>
+    <td class="percentna">N.A.</td>
+    <td class="percentna">N.A.</td>
+    <td class="percentna">N.A.</td>
+    <td class="percentna">N.A.</td>
+    <td class="percent100">100.0 % (28/28)</td>
+  </tr>
+</table>
+
+<h2 style="margin-left: var(--margin-left);">
+  Details:
+</h2>
+
+<table style="width:76%;margin-left:var(--margin-left);margin-right:auto;"> 
+   <tr style="height:40px">
+      <th class="cbg" onclick="selectCoverage(event, 'Statement')" id="defaultOpen">Statement</th>
+      <th class="cbg" onclick="selectCoverage(event, 'Branch')">Branch</th>
+      <th class="cbg" onclick="selectCoverage(event, 'Toggle')">Toggle</th>
+      <th class="cbg" onclick="selectCoverage(event, 'Expression')">Expression</th>
+      <th class="cbg" onclick="selectCoverage(event, 'FSM_state')">FSM state</th>
+      <th class="cbg" onclick="selectCoverage(event, 'Functional')">Functional</th>
+   </tr>
+</table>
+
+<div id="Statement" class="tabcontent" style="width:76%;margin-left:var(--margin-left); margin-right:auto; margin-top:-2px; border: 2px solid black;">
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ffcccc;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Uncovered statements:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#d6eaf8;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Excluded statements:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Covered statements:</h2>
+  <div style="padding:0px 10px;">
+<h3>Assertion statement on lines 35 to 37:</h3><code>35:&nbsp;&nbsp;assert&nbsp;MAX_VAL&nbsp;&lt;&nbsp;2&nbsp;**&nbsp;BITNESS&nbsp;<br>36:&nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"a6_a7_prediction_error:&nbsp;MAX_VAL&nbsp;must&nbsp;fit&nbsp;BITNESS"&nbsp;<br>37:&nbsp;&nbsp;&nbsp;&nbsp;severity&nbsp;failure;&nbsp;</code><br><b>Count:</b> 3<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 40:</h3><code>40:&nbsp;&nbsp;sPxPlusCq&nbsp;&nbsp;&lt;=&nbsp;<code class="cbg">resize(signed('0'&nbsp;&amp;&nbsp;iPx),&nbsp;EXT_WIDTH)&nbsp;+&nbsp;resize(iCq,&nbsp;EXT_WIDTH)</code>;&nbsp;</code><br><b>Count:</b> 868923<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 41:</h3><code>41:&nbsp;&nbsp;sPxMinusCq&nbsp;&lt;=&nbsp;<code class="cbg">resize(signed('0'&nbsp;&amp;&nbsp;iPx),&nbsp;EXT_WIDTH)&nbsp;-&nbsp;resize(iCq,&nbsp;EXT_WIDTH)</code>;&nbsp;</code><br><b>Count:</b> 868923<br><b>Threshold:</b> 1<hr/>
+<h3>If statement on line 42:</h3><code>42:&nbsp;&nbsp;sCorrectedPx&nbsp;<code class="cbg">&lt;=&nbsp;sPxPlusCq&nbsp;when&nbsp;iSign&nbsp;=&nbsp;CO_SIGN_POS&nbsp;else&nbsp;sPxMinusCq;</code>&nbsp;</code><br><b>Count:</b> 1055571<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 42:</h3><code>42:&nbsp;&nbsp;sCorrectedPx&nbsp;&lt;=&nbsp;<code class="cbg">sPxPlusCq</code>&nbsp;when&nbsp;iSign&nbsp;=&nbsp;CO_SIGN_POS&nbsp;else&nbsp;sPxMinusCq;&nbsp;</code><br><b>Count:</b> 504575<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 42:</h3><code>42:&nbsp;&nbsp;sCorrectedPx&nbsp;&lt;=&nbsp;sPxPlusCq&nbsp;when&nbsp;iSign&nbsp;=&nbsp;CO_SIGN_POS&nbsp;else&nbsp;<code class="cbg">sPxMinusCq</code>;&nbsp;</code><br><b>Count:</b> 550996<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 48:</h3><code>48:&nbsp;&nbsp;sDeltaPos&nbsp;&lt;=&nbsp;<code class="cbg">signed('0'&nbsp;&amp;&nbsp;iIx)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;iPx)</code>;&nbsp;</code><br><b>Count:</b> 3004213<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 49:</h3><code>49:&nbsp;&nbsp;sDeltaNeg&nbsp;&lt;=&nbsp;<code class="cbg">signed('0'&nbsp;&amp;&nbsp;iPx)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx)</code>;&nbsp;</code><br><b>Count:</b> 3004213<br><b>Threshold:</b> 1<hr/>
+<h3>If statement on line 50:</h3><code>50:&nbsp;&nbsp;sDelta&nbsp;<code class="cbg">&lt;=&nbsp;sDeltaPos&nbsp;when&nbsp;iSign&nbsp;=&nbsp;CO_SIGN_POS&nbsp;else&nbsp;sDeltaNeg;</code>&nbsp;</code><br><b>Count:</b> 3190529<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 50:</h3><code>50:&nbsp;&nbsp;sDelta&nbsp;&lt;=&nbsp;<code class="cbg">sDeltaPos</code>&nbsp;when&nbsp;iSign&nbsp;=&nbsp;CO_SIGN_POS&nbsp;else&nbsp;sDeltaNeg;&nbsp;</code><br><b>Count:</b> 1573636<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 50:</h3><code>50:&nbsp;&nbsp;sDelta&nbsp;&lt;=&nbsp;sDeltaPos&nbsp;when&nbsp;iSign&nbsp;=&nbsp;CO_SIGN_POS&nbsp;else&nbsp;<code class="cbg">sDeltaNeg</code>;&nbsp;</code><br><b>Count:</b> 1616893<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 51:</h3><code>51:&nbsp;&nbsp;sRawError&nbsp;&lt;=&nbsp;<code class="cbg">sDelta&nbsp;-&nbsp;resize(iCq,&nbsp;sRawError'length)</code>;&nbsp;</code><br><b>Count:</b> 3458697<br><b>Threshold:</b> 1<hr/>
+<h3>If statement on line 54:</h3><code>54:&nbsp;&nbsp;sAtZero&nbsp;<code class="cbg">&lt;=&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx)&nbsp;when&nbsp;iSign&nbsp;=&nbsp;CO_SIGN_POS&nbsp;else&nbsp;-signed('0'&nbsp;&amp;&nbsp;iIx);</code>&nbsp;</code><br><b>Count:</b> 2729865<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 54:</h3><code>54:&nbsp;&nbsp;sAtZero&nbsp;&lt;=&nbsp;<code class="cbg">signed('0'&nbsp;&amp;&nbsp;iIx)</code>&nbsp;when&nbsp;iSign&nbsp;=&nbsp;CO_SIGN_POS&nbsp;else&nbsp;-signed('0'&nbsp;&amp;&nbsp;iIx);&nbsp;</code><br><b>Count:</b> 1354469<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 54:</h3><code>54:&nbsp;&nbsp;sAtZero&nbsp;&lt;=&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx)&nbsp;when&nbsp;iSign&nbsp;=&nbsp;CO_SIGN_POS&nbsp;else&nbsp;<code class="cbg">-signed('0'&nbsp;&amp;&nbsp;iIx)</code>;&nbsp;</code><br><b>Count:</b> 1375396<br><b>Threshold:</b> 1<hr/>
+<h3>If statement on lines 55 to 56:</h3><code>55:&nbsp;&nbsp;sAtMax&nbsp;&lt;=&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx)&nbsp;-&nbsp;to_signed(MAX_VAL,&nbsp;sAtMax'length)&nbsp;when&nbsp;iSign&nbsp;=&nbsp;CO_SIGN_POS&nbsp;else&nbsp;<br>56:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to_signed(MAX_VAL,&nbsp;sAtMax'length)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx);&nbsp;</code><br><b>Count:</b> 2729865<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 55:</h3><code>55:&nbsp;&nbsp;sAtMax&nbsp;&lt;=&nbsp;<code class="cbg">signed('0'&nbsp;&amp;&nbsp;iIx)&nbsp;-&nbsp;to_signed(MAX_VAL,&nbsp;sAtMax'length)</code>&nbsp;when&nbsp;iSign&nbsp;=&nbsp;CO_SIGN_POS&nbsp;else&nbsp;</code><br><b>Count:</b> 1354469<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 56:</h3><code>56:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">to_signed(MAX_VAL,&nbsp;sAtMax'length)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx)</code>;&nbsp;</code><br><b>Count:</b> 1375396<br><b>Threshold:</b> 1<hr/>
+<h3>If statement on lines 60 to 62:</h3><code>60:&nbsp;&nbsp;oErrorVal&nbsp;&lt;=&nbsp;sAtZero&nbsp;when&nbsp;sCorrectedPx&nbsp;&lt;&nbsp;0&nbsp;else&nbsp;<br>61:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sAtMax&nbsp;when&nbsp;sCorrectedPx&nbsp;&gt;&nbsp;MAX_S&nbsp;else&nbsp;<br>62:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sRawError;&nbsp;</code><br><b>Count:</b> 6597474<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 60:</h3><code>60:&nbsp;&nbsp;oErrorVal&nbsp;&lt;=&nbsp;<code class="cbg">sAtZero</code>&nbsp;when&nbsp;sCorrectedPx&nbsp;&lt;&nbsp;0&nbsp;else&nbsp;</code><br><b>Count:</b> 650358<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 61:</h3><code>61:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">sAtMax</code>&nbsp;when&nbsp;sCorrectedPx&nbsp;&gt;&nbsp;MAX_S&nbsp;else&nbsp;</code><br><b>Count:</b> 1017447<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 62:</h3><code>62:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">sRawError</code>;&nbsp;</code><br><b>Count:</b> 4929669<br><b>Threshold:</b> 1  </div>
+  </section>
+
+</div>
+<div id="Branch" class="tabcontent" style="width:76%;margin-left:var(--margin-left); margin-right:auto; margin-top:-2px; border: 2px solid black;">
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ffcccc;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Uncovered branches:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#d6eaf8;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Excluded branches:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Covered branches:</h2>
+  <div style="padding:0px 10px;">
+<h3>"if" / "when" / "else" condition on line 42:</h3><code>42:&nbsp;&nbsp;sCorrectedPx&nbsp;&lt;=&nbsp;sPxPlusCq&nbsp;when&nbsp;<code class="cbg">iSign&nbsp;=&nbsp;CO_SIGN_POS</code>&nbsp;else&nbsp;sPxMinusCq;&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>504575</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 50:</h3><code>50:&nbsp;&nbsp;sDelta&nbsp;&lt;=&nbsp;sDeltaPos&nbsp;when&nbsp;<code class="cbg">iSign&nbsp;=&nbsp;CO_SIGN_POS</code>&nbsp;else&nbsp;sDeltaNeg;&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>1573636</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 54:</h3><code>54:&nbsp;&nbsp;sAtZero&nbsp;&lt;=&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx)&nbsp;when&nbsp;<code class="cbg">iSign&nbsp;=&nbsp;CO_SIGN_POS</code>&nbsp;else&nbsp;-signed('0'&nbsp;&amp;&nbsp;iIx);&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>1354469</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 55:</h3><code>55:&nbsp;&nbsp;sAtMax&nbsp;&lt;=&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx)&nbsp;-&nbsp;to_signed(MAX_VAL,&nbsp;sAtMax'length)&nbsp;when&nbsp;<code class="cbg">iSign&nbsp;=&nbsp;CO_SIGN_POS</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>1354469</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 60:</h3><code>60:&nbsp;&nbsp;oErrorVal&nbsp;&lt;=&nbsp;sAtZero&nbsp;when&nbsp;<code class="cbg">sCorrectedPx&nbsp;&lt;&nbsp;0</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>650358</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 61:</h3><code>61:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sAtMax&nbsp;when&nbsp;<code class="cbg">sCorrectedPx&nbsp;&gt;&nbsp;MAX_S</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>1017447</td><td>1</td></tr></table>  </div>
+  </section>
+
+</div>
+<div id="Toggle" class="tabcontent" style="width:76%;margin-left:var(--margin-left); margin-right:auto; margin-top:-2px; border: 2px solid black;">
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ffcccc;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Uncovered toggles:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#d6eaf8;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Excluded toggles:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Covered toggles:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+</div>
+<div id="Expression" class="tabcontent" style="width:76%;margin-left:var(--margin-left); margin-right:auto; margin-top:-2px; border: 2px solid black;">
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ffcccc;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Uncovered expressions:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#d6eaf8;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Excluded expressions:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Covered expressions:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+</div>
+<div id="FSM_state" class="tabcontent" style="width:76%;margin-left:var(--margin-left); margin-right:auto; margin-top:-2px; border: 2px solid black;">
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ffcccc;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Uncovered FSM states:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#d6eaf8;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Excluded FSM states:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Covered FSM states:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+</div>
+<div id="Functional" class="tabcontent" style="width:76%;margin-left:var(--margin-left); margin-right:auto; margin-top:-2px; border: 2px solid black;">
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ffcccc;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Uncovered functional coverage:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#d6eaf8;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Excluded functional coverage:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Covered functional coverage:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+</div>
+<script>
+   function selectCoverage(evt, coverageType) {
+      var i, tabcontent, tablinks;
+      tabcontent = document.getElementsByClassName("tabcontent");
+      for (i = 0; i < tabcontent.length; i++) {
+         tabcontent[i].style.display = "none";
+      }
+      tablinks = document.getElementsByClassName("tablinks");
+      for (i = 0; i < tablinks.length; i++) {
+         tablinks[i].className = tablinks[i].className.replace(" active", "");
+      }
+      document.getElementById(coverageType).style.display = "block";
+      evt.currentTarget.className += " active";
+   }
+   function GetExclude(excludeCmd) {
+      navigator.clipboard.writeText(excludeCmd);
+   }
+   function getCellValue (tr, n) {
+      let v = tr.getElementsByTagName("TD")[n];
+      v = parseInt(v.innerHTML.split("%")[0]);
+      if (isNaN(v)) {
+         v = -1;
+      }
+      return v;
+   }
+   function sortTable(n, tableId) {
+     const table = document.getElementById(tableId);
+     const rows = Array.from(table.querySelectorAll('tr:nth-child(n+2)'));
+     rows.sort((a, b) => {
+       const left = getCellValue(this.ascending ? a : b, n);
+       const right = getCellValue(this.ascending ? b : a, n);
+       if (!isNaN(left) && !isNaN(right)) {
+         return left - right;
+       } else {
+         return left.localeCompare(right);
+       }
+     });
+     rows.forEach(tr => table.appendChild(tr));
+     this.ascending = !this.ascending;
+   }
+   document.getElementById("defaultOpen").click();
+</script>
+<footer>   <p> NVC version: 1.21.0 </p>
+   <p> Generated on: Tue Sep  8 23:13:44 2026
+ </p>
+</footer>
+</body>
+</html>

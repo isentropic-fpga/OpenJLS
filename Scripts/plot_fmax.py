@@ -42,17 +42,31 @@ def pretty(strat):
         return "Standard (default)"
     return strat.replace("_", " ")
 
-for strat, pts in series.items():
+# Redundant encoding: every series is separable by dash pattern and marker
+# alone, so the figure survives greyscale printing and colour-vision
+# deficiency. Colours are the Okabe-Ito colour-blind-safe palette.
+STYLES = [
+    ("-",  "o", "#0072B2"),
+    ("--", "s", "#D55E00"),
+    ("-.", "^", "#009E73"),
+    (":",  "D", "#CC79A7"),
+]
+
+# Fixed order so the styles stay bound to the same strategy across re-runs.
+for idx, strat in enumerate(sorted(series, key=lambda k: ("Default" not in k, k))):
+    pts = series[strat]
     pts.sort()
     xs = [p[0] for p in pts]
     ys = [p[1] for p in pts]
     label = pretty(strat)
-    line, = plt.plot(xs, ys, marker="o", label=label)
+    ls, mk, col = STYLES[idx % len(STYLES)]
+    line, = plt.plot(xs, ys, ls=ls, marker=mk, color=col, label=label,
+                     lw=1.6, ms=6, mfc="white", mew=1.4)
     # flag points where the probe was too loose (fmax is only a floor)
     floor_x = [p[0] for p in pts if p[2]]
     floor_y = [p[1] for p in pts if p[2]]
     if floor_x:
-        plt.scatter(floor_x, floor_y, marker="v", s=90,
+        plt.scatter(floor_x, floor_y, marker="v", s=90, zorder=5,
                     facecolors="none", edgecolors=line.get_color(),
                     label=f"{label} (floor only — re-probe)")
 
@@ -65,7 +79,7 @@ plt.xlabel("Maximum image width  (px)")
 plt.ylabel("Max. frequency  (MHz)")
 # No in-figure title: the LaTeX float caption supplies it.
 plt.grid(True, which="major", ls=":", alpha=0.5)
-plt.legend(title="Implementation strategy")
+plt.legend(title="Implementation strategy", framealpha=0.95)
 plt.tight_layout()
 plt.savefig(out_png, dpi=150)
 print(f"wrote {out_png}")

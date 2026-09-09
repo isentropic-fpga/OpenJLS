@@ -3,7 +3,7 @@
   <spirit:vendor>isentropic</spirit:vendor>
   <spirit:library>openjls</spirit:library>
   <spirit:name>openjls_axis</spirit:name>
-  <spirit:version>1.2</spirit:version>
+  <spirit:version>1.3</spirit:version>
   <spirit:busInterfaces>
     <spirit:busInterface>
       <spirit:name>iClk</spirit:name>
@@ -130,7 +130,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>768029f2</spirit:value>
+            <spirit:value>ac374e1a</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -146,7 +146,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>768029f2</spirit:value>
+            <spirit:value>ac374e1a</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -526,12 +526,7 @@
         <spirit:userFileType>IMPORTED_FILE</spirit:userFileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>src/A6_prediction_correction.vhd</spirit:name>
-        <spirit:userFileType>vhdlSource-2008</spirit:userFileType>
-        <spirit:userFileType>IMPORTED_FILE</spirit:userFileType>
-      </spirit:file>
-      <spirit:file>
-        <spirit:name>src/A7_prediction_error.vhd</spirit:name>
+        <spirit:name>src/A6_A7_prediction_error.vhd</spirit:name>
         <spirit:userFileType>vhdlSource-2008</spirit:userFileType>
         <spirit:userFileType>IMPORTED_FILE</spirit:userFileType>
       </spirit:file>
@@ -715,12 +710,7 @@
         <spirit:userFileType>IMPORTED_FILE</spirit:userFileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>src/A6_prediction_correction.vhd</spirit:name>
-        <spirit:userFileType>vhdlSource-2008</spirit:userFileType>
-        <spirit:userFileType>IMPORTED_FILE</spirit:userFileType>
-      </spirit:file>
-      <spirit:file>
-        <spirit:name>src/A7_prediction_error.vhd</spirit:name>
+        <spirit:name>src/A6_A7_prediction_error.vhd</spirit:name>
         <spirit:userFileType>vhdlSource-2008</spirit:userFileType>
         <spirit:userFileType>IMPORTED_FILE</spirit:userFileType>
       </spirit:file>
@@ -783,7 +773,7 @@
     <spirit:fileSet>
       <spirit:name>xilinx_xpgui_view_fileset</spirit:name>
       <spirit:file>
-        <spirit:name>xgui/openjls_axis_v1_2.tcl</spirit:name>
+        <spirit:name>xgui/openjls_axis_v1_3.tcl</spirit:name>
         <spirit:fileType>tclSource</spirit:fileType>
         <spirit:userFileType>CHECKSUM_2e067d26</spirit:userFileType>
         <spirit:userFileType>XGUI_VERSION_2</spirit:userFileType>
@@ -840,13 +830,13 @@
       <xilinx:definitionSource>package_project</xilinx:definitionSource>
       <xilinx:vendorDisplayName>Isentropic</xilinx:vendorDisplayName>
       <xilinx:vendorURL>https://github.com/isentropic-fpga/OpenJLS</xilinx:vendorURL>
-      <xilinx:coreRevision>26072801</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2026-07-28T04:20:56Z</xilinx:coreCreationDateTime>
+      <xilinx:coreRevision>26090823</xilinx:coreRevision>
+      <xilinx:coreCreationDateTime>2026-09-09T02:18:05Z</xilinx:coreCreationDateTime>
     </xilinx:coreExtensions>
     <xilinx:packagingInfo>
       <xilinx:xilinxVersion>2025.2</xilinx:xilinxVersion>
       <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="8e5b7ba9"/>
-      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="f67ddb5b"/>
+      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="3ec08ad2"/>
       <xilinx:checksum xilinx:scope="ports" xilinx:value="76c8cdce"/>
       <xilinx:checksum xilinx:scope="hdlParameters" xilinx:value="b0b062b2"/>
       <xilinx:checksum xilinx:scope="parameters" xilinx:value="7b3665db"/>

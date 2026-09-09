@@ -1,0 +1,25 @@
+Version: "0.1"
+TestCaseName: "tb_a9_osvvm"
+TestCaseFile:  "../../../Modules/tb_a9_osvvm.vhd"
+TestSuiteName: "Modules"
+BuildName: "OSVVM_OpenJls"
+Generics:
+  BITNESS: "12"
+  RANGE_P: "4095"
+ReportsTestSuiteDirectory:  "reports/Modules"
+RequirementsYamlFile:  "reports/Modules/tb_a9_osvvm_BITNESS_12_RANGE_P_4095_req.yml"
+AlertYamlFile:  "reports/Modules/tb_a9_osvvm_BITNESS_12_RANGE_P_4095_alerts.yml"
+CovYamlFile:  "reports/Modules/tb_a9_osvvm_BITNESS_12_RANGE_P_4095_cov.yml"
+ScoreboardDict:           null
+TranscriptFiles: ""
+TestCaseFileName: "tb_a9_osvvm_BITNESS_12_RANGE_P_4095"
+GenericNames: "_BITNESS_12_RANGE_P_4095"
+OsvvmSettingsInfo:
+  ReportsSubdirectory:  "reports"
+  SimulationLogFile: "logs/OSVVM_OpenJls.log"
+  SimulationHtmlLogFile: "logs/OSVVM_OpenJls_log.html"
+  RequirementsSubdirectory: ""
+  CoverageSubdirectory:    "CodeCoverage/OSVVM_OpenJls_code_cov.html"
+  Report2CssFiles:
+    - "reports/CssOsvvmStyle.css"
+  Report2PngFile:  "reports/OsvvmLogo.png"

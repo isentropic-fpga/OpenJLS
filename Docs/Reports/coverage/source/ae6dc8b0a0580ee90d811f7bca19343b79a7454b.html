@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>NVC code coverage report</title>
+  <style>
+:root {
+    --table-row-color: #e8e8e8;
+    --margin-left: 20%;
+}
+
+body {
+    background-color: #f0f0e0ff;
+}
+
+header {
+    padding: 0.5em;
+    text-align: center;
+    font-size: 14pt;
+}
+
+h1 {
+    text-align: center;
+}
+
+h2 {
+    word-wrap: break-word;
+}
+
+h3 {
+    word-wrap: break-word;
+    margin-bottom: 0px;
+}
+
+hr {
+    border:none;
+    height: 2px;
+    background: black;
+}
+
+footer {
+    display: table;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+nav {
+    float: left;
+    background-color: var(--table-row-color);
+    width: 17%;
+    overflow: auto;
+    padding: 10px;
+    margin-top: -2px;
+    border: 2px solid black;
+}
+nav details details {
+    margin-left: 1rem;
+}
+nav details > a {
+    padding-left: 1.9rem;
+    display: block;
+}
+nav summary {
+    display: inline-flex;
+    cursor: pointer;
+    align-items: center;
+}
+nav summary::before {
+    content: '▶';
+    font-size: 0.7em;
+    margin-right: 0.4em;
+}
+nav details[open] > summary::before {
+    transform: rotate(90deg);
+}
+
+table {
+    table-layout: fixed;
+}
+
+table, th, td {
+    border: 2px solid black;
+    border-collapse: collapse;
+    word-wrap: break-word;
+}
+
+.tabcontent {
+    display: none;
+    padding: 0px 0px;
+    border: 2px solid #ccc;
+    border-top: none;
+    word-wrap: break-word;
+}
+
+.tab {
+    overflow: hidden;
+    border: 2px solid;
+    margin-left: var(--margin-left);
+    margin-top: 10px;
+}
+
+.cbg:hover {
+    background-color: #dddddd;
+}
+.cbg {
+    background-color: #bbbbbb;
+    text-align: center;
+}
+
+.cbt {
+    margin-top: 8px;
+}
+.cbt th {
+    background-color: #bbbbbb;
+    text-align: center;
+}
+.cbt td, .cbt th {
+    width: 50px;
+    text-align: center;
+}
+.cbt td + td, .cbt th + th {
+    width: 150px;
+}
+.cbt td + td + td, .cbt th + th + th {
+    width: 150px;
+}
+.cbt td + td + td + td, .cbt th + th + th + th {
+    width: 150px;
+}
+
+.percent100 {
+    background-color: #00cc00;
+}
+.percent90 {
+    background-color: #e6e600;
+}
+.percent80 {
+    background-color: #ff9900;
+}
+.percent0 {
+    background-color: #ff0000;
+}
+.percentna {
+    background-color: #cccccc;
+}
+
+.nav-sel {
+    font-weight: bold;
+}
+  </style>
+</head>
+<body style="font-family: verdana">
+
+<header><h1 style="text-align: center;">NVC code coverage report
+</h1></header>
+
+<h2 style="text-align: left;">
+   File:&nbsp; Modules/tb_a6_a7_osvvm.vhd
+</h2><pre><code>     0: &nbsp; --&nbsp;Copyright&nbsp;(C)&nbsp;2026&nbsp;Vitor&nbsp;Mendes&nbsp;Camilo&nbsp;
+     1: &nbsp; --&nbsp;SPDX-License-Identifier:&nbsp;GPL-3.0-only&nbsp;
+     2: &nbsp; --&nbsp;
+     3: &nbsp; --&nbsp;Check&nbsp;the&nbsp;combined&nbsp;datapath&nbsp;against&nbsp;sequential&nbsp;integer&nbsp;A.6&nbsp;then&nbsp;A.7.&nbsp;
+     4: &nbsp; --&nbsp;Sweep&nbsp;every&nbsp;bias&nbsp;and&nbsp;both&nbsp;signs&nbsp;around&nbsp;both&nbsp;clipping&nbsp;thresholds,&nbsp;and&nbsp;
+     5: &nbsp; --&nbsp;exhaust&nbsp;every&nbsp;uncorrected&nbsp;8-bit&nbsp;prediction.&nbsp;Larger&nbsp;widths&nbsp;add&nbsp;random&nbsp;cases.&nbsp;
+     6: &nbsp; &nbsp;
+     7: &nbsp; library&nbsp;ieee;&nbsp;
+     8: &nbsp; &nbsp;&nbsp;use&nbsp;ieee.std_logic_1164.all;&nbsp;
+     9: &nbsp; &nbsp;&nbsp;use&nbsp;ieee.numeric_std.all;&nbsp;
+    10: &nbsp; &nbsp;&nbsp;use&nbsp;work.openjls_pkg.all;&nbsp;
+    11: &nbsp; &nbsp;
+    12: &nbsp; library&nbsp;osvvm;&nbsp;
+    13: &nbsp; &nbsp;&nbsp;context&nbsp;osvvm.OsvvmContext;&nbsp;
+    14: &nbsp; &nbsp;
+    15: &nbsp; library&nbsp;tb_support;&nbsp;
+    16: &nbsp; &nbsp;&nbsp;use&nbsp;tb_support.tb_support_pkg.all;&nbsp;
+    17: &nbsp; &nbsp;
+    18: &nbsp; entity&nbsp;tb_a6_a7_osvvm&nbsp;is&nbsp;
+    19: &nbsp; &nbsp;&nbsp;generic&nbsp;(&nbsp;
+    20: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;BITNESS&nbsp;:&nbsp;natural&nbsp;range&nbsp;8&nbsp;to&nbsp;16&nbsp;:=&nbsp;CO_BITNESS_STD;&nbsp;
+    21: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;MAX_VAL&nbsp;:&nbsp;natural&nbsp;:=&nbsp;2&nbsp;**&nbsp;BITNESS&nbsp;-&nbsp;1&nbsp;
+    22: &nbsp; &nbsp;&nbsp;);&nbsp;
+    23: &nbsp; end&nbsp;entity&nbsp;tb_a6_a7_osvvm;&nbsp;
+    24: &nbsp; &nbsp;
+    25: &nbsp; architecture&nbsp;sim&nbsp;of&nbsp;tb_a6_a7_osvvm&nbsp;is&nbsp;
+    26: &nbsp; &nbsp;&nbsp;constant&nbsp;PIXEL_MAX&nbsp;:&nbsp;natural&nbsp;:=&nbsp;2&nbsp;**&nbsp;BITNESS&nbsp;-&nbsp;1;&nbsp;
+    27: &nbsp; &nbsp;&nbsp;signal&nbsp;sIx,&nbsp;sPx&nbsp;:&nbsp;unsigned(BITNESS&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+    28: &nbsp; &nbsp;&nbsp;signal&nbsp;sSign&nbsp;:&nbsp;std_logic;&nbsp;
+    29: &nbsp; &nbsp;&nbsp;signal&nbsp;sCq&nbsp;:&nbsp;signed(CO_CQ_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+    30: &nbsp; &nbsp;&nbsp;signal&nbsp;sError&nbsp;:&nbsp;signed(BITNESS&nbsp;downto&nbsp;0);&nbsp;
+    31: &nbsp; begin&nbsp;
+    32: &nbsp; &nbsp;&nbsp;dut&nbsp;:&nbsp;entity&nbsp;work.a6_a7_prediction_error(behavioral)&nbsp;
+    33: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;generic&nbsp;map&nbsp;(BITNESS&nbsp;=&gt;&nbsp;BITNESS,&nbsp;MAX_VAL&nbsp;=&gt;&nbsp;MAX_VAL)&nbsp;
+    34: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;port&nbsp;map&nbsp;(iIx&nbsp;=&gt;&nbsp;sIx,&nbsp;iPx&nbsp;=&gt;&nbsp;sPx,&nbsp;iSign&nbsp;=&gt;&nbsp;sSign,&nbsp;iCq&nbsp;=&gt;&nbsp;sCq,&nbsp;oErrorVal&nbsp;=&gt;&nbsp;sError);&nbsp;
+    35: &nbsp; &nbsp;
+    36: &nbsp; &nbsp;&nbsp;stimulus&nbsp;:&nbsp;process&nbsp;is&nbsp;
+    37: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;rv&nbsp;:&nbsp;RandomPType;&nbsp;
+    38: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;cov&nbsp;:&nbsp;CoverageIDType;&nbsp;
+    39: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;sign_value&nbsp;:&nbsp;std_logic;&nbsp;
+    40: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;lower_edge,&nbsp;upper_edge&nbsp;:&nbsp;integer;&nbsp;
+    41: &nbsp; &nbsp;
+    42: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;procedure&nbsp;check(ix,&nbsp;px,&nbsp;cq&nbsp;:&nbsp;integer;&nbsp;sign_bit&nbsp;:&nbsp;std_logic)&nbsp;is&nbsp;
+    43: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;corrected,&nbsp;expected,&nbsp;region,&nbsp;sign_index&nbsp;:&nbsp;integer;&nbsp;
+    44: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;begin&nbsp;
+    45: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;px&nbsp;&lt;&nbsp;0&nbsp;or&nbsp;px&nbsp;&gt;&nbsp;PIXEL_MAX&nbsp;or&nbsp;ix&nbsp;&lt;&nbsp;0&nbsp;or&nbsp;ix&nbsp;&gt;&nbsp;PIXEL_MAX&nbsp;then&nbsp;
+    46: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;&nbsp;
+    47: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;
+    48: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&nbsp;Reference&nbsp;follows&nbsp;the&nbsp;original&nbsp;algorithm's&nbsp;order,&nbsp;not&nbsp;the&nbsp;fused&nbsp;
+    49: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&nbsp;difference-minus-bias&nbsp;expression&nbsp;used&nbsp;by&nbsp;the&nbsp;new&nbsp;hardware.&nbsp;
+    50: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sign_bit&nbsp;=&nbsp;CO_SIGN_POS&nbsp;then&nbsp;
+    51: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;corrected&nbsp;:=&nbsp;px&nbsp;+&nbsp;cq;&nbsp;
+    52: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sign_index&nbsp;:=&nbsp;0;&nbsp;
+    53: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;
+    54: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;corrected&nbsp;:=&nbsp;px&nbsp;-&nbsp;cq;&nbsp;
+    55: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sign_index&nbsp;:=&nbsp;1;&nbsp;
+    56: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;
+    57: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;region&nbsp;:=&nbsp;1;&nbsp;
+    58: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;corrected&nbsp;&lt;&nbsp;0&nbsp;then&nbsp;
+    59: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;corrected&nbsp;:=&nbsp;0;&nbsp;
+    60: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;region&nbsp;:=&nbsp;0;&nbsp;
+    61: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elsif&nbsp;corrected&nbsp;&gt;&nbsp;MAX_VAL&nbsp;then&nbsp;
+    62: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;corrected&nbsp;:=&nbsp;MAX_VAL;&nbsp;
+    63: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;region&nbsp;:=&nbsp;2;&nbsp;
+    64: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;
+    65: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expected&nbsp;:=&nbsp;ix&nbsp;-&nbsp;corrected;&nbsp;
+    66: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sign_bit&nbsp;/=&nbsp;CO_SIGN_POS&nbsp;then&nbsp;
+    67: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expected&nbsp;:=&nbsp;-expected;&nbsp;
+    68: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;
+    69: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sIx&nbsp;&lt;=&nbsp;to_unsigned(ix,&nbsp;sIx'length);&nbsp;
+    70: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sPx&nbsp;&lt;=&nbsp;to_unsigned(px,&nbsp;sPx'length);&nbsp;
+    71: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sCq&nbsp;&lt;=&nbsp;to_signed(cq,&nbsp;sCq'length);&nbsp;
+    72: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sSign&nbsp;&lt;=&nbsp;sign_bit;&nbsp;
+    73: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait&nbsp;for&nbsp;1&nbsp;ns;&nbsp;
+    74: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AffirmIfEqual(to_integer(sError),&nbsp;expected,&nbsp;"A.6/A.7&nbsp;sequential&nbsp;reference");&nbsp;
+    75: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;assert&nbsp;to_integer(sError)&nbsp;=&nbsp;expected&nbsp;
+    76: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"Ix="&nbsp;&amp;&nbsp;integer'image(ix)&nbsp;&amp;&nbsp;"&nbsp;Px="&nbsp;&amp;&nbsp;integer'image(px)&nbsp;&amp;&nbsp;
+    77: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"&nbsp;Cq="&nbsp;&amp;&nbsp;integer'image(cq)&nbsp;&amp;&nbsp;"&nbsp;sign="&nbsp;&amp;&nbsp;std_logic'image(sign_bit)&nbsp;
+    78: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;severity&nbsp;failure;&nbsp;
+    79: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ICover(cov,&nbsp;(sign_index,&nbsp;region));&nbsp;
+    80: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;procedure;&nbsp;
+    81: &nbsp; &nbsp;
+    82: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;procedure&nbsp;check_prediction(px,&nbsp;cq&nbsp;:&nbsp;integer;&nbsp;sign_bit&nbsp;:&nbsp;std_logic)&nbsp;is&nbsp;
+    83: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;corrected&nbsp;:&nbsp;integer;&nbsp;
+    84: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;begin&nbsp;
+    85: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;px&nbsp;&lt;&nbsp;0&nbsp;or&nbsp;px&nbsp;&gt;&nbsp;PIXEL_MAX&nbsp;then&nbsp;
+    86: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;&nbsp;
+    87: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;
+    88: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sign_bit&nbsp;=&nbsp;CO_SIGN_POS&nbsp;then&nbsp;
+    89: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;corrected&nbsp;:=&nbsp;px&nbsp;+&nbsp;cq;&nbsp;
+    90: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;
+    91: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;corrected&nbsp;:=&nbsp;px&nbsp;-&nbsp;cq;&nbsp;
+    92: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;
+    93: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;corrected&nbsp;:=&nbsp;math_max(0,&nbsp;math_min(MAX_VAL,&nbsp;corrected));&nbsp;
+    94: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check(0,&nbsp;px,&nbsp;cq,&nbsp;sign_bit);&nbsp;
+    95: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check(1,&nbsp;px,&nbsp;cq,&nbsp;sign_bit);&nbsp;
+    96: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check(PIXEL_MAX&nbsp;/&nbsp;2,&nbsp;px,&nbsp;cq,&nbsp;sign_bit);&nbsp;
+    97: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check(PIXEL_MAX&nbsp;-&nbsp;1,&nbsp;px,&nbsp;cq,&nbsp;sign_bit);&nbsp;
+    98: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check(PIXEL_MAX,&nbsp;px,&nbsp;cq,&nbsp;sign_bit);&nbsp;
+    99: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check(px,&nbsp;px,&nbsp;cq,&nbsp;sign_bit);&nbsp;
+   100: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check(corrected&nbsp;-&nbsp;1,&nbsp;px,&nbsp;cq,&nbsp;sign_bit);&nbsp;
+   101: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check(corrected,&nbsp;px,&nbsp;cq,&nbsp;sign_bit);&nbsp;
+   102: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check(corrected&nbsp;+&nbsp;1,&nbsp;px,&nbsp;cq,&nbsp;sign_bit);&nbsp;
+   103: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;procedure;&nbsp;
+   104: &nbsp; &nbsp;&nbsp;begin&nbsp;
+   105: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;SetAlertLogName("tb_a6_a7_osvvm");&nbsp;
+   106: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;SetLogEnable(PASSED,&nbsp;FALSE);&nbsp;
+   107: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;rv.InitSeed(rv'instance_name);&nbsp;
+   108: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;cov&nbsp;:=&nbsp;NewID("sign&nbsp;x&nbsp;clipping&nbsp;region");&nbsp;
+   109: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;AddCross(cov,&nbsp;"sign&nbsp;x&nbsp;clipping&nbsp;region",&nbsp;GenBin(0,&nbsp;1,&nbsp;2),&nbsp;GenBin(0,&nbsp;2,&nbsp;3));&nbsp;
+   110: &nbsp; &nbsp;
+   111: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;cq&nbsp;in&nbsp;CO_MIN_CQ&nbsp;to&nbsp;CO_MAX_CQ&nbsp;loop&nbsp;
+   112: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;sign_index&nbsp;in&nbsp;0&nbsp;to&nbsp;1&nbsp;loop&nbsp;
+   113: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;sign_index&nbsp;=&nbsp;0&nbsp;then&nbsp;
+   114: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sign_value&nbsp;:=&nbsp;CO_SIGN_POS;&nbsp;
+   115: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lower_edge&nbsp;:=&nbsp;-cq;&nbsp;
+   116: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;upper_edge&nbsp;:=&nbsp;MAX_VAL&nbsp;-&nbsp;cq;&nbsp;
+   117: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;
+   118: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sign_value&nbsp;:=&nbsp;CO_SIGN_NEG;&nbsp;
+   119: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lower_edge&nbsp;:=&nbsp;cq;&nbsp;
+   120: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;upper_edge&nbsp;:=&nbsp;MAX_VAL&nbsp;+&nbsp;cq;&nbsp;
+   121: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;
+   122: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;BITNESS&nbsp;=&nbsp;8&nbsp;then&nbsp;
+   123: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;px&nbsp;in&nbsp;0&nbsp;to&nbsp;PIXEL_MAX&nbsp;loop&nbsp;
+   124: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check_prediction(px,&nbsp;cq,&nbsp;sign_value);&nbsp;
+   125: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   126: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;
+   127: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;delta&nbsp;in&nbsp;-1&nbsp;to&nbsp;1&nbsp;loop&nbsp;
+   128: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check_prediction(lower_edge&nbsp;+&nbsp;delta,&nbsp;cq,&nbsp;sign_value);&nbsp;
+   129: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check_prediction(upper_edge&nbsp;+&nbsp;delta,&nbsp;cq,&nbsp;sign_value);&nbsp;
+   130: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   131: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check_prediction(0,&nbsp;cq,&nbsp;sign_value);&nbsp;
+   132: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check_prediction(1,&nbsp;cq,&nbsp;sign_value);&nbsp;
+   133: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check_prediction(PIXEL_MAX&nbsp;/&nbsp;2,&nbsp;cq,&nbsp;sign_value);&nbsp;
+   134: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check_prediction(PIXEL_MAX&nbsp;-&nbsp;1,&nbsp;cq,&nbsp;sign_value);&nbsp;
+   135: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check_prediction(PIXEL_MAX,&nbsp;cq,&nbsp;sign_value);&nbsp;
+   136: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;
+   137: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   138: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   139: &nbsp; &nbsp;
+   140: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;trial&nbsp;in&nbsp;1&nbsp;to&nbsp;20000&nbsp;loop&nbsp;
+   141: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;rv.RandInt(0,&nbsp;1)&nbsp;=&nbsp;0&nbsp;then&nbsp;
+   142: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sign_value&nbsp;:=&nbsp;CO_SIGN_POS;&nbsp;
+   143: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;
+   144: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sign_value&nbsp;:=&nbsp;CO_SIGN_NEG;&nbsp;
+   145: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;
+   146: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check(rv.RandInt(0,&nbsp;PIXEL_MAX),&nbsp;rv.RandInt(0,&nbsp;PIXEL_MAX),&nbsp;
+   147: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rv.RandInt(CO_MIN_CQ,&nbsp;CO_MAX_CQ),&nbsp;sign_value);&nbsp;
+   148: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   149: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;WriteBin(cov);&nbsp;
+   150: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;AffirmIf(IsCovered(cov),&nbsp;"both&nbsp;signs&nbsp;and&nbsp;all&nbsp;clipping&nbsp;regions&nbsp;covered");&nbsp;
+   151: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end_of_test("tb_a6_a7_osvvm");&nbsp;
+   152: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;wait;&nbsp;
+   153: &nbsp; &nbsp;&nbsp;end&nbsp;process;&nbsp;
+   154: &nbsp; end&nbsp;architecture&nbsp;sim;&nbsp;
+</code></pre>

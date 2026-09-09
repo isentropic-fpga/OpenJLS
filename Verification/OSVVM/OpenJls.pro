@@ -95,6 +95,7 @@ analyze ../../Sources/A4_2_Q_mapping.vhd
 analyze ../../Sources/A5_edge_detecting_predictor.vhd
 analyze ../../Sources/A6_prediction_correction.vhd
 analyze ../../Sources/A7_prediction_error.vhd
+analyze ../../Sources/A6_A7_prediction_error.vhd
 analyze ../../Sources/A9_modulo_reduction.vhd
 analyze ../../Sources/A10_compute_k.vhd
 analyze ../../Sources/A11_error_mapping.vhd
@@ -131,7 +132,20 @@ Test Modules/tb_a4_2_osvvm.vhd
 Test Modules/tb_a5_osvvm.vhd
 Test Modules/tb_a6_osvvm.vhd
 Test Modules/tb_a7_osvvm.vhd
+Test Modules/tb_a6_a7_osvvm.vhd
+Test Modules/tb_a6_a7_osvvm.vhd [generic BITNESS 8]
+Test Modules/tb_a6_a7_osvvm.vhd [generic BITNESS 16]
+Test Modules/tb_a6_a7_osvvm.vhd [generic BITNESS 8] [generic MAX_VAL 200]
 Test Modules/tb_a9_osvvm.vhd
+# Exhaust the binary-range wiring shortcut at every supported pixel width.
+foreach bitness {8 9 10 11 13 14 15 16} {
+  Test Modules/tb_a9_osvvm.vhd [generic BITNESS $bitness]
+}
+# Odd ranges on either side of a power of two exercise the arithmetic fallback.
+Test Modules/tb_a9_osvvm.vhd [generic BITNESS 8] [generic RANGE_P 255]
+Test Modules/tb_a9_osvvm.vhd [generic BITNESS 8] [generic RANGE_P 257]
+Test Modules/tb_a9_osvvm.vhd [generic BITNESS 12] [generic RANGE_P 4095]
+Test Modules/tb_a9_osvvm.vhd [generic BITNESS 12] [generic RANGE_P 4097]
 Test Modules/tb_a10_osvvm.vhd
 Test Modules/tb_a11_osvvm.vhd
 Test Modules/tb_a11_1_osvvm.vhd

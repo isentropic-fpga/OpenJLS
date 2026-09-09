@@ -1,0 +1,5 @@
+- Requirement: "T87.A9"
+  TestCases: 
+  - TestName: "tb_a9_osvvm"
+    Status: PASSED
+    Results: {Goal: 200, Passed: 2054, Errors: 0, Checked: 2054, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}

@@ -8,7 +8,7 @@
 --------------------------------------------------------------------------------
 -- OSVVM testbench: a9_modulo_reduction (combinational).
 --
--- Reduces the prediction error into (-RANGE/2, RANGE/2]: add RANGE if negative,
+-- Reduces valid errors into [-floor(RANGE/2), ceil(RANGE/2)-1]: add RANGE if negative,
 -- then subtract RANGE once the adjusted value reaches ceil(RANGE/2). Coverage
 -- crosses the negative-wrap path with the upper-half subtract.
 --------------------------------------------------------------------------------
@@ -25,12 +25,14 @@ library tb_support;
   use tb_support.tb_support_pkg.all;
 
 entity tb_a9_osvvm is
+  generic (
+    BITNESS : natural range 8 to 16 := CO_BITNESS_STD;
+    RANGE_P : natural := 2 ** BITNESS
+  );
 end entity tb_a9_osvvm;
 
 architecture sim of tb_a9_osvvm is
 
-  constant BITNESS : natural := CO_BITNESS_STD;
-  constant RANGE_P : natural := CO_RANGE_STD;
   constant ERR_MIN : integer := -(2 ** BITNESS);
   constant ERR_MAX : integer := (2 ** BITNESS) - 1;
 
@@ -88,14 +90,8 @@ begin
 
   stim : process is
 
-    variable rv      : RandomPType;
     variable cov     : CoverageIDType;
     variable req     : AlertLogIDType;
-    variable err     : integer;
-    variable exp     : integer;
-    variable wn      : integer;
-    variable gh      : integer;
-    constant N_RAND  : natural := 4000;
 
     procedure drive_check (
       ev  : integer;
@@ -129,7 +125,6 @@ begin
 
     SetAlertLogName("tb_a9_osvvm");
     SetLogEnable(PASSED, FALSE);
-    rv.InitSeed(rv'instance_name);
     req := GetReqID("T87.A9", 200);
 
     cov := NewID("wrapNeg x geHalf");
@@ -143,12 +138,11 @@ begin
     drive_check((RANGE_P + 1) / 2 - 1, "just below half");
     drive_check(-1, "neg one");
 
-    -- Random sweep.
-    for i in 1 to N_RAND loop
+    -- Exhaust every representable input, including the unused-most-negative
+    -- code. This checks all wrap thresholds for both generated implementations.
+    for err in ERR_MIN to ERR_MAX loop
 
-      err := rv.RandInt(ERR_MIN, ERR_MAX);
-      drive_check(err, "rand");
-      exit when IsCovered(cov) and i > 200;
+      drive_check(err, "exhaustive");
 
     end loop;
 

@@ -1,0 +1,23 @@
+Version: "0.1"
+TestCaseName: "tb_a6_a7_osvvm"
+TestCaseFile:  "../../../Modules/tb_a6_a7_osvvm.vhd"
+TestSuiteName: "Modules"
+BuildName: "OSVVM_OpenJls"
+Generics:           null
+ReportsTestSuiteDirectory:  "reports/Modules"
+RequirementsYamlFile: ""
+AlertYamlFile:  "reports/Modules/tb_a6_a7_osvvm_alerts.yml"
+CovYamlFile:  "reports/Modules/tb_a6_a7_osvvm_cov.yml"
+ScoreboardDict:           null
+TranscriptFiles: ""
+TestCaseFileName: "tb_a6_a7_osvvm"
+GenericNames: ""
+OsvvmSettingsInfo:
+  ReportsSubdirectory:  "reports"
+  SimulationLogFile: "logs/OSVVM_OpenJls.log"
+  SimulationHtmlLogFile: "logs/OSVVM_OpenJls_log.html"
+  RequirementsSubdirectory: ""
+  CoverageSubdirectory:    "CodeCoverage/OSVVM_OpenJls_code_cov.html"
+  Report2CssFiles:
+    - "reports/CssOsvvmStyle.css"
+  Report2PngFile:  "reports/OsvvmLogo.png"

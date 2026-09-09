@@ -55,7 +55,7 @@
 \fancyhf{}
 \lhead{\textbf{OpenJLS} — JPEG-LS Encoder IP}
 \rhead{Datasheet}
-\lfoot{\small v1.2}
+\lfoot{\small v1.3}
 \rfoot{\small \thepage}
 \renewcommand{\headrulewidth}{0.4pt}
 
@@ -99,10 +99,10 @@ repository with demo projects for OpenJLS at \url{https://github.com/isentropic-
   Image size    & Up to $65535\times65535$ px\\
   Throughput    & 1 pixel / clock \\
   Latency       & 14 clock cycles \\
-  $f_{max}$     & $\sim$240\,MHz (Xilinx \texttt{xczu7eg-1}) \\
+  $f_{max}$     & $\sim$280\,MHz (Xilinx \texttt{xczu7eg-1}) \\
   Interface     & Ready/valid streaming (AXI4-Stream / Avalon-ST compatible) \\
   Memory        & On-chip line buffer, one image row; no external RAM \\
-  Resources     & $\sim$8k LUT, $\sim$2.1k FF + BRAM scaling with image width \\
+  Resources     & $\sim$6.4k LUT, $\sim$2.0k FF + BRAM scaling with image width \\
   Portability   & Vendor-agnostic VHDL \\
   \bottomrule
 \end{tabularx}
@@ -122,6 +122,9 @@ repository with demo projects for OpenJLS at \url{https://github.com/isentropic-
   1.1 & 2026-07 & Packaged IPs for Vivado. \\
   1.2 & 2026-07 & Isentropic branding; cores repackaged under the
   \texttt{isentropic} vendor. \\
+  1.3 & 2026-09 & Byte-stuffer and prediction-error optimizations:
+  frequency increased by $\sim$15\%, LUT reduction by $\sim$16\%,
+  line-buffer BRAM up by $\sim$1 tile. \\
   \bottomrule
 \end{tabular}
 \end{table}
@@ -294,7 +297,7 @@ clock cycles.
 Characterized on Xilinx Zynq UltraScale+ \texttt{xczu7eg-fbvb900-1-e},
 Vivado 2025.2, using the generics \texttt{BITNESS = 12} and \texttt{OUT\_WIDTH = 64}, RTL-only with no floorplanning.
 $f_{max}$ is the true maximum, found by over-constraining the clock until timing fails.
-At one pixel per clock, $\sim$240\,MHz is $\sim$240\,Mpixel/s.
+At one pixel per clock, $\sim$280\,MHz is $\sim$280\,Mpixel/s.
 
 \noindent Figure~\ref{fig:fmax} and Table~\ref{tab:fmax} report $f_{max}$ across
 \texttt{MAX\_IMAGE\_WIDTH}; Figure~\ref{fig:util} and Table~\ref{tab:util} report
@@ -315,12 +318,12 @@ the resource usage.
   \toprule
   \texttt{MAX\_IMAGE\_WIDTH} & Default & EPRPO & NetDelay & Congestion \\
   \midrule
-  4096  & 238.2 & 247.9          & \textbf{248.9} & 238.9          \\
-  8192  & 197.8 & 245.2          & \textbf{248.8} & 240.6          \\
-  12288 & 220.0 & 236.8          & \textbf{247.4} & 196.8          \\
-  16384 & 227.4 & 234.6          & \textbf{253.0} & 236.7          \\
-  32768 & 220.9 & 225.6          & 234.8          & \textbf{241.1} \\
-  65535 & 235.0 & \textbf{246.2} & 243.1          & 243.8          \\
+  4096  & \textbf{282.7} & 276.2          & 281.5          & 279.2          \\
+  8192  & 249.0          & 256.7          & \textbf{284.4} & 270.7          \\
+  12288 & 273.1          & 284.0          & \textbf{289.4} & 274.9          \\
+  16384 & \textbf{283.0} & 277.8          & 282.2          & 273.0          \\
+  32768 & 284.9          & \textbf{288.4} & 274.1          & 266.2          \\
+  65535 & 271.5          & 269.2          & 279.4          & \textbf{282.3} \\
   \bottomrule
 \end{tabular}
 \end{table}
@@ -340,12 +343,12 @@ the resource usage.
   \toprule
   \texttt{MAX\_IMAGE\_WIDTH} & LUT & FF & BRAM \\
   \midrule
-  4096  & 7517 & 2075 & 1.5 \\
-  8192  & 7600 & 2099 & 3.0 \\
-  12288 & 7604 & 2088 & 4.5 \\
-  16384 & 7652 & 2103 & 5.5 \\
-  32768 & 7667 & 2126 & 11.0 \\
-  65535 & 7781 & 2162 & 22.0 \\
+  4096  & 6563 & 2013 & 2.5 \\
+  8192  & 6429 & 2032 & 4.0 \\
+  12288 & 6327 & 2033 & 5.5 \\
+  16384 & 6389 & 2039 & 6.5 \\
+  32768 & 6350 & 2053 & 12.0 \\
+  65535 & 6407 & 2072 & 23.0 \\
   \bottomrule
 \end{tabular}
 \end{table}
@@ -357,7 +360,7 @@ per row is in bold; the strategies are \texttt{Performance\_\allowbreak Explore\
 \texttt{Congestion\_\allowbreak SpreadLogic\_\allowbreak high} (Congestion). The design is congestion-bound,
 so the winning strategy shifts with image size; a given netlist is deterministic,
 but the per-size winner is placement-sensitive and can shift when the netlist
-changes, so the best-of band ($\sim$241--253\,MHz) is the headline figure. Table~\ref{tab:util} is for the default
+changes, so the best-of band ($\sim$282--289\,MHz) is the headline figure; the per-size spread across strategies is 7--22\,MHz, so a default run lands close to it at most sizes. Table~\ref{tab:util} is for the default
 strategy; utilization is near-identical across strategies. Logic is essentially
 constant with image size; only the line-buffer BRAM scales with width and pixel
 depth.
@@ -484,7 +487,7 @@ both RTL and post-synthesis (gate-level) stages:
   \textbf{Suite} & \textbf{Status} & \textbf{Test/Cov} & \textbf{Summary} \\
   \midrule
   NVC code coverage       & info & 99.8\% & Per-DUT-file statement breakdown \\
-  OSVVM suite             & PASS & 100\%  & 44 tests, 139\,393 affirmations (module + top + AXI wrappers) \\
+  OSVVM suite             & PASS & 100\%  & 60 tests, 2\,877\,433 affirmations (module + top + AXI wrappers) \\
   Golden model            & PASS & 100\%  & 287/287 images byte-exact vs CharLS \\
   Post-synth OSVVM        & PASS & 100\%  & Control-plane stress on the gate-level netlist \\
   Post-synth golden model & PASS & 100\%  & 156/156 images byte-exact vs CharLS \\
