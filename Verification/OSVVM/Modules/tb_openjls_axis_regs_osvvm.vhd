@@ -75,7 +75,7 @@ architecture sim of tb_openjls_axis_regs_osvvm is
 
   -- Expected RO values
   constant EXP_ID      : std_logic_vector(31 downto 0) := x"4F4A4C53";           -- "OJLS"
-  constant EXP_VERSION : std_logic_vector(31 downto 0) := x"00010200";           -- 1.2.0
+  constant EXP_VERSION : std_logic_vector(31 downto 0) := x"00010300";           -- 1.3.0
   constant EXP_CAPS    : std_logic_vector(31 downto 0) :=
     std_logic_vector(to_unsigned(H3_BITNESS + (OUT_WIDTH / 8) * 256, 32));
   constant EXP_MAXDIM  : std_logic_vector(31 downto 0) :=
