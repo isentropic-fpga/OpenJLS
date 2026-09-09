@@ -80,6 +80,7 @@ SRC_FILES=(
   A5_edge_detecting_predictor.vhd
   A6_prediction_correction.vhd
   A7_prediction_error.vhd
+  A6_A7_prediction_error.vhd
   A9_modulo_reduction.vhd
   A10_compute_k.vhd
   A11_error_mapping.vhd

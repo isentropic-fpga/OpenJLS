@@ -33,22 +33,38 @@ end entity a9_modulo_reduction;
 
 architecture behavioral of a9_modulo_reduction is
 
-  -- Intermediate widened by one bit so RANGE_P fits without sign-bit roll.
-  -- Required for any BITNESS: RANGE_P = 2**BITNESS, so signed(BITNESS+2) gives
-  -- max = 2**(BITNESS+1) - 1 >= RANGE_P.
-  constant RANGE_S : signed(BITNESS + 1 downto 0) := to_signed(RANGE_P, BITNESS + 2);
-
-  signal sExt      : signed(BITNESS + 1 downto 0);
-  signal sErrAdj   : signed(BITNESS + 1 downto 0);
-
 begin
 
-  sExt <= resize(iErrorVal, BITNESS + 2);
+  gen_binary_range : if RANGE_P = 2 ** BITNESS generate
 
-  sErrAdj <= sExt + RANGE_S when iErrorVal < 0 else
-             sExt;
+    -- The low BITNESS bits give the residue modulo 2**BITNESS. Interpreting
+    -- them as signed chooses [-RANGE/2, RANGE/2-1], including the negative
+    -- result at exactly RANGE/2. Sign extension restores the interface width.
+    -- Slice first: resizing the original signed error down would retain its
+    -- old sign bit, rather than the residue's sign bit.
+    oErrorVal <= resize(iErrorVal(BITNESS - 1 downto 0), BITNESS + 1);
 
-  oErrorVal <= resize(sErrAdj - RANGE_S, BITNESS + 1) when sErrAdj >= (RANGE_P + 1) / 2 else
-               resize(sErrAdj, BITNESS + 1);
+  end generate gen_binary_range;
+
+  gen_general_range : if RANGE_P /= 2 ** BITNESS generate
+
+    -- Retain the A.9 arithmetic for configurations without a full binary
+    -- sample range. The extra bit lets RANGE_P fit without sign-bit roll.
+    constant RANGE_S : signed(BITNESS + 1 downto 0) := to_signed(RANGE_P, BITNESS + 2);
+
+    signal sExt    : signed(BITNESS + 1 downto 0);
+    signal sErrAdj : signed(BITNESS + 1 downto 0);
+
+  begin
+
+    sExt <= resize(iErrorVal, BITNESS + 2);
+
+    sErrAdj <= sExt + RANGE_S when iErrorVal < 0 else
+               sExt;
+
+    oErrorVal <= resize(sErrAdj - RANGE_S, BITNESS + 1) when sErrAdj >= (RANGE_P + 1) / 2 else
+                 resize(sErrAdj, BITNESS + 1);
+
+  end generate gen_general_range;
 
 end architecture behavioral;

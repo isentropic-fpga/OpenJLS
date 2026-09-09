@@ -78,7 +78,15 @@ valid, almost-full, and flush-done timing. Invalid output lanes are ignored.
 The regular OSVVM scoreboard remains the independent functional oracle.
 Logs are written under `build/byte_stuffer_equivalence/`.
 
-This is "the OSVVM intended way": `OpenJls.pro` drives the vendored tcl
+The regular prediction/error path has two additional arithmetic checks:
+`tb_a6_a7_osvvm` checks the combined A.6/A.7 datapath against a sequential
+integer reference at 8/12/16 bits and an 8-bit `MAX_VAL=200` configuration.
+It sweeps every context bias, both signs, clipping boundaries, and randomized
+pixels. `tb_a9_osvvm` exhausts every representable error at each pixel width
+from 8 through 16, plus four odd-range configurations, checking both the
+binary-range wiring shortcut and the general arithmetic fallback.
+
+For the regular regression, `OpenJls.pro` drives the vendored tcl
 scripts (`build` → `library`/`analyze`/`TestSuite`/`RunTest`), every TB's
 `end_of_test` emits YAML via `EndOfTestReports`, and the scripts render it to
 HTML. Outputs (all gitignored, in this directory):

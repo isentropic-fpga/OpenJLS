@@ -10,12 +10,18 @@
 # Width applies only to byte_stuffer. Overconstrain the clock: nonnegative WNS
 # establishes a frequency floor, not a maximum. Ports have no external delays;
 # this benchmark measures internal register-to-register paths.
+# An optional fifth argument overrides the Sources directory for whole-core
+# experiments, so all RTL can be frozen independently for each version.
 
 set ROOT [file normalize [file join [file dirname [info script]] ..]]
 set STUFFER [file normalize [lindex $argv 0]]
 set TOP [lindex $argv 1]
 set WIDTH [lindex $argv 2]
 set PERIOD [lindex $argv 3]
+set SRC [file join $ROOT Sources]
+if {[llength $argv] > 4} {
+    set SRC [file normalize [lindex $argv 4]]
+}
 if {$TOP ni {byte_stuffer openjls_top} || ![file exists $STUFFER] ||
     ![string is integer -strict $WIDTH] || ![string is double -strict $PERIOD]} {
     error "Arguments: byte_stuffer.vhd {byte_stuffer|openjls_top} input_width period_ns"
@@ -27,9 +33,9 @@ foreach f {
 } {
     read_vhdl -vhdl2008 [file join $ROOT ThirdParty open-logic src base vhdl $f.vhd]
 }
-read_vhdl -vhdl2008 [file join $ROOT Sources openjls_pkg.vhd]
+read_vhdl -vhdl2008 [file join $SRC openjls_pkg.vhd]
 if {$TOP eq "openjls_top"} {
-    foreach f [lsort [glob [file join $ROOT Sources *.vhd]]] {
+    foreach f [lsort [glob [file join $SRC *.vhd]]] {
         if {[file tail $f] ni {openjls_pkg.vhd byte_stuffer.vhd}} {
             read_vhdl -vhdl2008 $f
         }
