@@ -18,6 +18,7 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
   use work.openjls_pkg.all;
+  use work.olo_base_pkg_math.log2ceil;
 
 library osvvm;
   context osvvm.OsvvmContext;
@@ -26,11 +27,12 @@ library tb_support;
   use tb_support.tb_support_pkg.all;
 
 entity tb_a20_osvvm is
+  generic (BITNESS : natural range 8 to 16 := CO_BITNESS_STD);
 end entity tb_a20_osvvm;
 
 architecture sim of tb_a20_osvvm is
 
-  constant A_WIDTH : natural := CO_AQ_WIDTH_STD;
+  constant A_WIDTH : natural := BITNESS + log2ceil(CO_RESET_STD);
   constant N_WIDTH : natural := CO_NQ_WIDTH_STD;
   constant A_MAX   : integer := (2 ** A_WIDTH) - 1;
   constant N_MAX   : integer := (2 ** N_WIDTH) - 1;
@@ -82,7 +84,7 @@ begin
       else
         e := a + (n / 2);
       end if;
-      AffirmIfEqual(req, to_integer(sTemp), e, msg & " a=" & integer'image(a) & " n=" & integer'image(n));
+      AffirmIfEqual(req, checked_integer(sTemp), e, msg & " a=" & integer'image(a) & " n=" & integer'image(n));
       ICover(cov, std_to_int(ri));
 
     end procedure drive_check;
@@ -94,12 +96,20 @@ begin
     rv.InitSeed(rv'instance_name);
     req := GetReqID("T87.A20", 50);
     cov := NewID("RItype");
-    AddBins(cov, "RItype", GenBin(0, 1, 2));
+    SetFieldName(cov, "RItype");
+    AddBins(cov, "A only", GenBin(0));
+    AddBins(cov, "A plus floor N/2", GenBin(1));
 
     drive_check('0', 0, 0, "ri0 zero");
     drive_check('0', A_MAX, N_MAX, "ri0 max (N unused)");
     drive_check('1', 0, N_MAX, "ri1 odd N");
     drive_check('1', A_MAX - N_MAX / 2, N_MAX, "ri1 near-max");
+
+    for n in 0 to N_MAX loop
+      drive_check('0', A_MAX, n, "N ignored");
+      drive_check('1', 0, n, "N parity");
+      drive_check('1', A_MAX - n / 2, n, "largest nonoverflowing sum");
+    end loop;
 
     for i in 1 to N_RAND loop
 
@@ -114,7 +124,7 @@ begin
     end loop;
 
     WriteBin(cov);
-    AffirmIf(IsCovered(cov), "RItype coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "RItype coverage closed");
 
     end_of_test("tb_a20_osvvm");
     wait;

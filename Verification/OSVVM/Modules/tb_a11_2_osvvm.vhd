@@ -31,15 +31,16 @@ library tb_support;
   use tb_support.tb_support_pkg.all;
 
 entity tb_a11_2_osvvm is
+  generic (BITNESS : natural range 8 to 16 := CO_BITNESS_STD);
 end entity tb_a11_2_osvvm;
 
 architecture sim of tb_a11_2_osvvm is
 
-  constant LIMIT       : natural := CO_LIMIT_STD;
-  constant UNARY_W     : natural := CO_UNARY_WIDTH_STD;
-  constant SUFFIX_W    : natural := CO_SUFFIX_WIDTH_STD;
-  constant SUFFIXLEN_W : natural := CO_SUFFIXLEN_WIDTH_STD;
-  constant OUT_WIDTH   : natural := CO_LIMIT_STD;
+  constant LIMIT       : natural := 4 * BITNESS;
+  constant UNARY_W     : natural := log2ceil(3 * BITNESS);
+  constant SUFFIX_W    : natural := BITNESS + log2ceil(CO_RESET_STD);
+  constant SUFFIXLEN_W : natural := math_max(log2ceil(BITNESS + log2ceil(CO_RESET_STD) + 1), 5);
+  constant OUT_WIDTH   : natural := 4 * BITNESS;
   constant LEN_W       : natural := log2ceil(OUT_WIDTH + 1);
   constant CLK_PERIOD  : time    := CLK_PERIOD_DEFAULT;
 
@@ -197,8 +198,8 @@ begin
 
       assemble(rValid, rLen, rVal, gValid, uzv, slv, sVal, expWord, expLen);
       AffirmIfEqual(req, oWord, expWord, msg & " word");
-      AffirmIfEqual(req, to_integer(oValidLen), expLen, msg & " len");
-      AffirmIfEqual(req, std_to_int(oWordValid), std_to_int(rValid or gValid), msg & " valid");
+      AffirmIfEqual(req, checked_integer(oValidLen), expLen, msg & " len");
+      AffirmIfEqual(req, checked_bit(oWordValid), std_to_int(rValid or gValid), msg & " valid");
 
       if (rValid = '1' and gValid = '1') then
         caseT := 3;
@@ -229,15 +230,19 @@ begin
     rv.InitSeed(rv'instance_name);
     req := GetReqID("T87.A11.2", 100);
     cov := NewID("case");
-    AddBins(cov, "case", GenBin(0, 3, 4));
+    SetFieldName(cov, "case");
+    AddBins(cov, "idle", GenBin(0));
+    AddBins(cov, "raw only", GenBin(1));
+    AddBins(cov, "Golomb only", GenBin(2));
+    AddBins(cov, "raw and Golomb", GenBin(3));
 
     apply_reset(clk, rst, 4, '1');
 
     -- Reset must drive the registered outputs to their defined reset values.
     wait for 1 ns;
-    AffirmIf(oWordValid = '0', "reset: oWordValid cleared");
-    AffirmIfEqual(to_integer(oValidLen), 0, "reset: oValidLen cleared");
-    AffirmIf(oWord = std_logic_vector'(oWord'range => '0'), "reset: oWord cleared");
+    AffirmIf(GetAlertLogID("ResetRecovery"), oWordValid = '0', "reset: oWordValid cleared");
+    AffirmIfEqual(GetAlertLogID("ResetRecovery"), checked_integer(oValidLen), 0, "reset: oValidLen cleared");
+    AffirmIf(GetAlertLogID("ResetRecovery"), oWord = std_logic_vector'(oWord'range => '0'), "reset: oWord cleared");
 
     -- Directed: each case.
     beat('0', 0, to_unsigned(0, SUFFIX_W), '0', 0, 0, to_unsigned(0, SUFFIX_W), "neither");
@@ -245,7 +250,7 @@ begin
     beat('0', 0, to_unsigned(0, SUFFIX_W), '1', 5, 4, to_unsigned(16#B#, SUFFIX_W), "golombOnly");
     beat('1', 6, to_unsigned(16#2D#, SUFFIX_W), '1', 3, 5, to_unsigned(16#15#, SUFFIX_W), "both (RI)");
     -- Max-width Golomb-only (escape-shaped: long unary + qbpp suffix).
-    beat('0', 0, to_unsigned(0, SUFFIX_W), '1', LIMIT - CO_QBPP_STD - 1, CO_QBPP_STD,
+    beat('0', 0, to_unsigned(0, SUFFIX_W), '1', LIMIT - BITNESS - 1, BITNESS,
          to_unsigned(16#FFF#, SUFFIX_W), "golomb max");
 
     --------------------------------------------------------------------------
@@ -269,8 +274,10 @@ begin
 
       wait until rising_edge(clk);
       wait for 1 ns;
-      AffirmIfEqual(to_integer(oValidLen), 7, "stall holds len");
-      AffirmIf(oWordValid = '1', "stall holds valid");
+      AffirmIfEqual(GetAlertLogID("FlowControl"), checked_integer(oValidLen), 7, "stall holds len");
+      AffirmIf(GetAlertLogID("FlowControl"), oWordValid = '1', "stall holds valid");
+      AffirmIfEqual(GetAlertLogID("FlowControl"), oWord, std_logic_vector(shift_left(to_unsigned(16#5B#, OUT_WIDTH), OUT_WIDTH - 7)),
+                    "stall holds complete data word");
 
     end loop;
 
@@ -278,7 +285,9 @@ begin
     iStall <= '0';
     wait until rising_edge(clk);
     wait for 1 ns;
-    AffirmIfEqual(to_integer(oValidLen), 3, "post-stall latch len");
+    AffirmIfEqual(GetAlertLogID("FlowControl"), checked_integer(oValidLen), 3, "post-stall latch len");
+    AffirmIfEqual(GetAlertLogID("FlowControl"), oWord, std_logic_vector(shift_left(to_unsigned(7, OUT_WIDTH), OUT_WIDTH - 3)),
+                  "post-stall latch data");
 
     --------------------------------------------------------------------------
     -- Mid-operation reset: latch a beat, assert reset, confirm the output is
@@ -288,24 +297,36 @@ begin
     -- Go idle so the post-reset latch captures no new beat, then reset.
     iRawValid  <= '0';
     iGolombVal <= '0';
-    iStall     <= '0';
+    iStall     <= '1';  -- reset must override the clock-enable hold
     apply_reset(clk, rst, 3, '1');
     wait for 1 ns;
-    AffirmIf(oWordValid = '0', "mid-op reset: oWordValid cleared");
-    AffirmIfEqual(to_integer(oValidLen), 0, "mid-op reset: oValidLen cleared");
-    AffirmIf(oWord = std_logic_vector'(oWord'range => '0'), "mid-op reset: oWord cleared");
+    AffirmIf(GetAlertLogID("ResetRecovery"), oWordValid = '0', "mid-op reset: oWordValid cleared");
+    AffirmIfEqual(GetAlertLogID("ResetRecovery"), checked_integer(oValidLen), 0, "mid-op reset: oValidLen cleared");
+    AffirmIf(GetAlertLogID("ResetRecovery"), oWord = std_logic_vector'(oWord'range => '0'), "mid-op reset: oWord cleared");
     beat('1', 7, to_unsigned(16#5C#, SUFFIX_W), '0', 0, 0, to_unsigned(0, SUFFIX_W), "post-reset recovery");
 
     --------------------------------------------------------------------------
     -- Constrained-random beats (field sums bounded <= OUT_WIDTH).
     --------------------------------------------------------------------------
+    -- Sweep all field lengths, including exact-fill and dirty unused suffix bits.
+    for rl in 0 to math_min(16, SUFFIX_W) loop
+      for suffix in 0 to SUFFIX_W loop
+        if rl + 1 + suffix <= LIMIT then
+          beat('1', rl, (SUFFIX_W - 1 downto 0 => '1'), '1',
+               LIMIT - rl - 1 - suffix, suffix, (SUFFIX_W - 1 downto 0 => '1'), "exact fill");
+          beat('1', rl, (SUFFIX_W - 1 downto 0 => '0'), '1',
+               0, suffix, (SUFFIX_W - 1 downto 0 => '1'), "short code with dirty suffix");
+        end if;
+      end loop;
+    end loop;
+
     for i in 1 to N_RAND loop
 
       rValid := bool2bit(rv.RandInt(0, 1) = 1);
       gValid := bool2bit(rv.RandInt(0, 1) = 1);
-      rawLen := rv.RandInt(0, 12);
-      uz     := rv.RandInt(0, 20);
-      sl     := rv.RandInt(0, 12);
+      rawLen := rv.RandInt(0, math_min(12, BITNESS));
+      uz     := rv.RandInt(0, LIMIT - rawLen - BITNESS - 1);
+      sl     := rv.RandInt(0, BITNESS);
       rawVal := rv.RandUnsigned(SUFFIX_W);
       sufVal := rv.RandUnsigned(SUFFIX_W);
       beat(rValid, rawLen, rawVal, gValid, uz, sl, sufVal, "rand");
@@ -314,7 +335,7 @@ begin
     end loop;
 
     WriteBin(cov);
-    AffirmIf(IsCovered(cov), "case coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "case coverage closed");
 
     end_of_test("tb_a11_2_osvvm");
     wait;

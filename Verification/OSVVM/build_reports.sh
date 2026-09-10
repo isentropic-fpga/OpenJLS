@@ -42,6 +42,8 @@ command -v tclsh >/dev/null || {
 export TCLLIBPATH="$HERE/../../ThirdParty/tcllib"
 
 tclsh <<'EOF'
+# Tcl reading stdin otherwise prints errors and can still exit successfully.
+if {[catch {
 source ../../ThirdParty/osvvm-scripts/StartNVC.tcl
 # The scripts default NVC to VHDL-2019, whose OSVVM support files are not in
 # the vendored snapshot; 2008 selects the deprecated/*_c.vhd fallbacks. Same
@@ -49,6 +51,8 @@ source ../../ThirdParty/osvvm-scripts/StartNVC.tcl
 # vendored; functional coverage reporting comes from OSVVM itself either way).
 SetVHDLVersion 2008
 set ::osvvm::FunctionalCoverageIntegratedInSimulator "default"
+set ::osvvm::FailOnTestCaseErrors true
+set ::osvvm::FailOnReportErrors true
 build ../../ThirdParty/osvvm/osvvm.pro
 # AXI4 verification components (osvvm_common -> osvvm_axi4) for the Xilinx
 # wrapper TBs. Built via each subtree's own build.pro in the maintained order
@@ -58,4 +62,8 @@ build ../../ThirdParty/osvvm-axi4/common/build.pro
 build ../../ThirdParty/osvvm-axi4/Axi4Lite/build.pro
 build ../../ThirdParty/osvvm-axi4/AxiStream/build.pro
 build OpenJls.pro
+} message options]} {
+  puts stderr [dict get $options -errorinfo]
+  exit 1
+}
 EOF

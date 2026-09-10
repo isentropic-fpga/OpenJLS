@@ -178,6 +178,13 @@ Test Modules/tb_jls_framer_osvvm.vhd [generic OUT_WIDTH 56]
 Test Modules/tb_jls_framer_osvvm.vhd [generic OUT_WIDTH 200]
 Test Modules/tb_jls_framer_osvvm.vhd [generic OUT_WIDTH 1024]
 
+# Arithmetic and memory width endpoints; the default runs above remain 12-bit.
+foreach bitness {8 16} {
+  foreach module {a1 a3 a4 a5 a6 a7 a10 a11 a11_1 a11_2 a12 a13 a14 a15_a16 a17 a18 a19 a20 a21 a22 a23 line_buffer context_ram} {
+    Test Modules/tb_${module}_osvvm.vhd [generic BITNESS $bitness]
+  }
+}
+
 # Top-level control-plane stress: the 64-bit default OUT_WIDTH, then
 # non-power-of-2 MAX dims, then the range floor and ceiling.
 TestSuite Top

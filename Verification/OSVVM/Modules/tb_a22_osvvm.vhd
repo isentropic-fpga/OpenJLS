@@ -29,6 +29,7 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
   use work.openjls_pkg.all;
+  use work.olo_base_pkg_math.log2ceil;
 
 library osvvm;
   context osvvm.OsvvmContext;
@@ -37,12 +38,13 @@ library tb_support;
   use tb_support.tb_support_pkg.all;
 
 entity tb_a22_osvvm is
+  generic (BITNESS : natural range 8 to 16 := CO_BITNESS_STD);
 end entity tb_a22_osvvm;
 
 architecture sim of tb_a22_osvvm is
 
-  constant ERROR_WIDTH : natural := CO_ERROR_VALUE_WIDTH_STD;
-  constant MAPPED_W    : natural := CO_MAPPED_ERROR_VAL_WIDTH_STD;
+  constant ERROR_WIDTH : natural := BITNESS + 1;
+  constant MAPPED_W    : natural := BITNESS + 2;
   constant ERR_MIN     : integer := -(2 ** (ERROR_WIDTH - 1));
   constant ERR_MAX     : integer := (2 ** (ERROR_WIDTH - 1)) - 1;
 
@@ -107,7 +109,7 @@ begin
       exp := ref_em(ev, riv, mpv);
 
       if (exp >= 0) then
-        AffirmIfEqual(req, to_integer(sEm), exp,
+        AffirmIfEqual(req, checked_integer(sEm), exp,
                       msg & " err=" & integer'image(ev) &
                       " ri=" & integer'image(riv) & " map=" & integer'image(mpv));
         if (exp = 0) then
@@ -121,7 +123,8 @@ begin
         -- EMErrval<0 is T.87-unreachable: it requires Errval=0 with RItype or map
         -- set, but RItype=1 => Errval/=0 and Errval=0 => map=0 (see header).
         -- Guard against ever skipping a coherent vector by changing the formula.
-        AffirmIf(ev = 0 and (riv = 1 or mpv = 1),
+        AffirmIfEqual(GetAlertLogID("DefensiveClamp"), checked_integer(sEm), 0, "negative transient clamps to zero");
+        AffirmIf(GetAlertLogID("DataChecks"), ev = 0 and (riv = 1 or mpv = 1),
                  "EMErrval<0 only on T.87-non-coherent inputs (Errval=0 with RItype/map set)");
       end if;
 
@@ -135,9 +138,16 @@ begin
     req := GetReqID("T87.A22", 300);
 
     covCross := NewID("ri x map");
-    AddCross(covCross, "ri x map", GenBin(0, 1, 2), GenBin(0, 1, 2));
+    SetFieldName(covCross, "ri", "map");
+    for axis0 in 0 to 1 loop
+      for axis1 in 0 to 1 loop
+        AddCross(covCross, "ri=" & to_string(axis0) & " / " & "map=" & to_string(axis1), GenBin(axis0), GenBin(axis1));
+      end loop;
+    end loop;
     covZero := NewID("emZero");
-    AddBins(covZero, "emZero", GenBin(0, 1, 2));
+    SetFieldName(covZero, "emZero");
+    AddBins(covZero, "nonzero mapped error", GenBin(0));
+    AddBins(covZero, "zero mapped error", GenBin(1));
 
     -- Directed: EMErrval==0 boundary for each ri/map needing it.
     drive_check(1, 1, 1, "err1 ri1 map1 -> 0");        -- 2-1-1 = 0
@@ -146,6 +156,14 @@ begin
     drive_check(0, 0, 0, "err0 ri0 map0 -> 0");
     drive_check(ERR_MAX, 1, 1, "max err");
     drive_check(ERR_MIN, 0, 0, "min err");
+
+    for ev in ERR_MIN to ERR_MAX loop
+      for riv in 0 to 1 loop
+        for mpv in 0 to 1 loop
+          drive_check(ev, riv, mpv, "error mapping sweep");
+        end loop;
+      end loop;
+    end loop;
 
     for i in 1 to N_RAND loop
 
@@ -164,8 +182,8 @@ begin
 
     WriteBin(covCross);
     WriteBin(covZero);
-    AffirmIf(IsCovered(covCross), "ri x map coverage closed");
-    AffirmIf(IsCovered(covZero), "EMErrval==0 boundary covered");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covCross), "ri x map coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covZero), "EMErrval==0 boundary covered");
 
     end_of_test("tb_a22_osvvm");
     wait;

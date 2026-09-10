@@ -50,17 +50,18 @@ library tb_support;
   use tb_support.tb_support_pkg.all;
 
 entity tb_context_ram_osvvm is
+  generic (BITNESS : natural range 8 to 16 := CO_BITNESS_STD);
 end entity tb_context_ram_osvvm;
 
 architecture sim of tb_context_ram_osvvm is
 
-  constant RANGE_P     : positive := CO_RANGE_STD;
+  constant RANGE_P     : positive := 2 ** BITNESS;
   constant RAM_DEPTH   : positive := 367;
-  constant A_WIDTH     : positive := CO_AQ_WIDTH_STD;
-  constant B_WIDTH     : positive := CO_BQ_WIDTH_STD;
+  constant A_WIDTH     : positive := BITNESS + log2ceil(CO_RESET_STD);
+  constant B_WIDTH     : positive := BITNESS + 1;
   constant C_WIDTH     : positive := CO_CQ_WIDTH;
   constant N_WIDTH     : positive := CO_NQ_WIDTH_STD;
-  constant TOTAL_WIDTH : positive := CO_TOTAL_WIDTH_STD;
+  constant TOTAL_WIDTH : positive := A_WIDTH + B_WIDTH + C_WIDTH + N_WIDTH;
   constant ADDR_W      : natural  := log2ceil(RAM_DEPTH);
   constant CLK_PERIOD  : time     := CLK_PERIOD_DEFAULT;
 
@@ -144,9 +145,11 @@ begin
 
       variable exp     : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
       variable outcome : integer;
+      variable held : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
 
     begin
 
+      held := oRdData;
       iRdEn   <= rdEn;
       iRdAddr <= std_logic_vector(to_unsigned(rdAddr, ADDR_W));
       iWrEn   <= wrEn;
@@ -187,11 +190,13 @@ begin
       wait for 1 ns;
       iEoi <= '0';
       if (rdEn = '1') then
-        AffirmIfEqual(oRdData, exp, msg);
+        AffirmIfEqual(GetAlertLogID("DataChecks"), oRdData, exp, msg);
         ICover(cov, outcome);
         if (eoi = '1') then
           ICover(covEoiRd, outcome);
         end if;
+      else
+        AffirmIfEqual(GetAlertLogID("ReadEnableHold"), oRdData, held, msg & " read disabled holds output");
       end if;
 
     end procedure step;
@@ -271,9 +276,15 @@ begin
     SetLogEnable(PASSED, FALSE);
     rv.InitSeed(rv'instance_name);
     cov := NewID("readOutcome");
-    AddBins(cov, "readOutcome", GenBin(0, 2, 3));   -- init / bram / forward
+    SetFieldName(cov, "readOutcome");
+    AddBins(cov, "initial value", GenBin(0));
+    AddBins(cov, "stored value", GenBin(1));
+    AddBins(cov, "forwarded write", GenBin(2));   -- init / bram / forward
     covEoiRd := NewID("readOnEoiCycle");
-    AddBins(covEoiRd, "readOnEoiCycle", GenBin(0, 1, 2)); -- fresh / seen
+    SetFieldName(covEoiRd, "readOnEoiCycle");
+    AddBins(covEoiRd, "initial on EOI", GenBin(0));
+    AddBins(covEoiRd, "stored on EOI", GenBin(1));
+    AddBins(covEoiRd, "forwarded on EOI", GenBin(2)); -- fresh / RAM / forwarded
 
     apply_reset(clk, rst, 4, '1');
 
@@ -288,6 +299,9 @@ begin
     -- Same-cycle read+write addr 7 -> forwarded new data (past init).
     d := std_logic_vector(to_unsigned(54321, TOTAL_WIDTH));
     step('1', 7, '1', 7, d, "addr7 forward new data");
+    -- Hold immediately after forwarding: the retained value differs from
+    -- the RAM's old-data output, so dropping the forwarding select is visible.
+    step('0', 8, '1', 9, not d, "idle after forwarding");
     -- Confirm the forwarded write landed.
     step('1', 7, '0', 0, ZERO, "addr7 read = forwarded value");
 
@@ -338,6 +352,24 @@ begin
     -- Constrained-random: random addresses, always read-modify-write so the
     -- modelled and real BRAM stay in sync.
     --------------------------------------------------------------------------
+    -- Initialize every physical address with unique data, including 365/366.
+    pulse_eoi;
+    for addr in 0 to RAM_DEPTH - 1 loop
+      d := std_logic_vector(to_unsigned(addr + 1, TOTAL_WIDTH));
+      step('1', addr, '1', addr, d, "address sweep first use");
+    end loop;
+    for addr in 0 to RAM_DEPTH - 1 loop
+      step('1', addr, '0', 0, ZERO, "address sweep retained value");
+    end loop;
+    for addr in 0 to RAM_DEPTH - 1 loop
+      d := rv.RandSlv(TOTAL_WIDTH);
+      step('1', addr, '1', (addr + 1) mod RAM_DEPTH, d, "independent read/write");
+      step('0', (addr + 2) mod RAM_DEPTH, '1', addr, not d, "write-only cycle");
+      step('0', addr, '0', addr, ZERO, "idle cycle");
+    end loop;
+    step('1', 366, '1', 366, d, "forward on EOI", '1');
+    step('1', 366, '0', 0, ZERO, "EOI rearms forwarded address");
+
     for i in 1 to 4000 loop
 
       a := rv.RandInt(0, RAM_DEPTH - 1);
@@ -368,8 +400,8 @@ begin
 
     WriteBin(cov);
     WriteBin(covEoiRd);
-    AffirmIf(IsCovered(cov), "read-outcome coverage closed");
-    AffirmIf(IsCovered(covEoiRd), "read-on-EOI-cycle coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "read-outcome coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covEoiRd), "read-on-EOI-cycle coverage closed");
 
     end_of_test("tb_context_ram_osvvm");
     wait;
@@ -380,7 +412,7 @@ begin
   begin
 
     wait for 50 ms;
-    Alert("tb_context_ram_osvvm: watchdog timeout", FAILURE);
+    Alert(GetAlertLogID("Watchdog"), "tb_context_ram_osvvm: watchdog timeout", FAILURE);
     std.env.stop;
 
   end process watchdog;

@@ -163,6 +163,8 @@ architecture sim of tb_openjls_top_osvvm is
 
 begin
 
+  stream_contract : monitor_stream(clk, rst, oValid, iReady, oData, oKeep, oLast);
+
   clk_proc : process is
   begin
 
@@ -438,8 +440,8 @@ begin
       -- Reset must clear the output stream (matters when injected mid-image:
       -- any in-flight beats must be dropped, not emitted after recovery).
       wait for 1 ns;
-      AffirmIf(oValid = '0', "reset: output stream idle");
-      AffirmIf(oLast = '0', "reset: oLast cleared");
+      AffirmIf(GetAlertLogID("ResetRecovery"), oValid = '0', "reset: output stream idle");
+      AffirmIf(GetAlertLogID("ResetRecovery"), oLast = '0', "reset: oLast cleared");
 
       rst <= '0';
       wait until rising_edge(clk);
@@ -494,6 +496,7 @@ begin
 
       end loop;
 
+      AffirmIfEqual(GetAlertLogID("ImageCompletion"), lastCount - baseL, n, "expected image boundaries before timeout");
     end procedure wait_images;
 
     -- Encode `images` H.3 images back-to-back (no inter-image gap) and assert
@@ -541,11 +544,11 @@ begin
     ) is
     begin
 
-      AffirmIfEqual(collectedCount - base, refLen, msg & " byte count");
+      AffirmIfEqual(GetAlertLogID("DataChecks"), collectedCount - base, refLen, msg & " byte count");
       for i in 0 to refLen - 1 loop
 
         if (base + i < collectedCount) then
-          AffirmIfEqual(collected(base + i), refBuf(i),
+          AffirmIfEqual(GetAlertLogID("DataChecks"), collected(base + i), refBuf(i),
                         msg & " byte " & integer'image(i));
         end if;
 
@@ -567,14 +570,27 @@ begin
     SetLogEnable(PASSED, FALSE);
     rv.InitSeed(rv'instance_name);
     covSweep := NewID("bp x inputStall x prelude");
-    AddCross(covSweep, "bp x inputStall x prelude",
-             GenBin(0, 1, 2), GenBin(0, 1, 2), GenBin(0, 2, 3));
+    SetFieldName(covSweep, "bp", "inputStall", "prelude");
+    for axis0 in 0 to 1 loop
+      for axis1 in 0 to 1 loop
+        for axis2 in 0 to 2 loop
+          AddCross(covSweep, "bp=" & to_string(axis0) & " / " & "inputStall=" & to_string(axis1) & " / " & "prelude=" & to_string(axis2), GenBin(axis0), GenBin(axis1), GenBin(axis2));
+        end loop;
+      end loop;
+    end loop;
     covUp := NewID("upstreamStallPropagated");
+    SetFieldName(covUp, "upstreamStallPropagated");
     AddBins(covUp, "upstreamStallPropagated", GenBin(1, 1));
     covB2B := NewID("backToBack clean/stressed/minimal");
-    AddBins(covB2B, "backToBack clean/stressed/minimal", GenBin(0, 2, 3));
+    SetFieldName(covB2B, "backToBack clean/stressed/minimal");
+    AddBins(covB2B, "clean overlap", GenBin(0));
+    AddBins(covB2B, "stressed overlap", GenBin(1));
+    AddBins(covB2B, "minimal image overlap", GenBin(2));
     covRst := NewID("reset midFeed/midFeedStress/midDrain");
-    AddBins(covRst, "reset midFeed/midFeedStress/midDrain", GenBin(0, 2, 3));
+    SetFieldName(covRst, "reset midFeed/midFeedStress/midDrain");
+    AddBins(covRst, "reset during input", GenBin(0));
+    AddBins(covRst, "reset during stressed input", GenBin(1));
+    AddBins(covRst, "reset during output", GenBin(2));
 
     -- Requirement goals: H.3 = at least one full golden image; BackToBack = the
     -- three directed b2b runs (b2b x3, B5 stressed, C minimal).
@@ -697,10 +713,10 @@ begin
     feed(bigImg, false, bigImg'length);
     wait_images(1);
     refLen := collectedCount - base;
-    AffirmIfEqual(lastCount - baseL, 1, "B1: reference image completed");
+    AffirmIfEqual(GetAlertLogID("DataChecks"), lastCount - baseL, 1, "B1: reference image completed");
     -- Must dwarf the framer FIFO + byte_stuffer buffer, or the hold run below
     -- could never propagate a stall and the coverage would be vacuous.
-    AffirmIf(refLen > 1000, "B1: stress image defeats internal buffering" &
+    AffirmIf(GetAlertLogID("DataChecks"), refLen > 1000, "B1: stress image defeats internal buffering" &
                             " (refLen=" & integer'image(refLen) & ")");
     for i in 0 to refLen - 1 loop
 
@@ -720,7 +736,7 @@ begin
 
     end loop;
 
-    AffirmIf(lastCount = baseL, "B2: output still in flight at reset");
+    AffirmIf(GetAlertLogID("ResetRecovery"), lastCount = baseL, "B2: output still in flight at reset");
     do_reset;
     ICover(covRst, 2);
     base  := collectedCount;
@@ -739,7 +755,7 @@ begin
     feed(bigImg, false, bigImg'length);
     wait_images(1);
     sBpMode <= 0;
-    AffirmIf(feedStallCnt > vStallSnap,
+    AffirmIf(GetAlertLogID("FlowControl"), feedStallCnt > vStallSnap,
              "B3: downstream hold propagated to oReady (upstream stall seen)");
     ICover(covUp, 1);
     check_against_ref("B3 stall propagation");
@@ -762,11 +778,11 @@ begin
     wait_images(2);
     sBpMode <= 0;
 
-    AffirmIfEqual(collectedCount - base, 2 * refLen, "B5 byte count");
+    AffirmIfEqual(GetAlertLogID("DataChecks"), collectedCount - base, 2 * refLen, "B5 byte count");
     for i in 0 to 2 * refLen - 1 loop
 
       if (base + i < collectedCount) then
-        AffirmIfEqual(collected(base + i), refBuf(i mod refLen),
+        AffirmIfEqual(GetAlertLogID("DataChecks"), collected(base + i), refBuf(i mod refLen),
                       "B5 byte " & integer'image(i));
       end if;
 
@@ -792,7 +808,7 @@ begin
     feed(PIXELS, false, 4);
     wait_images(1);
     refLen := collectedCount - base;
-    AffirmIfEqual(lastCount - baseL, 1, "C: reference 4x1 image completed");
+    AffirmIfEqual(GetAlertLogID("DataChecks"), lastCount - baseL, 1, "C: reference 4x1 image completed");
     for i in 0 to refLen - 1 loop
 
       refBuf(i) := collected(base + i);
@@ -808,11 +824,11 @@ begin
     feed(PIXELS, false, 4);
     wait_images(3);
 
-    AffirmIfEqual(collectedCount - base, 3 * refLen, "C b2b byte count");
+    AffirmIfEqual(GetAlertLogID("DataChecks"), collectedCount - base, 3 * refLen, "C b2b byte count");
     for i in 0 to 3 * refLen - 1 loop
 
       if (base + i < collectedCount) then
-        AffirmIfEqual(collected(base + i), refBuf(i mod refLen),
+        AffirmIfEqual(GetAlertLogID("DataChecks"), collected(base + i), refBuf(i mod refLen),
                       "C b2b byte " & integer'image(i));
       end if;
 
@@ -844,16 +860,16 @@ begin
 
     end loop;
 
-    AffirmIfEqual(collected(base + 7),
+    AffirmIfEqual(GetAlertLogID("DataChecks"), collected(base + 7),
                   std_logic_vector(to_unsigned(MAX_H / 256, 8)),
                   "D: header Y hi = MAX_IMAGE_HEIGHT");
-    AffirmIfEqual(collected(base + 8),
+    AffirmIfEqual(GetAlertLogID("DataChecks"), collected(base + 8),
                   std_logic_vector(to_unsigned(MAX_H mod 256, 8)),
                   "D: header Y lo = MAX_IMAGE_HEIGHT");
-    AffirmIfEqual(collected(base + 9),
+    AffirmIfEqual(GetAlertLogID("DataChecks"), collected(base + 9),
                   std_logic_vector(to_unsigned(MAX_W / 256, 8)),
                   "D: header X hi = MAX_IMAGE_WIDTH");
-    AffirmIfEqual(collected(base + 10),
+    AffirmIfEqual(GetAlertLogID("DataChecks"), collected(base + 10),
                   std_logic_vector(to_unsigned(MAX_W mod 256, 8)),
                   "D: header X lo = MAX_IMAGE_WIDTH");
 
@@ -882,16 +898,16 @@ begin
 
       end loop;
 
-      AffirmIfEqual(collected(base + 7),
+      AffirmIfEqual(GetAlertLogID("DataChecks"), collected(base + 7),
                     std_logic_vector(to_unsigned(MAX_H / 256, 8)),
                     "D2: header Y hi = MAX_IMAGE_HEIGHT (over-max clamp)");
-      AffirmIfEqual(collected(base + 8),
+      AffirmIfEqual(GetAlertLogID("DataChecks"), collected(base + 8),
                     std_logic_vector(to_unsigned(MAX_H mod 256, 8)),
                     "D2: header Y lo = MAX_IMAGE_HEIGHT (over-max clamp)");
-      AffirmIfEqual(collected(base + 9),
+      AffirmIfEqual(GetAlertLogID("DataChecks"), collected(base + 9),
                     std_logic_vector(to_unsigned(MAX_W / 256, 8)),
                     "D2: header X hi = MAX_IMAGE_WIDTH (over-max clamp)");
-      AffirmIfEqual(collected(base + 10),
+      AffirmIfEqual(GetAlertLogID("DataChecks"), collected(base + 10),
                     std_logic_vector(to_unsigned(MAX_W mod 256, 8)),
                     "D2: header X lo = MAX_IMAGE_WIDTH (over-max clamp)");
 
@@ -905,10 +921,10 @@ begin
     WriteBin(covUp);
     WriteBin(covB2B);
     WriteBin(covRst);
-    AffirmIf(IsCovered(covSweep), "bp x input-stall x prelude cross closed");
-    AffirmIf(IsCovered(covUp), "upstream-stall-propagation coverage closed");
-    AffirmIf(IsCovered(covB2B), "back-to-back coverage closed");
-    AffirmIf(IsCovered(covRst), "reset-recovery coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covSweep), "bp x input-stall x prelude cross closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covUp), "upstream-stall-propagation coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covB2B), "back-to-back coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covRst), "reset-recovery coverage closed");
 
     end_of_test("tb_openjls_top_osvvm");
     wait;
@@ -919,7 +935,7 @@ begin
   begin
 
     wait for 200 ms;
-    Alert("tb_openjls_top_osvvm: watchdog timeout", FAILURE);
+    Alert(GetAlertLogID("Watchdog"), "tb_openjls_top_osvvm: watchdog timeout", FAILURE);
     std.env.stop;
 
   end process watchdog;

@@ -21,6 +21,7 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
   use work.openjls_pkg.all;
+  use work.olo_base_pkg_math.log2ceil;
 
 library osvvm;
   context osvvm.OsvvmContext;
@@ -29,20 +30,21 @@ library tb_support;
   use tb_support.tb_support_pkg.all;
 
 entity tb_a12_osvvm is
+  generic (BITNESS : natural range 8 to 16 := CO_BITNESS_STD);
 end entity tb_a12_osvvm;
 
 architecture sim of tb_a12_osvvm is
 
-  constant ERROR_WIDTH : natural := CO_ERROR_VALUE_WIDTH_STD;
-  constant A_WIDTH     : natural := CO_AQ_WIDTH_STD;
-  constant B_WIDTH     : natural := CO_BQ_WIDTH_STD;
+  constant ERROR_WIDTH : natural := BITNESS + 1;
+  constant A_WIDTH     : natural := BITNESS + log2ceil(CO_RESET_STD);
+  constant B_WIDTH     : natural := BITNESS + 1;
   constant N_WIDTH     : natural := CO_NQ_WIDTH_STD;
   constant RESET       : natural := CO_RESET_STD;
 
   -- Non-overflowing operating ranges (post-A.9 error, T.87 variable bounds).
-  constant ERR_LO : integer := -(CO_RANGE_STD / 2);
-  constant ERR_HI : integer := CO_RANGE_STD / 2;
-  constant A_HI   : integer := (RESET - 1) * CO_RANGE_STD / 2;
+  constant ERR_LO : integer := -(2 ** BITNESS / 2);
+  constant ERR_HI : integer := 2 ** BITNESS / 2;
+  constant A_HI   : integer := (RESET - 1) * 2 ** BITNESS / 2;
   constant B_LIM  : integer := RESET - 1;
 
   signal sErr  : signed(ERROR_WIDTH - 1 downto 0);
@@ -121,9 +123,9 @@ begin
         nNew := n + 1;
       end if;
 
-      AffirmIfEqual(req, to_integer(sAqO), aNew, msg & " A");
-      AffirmIfEqual(req, to_integer(sBqO), bNew, msg & " B");
-      AffirmIfEqual(req, to_integer(sNqO), nNew, msg & " N");
+      AffirmIfEqual(req, checked_integer(sAqO), aNew, msg & " A");
+      AffirmIfEqual(req, checked_integer(sBqO), bNew, msg & " B");
+      AffirmIfEqual(req, checked_integer(sNqO), nNew, msg & " N");
 
       if (rescale) then
         rsc := 1;
@@ -147,15 +149,29 @@ begin
     req := GetReqID("T87.A12", 300);
 
     cov := NewID("rescale x bSumSign");
-    AddCross(cov, "rescale x bSumSign", GenBin(0, 1, 2), GenBin(0, 1, 2));
+    SetFieldName(cov, "rescale", "bSumSign");
+    for axis0 in 0 to 1 loop
+      for axis1 in 0 to 1 loop
+        AddCross(cov, "rescale=" & to_string(axis0) & " / " & "bSumSign=" & to_string(axis1), GenBin(axis0), GenBin(axis1));
+      end loop;
+    end loop;
 
     -- Directed corners.
     drive_check(0, 0, 0, 1, "min no-rescale");
     drive_check(ERR_HI, A_HI, B_LIM, RESET, "rescale pos B");
     drive_check(ERR_LO, A_HI, -B_LIM, RESET, "rescale neg B");
-    drive_check(-1, 5, -1, RESET, "rescale neg odd B");
+    drive_check(-1, 5, -1, RESET, "rescale neg even B");
 
     -- Random sweep (N biased to RESET for the rescale path).
+    -- Negative odd sums require floor division, not integer truncation.
+    for n in RESET - 1 to RESET loop
+      for err in -3 to 3 loop
+        for b in -3 to 3 loop
+          drive_check(err, 5, b, n, "rescale parity and sign boundary");
+        end loop;
+      end loop;
+    end loop;
+
     for i in 1 to N_RAND loop
 
       if (rv.RandInt(0, 2) = 0) then
@@ -170,7 +186,7 @@ begin
     end loop;
 
     WriteBin(cov);
-    AffirmIf(IsCovered(cov), "rescale x bSign coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "rescale x bSign coverage closed");
 
     end_of_test("tb_a12_osvvm");
     wait;

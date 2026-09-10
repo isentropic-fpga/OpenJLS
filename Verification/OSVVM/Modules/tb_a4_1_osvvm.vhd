@@ -112,15 +112,15 @@ begin
         eS := CO_SIGN_POS;
       end if;
 
-      AffirmIfEqual(req, std_to_int(sSign), std_to_int(eS), msg & " sign");
+      AffirmIfEqual(req, checked_bit(sSign), std_to_int(eS), msg & " sign");
       if (flip) then
-        AffirmIfEqual(req, to_integer(sQ1o), -q1, msg & " Q1");
-        AffirmIfEqual(req, to_integer(sQ2o), -q2, msg & " Q2");
-        AffirmIfEqual(req, to_integer(sQ3o), -q3, msg & " Q3");
+        AffirmIfEqual(req, checked_integer(sQ1o), -q1, msg & " Q1");
+        AffirmIfEqual(req, checked_integer(sQ2o), -q2, msg & " Q2");
+        AffirmIfEqual(req, checked_integer(sQ3o), -q3, msg & " Q3");
       else
-        AffirmIfEqual(req, to_integer(sQ1o), q1, msg & " Q1");
-        AffirmIfEqual(req, to_integer(sQ2o), q2, msg & " Q2");
-        AffirmIfEqual(req, to_integer(sQ3o), q3, msg & " Q3");
+        AffirmIfEqual(req, checked_integer(sQ1o), q1, msg & " Q1");
+        AffirmIfEqual(req, checked_integer(sQ2o), q2, msg & " Q2");
+        AffirmIfEqual(req, checked_integer(sQ3o), q3, msg & " Q3");
       end if;
 
       ICover(cov, decider_of(q1, q2, q3));
@@ -135,7 +135,11 @@ begin
     req := GetReqID("T87.A4.1", 729);
 
     cov := NewID("decider");
-    AddBins(cov, "decider", GenBin(0, 3, 4));
+    SetFieldName(cov, "decider");
+    AddBins(cov, "Q1 decides", GenBin(0));
+    AddBins(cov, "Q2 decides", GenBin(1));
+    AddBins(cov, "Q3 decides", GenBin(2));
+    AddBins(cov, "all zero", GenBin(3));
 
     -- Directed: each decider category, both polarities.
     drive_check(0, 0, 0, "all-zero");
@@ -162,7 +166,7 @@ begin
     end loop;
 
     WriteBin(cov);
-    AffirmIf(IsCovered(cov), "decider coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "decider coverage closed");
 
     end_of_test("tb_a4_1_osvvm");
     wait;

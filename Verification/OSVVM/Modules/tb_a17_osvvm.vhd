@@ -16,6 +16,7 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
   use work.openjls_pkg.all;
+  use work.olo_base_pkg_math.log2ceil;
 
 library osvvm;
   context osvvm.OsvvmContext;
@@ -24,11 +25,11 @@ library tb_support;
   use tb_support.tb_support_pkg.all;
 
 entity tb_a17_osvvm is
+  generic (BITNESS : natural range 8 to 16 := CO_BITNESS_STD);
 end entity tb_a17_osvvm;
 
 architecture sim of tb_a17_osvvm is
 
-  constant BITNESS : natural := CO_BITNESS_STD;
   constant PX_MAX  : integer := (2 ** BITNESS) - 1;
 
   signal sRaPix     : unsigned(BITNESS - 1 downto 0);
@@ -75,7 +76,7 @@ begin
       else
         e := 0;
       end if;
-      AffirmIfEqual(req, std_to_int(sRItype), e, msg);
+      AffirmIfEqual(req, checked_bit(sRItype), e, msg);
       ICover(cov, e);
 
     end procedure drive_check;
@@ -87,11 +88,18 @@ begin
     rv.InitSeed(rv'instance_name);
     req := GetReqID("T87.A17", 100);
     cov := NewID("RItype");
-    AddBins(cov, "RItype", GenBin(0, 1, 2));
+    SetFieldName(cov, "RItype");
+    AddBins(cov, "unequal neighbours", GenBin(0));
+    AddBins(cov, "equal neighbours", GenBin(1));
 
     drive_check(0, 0, "equal zero");
     drive_check(PX_MAX, PX_MAX, "equal max");
     drive_check(0, PX_MAX, "unequal");
+
+    for bit_index in 0 to BITNESS - 1 loop
+      drive_check(0, 2 ** bit_index, "single unequal bit in Rb");
+      drive_check(2 ** bit_index, 0, "single unequal bit in Ra");
+    end loop;
 
     for i in 1 to N_RAND loop
 
@@ -108,7 +116,7 @@ begin
     end loop;
 
     WriteBin(cov);
-    AffirmIf(IsCovered(cov), "RItype coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "RItype coverage closed");
 
     end_of_test("tb_a17_osvvm");
     wait;

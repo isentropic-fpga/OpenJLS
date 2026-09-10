@@ -105,7 +105,7 @@ begin
 
       sErrIn <= to_signed(ev, BITNESS + 1);
       wait for 1 ns;
-      AffirmIfEqual(req, to_integer(sErrOut), ref_mod(ev), msg & " err=" & integer'image(ev));
+      AffirmIfEqual(req, checked_integer(sErrOut), ref_mod(ev), msg & " err=" & integer'image(ev));
 
       if (ev < 0) then
         w := 1;
@@ -128,7 +128,12 @@ begin
     req := GetReqID("T87.A9", 200);
 
     cov := NewID("wrapNeg x geHalf");
-    AddCross(cov, "wrapNeg x geHalf", GenBin(0, 1, 2), GenBin(0, 1, 2));
+    SetFieldName(cov, "wrapNeg", "geHalf");
+    for axis0 in 0 to 1 loop
+      for axis1 in 0 to 1 loop
+        AddCross(cov, "wrapNeg=" & to_string(axis0) & " / " & "geHalf=" & to_string(axis1), GenBin(axis0), GenBin(axis1));
+      end loop;
+    end loop;
 
     -- Directed corners.
     drive_check(0, "zero");
@@ -147,7 +152,7 @@ begin
     end loop;
 
     WriteBin(cov);
-    AffirmIf(IsCovered(cov), "wrap/half cross coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "wrap/half cross coverage closed");
 
     end_of_test("tb_a9_osvvm");
     wait;

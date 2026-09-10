@@ -16,6 +16,7 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
   use work.openjls_pkg.all;
+  use work.olo_base_pkg_math.log2ceil;
 
 library osvvm;
   context osvvm.OsvvmContext;
@@ -24,12 +25,12 @@ library tb_support;
   use tb_support.tb_support_pkg.all;
 
 entity tb_a6_osvvm is
+  generic (BITNESS : natural range 8 to 16 := CO_BITNESS_STD);
 end entity tb_a6_osvvm;
 
 architecture sim of tb_a6_osvvm is
 
-  constant BITNESS : natural := CO_BITNESS_STD;
-  constant MAX_VAL : natural := CO_MAX_VAL_STD;
+  constant MAX_VAL : natural := 2 ** BITNESS - 1;
   constant CQ_MIN  : integer := CO_MIN_CQ;
   constant CQ_MAX  : integer := CO_MAX_CQ;
 
@@ -110,6 +111,7 @@ begin
     variable rv      : RandomPType;
     variable cov     : CoverageIDType;
     variable req     : AlertLogIDType;
+    variable boundary : integer;
     constant N_RAND  : natural := 5000;
 
     procedure drive_check (
@@ -124,7 +126,7 @@ begin
       sSign <= sg;
       sCq   <= to_signed(cq, CO_CQ_WIDTH);
       wait for 1 ns;
-      AffirmIfEqual(req, to_integer(sPxOut), corrected(px, sg, cq),
+      AffirmIfEqual(req, checked_integer(sPxOut), corrected(px, sg, cq),
                     msg & " px=" & integer'image(px) & " cq=" & integer'image(cq));
       ICover(cov, (std_to_int(sg), region_of(px, sg, cq)));
 
@@ -138,7 +140,12 @@ begin
     req := GetReqID("T87.A6", 300);
 
     cov := NewID("sign x region");
-    AddCross(cov, "sign x region", GenBin(0, 1, 2), GenBin(0, 2, 3));
+    SetFieldName(cov, "sign", "region");
+    for axis0 in 0 to 1 loop
+      for axis1 in 0 to 2 loop
+        AddCross(cov, "sign=" & to_string(axis0) & " / " & "region=" & to_string(axis1), GenBin(axis0), GenBin(axis1));
+      end loop;
+    end loop;
 
     -- Directed corners.
     drive_check(0, CO_SIGN_POS, CQ_MIN, "low sat pos");
@@ -148,6 +155,22 @@ begin
     drive_check(MAX_VAL / 2, CO_SIGN_POS, 0, "mid cq0");
 
     -- Random sweep.
+    -- Every bias at both clipping thresholds, both signs, including equality.
+    for cq in CQ_MIN to CQ_MAX loop
+      for delta in -1 to 1 loop
+        for edge in 0 to 1 loop
+          boundary := edge * MAX_VAL - cq + delta;
+          if boundary >= 0 and boundary <= MAX_VAL then
+            drive_check(boundary, CO_SIGN_POS, cq, "clip boundary positive sign");
+          end if;
+          boundary := edge * MAX_VAL + cq + delta;
+          if boundary >= 0 and boundary <= MAX_VAL then
+            drive_check(boundary, CO_SIGN_NEG, cq, "clip boundary negative sign");
+          end if;
+        end loop;
+      end loop;
+    end loop;
+
     for i in 1 to N_RAND loop
 
       if (rv.RandInt(0, 1) = 0) then
@@ -160,7 +183,7 @@ begin
     end loop;
 
     WriteBin(cov);
-    AffirmIf(IsCovered(cov), "sign x region coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "sign x region coverage closed");
 
     end_of_test("tb_a6_osvvm");
     wait;

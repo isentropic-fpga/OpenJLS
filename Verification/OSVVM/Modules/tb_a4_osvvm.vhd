@@ -18,6 +18,7 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
   use work.openjls_pkg.all;
+  use work.olo_base_pkg_math.log2ceil;
 
 library osvvm;
   context osvvm.OsvvmContext;
@@ -26,12 +27,12 @@ library tb_support;
   use tb_support.tb_support_pkg.all;
 
 entity tb_a4_osvvm is
+  generic (BITNESS : natural range 8 to 16 := CO_BITNESS_STD);
 end entity tb_a4_osvvm;
 
 architecture sim of tb_a4_osvvm is
 
-  constant BITNESS : natural := CO_BITNESS_STD;
-  constant MAX_VAL : natural := CO_MAX_VAL_STD;
+  constant MAX_VAL : natural := 2 ** BITNESS - 1;
   constant D_MIN   : integer := -(2 ** BITNESS);
   constant D_MAX   : integer := (2 ** BITNESS) - 1;
 
@@ -126,12 +127,12 @@ begin
       sD2 <= to_signed(d2, BITNESS + 1);
       sD3 <= to_signed(d3, BITNESS + 1);
       wait for 1 ns;
-      AffirmIfEqual(req, to_integer(sQ1), quantize(d1), msg & " Q1 d=" & integer'image(d1));
-      AffirmIfEqual(req, to_integer(sQ2), quantize(d2), msg & " Q2 d=" & integer'image(d2));
-      AffirmIfEqual(req, to_integer(sQ3), quantize(d3), msg & " Q3 d=" & integer'image(d3));
-      ICover(cov, quantize(d1));
-      ICover(cov, quantize(d2));
-      ICover(cov, quantize(d3));
+      AffirmIfEqual(req, checked_integer(sQ1), quantize(d1), msg & " Q1 d=" & integer'image(d1));
+      AffirmIfEqual(req, checked_integer(sQ2), quantize(d2), msg & " Q2 d=" & integer'image(d2));
+      AffirmIfEqual(req, checked_integer(sQ3), quantize(d3), msg & " Q3 d=" & integer'image(d3));
+      ICover(cov, (1, quantize(d1)));
+      ICover(cov, (2, quantize(d2)));
+      ICover(cov, (3, quantize(d3)));
 
     end procedure drive_check;
 
@@ -143,7 +144,13 @@ begin
     req := GetReqID("T87.A4", 200);
 
     cov := NewID("Qi");
-    AddBins(cov, "Qi", GenBin(-4, 4, 9));
+    SetFieldName(cov, "gradient lane", "quantized level");
+    for lane in 1 to 3 loop
+      for level in -4 to 4 loop
+        AddCross(cov, "lane=" & to_string(lane) & " / level=" & to_string(level),
+                 GenBin(lane), GenBin(level));
+      end loop;
+    end loop;
 
     -- Directed threshold boundaries (both signs).
     drive_check(0, 1, -1, "near-zero");
@@ -154,6 +161,12 @@ begin
     drive_check(D_MAX, D_MIN, 0, "extremes");
 
     -- Random sweep.
+    -- Each lane sees every gradient; other lanes differ to detect cross-wiring.
+    for d in -MAX_VAL to MAX_VAL loop
+      drive_check(d, -d, 0, "gradient sweep");
+      drive_check(0, d, -d, "gradient sweep rotated");
+    end loop;
+
     for i in 1 to N_RAND loop
 
       drive_check(rv.RandInt(D_MIN, D_MAX), rv.RandInt(D_MIN, D_MAX), rv.RandInt(D_MIN, D_MAX), "rand");
@@ -162,7 +175,7 @@ begin
     end loop;
 
     WriteBin(cov);
-    AffirmIf(IsCovered(cov), "Qi level coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "Qi level coverage closed");
 
     end_of_test("tb_a4_osvvm");
     wait;

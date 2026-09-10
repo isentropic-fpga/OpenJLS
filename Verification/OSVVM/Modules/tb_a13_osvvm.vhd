@@ -19,6 +19,7 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
   use work.openjls_pkg.all;
+  use work.olo_base_pkg_math.log2ceil;
 
 library osvvm;
   context osvvm.OsvvmContext;
@@ -27,11 +28,12 @@ library tb_support;
   use tb_support.tb_support_pkg.all;
 
 entity tb_a13_osvvm is
+  generic (BITNESS : natural range 8 to 16 := CO_BITNESS_STD);
 end entity tb_a13_osvvm;
 
 architecture sim of tb_a13_osvvm is
 
-  constant B_WIDTH : natural := CO_BQ_WIDTH_STD;
+  constant B_WIDTH : natural := BITNESS + 1;
   constant N_WIDTH : natural := CO_NQ_WIDTH_STD;
   constant C_WIDTH : natural := CO_CQ_WIDTH;
   constant MIN_C   : integer := CO_MIN_CQ;
@@ -125,8 +127,8 @@ begin
         end if;
       end if;
 
-      AffirmIfEqual(req, to_integer(sBqO), bNew, msg & " B");
-      AffirmIfEqual(req, to_integer(sCqO), cNew, msg & " C");
+      AffirmIfEqual(req, checked_integer(sBqO), bNew, msg & " B");
+      AffirmIfEqual(req, checked_integer(sCqO), cNew, msg & " C");
       ICover(cov, ev);
       ICover(covC, cev);
 
@@ -140,12 +142,18 @@ begin
     req := GetReqID("T87.A13", 300);
 
     cov := NewID("event");
-    AddBins(cov, "event", GenBin(0, 4, 5));
+    SetFieldName(cov, "event");
+    AddBins(cov, "negative adjust", GenBin(0));
+    AddBins(cov, "negative clamp", GenBin(1));
+    AddBins(cov, "positive adjust", GenBin(2));
+    AddBins(cov, "positive clamp", GenBin(3));
+    AddBins(cov, "unchanged", GenBin(4));
 
     -- C-register saturation: the event bins above don't distinguish a clamped
     -- C from a moved C, so bin the C update separately (held in the none branch,
     -- moved within range, or clamped at MIN_C/MAX_C).
     covC := NewID("cUpdate");
+    SetFieldName(covC, "cUpdate");
     AddBins(covC, "held",     GenBin(0, 0));
     AddBins(covC, "moved",    GenBin(1, 1));
     AddBins(covC, "clampMin", GenBin(2, 2));
@@ -161,13 +169,24 @@ begin
     drive_check(50, 10, MAX_C, "pos branch C at MAX");       -- C not incremented
 
     -- Random sweep (N in [1,RESET]; B biased to the two active branches).
+    for n in 1 to RESET loop
+      for delta in -1 to 1 loop
+        for c in MIN_C to MAX_C loop
+          drive_check(-2 * n + delta, n, c, "negative reclamp boundary");
+          drive_check(-n + delta, n, c, "negative branch boundary");
+          drive_check(delta, n, c, "positive branch boundary");
+          drive_check(n + delta, n, c, "positive reclamp boundary");
+        end loop;
+      end loop;
+    end loop;
+
     for i in 1 to N_RAND loop
 
       if (rv.RandInt(0, 1) = 0) then
         drive_check(rv.RandInt(-(2 * RESET), 2 * RESET), rv.RandInt(1, RESET),
                     rv.RandInt(MIN_C, MAX_C), "rand small");
       else
-        drive_check(rv.RandInt(-4096, 4095), rv.RandInt(1, RESET),
+        drive_check(rv.RandInt(-(2 ** (B_WIDTH - 1)), 2 ** (B_WIDTH - 1) - 1), rv.RandInt(1, RESET),
                     rv.RandInt(MIN_C, MAX_C), "rand wide");
       end if;
       exit when IsCovered(cov) and IsCovered(covC) and i > 300;
@@ -176,8 +195,8 @@ begin
 
     WriteBin(cov);
     WriteBin(covC);
-    AffirmIf(IsCovered(cov), "branch/clamp coverage closed");
-    AffirmIf(IsCovered(covC), "C-update coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "branch/clamp coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covC), "C-update coverage closed");
 
     end_of_test("tb_a13_osvvm");
     wait;

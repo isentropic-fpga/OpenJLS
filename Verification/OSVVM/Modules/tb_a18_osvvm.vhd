@@ -16,6 +16,7 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
   use work.openjls_pkg.all;
+  use work.olo_base_pkg_math.log2ceil;
 
 library osvvm;
   context osvvm.OsvvmContext;
@@ -24,11 +25,11 @@ library tb_support;
   use tb_support.tb_support_pkg.all;
 
 entity tb_a18_osvvm is
+  generic (BITNESS : natural range 8 to 16 := CO_BITNESS_STD);
 end entity tb_a18_osvvm;
 
 architecture sim of tb_a18_osvvm is
 
-  constant BITNESS : natural := CO_BITNESS_STD;
   constant PX_MAX  : integer := (2 ** BITNESS) - 1;
 
   signal sRItype : std_logic;
@@ -42,8 +43,10 @@ architecture sim of tb_a18_osvvm is
   ) return integer is
   begin
 
-    if (v < 0) then
+    if v < 0 then
       return 1;
+    elsif v = 0 then
+      return 2;
     else
       return 0;
     end if;
@@ -96,7 +99,7 @@ begin
         px := rb;
       end if;
       e := ix - px;
-      AffirmIfEqual(req, to_integer(sErrval), e, msg);
+      AffirmIfEqual(req, checked_integer(sErrval), e, msg);
       ICover(cov, (std_to_int(ri), sgn(e)));
 
     end procedure drive_check;
@@ -108,12 +111,20 @@ begin
     rv.InitSeed(rv'instance_name);
     req := GetReqID("T87.A18", 200);
     cov := NewID("RItype x errSign");
-    AddCross(cov, "RItype x errSign", GenBin(0, 1, 2), GenBin(0, 1, 2));
+    SetFieldName(cov, "RItype", "errSign");
+    for axis0 in 0 to 1 loop
+      for axis1 in 0 to 2 loop
+        AddCross(cov, "RItype=" & to_string(axis0) & " / " & "errSign=" & to_string(axis1), GenBin(axis0), GenBin(axis1));
+      end loop;
+    end loop;
 
     drive_check('1', 0, PX_MAX, PX_MAX, "ri1 pos");
     drive_check('1', PX_MAX, 0, 0, "ri1 neg");
     drive_check('0', PX_MAX, 0, PX_MAX, "ri0 pos");
     drive_check('0', 0, PX_MAX, 0, "ri0 neg");
+
+    drive_check('0', 1, 0, 0, "RI0 zero error");
+    drive_check('1', PX_MAX, 0, PX_MAX, "RI1 zero error");
 
     for i in 1 to N_RAND loop
 
@@ -127,7 +138,7 @@ begin
     end loop;
 
     WriteBin(cov);
-    AffirmIf(IsCovered(cov), "RItype x errSign coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "RItype x errSign coverage closed");
 
     end_of_test("tb_a18_osvvm");
     wait;

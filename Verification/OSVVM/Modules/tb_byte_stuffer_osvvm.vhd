@@ -276,7 +276,7 @@ begin
       wait until rising_edge(clk);
 
       if (oWordValid = '1' and not sIgnore) then
-        nb := to_integer(oValidBytes);
+        nb := checked_integer(oValidBytes);
         if (oAlmostFull = '1') then
           af := 1;
         else
@@ -300,7 +300,7 @@ begin
       end if;
 
       if (oFlushDone = '1' and not sIgnore) then
-        AffirmIf(oWordValid = '1', "oFlushDone must coincide with oWordValid");
+        AffirmIf(GetAlertLogID("Protocol"), oWordValid = '1', "oFlushDone must coincide with oWordValid");
         cnt        := cnt + 1;
         sFlushDone <= cnt;
       end if;
@@ -542,23 +542,30 @@ begin
     rv.InitSeed(rv'instance_name);
 
     covEmit := NewID("emitBytes");
-    AddBins(covEmit, "emitBytes", GenBin(0, OUT_BYTES, OUT_BYTES + 1));
+    SetFieldName(covEmit, "emitBytes");
+    for count in 0 to OUT_BYTES loop
+      AddBins(covEmit, "emitted bytes=" & to_string(count), GenBin(count));
+    end loop;
     -- FT_EMPTY is unreachable (see directed-corner note) and excluded.
     covFlush := NewID("flushType");
-    AddBins(covFlush, "flushType", GenBin(FT_CLEAN, FT_DANGLING, 3));
+    SetFieldName(covFlush, "flushType");
+    AddBins(covFlush, "byte aligned", GenBin(1));
+    AddBins(covFlush, "padded residue", GenBin(2));
+    AddBins(covFlush, "dangling FF", GenBin(3));
     -- Require seeing data output BOTH with and without almost-full backpressure.
     -- (The 0-byte terminal beat only fires after the FIFO has drained, so
     -- 0-byte x almostFull is unreachable and deliberately not a bin.)
     covCross := NewID("data x almostFull");
-    AddCross(covCross,
-                      "data x almostFull",
-                      GenBin(1, 1, 1),                                                    -- data beat (emitBytes > 0)
-                      GenBin(0, 1, 2)                                                     -- oAlmostFull
-                    );
+    SetFieldName(covCross, "data", "almostFull");
+    for almost_full in 0 to 1 loop
+      AddCross(covCross, "data beat / almostFull=" & to_string(almost_full),
+               GenBin(1), GenBin(almost_full));
+    end loop;
     -- Stuff event per emitted byte: at least one image with no stuff, one with
     -- its first stuff, and one with a subsequent (run) stuff. Makes the FF->'0'
     -- stuffing -- the module's whole purpose -- visible in its own coverage.
     covStuff := NewID("stuffEvent");
+    SetFieldName(covStuff, "stuffEvent");
     AddBins(covStuff, "noStuff",    GenBin(SE_NONE, SE_NONE));
     AddBins(covStuff, "firstStuff", GenBin(SE_FIRST, SE_FIRST));
     AddBins(covStuff, "runStuff",   GenBin(SE_RUN, SE_RUN));
@@ -589,6 +596,13 @@ begin
     wtmp                                   := (others => '0');
     wtmp(IN_WIDTH - 1 downto IN_WIDTH - 5) := "10101";
     directed(wtmp, 5);
+
+    for len in 1 to IN_WIDTH loop
+      directed(ones, len);
+      directed(ZERO_W, len);
+    end loop;
+    send_beat(ones, IN_WIDTH, '0', '0'); -- inactive garbage must not enter stream
+    directed(ZERO_W, 8);
 
     -- Long 0xFF run in one beat: forces consecutive stuffs across the 4-slot
     -- chain (full-width all-ones).
@@ -649,8 +663,8 @@ begin
     iFlush     <= '0';
     apply_reset(clk, rst, 6, '1');
     wait for 1 ns;
-    AffirmIf(oWordValid = '0', "mid-op reset: byte_stuffer output cleared");
-    AffirmIf(oFlushDone = '0', "mid-op reset: no flush-done after reset");
+    AffirmIf(GetAlertLogID("ResetRecovery"), oWordValid = '0', "mid-op reset: byte_stuffer output cleared");
+    AffirmIf(GetAlertLogID("ResetRecovery"), oFlushDone = '0', "mid-op reset: no flush-done after reset");
 
     -- Re-initialise the reference FF-stuffer state to mirror the reset.
     curByte    := (others => '0');
@@ -673,17 +687,17 @@ begin
     sDriverDone <= true;
     wait for 10 * CLK_PERIOD;
 
-    AffirmIf(IsEmpty(SB_ID), "scoreboard drained (all expected bytes consumed)");
-    AffirmIfEqual(GetErrorCount(SB_ID), 0, "scoreboard mismatches");
+    AffirmIf(GetAlertLogID("ScoreboardCompletion"), IsEmpty(SB_ID), "scoreboard drained (all expected bytes consumed)");
+    AffirmIfEqual(GetAlertLogID("ScoreboardCompletion"), GetErrorCount(SB_ID), 0, "scoreboard mismatches");
 
     WriteBin(covEmit);
     WriteBin(covFlush);
     WriteBin(covCross);
     WriteBin(covStuff);
-    AffirmIf(IsCovered(covEmit), "emitBytes coverage closed");
-    AffirmIf(IsCovered(covFlush), "flushType coverage closed");
-    AffirmIf(IsCovered(covCross), "data x almostFull coverage closed");
-    AffirmIf(IsCovered(covStuff), "stuff-event coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covEmit), "emitBytes coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covFlush), "flushType coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covCross), "data x almostFull coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covStuff), "stuff-event coverage closed");
 
     end_of_test("tb_byte_stuffer_osvvm");
     wait;
@@ -697,7 +711,7 @@ begin
   begin
 
     wait for 20 ms;
-    Alert("tb_byte_stuffer_osvvm: watchdog timeout", FAILURE);
+    Alert(GetAlertLogID("Watchdog"), "tb_byte_stuffer_osvvm: watchdog timeout", FAILURE);
     std.env.stop;
 
   end process watchdog_proc;

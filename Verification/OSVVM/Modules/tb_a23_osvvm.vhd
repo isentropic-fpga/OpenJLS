@@ -26,9 +26,8 @@
 --     preserved by the update (N+1, Nn+<=1) and the rescale (floor halving), so
 --     input Nn<=N-1 and Nn_new = Nn+1 <= N <= RESET-1 (N=RESET takes the halving).
 --   N_new <= RESET+1 < 2^N_WIDTH.
--- The stimulus also sweeps non-coherent inputs (random Nn/N/Errval); any that
--- drive a variable out of range are skipped AND asserted to violate the specific
--- T.87 invariant above, so the skip can never silently swallow a coherent vector.
+-- Directed and random stimulus obey these invariants. Invalid inputs or
+-- unrepresentable reference results fail under the ReferenceDomain alert ID.
 -- Coverage crosses RESET x Errval-sign x RItype.
 --------------------------------------------------------------------------------
 
@@ -36,6 +35,7 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
   use work.openjls_pkg.all;
+  use work.olo_base_pkg_math.log2ceil;
 
 library osvvm;
   context osvvm.OsvvmContext;
@@ -44,19 +44,20 @@ library tb_support;
   use tb_support.tb_support_pkg.all;
 
 entity tb_a23_osvvm is
+  generic (BITNESS : natural range 8 to 16 := CO_BITNESS_STD);
 end entity tb_a23_osvvm;
 
 architecture sim of tb_a23_osvvm is
 
-  constant A_WIDTH     : natural := CO_AQ_WIDTH_STD;
+  constant A_WIDTH     : natural := BITNESS + log2ceil(CO_RESET_STD);
   constant N_WIDTH     : natural := CO_NQ_WIDTH_STD;
   constant NN_WIDTH    : natural := CO_NNQ_WIDTH_STD;
-  constant ERROR_WIDTH : natural := CO_ERROR_VALUE_WIDTH_STD;
+  constant ERROR_WIDTH : natural := BITNESS + 1;
   constant RESET       : natural := CO_RESET_STD;
 
-  constant ERR_LO : integer := -(CO_RANGE_STD / 2);
-  constant ERR_HI : integer := CO_RANGE_STD / 2;
-  constant A_HI   : integer := (RESET - 1) * CO_RANGE_STD / 2;
+  constant ERR_LO : integer := -(2 ** BITNESS / 2);
+  constant ERR_HI : integer := 2 ** BITNESS / 2;
+  constant A_HI   : integer := (RESET - 1) * 2 ** BITNESS / 2;
   constant NN_MAX : integer := (2 ** NN_WIDTH) - 1;
 
   signal sErr  : signed(ERROR_WIDTH - 1 downto 0);
@@ -116,7 +117,7 @@ begin
     variable mp      : integer;
     constant N_RAND  : natural := 12000;
 
-    -- Returns false if the vector is out of the coherent (representable) domain.
+    -- Reject invalid stimulus instead of silently skipping a comparison.
     procedure drive_check (
       errv : integer;
       riv  : integer;
@@ -138,7 +139,10 @@ begin
 
     begin
 
-      -- Compute the standard reference first; skip non-coherent vectors.
+      AffirmIf(GetAlertLogID("ReferenceDomain"),
+        (riv = 0 or errv /= 0) and nv >= 1 and nv <= RESET and nnv >= 0 and nnv < nv,
+        msg & " coherent T.87 input");
+      -- Compute the standard reference first.
       nnNew := nnv;
       if (errv < 0) then
         nnNew := nnNew + 1;
@@ -156,23 +160,9 @@ begin
         nNew := nv + 1;
       end if;
 
-      -- Non-coherent guard: results are representable for any coherent input
-      -- (header). A randomly generated vector that lands out of range is skipped,
-      -- but only after asserting it violates the specific T.87 invariant -- so the
-      -- skip can never silently swallow a coherent vector.
-      if (aNew < 0) then
-        AffirmIf(riv = 1 and errv = 0,
-                 "A_new<0 only when RItype=1 & Errval=0 -- T.87: RItype=1 => Errval/=0");
-        return;
-      end if;
-      if (nnNew > NN_MAX) then
-        AffirmIf(nnv >= nv,
-                 "Nn overflow only when input Nn>=N -- T.87 invariant N-Nn>=1 forbids it");
-        return;
-      end if;
-      if (nNew > (2 ** N_WIDTH) - 1) then
-        AffirmIf(nv > RESET,
-                 "N overflow only when input N>RESET -- T.87: N in [1,RESET]");
+      if aNew < 0 or aNew >= 2 ** A_WIDTH or nnNew > NN_MAX or
+         nNew > (2 ** N_WIDTH) - 1 then
+        Alert(GetAlertLogID("ReferenceDomain"), msg & " reference result out of range", ERROR);
         return;
       end if;
 
@@ -183,9 +173,9 @@ begin
       sNn  <= to_unsigned(nnv, NN_WIDTH);
       wait for 1 ns;
 
-      AffirmIfEqual(req, to_integer(sAqO), aNew, msg & " A");
-      AffirmIfEqual(req, to_integer(sNqO), nNew, msg & " N");
-      AffirmIfEqual(req, to_integer(sNnO), nnNew, msg & " Nn");
+      AffirmIfEqual(req, checked_integer(sAqO), aNew, msg & " A");
+      AffirmIfEqual(req, checked_integer(sNqO), nNew, msg & " N");
+      AffirmIfEqual(req, checked_integer(sNnO), nnNew, msg & " Nn");
 
       if (rescale) then
         rsc := 1;
@@ -209,34 +199,58 @@ begin
     req := GetReqID("T87.A23", 600);
 
     cov := NewID("rescale x errNeg x RItype");
-    AddCross(cov, "rescale x errNeg x RItype", GenBin(0, 1, 2), GenBin(0, 1, 2), GenBin(0, 1, 2));
+    SetFieldName(cov, "rescale", "errNeg", "RItype");
+    for axis0 in 0 to 1 loop
+      for axis1 in 0 to 1 loop
+        for axis2 in 0 to 1 loop
+          AddCross(cov, "rescale=" & to_string(axis0) & " / " & "errNeg=" & to_string(axis1) & " / " & "RItype=" & to_string(axis2), GenBin(axis0), GenBin(axis1), GenBin(axis2));
+        end loop;
+      end loop;
+    end loop;
 
     -- Directed corners (both map values on the same vector to exercise equivalence).
     drive_check(-5, 0, 100, RESET, 10, 0, "rescale errneg ri0 m0");
     drive_check(-5, 0, 100, RESET, 10, 1, "rescale errneg ri0 m1");
     drive_check(5, 1, 100, 10, 4, 0, "errpos ri1 m0");
     drive_check(5, 1, 100, 10, 4, 1, "errpos ri1 m1");
-    drive_check(0, 1, 50, 5, 0, 0, "err0 ri1");
+    drive_check(0, 0, 50, 5, 0, 0, "err0 ri0");
+
+    -- Nn increments before halving; cover every coherent count and parity.
+    for nv in 1 to RESET loop
+      for nnv in 0 to nv - 1 loop
+        for riv in 0 to 1 loop
+          for ev in -2 to 2 loop
+            if riv = 0 or ev /= 0 then
+              drive_check(ev, riv, 7, nv, nnv, 0, "coherent rescale/parity");
+              drive_check(ev, riv, 7, nv, nnv, 1, "mapping cancellation");
+            end if;
+          end loop;
+        end loop;
+      end loop;
+    end loop;
 
     for i in 1 to N_RAND loop
 
       err := rv.RandInt(ERR_LO, ERR_HI);
       ri  := rv.RandInt(0, 1);
       a   := rv.RandInt(0, A_HI);
-      nn  := rv.RandInt(0, NN_MAX);
+      if ri = 1 and err = 0 then
+        err := 1;
+      end if;
       mp  := rv.RandInt(0, 1);
       if (rv.RandInt(0, 2) = 0) then
         n := RESET;                                  -- bias the rescale path
       else
         n := rv.RandInt(1, RESET);
       end if;
-      drive_check(err, ri, a, n, nn, mp, "rand");
+      nn := rv.RandInt(0, n - 1);
+      drive_check(err, ri, a, n, nn, mp, "rand coherent");
       exit when IsCovered(cov) and i > 600;
 
     end loop;
 
     WriteBin(cov);
-    AffirmIf(IsCovered(cov), "rescale x errNeg x RItype coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "rescale x errNeg x RItype coverage closed");
 
     end_of_test("tb_a23_osvvm");
     wait;

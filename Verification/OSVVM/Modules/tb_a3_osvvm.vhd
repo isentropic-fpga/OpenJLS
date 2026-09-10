@@ -17,6 +17,7 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
   use work.openjls_pkg.all;
+  use work.olo_base_pkg_math.log2ceil;
 
 library osvvm;
   context osvvm.OsvvmContext;
@@ -25,11 +26,11 @@ library tb_support;
   use tb_support.tb_support_pkg.all;
 
 entity tb_a3_osvvm is
+  generic (BITNESS : natural range 8 to 16 := CO_BITNESS_STD);
 end entity tb_a3_osvvm;
 
 architecture sim of tb_a3_osvvm is
 
-  constant BITNESS : natural := CO_BITNESS_STD;
   constant D_MIN   : integer := -(2 ** BITNESS);
   constant D_MAX   : integer := (2 ** BITNESS) - 1;
 
@@ -83,7 +84,7 @@ begin
       else
         run := 0;
       end if;
-      AffirmIfEqual(req, std_to_int(sModeRun), run, msg);
+      AffirmIfEqual(req, checked_bit(sModeRun), run, msg);
       ICover(cov, run);
 
     end procedure drive_check;
@@ -96,7 +97,9 @@ begin
     req := GetReqID("T87.A3", 100);
 
     cov := NewID("modeRun");
-    AddBins(cov, "modeRun", GenBin(0, 1, 2));
+    SetFieldName(cov, "modeRun");
+    AddBins(cov, "regular", GenBin(0));
+    AddBins(cov, "run", GenBin(1));
 
     -- Directed corners.
     drive_check(0, 0, 0, "run all-zero");
@@ -106,6 +109,18 @@ begin
     drive_check(D_MIN, D_MAX, D_MIN, "regular extremes");
 
     -- Random sweep, with the all-zero (run) case biased in.
+    -- A lone bit in any gradient must prevent run mode, including the sign bit.
+    for bit_index in 0 to BITNESS loop
+      if bit_index = BITNESS then
+        d1 := D_MIN;
+      else
+        d1 := 2 ** bit_index;
+      end if;
+      drive_check(d1, 0, 0, "walking D1");
+      drive_check(0, d1, 0, "walking D2");
+      drive_check(0, 0, d1, "walking D3");
+    end loop;
+
     for i in 1 to N_RAND loop
 
       if (rv.DistValInt(((1, 1), (0, 6))) = 1) then
@@ -123,7 +138,7 @@ begin
     end loop;
 
     WriteBin(cov);
-    AffirmIf(IsCovered(cov), "modeRun coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "modeRun coverage closed");
 
     end_of_test("tb_a3_osvvm");
     wait;

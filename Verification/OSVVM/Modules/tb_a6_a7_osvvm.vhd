@@ -36,6 +36,7 @@ begin
 
   stimulus : process is
     variable rv : RandomPType;
+    variable req : AlertLogIDType;
     variable cov : CoverageIDType;
     variable sign_value : std_logic;
     variable lower_edge, upper_edge : integer;
@@ -72,7 +73,7 @@ begin
       sCq <= to_signed(cq, sCq'length);
       sSign <= sign_bit;
       wait for 1 ns;
-      AffirmIfEqual(to_integer(sError), expected, "A.6/A.7 sequential reference");
+      AffirmIfEqual(req, checked_integer(sError), expected, "A.6/A.7 sequential reference");
       assert to_integer(sError) = expected
         report "Ix=" & integer'image(ix) & " Px=" & integer'image(px) &
                " Cq=" & integer'image(cq) & " sign=" & std_logic'image(sign_bit)
@@ -106,8 +107,14 @@ begin
     SetAlertLogName("tb_a6_a7_osvvm");
     SetLogEnable(PASSED, FALSE);
     rv.InitSeed(rv'instance_name);
+    req := GetReqID("T87.A6-A7", 20000);
     cov := NewID("sign x clipping region");
-    AddCross(cov, "sign x clipping region", GenBin(0, 1, 2), GenBin(0, 2, 3));
+    SetFieldName(cov, "sign", "clipping region");
+    for axis0 in 0 to 1 loop
+      for axis1 in 0 to 2 loop
+        AddCross(cov, "sign=" & to_string(axis0) & " / " & "clipping region=" & to_string(axis1), GenBin(axis0), GenBin(axis1));
+      end loop;
+    end loop;
 
     for cq in CO_MIN_CQ to CO_MAX_CQ loop
       for sign_index in 0 to 1 loop
@@ -148,7 +155,7 @@ begin
             rv.RandInt(CO_MIN_CQ, CO_MAX_CQ), sign_value);
     end loop;
     WriteBin(cov);
-    AffirmIf(IsCovered(cov), "both signs and all clipping regions covered");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "both signs and all clipping regions covered");
     end_of_test("tb_a6_a7_osvvm");
     wait;
   end process;

@@ -17,6 +17,7 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
   use work.openjls_pkg.all;
+  use work.olo_base_pkg_math.log2ceil;
 
 library osvvm;
   context osvvm.OsvvmContext;
@@ -25,11 +26,11 @@ library tb_support;
   use tb_support.tb_support_pkg.all;
 
 entity tb_a1_osvvm is
+  generic (BITNESS : natural range 8 to 16 := CO_BITNESS_STD);
 end entity tb_a1_osvvm;
 
 architecture sim of tb_a1_osvvm is
 
-  constant BITNESS : natural := CO_BITNESS_STD;
   constant PX_MAX  : integer := (2 ** BITNESS) - 1;
 
   signal sA  : unsigned(BITNESS - 1 downto 0);
@@ -94,9 +95,9 @@ begin
       sC <= to_unsigned(cv, BITNESS);
       sD <= to_unsigned(dv, BITNESS);
       wait for 1 ns;
-      AffirmIfEqual(req, to_integer(sD1), dv - bv, msg & " D1");
-      AffirmIfEqual(req, to_integer(sD2), bv - cv, msg & " D2");
-      AffirmIfEqual(req, to_integer(sD3), cv - av, msg & " D3");
+      AffirmIfEqual(req, checked_integer(sD1), dv - bv, msg & " D1");
+      AffirmIfEqual(req, checked_integer(sD2), bv - cv, msg & " D2");
+      AffirmIfEqual(req, checked_integer(sD3), cv - av, msg & " D3");
       ICover(cov, (sgn(dv - bv), sgn(bv - cv), sgn(cv - av)));
 
     end procedure drive_check;
@@ -109,12 +110,14 @@ begin
     req := GetReqID("T87.A1", 200);
 
     cov := NewID("sgnD1 x sgnD2 x sgnD3");
-    AddCross(cov, 
-                 "sgnD1 x sgnD2 x sgnD3",
-                 GenBin(0, 1, 2),
-                 GenBin(0, 1, 2),
-                 GenBin(0, 1, 2)
-               );
+    SetFieldName(cov, "sgnD1", "sgnD2", "sgnD3");
+    for axis0 in 0 to 1 loop
+      for axis1 in 0 to 1 loop
+        for axis2 in 0 to 1 loop
+          AddCross(cov, "sgnD1=" & to_string(axis0) & " / " & "sgnD2=" & to_string(axis1) & " / " & "sgnD3=" & to_string(axis2), GenBin(axis0), GenBin(axis1), GenBin(axis2));
+        end loop;
+      end loop;
+    end loop;
 
     -- Directed corners.
     drive_check(0, 0, 0, 0, "all-zero");
@@ -123,6 +126,14 @@ begin
     drive_check(PX_MAX, 0, PX_MAX, 0, "alternating2");
 
     -- Random sweep.
+    -- Walk every input bit independently; all-zero neighbours isolate wiring.
+    for bit_index in 0 to BITNESS - 1 loop
+      drive_check(2 ** bit_index, 0, 0, 0, "walking A");
+      drive_check(0, 2 ** bit_index, 0, 0, "walking B");
+      drive_check(0, 0, 2 ** bit_index, 0, "walking C");
+      drive_check(0, 0, 0, 2 ** bit_index, "walking D");
+    end loop;
+
     for i in 1 to N_RAND loop
 
       a := rv.RandInt(0, PX_MAX);
@@ -135,7 +146,7 @@ begin
     end loop;
 
     WriteBin(cov);
-    AffirmIf(IsCovered(cov), "sign-octant coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "sign-octant coverage closed");
 
     end_of_test("tb_a1_osvvm");
     wait;

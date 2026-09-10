@@ -97,6 +97,8 @@ architecture sim of tb_openjls_axis_regs_osvvm is
 
   signal clk    : std_logic := '0';
   signal nReset : std_logic := '0';
+  signal sApplyObserved : std_logic := '0';
+  signal sStreamReset : std_logic;
 
   -- AXI4-Lite manager <-> DUT control bus (record wired to the DUT's flat ports)
   signal AxiBus : Axi4LiteRecType(
@@ -149,6 +151,24 @@ architecture sim of tb_openjls_axis_regs_osvvm is
   );
 
 begin
+
+  stream_contract : monitor_stream(clk, sStreamReset, sJlsTValid, sJlsTReady, sJlsTData, sJlsTKeep, sJlsTLast, '1', false);
+
+  -- APPLY is an explicit stream abort; observe its accepted bus transaction
+  -- so the protocol monitor permits reset to discard a pending output beat.
+  sStreamReset <= not nReset or sApplyObserved;
+  observe_apply : process(clk) is
+  begin
+    if rising_edge(clk) then
+      sApplyObserved <= '0';
+      if nReset = '1' and AxiBus.WriteAddress.Valid = '1' and AxiBus.WriteAddress.Ready = '1'
+         and AxiBus.WriteData.Valid = '1' and AxiBus.WriteData.Ready = '1'
+         and AxiBus.WriteAddress.Addr(7 downto 2) = A_CTRL(7 downto 2)
+         and AxiBus.WriteData.Strb(0) = '1' and AxiBus.WriteData.Data(0) = '1' then
+        sApplyObserved <= '1';
+      end if;
+    end if;
+  end process;
 
   clk    <= not clk after CLK_PERIOD / 2;
   nReset <= '0', '1' after 8 * CLK_PERIOD;
@@ -209,6 +229,7 @@ begin
 
   u_tx : AxiStreamTransmitter
     generic map (
+      MODEL_ID_NAME => "PixelInput",
       INIT_ID     => CINIT_ID,
       INIT_DEST   => CINIT_DEST,
       INIT_USER   => CINIT_USER,
@@ -225,6 +246,7 @@ begin
 
   u_rx : AxiStreamReceiver
     generic map (
+      MODEL_ID_NAME => "EncodedOutput",
       INIT_ID     => CINIT_ID,
       INIT_DEST   => CINIT_DEST,
       INIT_USER   => CINIT_USER,
@@ -246,6 +268,7 @@ begin
 
     variable rdata    : std_logic_vector(DATA_W - 1 downto 0);
     variable numBytes : integer;
+    variable delayCov : DelayCoverageIDType;
     variable rxByte   : std_logic_vector(7 downto 0);
     variable reqReg   : AlertLogIDType;
     variable reqApply : AlertLogIDType;
@@ -264,6 +287,14 @@ begin
     reqAbort := GetReqID("OJLS.AxiAbortReencode", H3_EXPECTED'length);
 
     wait until nReset = '1';
+    GetDelayCoverageID(StreamTxRec, delayCov);
+    label_delay_coverage(delayCov, "Pixel input");
+    GetDelayCoverageID(StreamRxRec, delayCov);
+    label_delay_coverage(delayCov, "Encoded output");
+    for channel in 1 to 5 loop
+      GetDelayCoverageID(ManagerRec, delayCov, channel);
+      label_delay_coverage(delayCov, "AXI-Lite channel " & to_string(channel));
+    end loop;
     WaitForClock(ManagerRec, 2);
 
     ----------------------------------------------------------------------------
@@ -311,6 +342,33 @@ begin
     Read(ManagerRec, A_WIDTH, rdata);
     AffirmIfEqual(reqReg, rdata(15 downto 0), x"0204", "WIDTH WSTRB byte1 merge");
 
+    -- Address and data may arrive independently; delay B/R acceptance too.
+    SetAxi4Options(ManagerRec, WRITE_RESPONSE_READY_BEFORE_VALID, false);
+    SetAxi4Options(ManagerRec, WRITE_RESPONSE_READY_DELAY_CYCLES, 5);
+    SetAxi4Options(ManagerRec, READ_DATA_READY_BEFORE_VALID, false);
+    SetAxi4Options(ManagerRec, READ_DATA_READY_DELAY_CYCLES, 5);
+    for skew in 0 to 1 loop
+      SetAxi4Options(ManagerRec, WRITE_ADDRESS_VALID_DELAY_CYCLES, 5 * skew);
+      SetAxi4Options(ManagerRec, WRITE_DATA_VALID_DELAY_CYCLES, 5 * (1 - skew));
+      Write(ManagerRec, A_HEIGHT, x"00000003");
+      Read(ManagerRec, A_HEIGHT, rdata);
+      AffirmIfEqual(reqReg, rdata, x"00000003", "skewed AW/W with delayed responses");
+    end loop;
+    SetAxi4Options(ManagerRec, WRITE_ADDRESS_VALID_DELAY_CYCLES, 0);
+    SetAxi4Options(ManagerRec, WRITE_DATA_VALID_DELAY_CYCLES, 0);
+    -- Upper byte strobes must neither change dimensions nor trigger APPLY.
+    Write(ManagerRec, x"00000016", x"FF");
+    Write(ManagerRec, x"00000017", x"FF");
+    Read(ManagerRec, A_HEIGHT, rdata);
+    AffirmIfEqual(reqReg, rdata, x"00000003", "upper HEIGHT lanes ignored");
+    Write(ManagerRec, A_HEIGHT, x"00000000");
+    Read(ManagerRec, A_HEIGHT, rdata);
+    AffirmIfEqual(reqReg, rdata(15 downto 0), MAX_H_SLV, "HEIGHT zero clamps to maximum");
+    Write(ManagerRec, A_HEIGHT, x"0000FFFF");
+    Read(ManagerRec, A_HEIGHT, rdata);
+    AffirmIfEqual(reqReg, rdata(15 downto 0), MAX_H_SLV, "HEIGHT over maximum clamps");
+    Write(ManagerRec, A_UNMAP, x"DEADBEEF");
+
     -- RO write is dropped (OKAY response), value unchanged
     Write(ManagerRec, A_ID, x"DEADBEEF");
     Read(ManagerRec, A_ID, rdata);
@@ -343,7 +401,7 @@ begin
     AffirmIfEqual(reqApply, numBytes, H3_EXPECTED'length, "APPLY encode byte count");
     for i in 0 to numBytes - 1 loop
       Pop(StreamRxRec.BurstFifo, rxByte);
-      AffirmIfEqual(reqApply, to_integer(unsigned(rxByte)), H3_EXPECTED(i),
+      AffirmIfEqual(reqApply, checked_integer(unsigned(rxByte)), H3_EXPECTED(i),
                     "APPLY encode byte " & to_string(i));
     end loop;
 
@@ -356,7 +414,8 @@ begin
     -- the burst. The fresh golden stream must sit byte-exact at the tail.
     PushBurst(StreamTxRec.BurstFifo, H3_PIXELS(0 to H3_PIXELS'length / 2 - 1));
     SendBurstAsync(StreamTxRec, H3_PIXELS'length / 2);
-    WaitForClock(ManagerRec, 50);                      -- half image fully consumed
+    WaitForTransaction(StreamTxRec);                  -- all half-image pixels accepted
+    WaitForClock(ManagerRec, 50);                      -- drain the core pipeline
     Write(ManagerRec, A_CTRL, x"00000001");            -- APPLY: abort + re-arm
     WaitForClock(ManagerRec, 4);
 
@@ -372,7 +431,7 @@ begin
     for i in 0 to numBytes - 1 loop
       Pop(StreamRxRec.BurstFifo, rxByte);
       if i >= vResidue then
-        AffirmIfEqual(reqAbort, to_integer(unsigned(rxByte)),
+        AffirmIfEqual(reqAbort, checked_integer(unsigned(rxByte)),
                       H3_EXPECTED(i - vResidue),
                       "post-abort byte " & to_string(i - vResidue));
       end if;
@@ -383,5 +442,41 @@ begin
     wait;
 
   end process p_stim;
+
+  response_hold_monitor : process(clk) is
+    variable hold_b, hold_r : boolean := false;
+    variable rdata : std_logic_vector(31 downto 0);
+    variable bresp, rresp : std_logic_vector(1 downto 0);
+    constant id : AlertLogIDType := GetAlertLogID("AxiLiteResponseHold");
+  begin
+    if rising_edge(clk) then
+      if nReset = '0' then
+        hold_b := false;
+        hold_r := false;
+      else
+        if hold_b then
+          AffirmIf(id, AxiBus.WriteResponse.Valid = '1', "BVALID held");
+          AffirmIfEqual(id, AxiBus.WriteResponse.Resp, bresp, "BRESP held");
+        end if;
+        if hold_r then
+          AffirmIf(id, AxiBus.ReadData.Valid = '1', "RVALID held");
+          AffirmIfEqual(id, AxiBus.ReadData.Data, rdata, "RDATA held");
+          AffirmIfEqual(id, AxiBus.ReadData.Resp, rresp, "RRESP held");
+        end if;
+        hold_b := AxiBus.WriteResponse.Valid = '1' and AxiBus.WriteResponse.Ready = '0';
+        hold_r := AxiBus.ReadData.Valid = '1' and AxiBus.ReadData.Ready = '0';
+        bresp := AxiBus.WriteResponse.Resp;
+        rresp := AxiBus.ReadData.Resp;
+        rdata := AxiBus.ReadData.Data;
+      end if;
+    end if;
+  end process;
+
+  watchdog : process is
+  begin
+    wait for 20 ms;
+    Alert(GetAlertLogID("Watchdog"), "AXI transaction or image completion timed out", FAILURE);
+    std.env.stop;
+  end process;
 
 end architecture sim;

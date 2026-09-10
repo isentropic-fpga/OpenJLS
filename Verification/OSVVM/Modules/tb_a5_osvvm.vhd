@@ -16,6 +16,7 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
   use work.openjls_pkg.all;
+  use work.olo_base_pkg_math.log2ceil;
 
 library osvvm;
   context osvvm.OsvvmContext;
@@ -24,11 +25,11 @@ library tb_support;
   use tb_support.tb_support_pkg.all;
 
 entity tb_a5_osvvm is
+  generic (BITNESS : natural range 8 to 16 := CO_BITNESS_STD);
 end entity tb_a5_osvvm;
 
 architecture sim of tb_a5_osvvm is
 
-  constant BITNESS : natural := CO_BITNESS_STD;
   constant PX_MAX  : integer := (2 ** BITNESS) - 1;
 
   signal sA  : unsigned(BITNESS - 1 downto 0);
@@ -123,7 +124,7 @@ begin
       sB <= to_unsigned(bv, BITNESS);
       sC <= to_unsigned(cv, BITNESS);
       wait for 1 ns;
-      AffirmIfEqual(req, to_integer(sPx), predict(av, bv, cv), msg &
+      AffirmIfEqual(req, checked_integer(sPx), predict(av, bv, cv), msg &
                     " A=" & integer'image(av) &
                     " B=" & integer'image(bv) &
                     " C=" & integer'image(cv));
@@ -139,7 +140,10 @@ begin
     req := GetReqID("T87.A5", 200);
 
     cov := NewID("branch");
-    AddBins(cov, "branch", GenBin(0, 2, 3));
+    SetFieldName(cov, "branch");
+    AddBins(cov, "C >= max: choose min", GenBin(0));
+    AddBins(cov, "C <= min: choose max", GenBin(1));
+    AddBins(cov, "interpolate", GenBin(2));
 
     -- Directed corners.
     drive_check(10, 5, 10, "c=max");
@@ -151,6 +155,14 @@ begin
     drive_check(PX_MAX, 0, 0, "c<=min big span");
 
     -- Random sweep.
+    -- Equality and interpolation near the full-width addition carry boundary.
+    for delta in -1 to 1 loop
+      drive_check(PX_MAX, PX_MAX - 2, PX_MAX - 1 + delta, "upper interpolation");
+      drive_check(PX_MAX - 2, PX_MAX, PX_MAX - 1 + delta, "swapped interpolation");
+      drive_check(0, 2, 1 + delta, "lower interpolation");
+      drive_check(2, 0, 1 + delta, "swapped lower interpolation");
+    end loop;
+
     for i in 1 to N_RAND loop
 
       a := rv.RandInt(0, PX_MAX);
@@ -162,7 +174,7 @@ begin
     end loop;
 
     WriteBin(cov);
-    AffirmIf(IsCovered(cov), "branch coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "branch coverage closed");
 
     end_of_test("tb_a5_osvvm");
     wait;

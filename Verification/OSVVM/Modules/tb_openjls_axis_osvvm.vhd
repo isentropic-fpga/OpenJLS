@@ -142,6 +142,8 @@ architecture sim of tb_openjls_axis_osvvm is
 
 begin
 
+  stream_contract : monitor_stream(clk, sCoreRst, sJlsTValid, sJlsTReady, sJlsTData, sJlsTKeep, sJlsTLast, '1', false);
+
   assert BITNESS = 8 or BITNESS = 12
     report "tb_openjls_axis_osvvm carries golden vectors for BITNESS 8 and 12 only"
     severity failure;
@@ -178,6 +180,7 @@ begin
 
   u_tx : AxiStreamTransmitter
     generic map (
+      MODEL_ID_NAME => "PixelInput",
       INIT_ID     => CINIT_ID,
       INIT_DEST   => CINIT_DEST,
       INIT_USER   => CINIT_USER,
@@ -201,6 +204,7 @@ begin
 
   u_rx : AxiStreamReceiver
     generic map (
+      MODEL_ID_NAME => "EncodedOutput",
       INIT_ID     => CINIT_ID,
       INIT_DEST   => CINIT_DEST,
       INIT_USER   => CINIT_USER,
@@ -234,6 +238,7 @@ begin
   p_stim : process is
 
     variable numBytes : integer;
+    variable delayCov : DelayCoverageIDType;
     variable rxByte   : std_logic_vector(7 downto 0);
     variable reqPass  : AlertLogIDType;
 
@@ -253,6 +258,10 @@ begin
     reqPass := GetReqID("OJLS.AxiStreamTransparent", 5 * IMG_EXPECTED'length);
 
     wait until nReset = '1';
+    GetDelayCoverageID(StreamTxRec, delayCov);
+    label_delay_coverage(delayCov, "Pixel input");
+    GetDelayCoverageID(StreamRxRec, delayCov);
+    label_delay_coverage(delayCov, "Encoded output");
     WaitForClock(StreamTxRec, 2);
     -- Pixel side in word mode: one burst-FIFO element per beat, so a 12-bit
     -- sample rides its 16-bit lane unsplit. Encoded side in byte mode:
@@ -296,7 +305,7 @@ begin
                     "run " & to_string(run) & " encoded byte count");
       for i in 0 to numBytes - 1 loop
         Pop(StreamRxRec.BurstFifo, rxByte);
-        AffirmIfEqual(reqPass, to_integer(unsigned(rxByte)), IMG_EXPECTED(i),
+        AffirmIfEqual(reqPass, checked_integer(unsigned(rxByte)), IMG_EXPECTED(i),
                       "run " & to_string(run) & " byte " & to_string(i));
       end loop;
 
@@ -307,5 +316,12 @@ begin
     wait;
 
   end process p_stim;
+
+  watchdog : process is
+  begin
+    wait for 20 ms;
+    Alert(GetAlertLogID("Watchdog"), "AXI transaction or image completion timed out", FAILURE);
+    std.env.stop;
+  end process;
 
 end architecture sim;

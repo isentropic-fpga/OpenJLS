@@ -20,6 +20,7 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
   use work.openjls_pkg.all;
+  use work.olo_base_pkg_math.log2ceil;
 
 library osvvm;
   context osvvm.OsvvmContext;
@@ -28,11 +29,11 @@ library tb_support;
   use tb_support.tb_support_pkg.all;
 
 entity tb_a14_osvvm is
+  generic (BITNESS : natural range 8 to 16 := CO_BITNESS_STD);
 end entity tb_a14_osvvm;
 
 architecture sim of tb_a14_osvvm is
 
-  constant BITNESS : natural := CO_BITNESS_STD;
   constant RC_W    : natural := 16;
   constant PX_MAX  : integer := (2 ** BITNESS) - 1;
   constant RC_MOD  : integer := 2 ** RC_W;
@@ -103,9 +104,9 @@ begin
         expC := rcv;
       end if;
 
-      AffirmIfEqual(req, to_integer(sRunCntO), expC, msg & " runCnt");
-      AffirmIfEqual(req, std_to_int(sRunHit), hit, msg & " runHit");
-      AffirmIfEqual(req, std_to_int(sRunCont), hit * std_to_int(not eol), msg & " continue");
+      AffirmIfEqual(req, checked_integer(sRunCntO), expC, msg & " runCnt");
+      AffirmIfEqual(req, checked_bit(sRunHit), hit, msg & " runHit");
+      AffirmIfEqual(req, checked_bit(sRunCont), hit * std_to_int(not eol), msg & " continue");
       ICover(cov, (hit, std_to_int(eol)));
 
     end procedure drive_check;
@@ -117,7 +118,12 @@ begin
     rv.InitSeed(rv'instance_name);
     req := GetReqID("T87.A14", 100);
     cov := NewID("runHit x eol");
-    AddCross(cov, "runHit x eol", GenBin(0, 1, 2), GenBin(0, 1, 2));
+    SetFieldName(cov, "runHit", "eol");
+    for axis0 in 0 to 1 loop
+      for axis1 in 0 to 1 loop
+        AddCross(cov, "runHit=" & to_string(axis0) & " / " & "eol=" & to_string(axis1), GenBin(axis0), GenBin(axis1));
+      end loop;
+    end loop;
 
     -- Directed corners.
     drive_check(7, 7, 0, '0', "hit no-eol");
@@ -140,7 +146,7 @@ begin
     end loop;
 
     WriteBin(cov);
-    AffirmIf(IsCovered(cov), "runHit x eol coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "runHit x eol coverage closed");
 
     end_of_test("tb_a14_osvvm");
     wait;

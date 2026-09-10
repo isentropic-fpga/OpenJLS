@@ -22,6 +22,7 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
   use work.openjls_pkg.all;
+  use work.olo_base_pkg_math.log2ceil;
 
 library osvvm;
   context osvvm.OsvvmContext;
@@ -30,20 +31,21 @@ library tb_support;
   use tb_support.tb_support_pkg.all;
 
 entity tb_a11_1_osvvm is
+  generic (BITNESS : natural range 8 to 16 := CO_BITNESS_STD);
 end entity tb_a11_1_osvvm;
 
 architecture sim of tb_a11_1_osvvm is
 
-  constant K_WIDTH     : natural := CO_K_WIDTH_STD;
-  constant QBPP        : natural := CO_QBPP_STD;
-  constant LIMIT       : natural := CO_LIMIT_STD;
-  constant UNARY_W     : natural := CO_UNARY_WIDTH_STD;
-  constant SUFFIX_W    : natural := CO_SUFFIX_WIDTH_STD;
-  constant SUFFIXLEN_W : natural := CO_SUFFIXLEN_WIDTH_STD;
-  constant MAPPED_W    : natural := CO_MAPPED_ERROR_VAL_WIDTH_STD;
+  constant K_WIDTH     : natural := log2ceil(BITNESS + log2ceil(CO_RESET_STD) + 1);
+  constant QBPP        : natural := BITNESS;
+  constant LIMIT       : natural := 4 * BITNESS;
+  constant UNARY_W     : natural := log2ceil(3 * BITNESS);
+  constant SUFFIX_W    : natural := BITNESS + log2ceil(CO_RESET_STD);
+  constant SUFFIXLEN_W : natural := math_max(log2ceil(BITNESS + log2ceil(CO_RESET_STD) + 1), 5);
+  constant MAPPED_W    : natural := BITNESS + 2;
 
   -- Valid k domain (encoder assumptions: k <= SUFFIX_W and k <= MAPPED_W).
-  constant K_HI        : integer := math_min(QBPP, math_min(SUFFIX_W, MAPPED_W));
+  constant K_HI        : integer := SUFFIX_W;
   constant MERR_MAX    : integer := (2 ** MAPPED_W) - 1;
 
   signal sK         : unsigned(K_WIDTH - 1 downto 0);
@@ -63,7 +65,7 @@ architecture sim of tb_a11_1_osvvm is
 
     if (riMode = '1') then
       -- glimit = LIMIT - J - 1; threshold = glimit - qbpp - 1.
-      return LIMIT - CO_J_TABLE(runIdx) - QBPP - 2;
+      return LIMIT - TB_J_TABLE(runIdx) - QBPP - 2;
     else
       return LIMIT - QBPP - 1;
     end if;
@@ -97,6 +99,7 @@ begin
     variable rv      : RandomPType;
     variable cov     : CoverageIDType;
     variable req     : AlertLogIDType;
+    variable covK, covJ : CoverageIDType;
     variable k       : integer;
     variable merr    : integer;
     variable ridx    : integer;
@@ -142,11 +145,13 @@ begin
         escape := 1;
       end if;
 
-      AffirmIfEqual(req, to_integer(sUnary), expUn, msg & " unary");
-      AffirmIfEqual(req, to_integer(sSuffixLen), expLen, msg & " sufLen");
-      AffirmIfEqual(req, to_integer(sSuffixVal), expVal, msg & " sufVal");
+      AffirmIfEqual(req, checked_integer(sUnary), expUn, msg & " unary");
+      AffirmIfEqual(req, checked_integer(sSuffixLen), expLen, msg & " sufLen");
+      AffirmIfEqual(req, checked_integer(sSuffixVal), expVal, msg & " sufVal");
 
       ICover(cov, (std_to_int(ri), escape));
+      ICover(covK, kv);
+      if ri = '1' then ICover(covJ, rix); end if;
 
     end procedure drive_check;
 
@@ -157,8 +162,23 @@ begin
     rv.InitSeed(rv'instance_name);
     req := GetReqID("T87.A11.1", 400);
 
+    covK := NewID("Golomb k");
+    SetFieldName(covK, "k");
+    for kval in 0 to K_HI loop
+      AddBins(covK, "k=" & to_string(kval), GenBin(kval));
+    end loop;
+    covJ := NewID("Run interruption J table");
+    SetFieldName(covJ, "RUNindex");
+    for index in 0 to 31 loop
+      AddBins(covJ, "RUNindex=" & to_string(index) & " J=" & to_string(TB_J_TABLE(index)), GenBin(index));
+    end loop;
     cov := NewID("riMode x escape");
-    AddCross(cov, "riMode x escape", GenBin(0, 1, 2), GenBin(0, 1, 2));
+    SetFieldName(cov, "riMode", "escape");
+    for axis0 in 0 to 1 loop
+      for axis1 in 0 to 1 loop
+        AddCross(cov, "riMode=" & to_string(axis0) & " / " & "escape=" & to_string(axis1), GenBin(axis0), GenBin(axis1));
+      end loop;
+    end loop;
 
     -- Directed corners.
     drive_check(0, 0, '0', 0, "reg merr0 k0");           -- non-escape, all minimal
@@ -169,6 +189,22 @@ begin
     drive_check(2, 5, '1', 10, "RI non-escape");
 
     -- Random sweep.
+    -- Every J entry, both modes, and every supported k at the escape threshold.
+    for ri in 0 to 1 loop
+      for rix in 0 to 31 loop
+        for kv in 0 to SUFFIX_W loop
+          drive_check(kv, 0, bool2bit(ri = 1), rix, "zero suffix");
+          drive_check(kv, MERR_MAX, bool2bit(ri = 1), rix, "maximum suffix");
+          for delta in -1 to 1 loop
+            merr := threshold_of(bool2bit(ri = 1), rix) * (2 ** kv) + delta;
+            if merr >= 0 and merr <= MERR_MAX then
+              drive_check(kv, merr, bool2bit(ri = 1), rix, "escape threshold");
+            end if;
+          end loop;
+        end loop;
+      end loop;
+    end loop;
+
     for i in 1 to N_RAND loop
 
       k    := rv.RandInt(0, K_HI);
@@ -183,8 +219,12 @@ begin
 
     end loop;
 
+    WriteBin(covK);
+    WriteBin(covJ);
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covK), "every supported k covered");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covJ), "every J table entry covered");
     WriteBin(cov);
-    AffirmIf(IsCovered(cov), "riMode x escape coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "riMode x escape coverage closed");
 
     end_of_test("tb_a11_1_osvvm");
     wait;

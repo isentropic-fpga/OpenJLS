@@ -16,6 +16,7 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
   use work.openjls_pkg.all;
+  use work.olo_base_pkg_math.log2ceil;
 
 library osvvm;
   context osvvm.OsvvmContext;
@@ -24,11 +25,11 @@ library tb_support;
   use tb_support.tb_support_pkg.all;
 
 entity tb_a7_osvvm is
+  generic (BITNESS : natural range 8 to 16 := CO_BITNESS_STD);
 end entity tb_a7_osvvm;
 
 architecture sim of tb_a7_osvvm is
 
-  constant BITNESS : natural := CO_BITNESS_STD;
   constant PX_MAX  : integer := (2 ** BITNESS) - 1;
 
   signal sIx        : unsigned(BITNESS - 1 downto 0);
@@ -56,8 +57,10 @@ architecture sim of tb_a7_osvvm is
   ) return integer is
   begin
 
-    if (v < 0) then
+    if v < 0 then
       return 1;
+    elsif v = 0 then
+      return 2;
     else
       return 0;
     end if;
@@ -104,7 +107,7 @@ begin
       sSign <= sgv;
       wait for 1 ns;
       e := ref_err(ixv, pxv, sgv);
-      AffirmIfEqual(req, to_integer(sErrorVal), e, msg);
+      AffirmIfEqual(req, checked_integer(sErrorVal), e, msg);
       ICover(cov, (std_to_int(sgv), sgn(e)));
 
     end procedure drive_check;
@@ -117,7 +120,12 @@ begin
     req := GetReqID("T87.A7", 200);
 
     cov := NewID("signIn x signErr");
-    AddCross(cov, "signIn x signErr", GenBin(0, 1, 2), GenBin(0, 1, 2));
+    SetFieldName(cov, "signIn", "signErr");
+    for axis0 in 0 to 1 loop
+      for axis1 in 0 to 2 loop
+        AddCross(cov, "signIn=" & to_string(axis0) & " / " & "signErr=" & to_string(axis1), GenBin(axis0), GenBin(axis1));
+      end loop;
+    end loop;
 
     -- Directed corners.
     drive_check(0, 0, CO_SIGN_POS, "zero pos");
@@ -127,6 +135,11 @@ begin
     drive_check(0, PX_MAX, CO_SIGN_NEG, "min neg");
 
     -- Random sweep.
+    for pixel in 0 to PX_MAX loop
+      drive_check(pixel, pixel, CO_SIGN_POS, "zero positive sign");
+      drive_check(pixel, pixel, CO_SIGN_NEG, "zero negative sign");
+    end loop;
+
     for i in 1 to N_RAND loop
 
       ix    := rv.RandInt(0, PX_MAX);
@@ -141,7 +154,7 @@ begin
     end loop;
 
     WriteBin(cov);
-    AffirmIf(IsCovered(cov), "sign cross coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "sign cross coverage closed");
 
     end_of_test("tb_a7_osvvm");
     wait;

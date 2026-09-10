@@ -17,6 +17,7 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
   use work.openjls_pkg.all;
+  use work.olo_base_pkg_math.log2ceil;
 
 library osvvm;
   context osvvm.OsvvmContext;
@@ -25,13 +26,14 @@ library tb_support;
   use tb_support.tb_support_pkg.all;
 
 entity tb_a21_osvvm is
+  generic (BITNESS : natural range 8 to 16 := CO_BITNESS_STD);
 end entity tb_a21_osvvm;
 
 architecture sim of tb_a21_osvvm is
 
-  constant K_WIDTH     : natural := CO_K_WIDTH_STD;
+  constant K_WIDTH     : natural := log2ceil(BITNESS + log2ceil(CO_RESET_STD) + 1);
   constant N_WIDTH     : natural := CO_NQ_WIDTH_STD;
-  constant ERROR_WIDTH : natural := CO_ERROR_VALUE_WIDTH_STD;
+  constant ERROR_WIDTH : natural := BITNESS + 1;
   constant K_MAX       : integer := (2 ** K_WIDTH) - 1;
   constant N_MAX       : integer := (2 ** N_WIDTH) - 1;
   constant ERR_MIN     : integer := -(2 ** (ERROR_WIDTH - 1));
@@ -121,7 +123,7 @@ begin
       sNn     <= to_unsigned(nn, N_WIDTH);
       sNq     <= to_unsigned(nq, N_WIDTH);
       wait for 1 ns;
-      AffirmIfEqual(req, std_to_int(sMap), std_to_int(ref_map(k, err, nn, nq)),
+      AffirmIfEqual(req, checked_bit(sMap), std_to_int(ref_map(k, err, nn, nq)),
                     msg & " k=" & integer'image(k) & " err=" & integer'image(err) &
                     " nn=" & integer'image(nn) & " nq=" & integer'image(nq));
       ICover(cov, clause_of(k, err, nn, nq));
@@ -136,7 +138,11 @@ begin
     req := GetReqID("T87.A21", 400);
 
     cov := NewID("clause");
-    AddBins(cov, "clause", GenBin(0, 3, 4));
+    SetFieldName(cov, "clause");
+    AddBins(cov, "positive special", GenBin(0));
+    AddBins(cov, "negative frequent", GenBin(1));
+    AddBins(cov, "negative nonzero k", GenBin(2));
+    AddBins(cov, "unmapped", GenBin(3));
 
     -- Directed: one per clause.
     drive_check(0, 5, 1, 10, "clause1");
@@ -146,6 +152,16 @@ begin
     drive_check(3, 0, 4, 4, "else zero");
 
     -- Random sweep with small-k and signed-Errval bias.
+    for nq in 1 to CO_RESET_STD loop
+      for nn in 0 to nq - 1 loop
+        for kval in 0 to K_MAX loop
+          for error in -1 to 1 loop
+            drive_check(kval, error, nn, nq, "coherent count/sign/k sweep");
+          end loop;
+        end loop;
+      end loop;
+    end loop;
+
     for i in 1 to N_RAND loop
 
       if (rv.RandInt(0, 1) = 0) then
@@ -163,7 +179,7 @@ begin
     end loop;
 
     WriteBin(cov);
-    AffirmIf(IsCovered(cov), "clause coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "clause coverage closed");
 
     end_of_test("tb_a21_osvvm");
     wait;

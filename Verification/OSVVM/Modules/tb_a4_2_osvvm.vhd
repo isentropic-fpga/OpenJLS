@@ -72,7 +72,7 @@ begin
       wait for 1 ns;
 
       e := 81 * q1 + 9 * q2 + q3;                 -- documented design mapping
-      AffirmIfEqual(req, to_integer(sQ), e,
+      AffirmIfEqual(req, checked_integer(sQ), e,
                     "map Q1=" & integer'image(q1) &
                     " Q2=" & integer'image(q2) &
                     " Q3=" & integer'image(q3));
@@ -103,7 +103,10 @@ begin
     -- Functional coverage: one bin per valid Q code, closed once every one of
     -- the 365 contexts has been produced (the exhaustive sweep guarantees it).
     cov := NewID("a4_2_Q_codes");
-    AddBins(cov, GenBin(0, 364));
+    SetFieldName(cov, "a4_2_Q_codes");
+    for code in 0 to 364 loop
+      AddBins(cov, "context_" & to_string(code), GenBin(code));
+    end loop;
 
     -- Exhaustive over the post-merge domain (leading non-zero non-negative).
     for q1 in 0 to 4 loop

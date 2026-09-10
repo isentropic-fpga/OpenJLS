@@ -19,6 +19,7 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
   use work.openjls_pkg.all;
+  use work.olo_base_pkg_math.log2ceil;
 
 library osvvm;
   context osvvm.OsvvmContext;
@@ -27,12 +28,12 @@ library tb_support;
   use tb_support.tb_support_pkg.all;
 
 entity tb_a19_osvvm is
+  generic (BITNESS : natural range 8 to 16 := CO_BITNESS_STD);
 end entity tb_a19_osvvm;
 
 architecture sim of tb_a19_osvvm is
 
-  constant BITNESS : natural := CO_BITNESS_STD;
-  constant RANGE_P : natural := CO_RANGE_STD;
+  constant RANGE_P : natural := 2 ** BITNESS;
   constant PX_MAX  : integer := (2 ** BITNESS) - 1;
   constant ERR_LO  : integer := -PX_MAX;
   constant ERR_HI  : integer := PX_MAX;
@@ -115,8 +116,8 @@ begin
         gh     := 0;
       end if;
 
-      AffirmIfEqual(req, to_integer(sErrOut), result, msg & " err");
-      AffirmIfEqual(req, std_to_int(sSign), std_to_int(eSign), msg & " sign");
+      AffirmIfEqual(req, checked_integer(sErrOut), result, msg & " err");
+      AffirmIfEqual(req, checked_bit(sSign), std_to_int(eSign), msg & " sign");
       ICover(cov, (std_to_int(eSign), wn, gh));
 
     end procedure drive_check;
@@ -128,13 +129,31 @@ begin
     rv.InitSeed(rv'instance_name);
     req := GetReqID("T87.A19", 300);
     cov := NewID("sign x wrapNeg x geHalf");
-    AddCross(cov, "sign x wrapNeg x geHalf", GenBin(0, 1, 2), GenBin(0, 1, 2), GenBin(0, 1, 2));
+    SetFieldName(cov, "sign", "wrapNeg", "geHalf");
+    for axis0 in 0 to 1 loop
+      for axis1 in 0 to 1 loop
+        for axis2 in 0 to 1 loop
+          AddCross(cov, "sign=" & to_string(axis0) & " / " & "wrapNeg=" & to_string(axis1) & " / " & "geHalf=" & to_string(axis2), GenBin(axis0), GenBin(axis1), GenBin(axis2));
+        end loop;
+      end loop;
+    end loop;
 
     -- Directed corners.
     drive_check(0, '0', 5, 1, "flip err0");           -- flip, e=0
     drive_check(ERR_HI, '0', 5, 1, "flip max");       -- flip large
     drive_check(ERR_LO, '1', 5, 1, "no flip (ri1)");
     drive_check(ERR_HI, '0', 1, 5, "no flip (ra<rb)");
+
+    -- Equality of Ra/Rb must not flip; both sides of each modulo threshold.
+    for ri in 0 to 1 loop
+      for relation in -1 to 1 loop
+        for delta in -1 to 1 loop
+          drive_check((RANGE_P + 1) / 2 + delta, bool2bit(ri = 1), 10 + relation, 10, "positive half");
+          drive_check(-(RANGE_P / 2) + delta, bool2bit(ri = 1), 10 + relation, 10, "negative half");
+          drive_check(delta, bool2bit(ri = 1), 10 + relation, 10, "zero boundary");
+        end loop;
+      end loop;
+    end loop;
 
     for i in 1 to N_RAND loop
 
@@ -151,7 +170,7 @@ begin
     end loop;
 
     WriteBin(cov);
-    AffirmIf(IsCovered(cov), "sign x wrapNeg x geHalf coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "sign x wrapNeg x geHalf coverage closed");
 
     end_of_test("tb_a19_osvvm");
     wait;

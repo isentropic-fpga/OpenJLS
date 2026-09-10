@@ -14,6 +14,10 @@ library osvvm;
 
 package tb_support_pkg is
 
+  constant TB_J_TABLE : integer_vector(0 to 31) :=
+    (0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3,
+     4, 4, 5, 5, 6, 6, 7, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+
   constant CLK_PERIOD_DEFAULT : time := 10 ns;
 
   -- T.87 Annex H.3 conformance image (4x4, 8-bit, NEAR=0) and its known-good
@@ -61,6 +65,23 @@ package tb_support_pkg is
      16#FF#, 16#5E#, 16#EA#, 16#1D#, 16#C0#, 16#7D#, 16#00#, 16#0F#, 16#00#, 16#00#, 16#00#,
      16#00#, 16#28#, 16#00#, 16#FF#, 16#D9#);
 
+  -- Label the delay models created internally by the OSVVM AXI components.
+  -- Their stock bins have blank names and repeated model names in YAML.
+  procedure label_delay_coverage(id : DelayCoverageIDType; prefix : string);
+
+  -- Numeric conversion must not turn X/U outputs into an apparently correct 0.
+  impure function checked_integer(value : unsigned) return integer;
+  impure function checked_integer(value : signed) return integer;
+  impure function checked_bit(value : std_logic) return integer;
+
+  procedure monitor_stream (
+    signal clk, rst, valid, ready : in std_logic;
+    signal data, keep : in std_logic_vector;
+    signal last : in std_logic;
+    constant reset_active : std_logic := '1';
+    constant msb_first : boolean := true
+  );
+
   procedure clk_tick (
     signal   clk    : in    std_logic;
     constant cycles : in    natural := 1
@@ -80,6 +101,111 @@ package tb_support_pkg is
 end package tb_support_pkg;
 
 package body tb_support_pkg is
+
+  procedure label_delay_coverage(id : DelayCoverageIDType; prefix : string) is
+    procedure label_model(model : CoverageIDType; label_text : string) is
+      variable bounds : RangeArrayType(1 to GetBinValLength(model));
+    begin
+      -- SetName is the pinned OSVVM API for renaming an already-created model;
+      -- replacing its ID would discard the VC's configured distributions.
+      SetName(model, prefix & " " & label_text);
+      if bounds'length = 1 then
+        SetFieldName(model, label_text);
+      else
+        SetFieldName(model, "ready after valid (0/1)", "delay cycles");
+      end if;
+      for bin_index in 1 to GetNumBins(model) loop
+        bounds := GetBinVal(model, bin_index);
+        if bounds'length = 1 then
+          SetBinName(model, bin_index, prefix & " " & label_text & " " &
+            to_string(bounds(1).Min) & ".." & to_string(bounds(1).Max));
+        else
+          SetBinName(model, bin_index, prefix & " " & label_text &
+            " readyAfterValid=" & to_string(bounds(1).Min) &
+            " cycles=" & to_string(bounds(2).Min) & ".." & to_string(bounds(2).Max));
+        end if;
+      end loop;
+    end procedure;
+  begin
+    label_model(id.BurstLengthCov, "burst length");
+    label_model(id.BurstDelayCov, "burst delay");
+    label_model(id.BeatDelayCov, "beat delay");
+  end procedure;
+
+
+
+  impure function checked_integer(value : unsigned) return integer is
+  begin
+    AlertIf(GetAlertLogID("KnownOutputs"), Is_X(std_logic_vector(value)), "unknown unsigned DUT output");
+    return to_integer(value);
+  end function;
+
+  impure function checked_integer(value : signed) return integer is
+  begin
+    AlertIf(GetAlertLogID("KnownOutputs"), Is_X(std_logic_vector(value)), "unknown signed DUT output");
+    return to_integer(value);
+  end function;
+
+  impure function checked_bit(value : std_logic) return integer is
+  begin
+    AlertIf(GetAlertLogID("KnownOutputs"), value /= '0' and value /= '1', "unknown DUT control output");
+    if value = '1' then return 1; else return 0; end if;
+  end function;
+
+
+
+  procedure monitor_stream (
+    signal clk, rst, valid, ready : in std_logic;
+    signal data, keep : in std_logic_vector;
+    signal last : in std_logic;
+    constant reset_active : std_logic := '1';
+    constant msb_first : boolean := true
+  ) is
+    constant id : AlertLogIDType := GetAlertLogID("StreamProtocol");
+    variable held : boolean := false;
+    variable held_data : std_logic_vector(data'range);
+    variable held_keep : std_logic_vector(keep'range);
+    variable held_last : std_logic;
+    variable gap : boolean;
+    variable lane : natural;
+  begin
+    loop
+      wait until rising_edge(clk);
+      if rst = reset_active then
+        held := false;
+      else
+        if held then
+          AffirmIf(id, valid = '1', "pending valid held until accepted");
+          AffirmIfEqual(id, data, held_data, "pending data held until accepted");
+          AffirmIfEqual(id, keep, held_keep, "pending keep held until accepted");
+          AffirmIfEqual(id, last, held_last, "pending last held until accepted");
+        end if;
+        AffirmIf(id, last /= '1' or valid = '1', "last requires valid");
+        if valid = '1' then
+          AffirmIf(id, not Is_X(data) and not Is_X(keep) and not Is_X(last), "valid beat has known data and metadata");
+          AffirmIf(id, unsigned(keep) /= 0, "valid beat contains bytes");
+          gap := false;
+          for i in 0 to keep'length - 1 loop
+            if msb_first then lane := keep'high - i;
+            else lane := keep'low + i;
+            end if;
+            if keep(lane) = '0' then
+              gap := true;
+            else
+              AffirmIf(id, not gap, "keep lanes are contiguous and correctly aligned");
+            end if;
+          end loop;
+          AffirmIf(id, last = '1' or keep = (keep'range => '1'), "partial beat only at image end");
+        end if;
+        held := valid = '1' and ready = '0';
+        held_data := data;
+        held_keep := keep;
+        held_last := last;
+      end if;
+    end loop;
+  end procedure;
+
+
 
   procedure clk_tick (
     signal   clk    : in    std_logic;
@@ -113,6 +239,7 @@ package body tb_support_pkg is
   begin
     -- EndOfTestReports = ReportAlerts + YAML emission (alerts, functional
     -- coverage, scoreboards) consumed by the OSVVM script flow's HTML reports.
+    SetAlertLogReportMode(ALERT_DEFAULT_ID, NONZERO);
     errors := EndOfTestReports;
     if errors = 0 then
       report test_name & ": PASS" severity note;

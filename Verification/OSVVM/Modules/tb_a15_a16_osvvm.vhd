@@ -24,6 +24,7 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
   use work.openjls_pkg.all;
+  use work.olo_base_pkg_math.log2ceil;
 
 library osvvm;
   context osvvm.OsvvmContext;
@@ -32,11 +33,11 @@ library tb_support;
   use tb_support.tb_support_pkg.all;
 
 entity tb_a15_a16_osvvm is
+  generic (BITNESS : natural range 8 to 16 := CO_BITNESS_STD);
 end entity tb_a15_a16_osvvm;
 
 architecture sim of tb_a15_a16_osvvm is
 
-  constant BITNESS    : natural := CO_BITNESS_STD;
   constant RC_W       : natural := 16;
   constant CLK_PERIOD : time    := CLK_PERIOD_DEFAULT;
   constant MAXBITS    : natural := 8192;
@@ -52,6 +53,7 @@ architecture sim of tb_a15_a16_osvvm is
   signal clk          : std_logic := '0';
   signal rst          : std_logic;
   signal iEoi         : std_logic;
+  signal iCE          : std_logic := '1';
   signal iRunCnt      : unsigned(RC_W - 1 downto 0);
   signal iRunHit      : std_logic;
   signal iRunCont     : std_logic;
@@ -115,7 +117,7 @@ architecture sim of tb_a15_a16_osvvm is
     -- A.15: emit a '1' per completed run segment of length 2^J[RUNindex].
     loop
 
-      step := 2 ** CO_J_TABLE(ri);
+      step := 2 ** TB_J_TABLE(ri);
       exit when cnt < step;
       app(buf, len, 1, 1);
       cnt := cnt - step;
@@ -128,7 +130,7 @@ architecture sim of tb_a15_a16_osvvm is
     -- A.16 terminal.
     if (term = T_BREAK) then
       -- '0' marker then residual in J[RUNindex] bits = cnt in (J+1) bits.
-      app(buf, len, cnt, CO_J_TABLE(ri) + 1);
+      app(buf, len, cnt, TB_J_TABLE(ri) + 1);
       if (ri > 0) then
         ri := ri - 1;
       end if;
@@ -164,7 +166,7 @@ begin
     port map (
       iClk          => clk,
       iRst          => rst,
-      iCE           => '1',
+      iCE           => iCE,
       iEoi          => iEoi,
       iRunCnt       => iRunCnt,
       iRunHit       => iRunHit,
@@ -210,6 +212,7 @@ begin
       ra   : integer;
       eoi  : std_logic
     ) is
+      variable paused : std_logic_vector(2 + 5 + RC_W + 3 * BITNESS + 5 downto 0);
     begin
 
       iRunHit  <= hit;
@@ -220,9 +223,25 @@ begin
       iRbPix   <= to_unsigned(RBVAL, BITNESS);
       iEoi     <= eoi;
       wait for 1 ns;
+      if eoi = '0' and rv.RandInt(0, 15) = 0 then
+        iCE <= '0';
+        paused := oRawValid & std_logic_vector(oRawSuffixLen) & std_logic_vector(oRawSuffixVal) &
+                  oRiValid & std_logic_vector(oRiIx) & std_logic_vector(oRiRa) &
+                  std_logic_vector(oRiRb) & std_logic_vector(oRiRunIndex) & oInRunNext;
+        for cycle in 1 to 2 loop
+          wait until rising_edge(clk);
+          wait for 1 ns;
+          AffirmIfEqual(GetAlertLogID("ClockEnable"),
+            oRawValid & std_logic_vector(oRawSuffixLen) & std_logic_vector(oRawSuffixVal) &
+            oRiValid & std_logic_vector(oRiIx) & std_logic_vector(oRiRa) &
+            std_logic_vector(oRiRb) & std_logic_vector(oRiRunIndex) & oInRunNext,
+            paused, "CE holds state and pending token");
+        end loop;
+        iCE <= '1';
+      end if;
 
       if (oRawValid = '1') then
-        app(actBuf, actLen, to_integer(oRawSuffixVal), to_integer(oRawSuffixLen));
+        app(actBuf, actLen, checked_integer(oRawSuffixVal), checked_integer(oRawSuffixLen));
       end if;
 
     end procedure cycle_collect;
@@ -236,11 +255,21 @@ begin
     ) is
 
       variable nMatch : natural;
+      variable terminalIdx : natural;
+      variable residual : natural;
 
     begin
 
       gen_expected(carried, m, term, expBuf, expLen, newIdx, riFires);
       actLen := 0;
+      terminalIdx := carried;
+      residual := m;
+      while residual >= 2 ** TB_J_TABLE(terminalIdx) loop
+        residual := residual - 2 ** TB_J_TABLE(terminalIdx);
+        if terminalIdx < 31 then
+          terminalIdx := terminalIdx + 1;
+        end if;
+      end loop;
 
       if (term = T_BREAK) then
         nMatch := m;
@@ -265,8 +294,10 @@ begin
 
       AffirmIf(req, oRiValid = bool2bit(riFires), msg & " RI-valid");
       if (term = T_BREAK) then
-        AffirmIfEqual(req, to_integer(oRiIx), BRKPIX, msg & " RI Ix");
-        AffirmIfEqual(req, to_integer(oRiRa), RUNVAL, msg & " RI Ra");
+        AffirmIfEqual(req, checked_integer(oRiIx), BRKPIX, msg & " RI Ix");
+        AffirmIfEqual(req, checked_integer(oRiRa), RUNVAL, msg & " RI Ra");
+        AffirmIfEqual(req, checked_integer(oRiRb), RBVAL, msg & " RI Rb");
+        AffirmIfEqual(req, checked_integer(oRiRunIndex), terminalIdx, msg & " RI index before decrement");
       end if;
       wait until rising_edge(clk);
 
@@ -305,7 +336,7 @@ begin
       for i in 1 to cycles loop
 
         wait for 1 ns;
-        AffirmIf(oRawValid = '0', "idle: oRawValid must be 0 outside run mode");
+        AffirmIf(GetAlertLogID("DataChecks"), oRawValid = '0', "idle: oRawValid must be 0 outside run mode");
         wait until rising_edge(clk);
 
       end loop;
@@ -336,12 +367,19 @@ begin
     req := GetReqID("T87.A15-A16", 100);
 
     covTerm := NewID("terminal");
-    AddBins(covTerm, "terminal", GenBin(0, 1, 2));
+    SetFieldName(covTerm, "terminal");
+    AddBins(covTerm, "interruption", GenBin(0));
+    AddBins(covTerm, "end of line", GenBin(1));
     covImm := NewID("immediateBreak");
-    AddBins(covImm, "immediateBreak", GenBin(0, 1, 2));
+    SetFieldName(covImm, "immediateBreak");
+    AddBins(covImm, "nonempty run", GenBin(0));
+    AddBins(covImm, "immediate break", GenBin(1));
     covEoi := NewID("eoiReset");
-    AddBins(covEoi, "eoiReset", GenBin(0, 1, 2));
+    SetFieldName(covEoi, "eoiReset");
+    AddBins(covEoi, "within image", GenBin(0));
+    AddBins(covEoi, "end of image", GenBin(1));
     covIdx := NewID("startIdx");
+    SetFieldName(covIdx, "startIdx");
     AddBins(covIdx, "startIdx0", GenBin(0, 0));
     AddBins(covIdx, "startIdxLo", GenBin(1, 3, 1));
     AddBins(covIdx, "startIdxMid", GenBin(4, 10, 1));
@@ -380,7 +418,7 @@ begin
     do_run(40000, T_EOL, '0', "boundary at saturated RUNindex");
     do_run(3, T_BREAK, '0', "break from saturated RUNindex");
     wait for 1 ns;
-    AffirmIfEqual(req, to_integer(oRiRunIndex), 30,
+    AffirmIfEqual(req, checked_integer(oRiRunIndex), 30,
                   "RUNindex decremented from saturation by the break");
 
     --------------------------------------------------------------------------
@@ -393,10 +431,12 @@ begin
     iRunHit    <= '0';
     iRunCont   <= '0';
     iEoi       <= '0';
+    iCE <= '0';
     apply_reset(clk, rst, 4, '1');
+    iCE <= '1';
     wait for 1 ns;
-    AffirmIf(oRawValid = '0', "mid-op reset: no spurious raw output");
-    AffirmIf(oInRunNext = '0', "mid-op reset: sInRun cleared");
+    AffirmIf(GetAlertLogID("ResetRecovery"), oRawValid = '0', "mid-op reset: no spurious raw output");
+    AffirmIf(GetAlertLogID("ResetRecovery"), oInRunNext = '0', "mid-op reset: sInRun cleared");
     iModeIsRun <= '1';
     carried    := 0;
     do_run(3, T_BREAK, '0', "post-reset recovery");
@@ -438,10 +478,10 @@ begin
     WriteBin(covImm);
     WriteBin(covEoi);
     WriteBin(covIdx);
-    AffirmIf(IsCovered(covTerm), "terminal coverage closed");
-    AffirmIf(IsCovered(covImm), "immediate-break coverage closed");
-    AffirmIf(IsCovered(covEoi), "EOI-reset coverage closed");
-    AffirmIf(IsCovered(covIdx), "start-RUNindex coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covTerm), "terminal coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covImm), "immediate-break coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covEoi), "EOI-reset coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covIdx), "start-RUNindex coverage closed");
 
     end_of_test("tb_a15_a16_osvvm");
     wait;
@@ -452,7 +492,7 @@ begin
   begin
 
     wait for 50 ms;
-    Alert("tb_a15_a16_osvvm: watchdog timeout", FAILURE);
+    Alert(GetAlertLogID("Watchdog"), "tb_a15_a16_osvvm: watchdog timeout", FAILURE);
     std.env.stop;
 
   end process watchdog;

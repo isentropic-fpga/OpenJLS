@@ -216,7 +216,7 @@ begin
 
       for k in 0 to 24 loop
 
-        Push(SB_ID, header_byte(k, w, h));
+        Push(SB_ID, '0' & header_byte(k, w, h));
 
       end loop;
 
@@ -232,13 +232,13 @@ begin
 
         for i in 0 to be - 1 loop
 
-          Push(SB_ID, word(IN_WIDTH - 1 - i * 8 downto IN_WIDTH - (i + 1) * 8));
+          Push(SB_ID, '0' & word(IN_WIDTH - 1 - i * 8 downto IN_WIDTH - (i + 1) * 8));
 
         end loop;
 
         if (n = nWords) then
-          Push(SB_ID, x"FF");
-          Push(SB_ID, x"D9");
+          Push(SB_ID, '0' & x"FF");
+          Push(SB_ID, '1' & x"D9");
           push_word(word, be, '1', bool2bit(n = 1));
         else
           push_word(word, be, '0', bool2bit(n = 1));
@@ -288,7 +288,7 @@ begin
     push_word(rv.RandSlv(IN_WIDTH), 4, '0', '0');
     apply_reset(clk, rst, 4, '1');
     wait for 1 ns;
-    AffirmIf(oValid = '0', "mid-op reset: framer output idle after iRst");
+    AffirmIf(GetAlertLogID("ResetRecovery"), oValid = '0', "mid-op reset: framer output idle after iRst");
     sIgnore <= false;
     wait until rising_edge(clk);
 
@@ -308,12 +308,12 @@ begin
 
       for k in 0 to 24 loop
 
-        Push(SB_ID, header_byte(k, 16, 1));
+        Push(SB_ID, '0' & header_byte(k, 16, 1));
 
       end loop;
 
-      Push(SB_ID, x"FF");
-      Push(SB_ID, x"D9");
+      Push(SB_ID, '0' & x"FF");
+      Push(SB_ID, '1' & x"D9");
 
     end loop;
 
@@ -347,6 +347,7 @@ begin
     iReady <= '1';
     done   := 0;
     covBeat := NewID("partialBeat");
+    SetFieldName(covBeat, "partialBeat");
     AddBins(covBeat, "partialBeat", GenBin(1, BYTES_OUT - 1, 1));
     AddBins(covBeat, "fullBeat", GenBin(BYTES_OUT, BYTES_OUT));
     rv.InitSeed(rv'instance_name);
@@ -359,19 +360,20 @@ begin
       wait for 1 ns;
 
       if (oValid = '1' and iReady = '1' and not sIgnore) then
-        nb := to_integer(oByteEn);
+        nb := checked_integer(oByteEn);
+        AffirmIf(GetAlertLogID("Protocol"), nb >= 1 and nb <= BYTES_OUT, "valid beat has legal byte count");
         ICover(covBeat, nb);
 
         for i in 0 to nb - 1 loop
 
           byte     := oWord(OUT_WIDTH - 1 - i * 8 downto OUT_WIDTH - (i + 1) * 8);
           lastByte := byte;
-          Check(SB_ID, byte);
+          Check(SB_ID, bool2bit(oLast = '1' and i = nb - 1) & byte);
 
         end loop;
 
         if (oLast = '1') then
-          AffirmIfEqual(lastByte, std_logic_vector'(x"D9"), "oLast must land on the 0xD9 footer byte");
+          AffirmIfEqual(GetAlertLogID("Protocol"), lastByte, std_logic_vector'(x"D9"), "oLast must land on the 0xD9 footer byte");
           done        := done + 1;
           sImagesDone <= done;
         end if;
@@ -383,21 +385,46 @@ begin
 
     end loop;
 
-    AffirmIf(IsEmpty(SB_ID), "scoreboard drained");
-    AffirmIfEqual(GetErrorCount(SB_ID), 0, "scoreboard mismatches");
+    AffirmIf(GetAlertLogID("ScoreboardCompletion"), IsEmpty(SB_ID), "scoreboard drained");
+    AffirmIfEqual(GetAlertLogID("ScoreboardCompletion"), GetErrorCount(SB_ID), 0, "scoreboard mismatches");
     WriteBin(covBeat);
-    AffirmIf(IsCovered(covBeat), "output beat-size coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covBeat), "output beat-size coverage closed");
 
     end_of_test("tb_jls_framer_osvvm");
     wait;
 
   end process monitor;
 
+  -- Check the entire pending AXI beat, including metadata, across backpressure.
+  hold_monitor : process(clk) is
+    variable held : boolean := false;
+    variable word : std_logic_vector(oWord'range);
+    variable count : unsigned(oByteEn'range);
+    variable last : std_logic;
+  begin
+    if rising_edge(clk) then
+      if rst = '1' then
+        held := false;
+      else
+        if held then
+          AffirmIf(GetAlertLogID("OutputHold"), oValid = '1', "valid held until accepted");
+          AffirmIfEqual(GetAlertLogID("OutputHold"), oWord, word, "data held until accepted");
+          AffirmIfEqual(GetAlertLogID("OutputHold"), oByteEn, count, "byte count held until accepted");
+          AffirmIfEqual(GetAlertLogID("OutputHold"), oLast, last, "last held until accepted");
+        end if;
+        held := oValid = '1' and iReady = '0';
+        word := oWord;
+        count := oByteEn;
+        last := oLast;
+      end if;
+    end if;
+  end process;
+
   watchdog : process is
   begin
 
     wait for 100 ms;
-    Alert("tb_jls_framer_osvvm: watchdog timeout", FAILURE);
+    Alert(GetAlertLogID("Watchdog"), "tb_jls_framer_osvvm: watchdog timeout", FAILURE);
     std.env.stop;
 
   end process watchdog;

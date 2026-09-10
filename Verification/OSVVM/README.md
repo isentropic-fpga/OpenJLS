@@ -63,6 +63,13 @@ coverage:
 ./build_reports.sh        # same regression + reports, without coverage instrumentation
 ```
 
+The routine regression runs **106 configurations**. In addition to the existing
+stream-width and top-level variants, 23 arithmetic/stateful module testbenches
+run at 8, 12, and 16 bits per pixel. Directed boundary sweeps complement the
+seeded random tests; the suite does not exhaust the entire state space.
+See [the verification audit](../../Docs/osvvm_verification_audit.md) for the
+checks added, findings, and validation limits.
+
 For byte-stuffer timing optimizations, an additional comparison checks the
 current RTL against a saved baseline on every cycle:
 
@@ -115,7 +122,7 @@ comment out the others' `Test` lines there (or pass generics via
 `[generic NAME VALUE]`).
 
 Configuration variants re-run a TB with non-default generics:
-`Test Modules/tb_jls_framer_osvvm.vhd [generic OUT_WIDTH 40]` — reports and
+`Test Modules/tb_jls_framer_osvvm.vhd [generic OUT_WIDTH 56]` — reports and
 `.covdb` files get a `_OUT_WIDTH_56` suffix. The framer and top TBs sweep
 OUT_WIDTH around the 64-bit default (floor 48 / 56 / header-on-beat-boundary
 200 / ceiling 1024) plus non-power-of-2 MAX dims this way; the byte stream
@@ -178,13 +185,13 @@ One-time: repo Settings → Pages → Source → "GitHub Actions".
 
 ### AlertLog — assertions and pass/fail accounting
 
-Checks are written as `AffirmIf(condition, "msg")` and
-`AffirmIfEqual(actual, expected, "msg")` (overloaded for `integer`,
+Checks are written as `AffirmIf(id, condition, "msg")` and
+`AffirmIfEqual(id, actual, expected, "msg")` (overloaded for `integer`,
 `std_logic_vector`, `unsigned`, …). A failing check raises an ERROR alert
 carrying its message; `AffirmIfEqual` additionally logs `Received`/`Expected`.
 Each TB names itself with `SetAlertLogName(...)` and calls
 `SetLogEnable(PASSED, FALSE)` to suppress per-pass logging so only failures and
-the summary print. The watchdog processes use `Alert("msg", FAILURE)` to fail on
+the summary print. The watchdog processes use `Alert(GetAlertLogID("Watchdog"), "msg", FAILURE)` to fail on
 timeout.
 
 The PASS/FAIL decision lives in `Support/tb_support_pkg.vhd::end_of_test`:
@@ -205,6 +212,17 @@ YAML (alerts, every registered coverage model, scoreboards) that
 `build_reports.sh` turns into HTML. A failing `AffirmIf` raises an ERROR →
 the count is nonzero → `end_of_test` reports FAIL. Reference:
 `Modules/tb_a5_osvvm.vhd`.
+
+Assertion IDs and coverage names are separate: `GetReqID` associates spec
+checks with requirements, while `GetAlertLogID` groups reset, flow-control,
+protocol, data, and coverage-closure checks. Non-requirement assertions no
+longer accumulate under `Default`; the console suppresses that built-in row when empty. The vendored HTML
+renderer can still show an empty `Default` row; no checks are assigned to it.
+
+Coverage models use `SetFieldName` for dimensions and explicit names on bins
+(including individual context addresses and cross combinations). The AXI VCs'
+internally created delay models are labeled too. Those distribution models
+have coverage weight zero and do not represent DUT coverage goals.
 
 ### RandomPkg — constrained-random stimulus
 
@@ -347,12 +365,14 @@ scoreboard for streamed output and a clock plus `apply_reset`.
 
 ### Reference models come from the spec, not the RTL
 
-Every reference is derived from the T.87 C model in `Docs/Requirements.md` (code
-segments A.1–A.23), not from `Sources/*.vhd`, so an RTL bug cannot appear on both
-sides and pass. Where T.87 leaves something open (e.g. the A.4.2 context map) the
+Arithmetic references are derived from the T.87 C model in
+`Docs/Requirements.md` (code segments A.1–A.23). The run-exponent table in the
+test support package is independent of the RTL table. This reduces shared
+implementation errors; it does not prove the references correct. Where T.87 leaves something open (e.g. the A.4.2 context map) the
 TB checks the required properties (range, one-to-one, totality). Where the RTL
-adds non-spec behaviour (e.g. the A.22 clamp) the TB tests only the domain T.87
-reaches and asserts the skipped domain is genuinely unreachable per T.87.
+adds non-spec behaviour (e.g. the A.22 clamp) the TB distinguishes reachable spec checks from explicit implementation-contract
+checks: A.22's negative-result clamp is reported under `DefensiveClamp`, not
+as evidence of T.87 conformance.
 
 ### Reset coverage
 
@@ -409,6 +429,7 @@ counts described above.
 | `T87.A4.1` | Quantized-gradient sign merging | `tb_a4_1_osvvm` | 729 |
 | `T87.A4.2` | Context mapping Q (total, one-to-one, in range) | `tb_a4_2_osvvm` | 365 |
 | `T87.A5` | Edge-detecting (MED) predictor | `tb_a5_osvvm` | 200 |
+| `T87.A6-A7` | Combined correction/error path | `tb_a6_a7_osvvm` | 20000 |
 | `T87.A6` | Prediction correction | `tb_a6_osvvm` | 300 |
 | `T87.A7` | Prediction error | `tb_a7_osvvm` | 200 |
 | `T87.A9` | Modulo reduction | `tb_a9_osvvm` | 200 |
