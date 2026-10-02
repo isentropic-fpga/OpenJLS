@@ -230,23 +230,37 @@ Logic is essentially constant across image size — LUTs (~6.4k) and flip-flops 
 
 Resource usage by `MAX_IMAGE_WIDTH` (default strategy; near-identical across strategies). Reproduce both tables with [`Scripts/run_fmax_sweep.sh`](Scripts/run_fmax_sweep.sh).
 
-### Maximum frequency and resources vs `BITNESS`
+### Maximum frequency vs `BITNESS`
 
 <img src="Docs/Images/fmax_vs_bitness.png" alt="Maximum frequency vs BITNESS" width="600">
 
+At a fixed `MAX_IMAGE_WIDTH` of 12288, the best-of fmax falls from ~305 MHz at 8 bits to ~277 MHz at 14 bits, then drops to ~225 MHz at 16 bits. The byte stuffer is not on the critical path at any depth: the limit is the context RAM read into the prediction-error register, whose carry chains widen with pixel depth.
+
+| `BITNESS` | Default | ExplorePostRoutePhysOpt | NetDelay_high | Congestion_SpreadLogic_high |
+|----------:|--------:|------------------------:|--------------:|----------------------------:|
+| 8 | **305.3** | 305.2 | 290.8 | 294.6 |
+| 10 | 282.8 | 290.2 | **293.6** | 293.5 |
+| 12 | 273.1 | 284.0 | **289.4** | 274.9 |
+| 14 | 257.8 | 268.8 | **276.6** | 233.4 |
+| 16 | 215.4 | 224.4 | **224.7** | 218.4 |
+
+Maximum frequency (MHz) by `BITNESS` and implementation strategy at `MAX_IMAGE_WIDTH` = 12288; best per row in bold.
+
+### Resource usage vs `BITNESS`
+
 <img src="Docs/Images/util_vs_bitness.png" alt="Resource usage vs BITNESS" width="600">
 
-At a fixed `MAX_IMAGE_WIDTH` of 12288, the best-of fmax falls from ~305 MHz at 8 bits to ~277 MHz at 14 bits, then drops to ~225 MHz at 16 bits. The byte stuffer is not on the critical path at any depth: the limit is the context RAM read into the prediction-error register, whose carry chains widen with pixel depth. Logic grows ~43% from 8 to 16 bits; BRAM follows the line-buffer width.
+Unlike image width, pixel depth widens the datapath itself: LUTs grow ~43% and flip-flops ~29% from 8 to 16 bits. Block RAM follows the line-buffer width (one row of `BITNESS`-bit pixels).
 
-| `BITNESS` | Default | ExplorePostRoutePhysOpt | NetDelay_high | Congestion_SpreadLogic_high | LUTs | FFs | BRAM tiles |
-|----------:|--------:|------------------------:|--------------:|----------------------------:|-----:|----:|-----------:|
-| 8 | **305.3** | 305.2 | 290.8 | 294.6 | 5319 | 1772 | 3.5 |
-| 10 | 282.8 | 290.2 | **293.6** | 293.5 | 5908 | 1902 | 4.0 |
-| 12 | 273.1 | 284.0 | **289.4** | 274.9 | 6327 | 2033 | 5.5 |
-| 14 | 257.8 | 268.8 | **276.6** | 233.4 | 6845 | 2153 | 6.5 |
-| 16 | 215.4 | 224.4 | **224.7** | 218.4 | 7601 | 2287 | 7.5 |
+| `BITNESS` | LUTs | FFs | BRAM tiles |
+|----------:|-----:|----:|-----------:|
+| 8 | 5319 | 1772 | 3.5 |
+| 10 | 5908 | 1902 | 4.0 |
+| 12 | 6327 | 2033 | 5.5 |
+| 14 | 6845 | 2153 | 6.5 |
+| 16 | 7601 | 2287 | 7.5 |
 
-Maximum frequency (MHz) by `BITNESS` and implementation strategy at `MAX_IMAGE_WIDTH` = 12288, best per row in bold; resources for the default strategy. Reproduce with `FMAX_SIZES=12288 FMAX_BITNESS="8 10 12 14 16" ./Scripts/run_fmax_sweep.sh`.
+Resource usage by `BITNESS` at `MAX_IMAGE_WIDTH` = 12288 (default strategy). Reproduce both tables with `FMAX_SIZES=12288 FMAX_BITNESS="8 10 12 14 16" ./Scripts/run_fmax_sweep.sh`.
 
 ---
 

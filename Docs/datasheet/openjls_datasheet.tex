@@ -300,8 +300,8 @@ At one pixel per clock, $\sim$280\,MHz is $\sim$280\,Mpixel/s.
 
 \noindent Figure~\ref{fig:fmax} and Table~\ref{tab:fmax} report $f_{max}$ across
 \texttt{MAX\_IMAGE\_WIDTH}; Figure~\ref{fig:util} and Table~\ref{tab:util} report
-the resource usage; Figure~\ref{fig:fmaxbits} and Table~\ref{tab:bits} report both
-across \texttt{BITNESS}.
+the resource usage. Figures~\ref{fig:fmaxbits} and~\ref{fig:utilbits} and
+Tables~\ref{tab:fmaxbits} and~\ref{tab:utilbits} report the same across \texttt{BITNESS}.
 
 \begin{figure}[H]
   \centering
@@ -375,26 +375,52 @@ depth.
 
 \begin{table}[H]
   \centering
-  \caption{Maximum frequency and resource usage by pixel bit depth (\texttt{MAX\_IMAGE\_WIDTH = 12288}).}
-  \label{tab:bits}
-\begin{tabular}{@{}r @{\hspace{1.2em}}|@{\hspace{1.2em}} r r r r @{\hspace{1.2em}}|@{\hspace{1.2em}} r r r@{}}
+  \caption{Maximum frequency by pixel bit depth and strategy (\texttt{MAX\_IMAGE\_WIDTH = 12288}).}
+  \label{tab:fmaxbits}
+\begin{tabular}{@{}r @{\hspace{1.2em}}|@{\hspace{1.2em}} r r r r@{}}
   \toprule
-  \texttt{BITNESS} & Default & EPRPO & NetDelay & Congestion & LUT & FF & BRAM \\
+  \texttt{BITNESS} & Default & EPRPO & NetDelay & Congestion \\
   \midrule
-  8  & \textbf{305.3} & 305.2          & 290.8          & 294.6 & 5319 & 1772 & 3.5 \\
-  10 & 282.8          & 290.2          & \textbf{293.6} & 293.5 & 5908 & 1902 & 4.0 \\
-  12 & 273.1          & 284.0          & \textbf{289.4} & 274.9 & 6327 & 2033 & 5.5 \\
-  14 & 257.8          & 268.8          & \textbf{276.6} & 233.4 & 6845 & 2153 & 6.5 \\
-  16 & 215.4          & 224.4          & \textbf{224.7} & 218.4 & 7601 & 2287 & 7.5 \\
+  8  & \textbf{305.3} & 305.2          & 290.8          & 294.6 \\
+  10 & 282.8          & 290.2          & \textbf{293.6} & 293.5 \\
+  12 & 273.1          & 284.0          & \textbf{289.4} & 274.9 \\
+  14 & 257.8          & 268.8          & \textbf{276.6} & 233.4 \\
+  16 & 215.4          & 224.4          & \textbf{224.7} & 218.4 \\
   \bottomrule
 \end{tabular}
 \end{table}
 
-\noindent Best-of $f_{max}$ falls from $\sim$305\,MHz at 8 bits to $\sim$277\,MHz
-at 14 bits and $\sim$225\,MHz at 16 bits. The byte stuffer is off the critical
-path at every depth; the limit is the context RAM read into the prediction-error
-register, whose carry chains widen with pixel depth. Resources are for the
-default strategy.
+\begin{figure}[H]
+  \centering
+  \caption{Resource usage vs pixel bit depth (\texttt{MAX\_IMAGE\_WIDTH = 12288}).}
+  \label{fig:utilbits}
+  \includegraphics[width=0.70\linewidth]{util_vs_bitness.png}
+\end{figure}
+
+\begin{table}[H]
+  \centering
+  \caption{Resource usage by pixel bit depth (\texttt{MAX\_IMAGE\_WIDTH = 12288}).}
+  \label{tab:utilbits}
+\begin{tabular}{@{}r @{\hspace{1.2em}}|@{\hspace{1.2em}} r r r@{}}
+  \toprule
+  \texttt{BITNESS} & LUT & FF & BRAM \\
+  \midrule
+  8  & 5319 & 1772 & 3.5 \\
+  10 & 5908 & 1902 & 4.0 \\
+  12 & 6327 & 2033 & 5.5 \\
+  14 & 6845 & 2153 & 6.5 \\
+  16 & 7601 & 2287 & 7.5 \\
+  \bottomrule
+\end{tabular}
+\end{table}
+
+\noindent In Table~\ref{tab:fmaxbits} the best-of $f_{max}$ falls from $\sim$305\,MHz
+at 8 bits to $\sim$277\,MHz at 14 bits and $\sim$225\,MHz at 16 bits. The byte
+stuffer is off the critical path at every depth; the limit is the context RAM read
+into the prediction-error register, whose carry chains widen with pixel depth.
+Table~\ref{tab:utilbits} is for the default strategy. Unlike image width, pixel
+depth widens the datapath itself: LUTs grow $\sim$43\% and FFs $\sim$29\% from 8 to
+16 bits, while BRAM follows the line-buffer width.
 
 %======================================================================
 \section{Integration example}
