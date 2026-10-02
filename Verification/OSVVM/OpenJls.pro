@@ -168,6 +168,9 @@ Test Modules/tb_byte_stuffer_osvvm.vhd
 # 64 are the 8-/16-bit LIMITs.
 Test Modules/tb_byte_stuffer_osvvm.vhd [generic IN_WIDTH 32]
 Test Modules/tb_byte_stuffer_osvvm.vhd [generic IN_WIDTH 64]
+Test Modules/tb_byte_stuffer_osvvm.vhd [generic IN_WIDTH 32] [generic OUT_BYTES 6]
+Test Modules/tb_byte_stuffer_osvvm.vhd [generic IN_WIDTH 48] [generic OUT_BYTES 8]
+Test Modules/tb_byte_stuffer_osvvm.vhd [generic IN_WIDTH 64] [generic OUT_BYTES 10]
 Test Modules/tb_jls_framer_osvvm.vhd
 # Non-default OUT_WIDTH sweep around the 64 default (range 48..1024): 48 =
 # range floor; 56 = another final-header-beat split; 200 = the 25-byte header
@@ -189,6 +192,7 @@ foreach bitness {8 16} {
 # non-power-of-2 MAX dims, then the range floor and ceiling.
 TestSuite Top
 Test Top/tb_openjls_top_osvvm.vhd
+Test Top/tb_openjls_top_osvvm.vhd [generic OUT_WIDTH 128] [generic FULL_RATE_STUFFER 1]
 Test Top/tb_openjls_top_osvvm.vhd [generic MAX_W 320] [generic MAX_H 200]
 Test Top/tb_openjls_top_osvvm.vhd [generic OUT_WIDTH 48]
 Test Top/tb_openjls_top_osvvm.vhd [generic OUT_WIDTH 1024]

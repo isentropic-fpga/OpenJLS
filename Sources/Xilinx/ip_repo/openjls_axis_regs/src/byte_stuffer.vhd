@@ -27,22 +27,26 @@
 --       counts only those real bits, so the pad is never emitted; the
 --       genuine residue is padded post-stuffing at the terminal beat.
 --
---     Stage 2 — BRAM-backed sync FIFO
+--     Stage 2 — sync FIFO (RAMSTYLE "auto": memory type chosen by synthesis)
 --
 --     Stage 3 — FF stuffer + output emit:
 --       Refills a holding register using the nine fixed alignments allowed
---       by the refill contract (0..8 old bits). Each cycle forms up to four
---       output bytes by decoding all eight legal stuffing layouts in
+--       by the refill contract (0..8 old bits). Each cycle forms up to OUT_BYTES_PER_CYCLE
+--       output bytes by decoding all legal stuffing layouts in
 --       parallel. Each layout uses fixed bit slices and constant valid-bit
 --       thresholds. One-hot selection chooses the output, the last FF state,
 --       and a fixed-shift remainder without a serial lane-resolution chain.
 --
 --       The end-of-image terminal beat (sub-byte residue, a pending stuff
 --       bit with no follow-up data, or a byte-aligned clean end) is split
---       into its own cycle via sLastPending: the final byte (or 0-byte beat)
+--       into its own cycle in compatibility mode via sLastPending: the final byte (or 0-byte beat)
 --       is assembled, latched, and emitted on the following beat. Adds at
 --       most 1 cycle of latency per image boundary and keeps the pad-byte
---       assembly off the critical path.
+--       assembly off the critical path. Full-rate mode reserves one extra
+--       lane for terminal padding and emits EOI with the last payload beat,
+--       removing this bubble even across uninterrupted frames. A formatter
+--       pipeline stage adds one cycle of output latency in full-rate mode;
+--       downstream must reserve space for that additional in-flight beat.
 --
 --   Flush protocol (iFlush, single-cycle pulse from upstream on the cycle
 --   the bit_packer presents the image's last word):
@@ -57,8 +61,8 @@
 --
 -- Generics:
 --   IN_WIDTH            : bit_packer worst-case word width (= LIMIT).
---   OUT_BYTES_PER_CYCLE : output bytes/cycle; must be 4 (fixed layout table).
---   BURST_DEPTH         : depth of the BRAM-backed FIFO (in wide words).
+--   OUT_BYTES_PER_CYCLE : output bytes/cycle, 4..10 (elaboration-time layouts).
+--   BURST_DEPTH         : depth of the sync FIFO (in wide words).
 --
 ----------------------------------------------------------------------------------
 
@@ -73,8 +77,8 @@ library work;
 entity byte_stuffer is
   generic (
     IN_WIDTH            : natural := CO_LIMIT_STD;
-    OUT_BYTES_PER_CYCLE : natural := CO_BYTE_STUFFER_OUT_BYTES_PER_CYCLE; -- Stuffs up to 4 bytes/cycle, not to be changed
-    OUT_WIDTH           : natural := CO_BYTE_STUFFER_OUT_WIDTH;
+    OUT_BYTES_PER_CYCLE : natural := CO_BYTE_STUFFER_OUT_BYTES_PER_CYCLE; -- 4 lanes for compatibility; 6/8/10 for full-rate 32/48/64-bit input including terminals
+    OUT_WIDTH           : natural := OUT_BYTES_PER_CYCLE * 8;
     BURST_DEPTH         : natural := CO_BYTE_STUFFER_BURST_DEPTH
   );
   port (
@@ -111,13 +115,14 @@ architecture behavioral of byte_stuffer is
   -- FIFO entry layout (LSB-first):
   --   bit  [0]              : last_flag
   --   bits [1 .. FIFO_BITS] : data
+  --   remaining high bits   : final valid-bit count (only used with last_flag)
   constant LAST_POS               : natural := 0;
   constant DATA_LSB               : natural := 1;
-  constant FIFO_WIDTH             : natural := FIFO_BITS + 1;
+  constant COUNT_LSB              : natural := FIFO_BITS + 1;
+  constant FIFO_WIDTH             : natural := COUNT_LSB + LAST_BITS_WIDTH;
 
-  -- Sideband byte-valid queue depth: bounds the number of in-flight
-  -- last-flag words allowed in the main FIFO simultaneously.
-  constant BYTE_VALID_QUEUE_DEPTH : natural := 3;
+  -- Carry the final valid-bit count in the same entry as its data. A tiny
+  -- independent queue can overflow on short frames long before this FIFO fills.
 
   -- AlmFull asserts STALL_CUSHION_ENTRIES below Full so the FIFO can absorb
   -- in-flight tokens while the top-level stall signal propagates through its
@@ -130,26 +135,98 @@ architecture behavioral of byte_stuffer is
   constant HOLD_BYTES             : natural := FIFO_BYTES + 1;
   constant HOLD_BITS              : natural := HOLD_BYTES * 8;
 
-  -- A stuffed byte starts with zero, so two adjacent output bytes cannot
-  -- both stuff. These are all eight possible four-byte layouts, including
-  -- both incoming sPrevFF states. A '1' means that lane consumes seven bits.
-  type layout_array is array (0 to 7) of std_logic_vector(0 to 3);
-  constant STUFF_LAYOUT : layout_array := (
-    "0000", "0001", "0010", "0100", "0101", "1000", "1001", "1010"
-  );
-  type lane_count_array is array (0 to 7, 0 to 3) of natural range 0 to 32;
-  constant LANE_START : lane_count_array := (
-    (0, 8, 16, 24), (0, 8, 16, 24), (0, 8, 16, 23),
-    (0, 8, 15, 23), (0, 8, 15, 23), (0, 7, 15, 23),
-    (0, 7, 15, 23), (0, 7, 15, 22)
-  );
-  constant LANE_END : lane_count_array := (
-    (8, 16, 24, 32), (8, 16, 24, 31), (8, 16, 23, 31),
-    (8, 15, 23, 31), (8, 15, 23, 30), (7, 15, 23, 31),
-    (7, 15, 23, 30), (7, 15, 22, 30)
-  );
-  type consume_array is array (natural range <>) of natural range 0 to 32;
-  constant CONSUME_BITS : consume_array := (0, 7, 8, 15, 16, 22, 23, 24, 30, 31, 32);
+  -- At full rate every ready cycle leaves only a sub-byte residue. Express
+  -- that invariant structurally so synthesis does not build a wide feedback
+  -- mux for unreachable states. Refill still supplies a full combinational word.
+  constant DATA_LANES : positive := math_min(OUT_BYTES_PER_CYCLE, FIFO_BYTES + 1);
+  constant FULL_RATE : boolean :=
+    8 * DATA_LANES - (DATA_LANES + 1) / 2 >= FIFO_BITS;
+  function holding_state_bits return positive is
+  begin
+    if FULL_RATE then return 8; else return HOLD_BITS; end if;
+  end function;
+  constant STATE_BITS : positive := holding_state_bits;
+
+  -- Enumerate legal layouts at elaboration, not at run time. A stuffed
+  -- byte has MSB=0, so adjacent lanes cannot both require a stuff bit.
+  -- Each candidate below uses only fixed slices and constant thresholds.
+  function layout_count return positive is
+    variable a : positive := 1;
+    variable b : positive := 2;
+    variable c : positive;
+  begin
+    for lane in 2 to DATA_LANES loop
+      c := a + b;
+      a := b;
+      b := c;
+    end loop;
+    return b;
+  end function;
+  type layout_array is array (0 to layout_count - 1) of
+    std_logic_vector(0 to DATA_LANES - 1);
+  function make_layouts return layout_array is
+    variable result : layout_array;
+    variable bits : unsigned(DATA_LANES - 1 downto 0);
+    variable legal : boolean;
+    variable index : natural := 0;
+  begin
+    for value in 0 to 2 ** DATA_LANES - 1 loop
+      bits := to_unsigned(value, bits'length);
+      legal := (bits and shift_right(bits, 1)) = 0;
+      if legal then
+        result(index) := std_logic_vector(bits);
+        index := index + 1;
+      end if;
+    end loop;
+    return result;
+  end function;
+  constant STUFF_LAYOUT : layout_array := make_layouts;
+  type lane_count_array is array (STUFF_LAYOUT'range, 0 to DATA_LANES - 1)
+    of natural range 0 to OUT_WIDTH;
+  function lane_counts(is_end : boolean) return lane_count_array is
+    variable result : lane_count_array;
+    variable count : natural;
+  begin
+    for p in STUFF_LAYOUT'range loop
+      count := 0;
+      for lane in 0 to DATA_LANES - 1 loop
+        result(p, lane) := count;
+        if STUFF_LAYOUT(p)(lane) = '1' then
+          count := count + 7;
+        else
+          count := count + 8;
+        end if;
+        if is_end then
+          result(p, lane) := count;
+        end if;
+      end loop;
+    end loop;
+    return result;
+  end function;
+  constant LANE_START : lane_count_array := lane_counts(false);
+  constant LANE_END   : lane_count_array := lane_counts(true);
+  -- Only consumption counts reachable by a complete prefix need a shifter.
+  type consume_array is array (natural range <>) of natural range 0 to OUT_WIDTH;
+  function make_consumes return consume_array is
+    variable used : boolean_vector(0 to OUT_WIDTH) := (others => false);
+    variable result : consume_array(0 to OUT_WIDTH);
+    variable count : natural := 0;
+  begin
+    used(0) := true;
+    for p in STUFF_LAYOUT'range loop
+      for lane in 0 to DATA_LANES - 1 loop
+        used(LANE_END(p, lane)) := true;
+      end loop;
+    end loop;
+    for bits in used'range loop
+      if used(bits) then
+        result(count) := bits;
+        count := count + 1;
+      end if;
+    end loop;
+    return result(0 to count - 1);
+  end function;
+  constant CONSUME_BITS : consume_array := make_consumes;
 
   -- Signals ---------------------------------------------------------------------
   -- Input register
@@ -183,15 +260,9 @@ architecture behavioral of byte_stuffer is
   signal sSkidTaken               : std_logic;
   signal sSkidLast                : std_logic;
 
-  -- Final-word valid-bit-count queue (FIFO) signals
-  signal sBvQueueInValid          : std_logic;
-  signal sBvQueueInData           : std_logic_vector(LAST_BITS_WIDTH - 1 downto 0);
-  signal sBvQueueOutReady         : std_logic;
-  signal sBvQueueOutData          : std_logic_vector(LAST_BITS_WIDTH - 1 downto 0);
-
   -- Stage 3 (FF stuffer + emit) state.
   signal sStuffBuffer             : std_logic_vector(HOLD_BITS - 1 downto 0);
-  signal sStuffBufferBits         : unsigned(log2ceil(HOLD_BITS + 1) - 1 downto 0);
+  signal sStuffBufferBits         : unsigned(log2ceil(STATE_BITS + 1) - 1 downto 0);
   signal sStuffBufferLast         : std_logic;
   signal sPrevFF                  : std_logic;
   signal sOutWordReg              : std_logic_vector(OUT_WIDTH - 1 downto 0);
@@ -199,14 +270,29 @@ architecture behavioral of byte_stuffer is
   signal sOutBytesValidReg        : unsigned(log2ceil(OUT_BYTES_PER_CYCLE + 1) - 1 downto 0);
   signal sFlushDone               : std_logic;
 
+  -- Optional full-rate output formatter. Its extra register keeps terminal
+  -- padding off the state-feedback/layout critical path. The receiver must
+  -- reserve space for two cycles of in-flight beats after iReady deasserts.
+  signal sEmitWord                : std_logic_vector(OUT_WIDTH - 1 downto 0);
+  signal sEmitValid               : std_logic;
+  signal sEmitBytes               : unsigned(log2ceil(OUT_BYTES_PER_CYCLE + 1) - 1 downto 0);
+  signal sEmitLast                : std_logic;
+  signal sEmitTail                : std_logic_vector(7 downto 0);
+  signal sEmitTailBits            : unsigned(2 downto 0);
+  signal sEmitPrevFF              : std_logic;
+
   -- End-of-image terminal beat
   signal sLastPending             : std_logic;
 
 begin
 
   -- ASSERTIONS --------------------------------------------------------------------
-  assert OUT_BYTES_PER_CYCLE = 4
-    report "byte_stuffer: OUT_BYTES_PER_CYCLE must be 4 (stuffing arrays are hardcoded to 4 lanes)"
+  assert OUT_BYTES_PER_CYCLE >= 4 and OUT_BYTES_PER_CYCLE <= 10
+    report "byte_stuffer: supported output lane counts are 4 through 10"
+    severity failure;
+
+  assert OUT_WIDTH = OUT_BYTES_PER_CYCLE * 8 and DATA_LANES * 8 <= HOLD_BITS
+    report "byte_stuffer: output width must match lanes and fit the holding register"
     severity failure;
 
   assert BURST_DEPTH > STALL_CUSHION_ENTRIES
@@ -222,7 +308,8 @@ begin
   -- psl default clock is rising_edge(iClk);
   -- psl assert always (iRst = '1' -> next (oWordValid = '0' and oFlushDone = '0')) report "byte_stuffer: reset must clear the output beat and oFlushDone";
   -- psl assert never (oFlushDone = '1' and oWordValid = '0') report "byte_stuffer: oFlushDone only fires on a valid output beat (framer iEoi contract)";
-  -- psl assert always (oFlushDone = '1' -> next (oFlushDone = '0')) report "byte_stuffer: oFlushDone is a strict 1-cycle pulse";
+  -- Consecutive EOI beats are legal when queued short frames drain without
+  -- a terminal bubble; oFlushDone qualifies each beat, it is not edge-detected.
   -- psl assert always (oWordValid = '1' -> oValidBytes <= OUT_BYTES_PER_CYCLE) report "byte_stuffer: oValidBytes exceeds the per-cycle output cap";
   ---------------------------------------------------------------------------------
 
@@ -293,8 +380,6 @@ begin
         sFlushPending        <= '0';
         sFifoInValid         <= '0';
         sFifoInData          <= (others => '0');
-        sBvQueueInValid      <= '0';
-        sBvQueueInData       <= (others => '0');
       else
         vAccumBuffer         := sAccumBuffer;
         vAccumCountBits      := to_integer(sAccumCountBits);
@@ -304,7 +389,7 @@ begin
         vFlushPending        := sFlushPending;
 
         sFifoInValid    <= '0';
-        sBvQueueInValid <= '0';
+        sFifoInData(FIFO_WIDTH - 1 downto COUNT_LSB) <= (others => '0');
 
         ---------------------------------------------------------------------------------
         -- WRITE to Accumulator
@@ -388,21 +473,21 @@ begin
           if (vFlushPending = '1') then
             if (vAccumCountBitsFlush = FIFO_BITS) then
               vLastFlag       := '1';
-              sBvQueueInValid <= '1';
-              sBvQueueInData  <= std_logic_vector(to_unsigned(vFlushValidBits, LAST_BITS_WIDTH));
+              sFifoInData(FIFO_WIDTH - 1 downto COUNT_LSB) <=
+                std_logic_vector(to_unsigned(vFlushValidBits, LAST_BITS_WIDTH));
               vFlushPending   := '0';
             else
               vLastFlag := '0';
             end if;
 
-            sFifoInData  <= vAccumBuffer(ACCUM_BITS - 1 downto ACCUM_BITS - FIFO_BITS) & vLastFlag;
+            sFifoInData(COUNT_LSB - 1 downto 0) <= vAccumBuffer(ACCUM_BITS - 1 downto ACCUM_BITS - FIFO_BITS) & vLastFlag;
             sFifoInValid <= '1';
 
             vAccumBuffer         := std_logic_vector(shift_left(unsigned(vAccumBuffer), FIFO_BITS));
             vAccumCountBits      := vAccumCountBits - FIFO_BITS;
             vAccumCountBitsFlush := vAccumCountBitsFlush - FIFO_BITS;
           elsif (vAccumCountBits >= FIFO_BITS) then
-            sFifoInData  <= vAccumBuffer(ACCUM_BITS - 1 downto ACCUM_BITS - FIFO_BITS) & '0';
+            sFifoInData(COUNT_LSB - 1 downto 0) <= vAccumBuffer(ACCUM_BITS - 1 downto ACCUM_BITS - FIFO_BITS) & '0';
             sFifoInValid <= '1';
 
             vAccumBuffer    := std_logic_vector(shift_left(unsigned(vAccumBuffer), FIFO_BITS));
@@ -451,29 +536,6 @@ begin
       AlmEmpty       => open
     );
 
-  -- Read last-word valid-bit-count FIFO on Last word
-  sBvQueueOutReady <= sSkidTaken and sSkidLast;
-
-  byte_valid_fifo_inst : entity work.olo_base_fifo_sync(rtl)
-    generic map (
-      WIDTH_G       => LAST_BITS_WIDTH,
-      DEPTH_G       => BYTE_VALID_QUEUE_DEPTH,
-      RAMSTYLE_G    => "auto",
-      RAMBEHAVIOR_G => "RBW"
-    )
-    port map (
-      Clk           => iClk,
-      Rst           => iRst,
-      In_Data       => sBvQueueInData,
-      In_Valid      => sBvQueueInValid,
-      In_Ready      => open,
-      Out_Data      => sBvQueueOutData,
-      Out_Valid     => open,
-      Out_Ready     => sBvQueueOutReady,
-      Full          => open,
-      Empty         => open
-    );
-
   -------------------------------------------------------------------------------------------------------------------------
   -- STAGE 3: FF stuffer + output emit
   -------------------------------------------------------------------------------------------------------------------------
@@ -487,13 +549,14 @@ begin
   sSkidTaken <= '1' when sSkidValid = '1'
                          and sStuffBufferBits <= to_unsigned(HOLD_BITS - FIFO_BITS, sStuffBufferBits'length)
                          and iReady = '1'
-                         and sLastPending = '0' else
+                         and sLastPending = '0'
+                         and sStuffBufferLast = '0' else
                 '0';
   -- Pop FIFO when the skid buffer is empty or being drained this cycle.
   sFifoOutReady <= '1' when sSkidValid = '0' or sSkidTaken = '1' else
                    '0';
 
-  sSkidData <= sSkidWord(FIFO_WIDTH - 1 downto DATA_LSB);
+  sSkidData <= sSkidWord(COUNT_LSB - 1 downto DATA_LSB);
   sSkidLast <= sSkidWord(LAST_POS);
 
   skid_proc : process (iClk) is
@@ -516,6 +579,53 @@ begin
 
   end process skid_proc;
 
+  gen_formatter : if FULL_RATE and OUT_BYTES_PER_CYCLE > DATA_LANES generate
+    format_proc : process(iClk) is
+      variable word : std_logic_vector(OUT_WIDTH - 1 downto 0);
+      variable pad : std_logic_vector(7 downto 0);
+      variable count : natural range 0 to OUT_BYTES_PER_CYCLE;
+      variable tail_bits : natural range 0 to 7;
+    begin
+      if rising_edge(iClk) then
+        if iRst = '1' then
+          sOutWordReg <= (others => '0');
+          sOutBytesValidReg <= (others => '0');
+          sOutValidReg <= '0';
+          sFlushDone <= '0';
+        else
+          word := sEmitWord;
+          count := to_integer(sEmitBytes);
+          tail_bits := to_integer(sEmitTailBits);
+          pad := (others => '0');
+          if sEmitLast = '1' and (tail_bits > 0 or sEmitPrevFF = '1') then
+            if sEmitPrevFF = '1' then
+              if tail_bits > 0 then
+                pad(6 downto 7 - tail_bits) := sEmitTail(7 downto 8 - tail_bits);
+              end if;
+            elsif tail_bits > 0 then
+              pad(7 downto 8 - tail_bits) := sEmitTail(7 downto 8 - tail_bits);
+            end if;
+            for lane in 0 to DATA_LANES loop
+              if lane = count then
+                word(OUT_WIDTH - 1 - lane * 8 downto OUT_WIDTH - (lane + 1) * 8) := pad;
+              end if;
+            end loop;
+            count := count + 1;
+          end if;
+          sOutWordReg <= word;
+          sOutBytesValidReg <= to_unsigned(count, sOutBytesValidReg'length);
+          sOutValidReg <= sEmitValid;
+          sFlushDone <= sEmitLast;
+        end if;
+      end if;
+    end process;
+  else generate
+    sOutWordReg <= sEmitWord;
+    sOutBytesValidReg <= sEmitBytes;
+    sOutValidReg <= sEmitValid;
+    sFlushDone <= sEmitLast;
+  end generate;
+
   stage3_proc : process (iClk) is
 
     variable vStuffBuffer     : std_logic_vector(HOLD_BITS - 1 downto 0);
@@ -528,24 +638,19 @@ begin
     variable vRefillWord    : std_logic_vector(HOLD_BITS - 1 downto 0);
     variable vRefillMask    : std_logic_vector(HOLD_BITS - 1 downto 0);
 
-    -- Fixed-window FF flags used to decode the layout. The final emitted
-    -- lane's FF state is computed independently in the candidate loop.
-    variable ff0        : std_logic; -- offset 0
-    variable ff1a, ff1b : std_logic; -- offsets 7, 8
-    variable ff2a, ff2b : std_logic; -- offsets 15, 16
-
-    variable vPath          : std_logic_vector(0 to 7);
+    variable vPath          : std_logic_vector(STUFF_LAYOUT'range);
+    variable vPreviousByte  : std_logic_vector(7 downto 0);
     variable vTakeShift     : std_logic_vector(CONSUME_BITS'range);
     variable vPathMask      : std_logic_vector(OUT_WIDTH - 1 downto 0);
     variable vCandidateWord : std_logic_vector(OUT_WIDTH - 1 downto 0);
     variable vCandidateByte : std_logic_vector(7 downto 0);
     variable vLaneSelected  : std_logic;
-    variable vBytesMask     : unsigned(sOutBytesValidReg'range);
-    variable vEmitBytesBits : unsigned(sOutBytesValidReg'range);
+    variable vBytesMask     : unsigned(sEmitBytes'range);
+    variable vEmitBytesBits : unsigned(sEmitBytes'range);
     variable vBufferMask    : std_logic_vector(HOLD_BITS - 1 downto 0);
     variable vNextBuffer    : std_logic_vector(HOLD_BITS - 1 downto 0);
-    variable vCountMask     : unsigned(sStuffBufferBits'range);
-    variable vNextCount     : unsigned(sStuffBufferBits'range);
+    variable vCountMask     : unsigned(log2ceil(HOLD_BITS + 1) - 1 downto 0);
+    variable vNextCount     : unsigned(log2ceil(HOLD_BITS + 1) - 1 downto 0);
 
     variable vEmitData   : std_logic_vector(OUT_WIDTH - 1 downto 0);
     variable vEmitBytes  : natural range 0 to OUT_BYTES_PER_CYCLE;
@@ -560,11 +665,14 @@ begin
         sStuffBufferBits  <= (others => '0');
         sStuffBufferLast  <= '0';
         sPrevFF           <= '0';
-        sOutWordReg       <= (others => '0');
-        sOutValidReg      <= '0';
-        sOutBytesValidReg <= (others => '0');
-        sFlushDone        <= '0';
+        sEmitWord       <= (others => '0');
+        sEmitValid      <= '0';
+        sEmitBytes <= (others => '0');
+        sEmitLast        <= '0';
         sLastPending      <= '0';
+        sEmitTail         <= (others => '0');
+        sEmitTailBits     <= (others => '0');
+        sEmitPrevFF       <= '0';
       elsif (sLastPending = '1') then
         -- EOI terminal beat, assembled outside the layout decoder (1 extra cycle,
         -- absorbed by the stage 2 FIFO). Sub-byte residue or dangling 0xFF
@@ -584,24 +692,24 @@ begin
           end if;
 
           if (vStuffBufferBits = 0 and sPrevFF = '0') then
-            sOutWordReg       <= (others => '0');
-            sOutBytesValidReg <= (others => '0');
+            sEmitWord       <= (others => '0');
+            sEmitBytes <= (others => '0');
           else
-            sOutWordReg(OUT_WIDTH - 1 downto OUT_WIDTH - 8) <= vPadByte;
-            sOutWordReg(OUT_WIDTH - 9 downto 0)             <= (others => '0');
-            sOutBytesValidReg                               <= to_unsigned(1, sOutBytesValidReg'length);
+            sEmitWord(OUT_WIDTH - 1 downto OUT_WIDTH - 8) <= vPadByte;
+            sEmitWord(OUT_WIDTH - 9 downto 0)             <= (others => '0');
+            sEmitBytes                               <= to_unsigned(1, sEmitBytes'length);
           end if;
 
-          sOutValidReg     <= '1';
-          sFlushDone       <= '1';
+          sEmitValid     <= '1';
+          sEmitLast       <= '1';
           sLastPending     <= '0';
           sStuffBufferLast <= '0';
           sPrevFF          <= '0';
           sStuffBuffer     <= (others => '0');
           sStuffBufferBits <= (others => '0');
         else
-          sOutValidReg <= '0';
-          sFlushDone   <= '0';
+          sEmitValid <= '0';
+          sEmitLast   <= '0';
         end if;
       else
         vStuffBuffer     := sStuffBuffer;
@@ -610,7 +718,7 @@ begin
         vPrevFF          := sPrevFF;
         vEmitBytes       := 0;
         vEmitData        := (others => '0');
-        sFlushDone       <= '0';
+        sEmitLast       <= '0';
 
         ----------------------------------------------------------------------
         -- (1) Refill: drain the skid buffer into the holding buffer.
@@ -638,34 +746,28 @@ begin
           if (sSkidLast = '0') then
             vValidBitsInt := FIFO_BITS;
           else
-            vValidBitsInt := to_integer(unsigned(sBvQueueOutData));
+            vValidBitsInt := to_integer(unsigned(sSkidWord(FIFO_WIDTH - 1 downto COUNT_LSB)));
             vStuffBufferLast := '1';
           end if;
           vStuffBufferBits := vStuffBufferBits + vValidBitsInt;
         end if;
 
-        ----------------------------------------------------------------------
-        -- (2) Parallel-precompute the layout decoder's fixed-window FF flags.
-        ----------------------------------------------------------------------
-        ff0  := bool2bit(vStuffBuffer(HOLD_BITS - 1 downto HOLD_BITS - 8) = x"FF");
-        ff1a := bool2bit(vStuffBuffer(HOLD_BITS - 8 downto HOLD_BITS - 15) = x"FF");
-        ff1b := bool2bit(vStuffBuffer(HOLD_BITS - 9 downto HOLD_BITS - 16) = x"FF");
-        ff2a := bool2bit(vStuffBuffer(HOLD_BITS - 16 downto HOLD_BITS - 23) = x"FF");
-        ff2b := bool2bit(vStuffBuffer(HOLD_BITS - 17 downto HOLD_BITS - 24) = x"FF");
-
-        ----------------------------------------------------------------------
-        -- (3) Decode all layouts in parallel. Each predicate depends only on
-        --     the incoming FF state and fixed-window comparisons, never on
-        --     a byte or consumption count selected by another lane.
-        ----------------------------------------------------------------------
-        vPath(0) := not vPrevFF and not ff0 and not ff1b and not ff2b;
-        vPath(1) := not vPrevFF and not ff0 and not ff1b and     ff2b;
-        vPath(2) := not vPrevFF and not ff0 and     ff1b;
-        vPath(3) := not vPrevFF and     ff0 and not ff2a;
-        vPath(4) := not vPrevFF and     ff0 and     ff2a;
-        vPath(5) :=     vPrevFF and not ff1a and not ff2a;
-        vPath(6) :=     vPrevFF and not ff1a and     ff2a;
-        vPath(7) :=     vPrevFF and     ff1a;
+        -- Decode each layout independently from fixed windows. No selected
+        -- byte or selected consumption count feeds the next lane's predicate.
+        for p in STUFF_LAYOUT'range loop
+          vPath(p) := bool2bit(vPrevFF = STUFF_LAYOUT(p)(0));
+          for lane in 1 to DATA_LANES - 1 loop
+            if STUFF_LAYOUT(p)(lane - 1) = '1' then
+              vPreviousByte := '0' & vStuffBuffer(HOLD_BITS - 1 - LANE_START(p, lane - 1)
+                                                  downto HOLD_BITS - LANE_END(p, lane - 1));
+            else
+              vPreviousByte := vStuffBuffer(HOLD_BITS - 1 - LANE_START(p, lane - 1)
+                                           downto HOLD_BITS - LANE_END(p, lane - 1));
+            end if;
+            vPath(p) := vPath(p) and
+                        bool2bit(bool2bit(vPreviousByte = x"FF") = STUFF_LAYOUT(p)(lane));
+          end loop;
+        end loop;
 
         vEmitData      := (others => '0');
         vEmitBytesBits := (others => '0');
@@ -677,7 +779,7 @@ begin
           vCandidateWord := (others => '0');
           vPathMask      := (others => vPath(p));
 
-          for lane in 0 to OUT_BYTES_PER_CYCLE - 1 loop
+          for lane in 0 to DATA_LANES - 1 loop
 
             if (STUFF_LAYOUT(p)(lane) = '1') then
               vCandidateByte := '0' & vStuffBuffer(HOLD_BITS - 1 - LANE_START(p, lane)
@@ -692,7 +794,7 @@ begin
             -- end thresholds increase strictly, so exactly one lane wins.
             vLaneSelected := vPath(p) and iReady and
                              bool2bit(vStuffBufferBits >= LANE_END(p, lane));
-            if (lane < OUT_BYTES_PER_CYCLE - 1) then
+            if (lane < DATA_LANES - 1) then
               vLaneSelected := vLaneSelected and
                                bool2bit(vStuffBufferBits < LANE_END(p, lane + 1));
             end if;
@@ -750,11 +852,11 @@ begin
         -- (5) Output register and flush-done / drain entry.
         ----------------------------------------------------------------------
         if (vEmitBytes > 0) then
-          sOutWordReg       <= vEmitData;
-          sOutBytesValidReg <= to_unsigned(vEmitBytes, sOutBytesValidReg'length);
-          sOutValidReg      <= '1';
+          sEmitWord       <= vEmitData;
+          sEmitBytes <= to_unsigned(vEmitBytes, sEmitBytes'length);
+          sEmitValid      <= '1';
         else
-          sOutValidReg <= '0';
+          sEmitValid <= '0';
         end if;
 
         -- Once the last word is consumed and only a sub-byte residue remains
@@ -763,10 +865,31 @@ begin
         if (iReady = '1'
             and vStuffBufferLast = '1'
             and vStuffBufferBits < 8) then
-          sLastPending <= '1';
+          if FULL_RATE and OUT_BYTES_PER_CYCLE > DATA_LANES then
+            -- A reserved terminal lane removes the per-image drain bubble.
+            -- Every ready cycle leaves <8 bits; at most one padded byte is
+            -- required, and payload can never occupy the reserved lane.
+            sEmitTail <= vStuffBuffer(HOLD_BITS - 1 downto HOLD_BITS - 8);
+            sEmitTailBits <= to_unsigned(vStuffBufferBits, sEmitTailBits'length);
+            sEmitPrevFF <= vPrevFF;
+            sEmitWord <= vEmitData;
+            sEmitBytes <= to_unsigned(vEmitBytes, sEmitBytes'length);
+            sEmitValid <= '1';
+            sEmitLast <= '1';
+            vStuffBuffer := (others => '0');
+            vStuffBufferBits := 0;
+            vStuffBufferLast := '0';
+            vPrevFF := '0';
+          else
+            sLastPending <= '1';
+          end if;
         end if;
 
-        sStuffBuffer     <= vStuffBuffer;
+        sStuffBuffer <= (others => '0');
+        sStuffBuffer(HOLD_BITS - 1 downto HOLD_BITS - STATE_BITS) <=
+          vStuffBuffer(HOLD_BITS - 1 downto HOLD_BITS - STATE_BITS);
+        assert not FULL_RATE or vStuffBufferBits < 8
+          report "byte_stuffer: full-rate residue invariant violated" severity failure;
         sStuffBufferBits <= to_unsigned(vStuffBufferBits, sStuffBufferBits'length);
         sStuffBufferLast <= vStuffBufferLast;
         sPrevFF          <= vPrevFF;

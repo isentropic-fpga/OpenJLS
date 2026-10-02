@@ -108,6 +108,7 @@ foreach {name meta} $ips {
     set_range $core MAX_IMAGE_WIDTH  4  65535
     set_range $core MAX_IMAGE_HEIGHT 1  65535
     set_range $core OUT_WIDTH        48 1024
+    set_range $core FULL_RATE_STUFFER 0 1
 
     # OUT_WIDTH's HDL default is the package constant CO_OUT_WIDTH_STD (= 64),
     # which the packager may carry through unresolved. Pin the IP-XACT default

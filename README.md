@@ -37,7 +37,7 @@ Specifications
 - **Components** — Single-component (grayscale)
 - **Image size** — Configurable up to 64k × 64k px (minimum 4 × 1)
 - **Memory** — Line buffer, as big as image width, on-chip
-- **Throughput** — One pixel per clock cycle
+- **Throughput** — Up to one pixel per clock cycle; optional full-rate byte stuffing for worst-case code lengths
 - **Interface** — Ready/valid streaming handshake (AXI4-Stream / Avalon-ST compatible)
 - **Conformance** — Bit-exact against the ISO/IEC 14495-1 reference and golden-model [CharLS](https://github.com/team-charls/charls)
 - **Portability** — Vendor-agnostic VHDL, due to memory-agnostic IPs from [open-logic](https://github.com/open-logic/open-logic)
@@ -125,6 +125,13 @@ The core is a single entity, `openjls_top`, configured by generics and driven th
 | `MAX_IMAGE_WIDTH` | 4–65535 | Largest image width supported; sets the on-chip line-buffer depth. |
 | `MAX_IMAGE_HEIGHT` | 1–65535 | Largest image height supported. |
 | `OUT_WIDTH` | 48–1024 | Output data-bus width in bits (multiple of 8). |
+| `FULL_RATE_STUFFER` | 0–1 | Default 0 keeps the four-lane stuffer. Set 1 to sustain LIMIT-width words including image terminals; requires sufficient output width. |
+
+For 16-bit camera input, `FULL_RATE_STUFFER=1` with `OUT_WIDTH=128` removes
+the stuffer's reliance on average Golomb code length. This mode adds one
+output pipeline cycle and uses more logic; the receiver must sustain the
+output rate. See [the throughput investigation](Docs/byte_stuffer_throughput.md)
+for the service bound, reproduced stalls, image tests, and timing tradeoffs.
 
 > `MAX_IMAGE_WIDTH` and `MAX_IMAGE_HEIGHT` set the **compile-time** maximum image size — they size the on-chip line buffer and the dimension counters, so a larger maximum costs more BRAM. They don't pick the size of any given image: the dimensions of each encoded image are selected at **run time** through the `iImageWidth`/`iImageHeight` ports (see [Ports](#ports)), which accept any value from the minimum up to the configured maximum.
 

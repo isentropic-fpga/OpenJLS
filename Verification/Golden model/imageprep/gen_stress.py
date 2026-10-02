@@ -8,17 +8,15 @@
 
 """Deterministic 16-bit byte_stuffer stall probes (random + adversarial).
 
-The byte_stuffer drains at OUT_BYTES_PER_CYCLE = 4 B/cycle, while a single
-bit_packer beat can be up to LIMIT = 2*(BPP + max(8,BPP)) bits wide: 4 B at
-8-bit (== the cap, harmless) but 8 B at 16-bit. These images were built to
-overrun that cap and force byte_stuffer to back-pressure upstream.
+The compatibility byte_stuffer drains at most 4 B/cycle. LIMIT-length words
+can exceed that service rate (stuffing adds bits even at 8-bit precision).
+Earlier random/checker/stripe/spike tests showed no internal stalls. That is
+simulation evidence for those images, not a bound on every possible image.
 
-None of them do: measured Image-1 internal stalls are 0 for the random and for
-all four adversarial patterns (and for natural 16-bit images too). Input is 1
-pixel/cycle and k-adaptation pins the sustained code length well under 32
-bits/pixel, so the 4 B/cycle cap is never sustained-overrun; transient LIMIT
-beats are absorbed by buffering. They stay as a robustness probe (the attempt
-that proved the cap safe) and as incompressible/structured inputs in the set.
+Full-scale 0/65535 patterns are weak error probes: modulo reduction maps a
+65535 prediction error to -1. Use --level 32768 to exercise large residuals
+without changing the 16-bit sample precision. --pattern shock trains small
+errors before switching abruptly to half-range noise, stressing k adaptation.
 
 Patterns (full-scale = --maxval, default 65535):
   random   uniform noise in [0, maxval] (incompressible; --seed controls it)
@@ -81,7 +79,8 @@ def main():
     ap.add_argument("--width", type=int, help="image width (px); overrides --size")
     ap.add_argument("--height", type=int, help="image height (px); overrides --size")
     ap.add_argument("--pattern", default="random",
-                    choices=["random", "checker", "vstripe", "hstripe", "spikes", "flat"])
+                    choices=["random", "checker", "vstripe", "hstripe", "spikes", "flat", "shock"])
+    ap.add_argument("--level", type=int, help="structured-pattern high value (precision stays --maxval)")
     ap.add_argument("--seed", type=lambda s: int(s, 0), default=0x0FF5,
                     help="PRNG seed for --pattern random; accepts 0x.. hex")
     ap.add_argument("--maxval", type=lambda s: int(s, 0), default=65535,
@@ -110,8 +109,23 @@ def main():
     mx = a.maxval
     if mx < 255 or mx > 65535 or (mx & (mx + 1)) != 0:
         ap.error(f"--maxval {mx}: must be 2^N - 1 with N in 8..16")
+    level = mx if a.level is None else a.level
+    if not 0 <= level <= mx:
+        ap.error("--level must be in [0, maxval]")
     fmt = ">H" if mx > 255 else "B"
-    if a.pattern == "random":
+    if a.pattern == "shock":
+        rng = random.Random(a.seed)
+        payload = bytearray()
+        for y in range(h):
+            for x in range(w):
+                # Repeated training/shock bands; training visits many low-k
+                # gradient contexts. Half-range jumps avoid modulo wrap to -1.
+                v = rng.randrange(min(mx + 1, 256))
+                if y % 64 >= 56:
+                    v += rng.randrange(2) * ((mx + 1) // 2)
+                payload += struct.pack(fmt, v)
+        tag = f"shock (seed {a.seed:#06x})"
+    elif a.pattern == "random":
         if mx == 65535:
             payload = random.Random(a.seed).randbytes(w * h * 2)  # big-endian-agnostic
         else:
@@ -123,7 +137,7 @@ def main():
         payload = bytearray()
         for y in range(h):
             for x in range(w):
-                payload += struct.pack(fmt, pattern_value(a.pattern, x, y, mx))
+                payload += struct.pack(fmt, pattern_value(a.pattern, x, y, level))
         tag = a.pattern
 
     n = write_pgm(a.out, w, h, payload, mx)

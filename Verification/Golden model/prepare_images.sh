@@ -45,9 +45,8 @@ python3 "$PREP/normalize.py" "$IMAGES"
 
 # 16-bit byte_stuffer stall probes: random noise (several seeds) + adversarial
 # patterns (checkerboard/stripes/spikes). Built to try to overrun the byte_stuffer
-# 4 B/cycle cap; the pipeline does NOT stall on any of them (k-adaptation +
-# buffering hold the sustained rate under the cap), so they serve as a robustness
-# probe and as incompressible/structured inputs. Generated after normalize
+# 4 B/cycle cap. No stalls were observed in the original runs; this is not
+# a proof of a worst-case bound. They remain useful robustness probes. Generated after normalize
 # (already in target form; must not be down-converted). See imageprep/gen_stress.py.
 echo "== random 16-bit probes =="
 i=1
@@ -55,6 +54,22 @@ for seed in 0x0FF5 0x1234 0xBEEF; do
   python3 "$PREP/gen_stress.py" "$IMAGES/synth-rand16_$i.pgm" --pattern random --seed "$seed"
   i=$((i + 1))
 done
+# Avoid the modulo-wrap weakness of 0/65535 probes. Keep precision at 16
+# bits while using quarter/half-range values; train low-k contexts then shock.
+echo "== stuffer rate probes =="
+for pattern in checker vstripe hstripe spikes; do
+  for level in 16384 32768 49152; do
+    python3 "$PREP/gen_stress.py" "$IMAGES/stuffer-probe-$pattern-$level.pgm" \
+      --pattern "$pattern" --level "$level"
+  done
+done
+for seed in 0 1 2 3 4 5 6 7; do
+  for pattern in random shock; do
+    python3 "$PREP/gen_stress.py" "$IMAGES/stuffer-probe-$pattern-$seed.pgm" \
+      --pattern "$pattern" --seed "$seed" --width 1024 --height 64
+  done
+done
+
 echo "== adversarial 16-bit probes =="
 for pat in checker vstripe hstripe spikes; do
   python3 "$PREP/gen_stress.py" "$IMAGES/synth-$pat-16.pgm" --pattern "$pat"

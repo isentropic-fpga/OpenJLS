@@ -124,7 +124,7 @@ entity jls_framer is
     -- Cushion between oReady deassertion and BUFFER_BYTES. Covers two
     -- in-flight cycles of byte_stuffer emission (decision + transfer pipeline)
     -- plus the +2 EOI footer push. Worst case: 2*BYTES_IN + 2.
-    STALL_MARGIN_BYTES : natural := 2 * math_ceil_div(CO_BYTE_STUFFER_OUT_WIDTH, 8) + 2
+    STALL_MARGIN_BYTES : natural := 2 * math_ceil_div(IN_WIDTH, 8) + 2
   );
   port (
     iClk               : in    std_logic;

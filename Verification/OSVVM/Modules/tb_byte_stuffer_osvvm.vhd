@@ -49,14 +49,14 @@ library tb_support;
 
 entity tb_byte_stuffer_osvvm is
   generic (
-    IN_WIDTH : natural := CO_LIMIT_STD
+    IN_WIDTH : natural := CO_LIMIT_STD;
+    OUT_BYTES : natural := 4
   );
 end entity tb_byte_stuffer_osvvm;
 
 architecture sim of tb_byte_stuffer_osvvm is
 
   -- DUT config -----------------------------------------------------------------
-  constant OUT_BYTES       : natural := 4;
   constant OUT_WIDTH       : natural := OUT_BYTES * 8;
   constant BURST_DEPTH     : natural := 16;
   constant VLEN_W          : natural := log2ceil(IN_WIDTH + 1);
@@ -544,7 +544,11 @@ begin
     covEmit := NewID("emitBytes");
     SetFieldName(covEmit, "emitBytes");
     for count in 0 to OUT_BYTES loop
-      AddBins(covEmit, "emitted bytes=" & to_string(count), GenBin(count));
+      -- With a reserved terminal lane, a nonempty image finishes on its
+      -- payload beat, so the old zero-byte terminal is unreachable.
+      if count /= 0 or OUT_BYTES < math_ceil_div(IN_WIDTH, 8) + 2 then
+        AddBins(covEmit, "emitted bytes=" & to_string(count), GenBin(count));
+      end if;
     end loop;
     -- FT_EMPTY is unreachable (see directed-corner note) and excluded.
     covFlush := NewID("flushType");
@@ -607,6 +611,15 @@ begin
     -- Long 0xFF run in one beat: forces consecutive stuffs across the 4-slot
     -- chain (full-width all-ones).
     directed(ones, IN_WIDTH);
+
+    -- Sweep the stuffing phase at EOI; this reaches the reserved terminal
+    -- lane (a maximal-width beat) in the full-rate configurations.
+    for words in 1 to 16 loop
+      for n in 1 to words - 1 loop
+        send_beat(ones, IN_WIDTH, '1', '0');
+      end loop;
+      directed(ones, IN_WIDTH);
+    end loop;
 
     -- Multi-word flush with residue: > FIFO width of all-ones, flushed on a
     -- final partial beat (regression for the multi-word valid-bits overflow).

@@ -35,9 +35,19 @@ mkdir -p "$LIBS" "$GOLDEN" "$OUTPUT"
 # 0. Reference encoder (built from source under ThirdParty/ on first use).
 [ -x "$CLI" ] || "$ROOT/ThirdParty/fetch_third_party.sh" charls
 
+# Use a worst-case allocation for adversarial inputs that expand beyond the
+# upstream CLI's estimated buffer. Same CharLS codec and defaults.
+REF_ENCODER="$ROOT/build/charls_encode_pgm"
+mkdir -p "$ROOT/build"
+if [ ! -x "$REF_ENCODER" ] || [ "$HERE/encode_pgm.cpp" -nt "$REF_ENCODER" ] || \
+   [ "$ROOT/ThirdParty/charls/build/libcharls.a" -nt "$REF_ENCODER" ]; then
+  "${CXX:-c++}" -std=c++17 -O2 -I "$ROOT/ThirdParty/charls/include" \
+    "$HERE/encode_pgm.cpp" "$ROOT/ThirdParty/charls/build/libcharls.a" -o "$REF_ENCODER"
+fi
+
 # 0a. Toolchain gate: CharLS must reproduce the official T16E0.JLS byte-exact,
 #     otherwise the goldens it mints are not trustworthy.
-"$CLI" encode "$REF_DIR/TEST16.PGM" "$GOLDEN/TEST16_charls.jls" >/dev/null
+"$REF_ENCODER" "$REF_DIR/TEST16.PGM" "$GOLDEN/TEST16_charls.jls" >/dev/null
 if ! cmp -s "$GOLDEN/TEST16_charls.jls" "$REF_DIR/T16E0.JLS"; then
   echo "FATAL: CharLS does not reproduce the official T16E0.JLS byte-for-byte." >&2
   echo "       The golden generator is not trustworthy — aborting." >&2
@@ -130,7 +140,8 @@ LOGD="$HERE/Output/logs"
 mkdir -p "$LOGD"
 
 shopt -s nullglob
-PGMS=("$IMAGES_DIR"/*.pgm)
+# Optional basename glob for focused adversarial or configuration reruns.
+PGMS=("$IMAGES_DIR"/${IMAGE_FILTER:-*}.pgm)
 shopt -u nullglob
 if [ "${#PGMS[@]}" -eq 0 ]; then
   echo "No images in $IMAGES_DIR — run ./prepare_images.sh first." >&2
@@ -170,7 +181,7 @@ run_image() {
   stem="$(basename "${pgm%.pgm}")"
   read -r W H MX _ < <(python3 "$PREP/pgm_info.py" "$pgm")
   mp=$(awk -v w="$W" -v h="$H" 'BEGIN{printf "%.3f", w*h/1e6}')
-  if ! "$CLI" encode "$pgm" "$GOLDEN/${stem}_charls.jls" >"$LOGD/$stem.log" 2>&1; then
+  if ! "$REF_ENCODER" "$pgm" "$GOLDEN/${stem}_charls.jls" >"$LOGD/$stem.log" 2>&1; then
     rc=1; result="FAIL (charls)"
   elif "${NVC[@]}" --work=work:"$LIBS/work.08" \
       -e --jit --no-save \
@@ -178,6 +189,7 @@ run_image() {
       -g PGM_PATH="Verification/Golden model/Images/${stem}.pgm" \
       -g JLS_PATH="Verification/Golden model/Output/Golden/${stem}_charls.jls" \
       -g OUT_PATH="Verification/Golden model/Output/OpenJLS/${stem}_OPENJLS.jls" \
+      -g OUT_WIDTH="${OUT_WIDTH:-64}" -g FULL_RATE_STUFFER="${FULL_RATE_STUFFER:-0}" \
       -g BITNESS="$bits" "$TB" \
       -r --exit-severity=error "$TB" >>"$LOGD/$stem.log" 2>&1; then rc=0; result=PASS; else rc=1; result=FAIL; fi
   # Surface the TB's internal-stall warning regardless of pass/fail.

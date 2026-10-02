@@ -59,7 +59,9 @@ entity openjls_axis_regs is
     BITNESS             : positive range 8 to 16    := 12;
     MAX_IMAGE_WIDTH     : positive range 4 to 65535 := 4096;
     MAX_IMAGE_HEIGHT    : positive range 1 to 65535 := 4096;
-    OUT_WIDTH           : positive range 48 to 1024 := CO_OUT_WIDTH_STD
+    OUT_WIDTH           : positive range 48 to 1024 := CO_OUT_WIDTH_STD;
+    -- 1: provision the stuffer for LIMIT bits every cycle; requires wider output.
+    FULL_RATE_STUFFER : natural range 0 to 1 := 0
   );
   port (
     aclk                : in    std_logic;
@@ -337,7 +339,8 @@ begin
       BITNESS             => BITNESS,
       MAX_IMAGE_WIDTH     => MAX_IMAGE_WIDTH,
       MAX_IMAGE_HEIGHT    => MAX_IMAGE_HEIGHT,
-      OUT_WIDTH           => OUT_WIDTH
+      OUT_WIDTH           => OUT_WIDTH,
+      FULL_RATE_STUFFER => FULL_RATE_STUFFER
     )
     port map (
       iClk                => aclk,

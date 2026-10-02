@@ -44,6 +44,8 @@ entity tb_openjls_golden is
     -- Pixel bit depth. Must match the PGM maxval (asserted below) and the DUT
     -- pixel-port width. 8 for the TEST8 planes, 12 for TEST16.
     BITNESS             : natural := 8;
+    OUT_WIDTH           : natural := CO_OUT_WIDTH_STD;
+    FULL_RATE_STUFFER    : natural range 0 to 1 := 0;
     -- true: instantiate the top bare (post-synthesis netlist). false: behavioral
     -- sim with the explicit generic map below (behavioral flow).
     POST_SYNTH_FRIENDLY : boolean := false
@@ -72,7 +74,6 @@ architecture bench of tb_openjls_golden is
   -- images) without an artificial width/height cap.
   constant MAX_IMAGE_WIDTH       : positive := 65535;
   constant MAX_IMAGE_HEIGHT      : positive := 65535;
-  constant OUT_WIDTH             : natural  := CO_OUT_WIDTH_STD;   -- 64
   constant BYTES_PER_WORD        : natural  := OUT_WIDTH / 8;
 
   -- Buffers are heap-allocated at runtime to fit the actual image, so there is
@@ -286,7 +287,8 @@ begin
         BITNESS          => BITNESS,
         MAX_IMAGE_WIDTH  => MAX_IMAGE_WIDTH,
         MAX_IMAGE_HEIGHT => MAX_IMAGE_HEIGHT,
-        OUT_WIDTH        => OUT_WIDTH
+        OUT_WIDTH        => OUT_WIDTH,
+        FULL_RATE_STUFFER => FULL_RATE_STUFFER
       )
       port map (
         iClk             => iClk,
@@ -637,6 +639,9 @@ begin
           " expected " & integer'image(refLen));
     compare_slice(0, "Image");
 
+    report "Internal stall cycles: " & integer'image(sStallCnt);
+    assert FULL_RATE_STUFFER = 0 or sStallCnt = 0
+      report "full-rate core stalled with continuously ready output" severity failure;
     if (sStallCnt > 0) then
       report "Pipeline stalled " & integer'image(sStallCnt) &
              " cycle(s) under this image with no downstream backpressure " &

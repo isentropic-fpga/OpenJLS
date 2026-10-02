@@ -75,7 +75,9 @@ entity openjls_top is
     BITNESS          : positive range 8 to 16    := 12;
     MAX_IMAGE_WIDTH  : positive range 4 to 65535 := 4096;
     MAX_IMAGE_HEIGHT : positive range 1 to 65535 := 4096;
-    OUT_WIDTH        : positive range 48 to 1024 := CO_OUT_WIDTH_STD
+    OUT_WIDTH        : positive range 48 to 1024 := CO_OUT_WIDTH_STD;
+    -- 1: provision the stuffer for LIMIT bits every cycle; requires wider output.
+    FULL_RATE_STUFFER : natural range 0 to 1 := 0
   );
   port (
     iClk             : in    std_logic;
@@ -170,11 +172,12 @@ architecture rtl of openjls_top is
 
   --------------------------------------------------------------------------------------------
   -- Bit packer / byte stuffer / framer interface widths.
-  -- byte_stuffer is sized for AVERAGE rate; bursts absorbed by its buffer, which
-  -- asserts oAlmostFull and stalls upstream near full. OUT_BYTES_PER_CYCLE trades
-  -- fmax vs throughput; BURST_DEPTH=64 covers natural images with margin.
+  -- Compatibility mode uses four lanes and absorbs bursts in the FIFO.
+  -- Full-rate mode consumes at least FIFO_BITS each ready cycle, including
+  -- maximum stuffing. The framer requires one extra output byte of headroom.
   --------------------------------------------------------------------------------------------
-  constant BYTE_STUFFER_OUT_BYTES_PER_CYCLE : natural := 4;                                           -- Hardcoded, fixed
+  constant BYTE_STUFFER_OUT_BYTES_PER_CYCLE : natural :=
+    4 + FULL_RATE_STUFFER * (math_ceil_div(LIMIT, 8) + 2 - 4);
   constant BYTE_STUFFER_BURST_DEPTH         : natural := 64;                                          -- Can be tuned
   constant BYTE_STUFFER_OUT_WIDTH           : natural := BYTE_STUFFER_OUT_BYTES_PER_CYCLE * 8;
 
@@ -1474,6 +1477,7 @@ begin
     generic map (
       IN_WIDTH            => LIMIT,
       OUT_BYTES_PER_CYCLE => BYTE_STUFFER_OUT_BYTES_PER_CYCLE,
+      OUT_WIDTH           => BYTE_STUFFER_OUT_WIDTH,
       BURST_DEPTH         => BYTE_STUFFER_BURST_DEPTH
     )
     port map (
@@ -1496,6 +1500,7 @@ begin
     generic map (
       BITNESS          => BITNESS,
       IN_WIDTH         => BYTE_STUFFER_OUT_WIDTH,
+      STALL_MARGIN_BYTES => (2 + FULL_RATE_STUFFER) * BYTE_STUFFER_OUT_BYTES_PER_CYCLE + 2,
       OUT_WIDTH        => OUT_WIDTH,
       MAX_IMAGE_WIDTH  => MAX_IMAGE_WIDTH,
       MAX_IMAGE_HEIGHT => MAX_IMAGE_HEIGHT

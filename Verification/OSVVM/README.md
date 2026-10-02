@@ -63,12 +63,27 @@ coverage:
 ./build_reports.sh        # same regression + reports, without coverage instrumentation
 ```
 
-The routine regression runs **106 configurations**. In addition to the existing
+The routine regression runs **110 configurations**. In addition to the existing
 stream-width and top-level variants, 23 arithmetic/stateful module testbenches
 run at 8, 12, and 16 bits per pixel. Directed boundary sweeps complement the
 seeded random tests; the suite does not exhaust the entire state space.
 See [the verification audit](../../Docs/osvvm_verification_audit.md) for the
 checks added, findings, and validation limits.
+
+The full-rate stuffer is covered at 32/48/64 input bits with 6/8/10 output
+lanes, plus a full-core 128-bit-output configuration. For a sustained-rate
+regression with an independent serial-bit scoreboard, run:
+
+```bash
+./check_byte_stuffer_throughput.sh
+```
+
+This verifies full-width zero/one/escape streams, variable word lengths,
+continuous short frames, and downstream pauses. It asserts zero upstream
+stall cycles for full-rate configurations with ready held high; compatibility
+mode must actually backpressure on the overload probes. See
+[throughput findings](../../Docs/byte_stuffer_throughput.md) for the rate bound,
+image probes, configuration, and timing results.
 
 For byte-stuffer timing optimizations, an additional comparison checks the
 current RTL against a saved baseline on every cycle:

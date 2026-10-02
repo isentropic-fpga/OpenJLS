@@ -50,6 +50,15 @@ set generics [list IN_WIDTH=$WIDTH]
 if {$TOP eq "openjls_top"} {
     set generics {BITNESS=12 MAX_IMAGE_WIDTH=4096 MAX_IMAGE_HEIGHT=4096 OUT_WIDTH=64}
 }
+# Optional sixth argument: output lanes (isolated) or full-rate mode (core).
+if {[llength $argv] > 5} {
+    if {$TOP eq "byte_stuffer"} {
+        set lanes [lindex $argv 5]
+        lappend generics OUT_BYTES_PER_CYCLE=$lanes OUT_WIDTH=[expr {8 * $lanes}]
+    } else {
+        set generics [list BITNESS=16 MAX_IMAGE_WIDTH=4096 MAX_IMAGE_HEIGHT=4096 OUT_WIDTH=128 FULL_RATE_STUFFER=[lindex $argv 5]]
+    }
+}
 synth_design -top $TOP -part xczu7eg-fbvb900-1-e -mode out_of_context -generic $generics
 report_utilization -file synth_util.rpt
 report_timing_summary -file synth_timing.rpt

@@ -130,7 +130,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>ac374e1a</spirit:value>
+            <spirit:value>69922e79</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -146,7 +146,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>ac374e1a</spirit:value>
+            <spirit:value>69922e79</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -160,7 +160,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>2e067d26</spirit:value>
+            <spirit:value>a269a03d</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -400,6 +400,11 @@
         <spirit:displayName>Out Width</spirit:displayName>
         <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.OUT_WIDTH" spirit:minimum="48" spirit:maximum="1024" spirit:rangeType="long">64</spirit:value>
       </spirit:modelParameter>
+      <spirit:modelParameter spirit:dataType="integer">
+        <spirit:name>FULL_RATE_STUFFER</spirit:name>
+        <spirit:displayName>Full Rate Stuffer</spirit:displayName>
+        <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.FULL_RATE_STUFFER" spirit:minimum="0" spirit:maximum="1" spirit:rangeType="long">0</spirit:value>
+      </spirit:modelParameter>
     </spirit:modelParameters>
   </spirit:model>
   <spirit:fileSets>
@@ -583,7 +588,7 @@
       <spirit:file>
         <spirit:name>src/openjls_axis.vhd</spirit:name>
         <spirit:userFileType>vhdlSource-2008</spirit:userFileType>
-        <spirit:userFileType>CHECKSUM_f34cc3fb</spirit:userFileType>
+        <spirit:userFileType>CHECKSUM_44d8f8f1</spirit:userFileType>
         <spirit:userFileType>IMPORTED_FILE</spirit:userFileType>
       </spirit:file>
     </spirit:fileSet>
@@ -775,7 +780,7 @@
       <spirit:file>
         <spirit:name>xgui/openjls_axis_v1_3.tcl</spirit:name>
         <spirit:fileType>tclSource</spirit:fileType>
-        <spirit:userFileType>CHECKSUM_2e067d26</spirit:userFileType>
+        <spirit:userFileType>CHECKSUM_a269a03d</spirit:userFileType>
         <spirit:userFileType>XGUI_VERSION_2</spirit:userFileType>
       </spirit:file>
     </spirit:fileSet>
@@ -810,6 +815,11 @@
       <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.OUT_WIDTH" spirit:minimum="48" spirit:maximum="1024" spirit:rangeType="long">64</spirit:value>
     </spirit:parameter>
     <spirit:parameter>
+      <spirit:name>FULL_RATE_STUFFER</spirit:name>
+      <spirit:displayName>Full Rate Stuffer</spirit:displayName>
+      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.FULL_RATE_STUFFER" spirit:minimum="0" spirit:maximum="1" spirit:rangeType="long">0</spirit:value>
+    </spirit:parameter>
+    <spirit:parameter>
       <spirit:name>Component_Name</spirit:name>
       <spirit:value spirit:resolve="user" spirit:id="PARAM_VALUE.Component_Name" spirit:order="1">openjls_axis_v1_0</spirit:value>
     </spirit:parameter>
@@ -830,16 +840,16 @@
       <xilinx:definitionSource>package_project</xilinx:definitionSource>
       <xilinx:vendorDisplayName>Isentropic</xilinx:vendorDisplayName>
       <xilinx:vendorURL>https://github.com/isentropic-fpga/OpenJLS</xilinx:vendorURL>
-      <xilinx:coreRevision>26090823</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2026-09-09T02:18:05Z</xilinx:coreCreationDateTime>
+      <xilinx:coreRevision>26091312</xilinx:coreRevision>
+      <xilinx:coreCreationDateTime>2026-09-13T15:22:31Z</xilinx:coreCreationDateTime>
     </xilinx:coreExtensions>
     <xilinx:packagingInfo>
       <xilinx:xilinxVersion>2025.2</xilinx:xilinxVersion>
       <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="8e5b7ba9"/>
-      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="3ec08ad2"/>
+      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="38191c52"/>
       <xilinx:checksum xilinx:scope="ports" xilinx:value="76c8cdce"/>
-      <xilinx:checksum xilinx:scope="hdlParameters" xilinx:value="b0b062b2"/>
-      <xilinx:checksum xilinx:scope="parameters" xilinx:value="7b3665db"/>
+      <xilinx:checksum xilinx:scope="hdlParameters" xilinx:value="b295f19c"/>
+      <xilinx:checksum xilinx:scope="parameters" xilinx:value="f4b32844"/>
     </xilinx:packagingInfo>
   </spirit:vendorExtensions>
 </spirit:component>
