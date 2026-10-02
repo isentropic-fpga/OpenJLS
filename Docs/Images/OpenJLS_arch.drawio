@@ -1,7 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <mxfile host="app.diagrams.net">
   <diagram name="OpenJLS architecture" id="openjls-arch">
-    <mxGraphModel dx="2691" dy="1584" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2050" pageHeight="1200" math="0" shadow="0">
+    <mxGraphModel dx="2100" dy="1251" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2050" pageHeight="1200" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -812,11 +811,11 @@
         <mxCell id="n191" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;align=center;" value="MODE" vertex="1">
           <mxGeometry height="17.55" width="70.21" x="1060.93" y="925" as="geometry" />
         </mxCell>
-        <mxCell id="n192" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;align=center;" value="Q3 = Q4 ?" vertex="1">
+        <mxCell id="n192" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;align=center;" value="Q(3) = Q(4)" vertex="1">
           <mxGeometry height="17.55" width="95.74" x="776.27" y="1026.17" as="geometry" />
         </mxCell>
-        <mxCell id="n193" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;align=center;" value="Q3 = Q4 ?" vertex="1">
-          <mxGeometry height="17.55" width="95.74" x="895.7499999999999" y="384" as="geometry" />
+        <mxCell id="n193" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;align=center;" value="&lt;div&gt;Q(3) = Q(4)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="17.55" width="95.74" x="892.1899999999999" y="383.62" as="geometry" />
         </mxCell>
         <mxCell id="n194" parent="1" style="text;html=1;strokeColor=none;fillColor=#FFFFFF;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;align=center;" value="ΔC" vertex="1">
           <mxGeometry height="19.15" width="21.78" x="977.75" y="383.62" as="geometry" />
