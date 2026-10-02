@@ -99,7 +99,7 @@ repository with demo projects for OpenJLS at \url{https://github.com/isentropic-
   Image size    & Up to $65535\times65535$ px\\
   Throughput    & 1 pixel / clock \\
   Latency       & 14 clock cycles \\
-  $f_{max}$     & $\sim$280\,MHz (Xilinx \texttt{xczu7eg-1}) \\
+  $f_{max}$     & $\sim$280\,MHz at 12 bit (Xilinx \texttt{xczu7eg-1}) \\
   Interface     & Ready/valid streaming (AXI4-Stream / Avalon-ST compatible) \\
   Memory        & On-chip line buffer, one image row; no external RAM \\
   Resources     & $\sim$6.4k LUT, $\sim$2.0k FF + BRAM scaling with image width \\
@@ -294,13 +294,14 @@ clock cycles.
 %======================================================================
 \section{Resources and performance}
 Characterized on Xilinx Zynq UltraScale+ \texttt{xczu7eg-fbvb900-1-e},
-Vivado 2025.2, using the generics \texttt{BITNESS = 12} and \texttt{OUT\_WIDTH = 64}, RTL-only with no floorplanning.
+Vivado 2025.2, using the generics \texttt{BITNESS = 12} (unless stated otherwise) and \texttt{OUT\_WIDTH = 64}, RTL-only with no floorplanning.
 $f_{max}$ is the true maximum, found by over-constraining the clock until timing fails.
 At one pixel per clock, $\sim$280\,MHz is $\sim$280\,Mpixel/s.
 
 \noindent Figure~\ref{fig:fmax} and Table~\ref{tab:fmax} report $f_{max}$ across
 \texttt{MAX\_IMAGE\_WIDTH}; Figure~\ref{fig:util} and Table~\ref{tab:util} report
-the resource usage.
+the resource usage; Figure~\ref{fig:fmaxbits} and Table~\ref{tab:bits} report both
+across \texttt{BITNESS}.
 
 \begin{figure}[H]
   \centering
@@ -364,6 +365,36 @@ strategy; utilization is near-identical across strategies. Logic is essentially
 constant with image size; only the line-buffer BRAM scales with width and pixel
 depth.
 \end{sloppypar}
+
+\begin{figure}[H]
+  \centering
+  \caption{Maximum frequency vs pixel bit depth (\texttt{MAX\_IMAGE\_WIDTH = 12288}).}
+  \label{fig:fmaxbits}
+  \includegraphics[width=0.70\linewidth]{fmax_vs_bitness.png}
+\end{figure}
+
+\begin{table}[H]
+  \centering
+  \caption{Maximum frequency and resource usage by pixel bit depth (\texttt{MAX\_IMAGE\_WIDTH = 12288}).}
+  \label{tab:bits}
+\begin{tabular}{@{}r @{\hspace{1.2em}}|@{\hspace{1.2em}} r r r r @{\hspace{1.2em}}|@{\hspace{1.2em}} r r r@{}}
+  \toprule
+  \texttt{BITNESS} & Default & EPRPO & NetDelay & Congestion & LUT & FF & BRAM \\
+  \midrule
+  8  & \textbf{305.3} & 305.2          & 290.8          & 294.6 & 5319 & 1772 & 3.5 \\
+  10 & 282.8          & 290.2          & \textbf{293.6} & 293.5 & 5908 & 1902 & 4.0 \\
+  12 & 273.1          & 284.0          & \textbf{289.4} & 274.9 & 6327 & 2033 & 5.5 \\
+  14 & 257.8          & 268.8          & \textbf{276.6} & 233.4 & 6845 & 2153 & 6.5 \\
+  16 & 215.4          & 224.4          & \textbf{224.7} & 218.4 & 7601 & 2287 & 7.5 \\
+  \bottomrule
+\end{tabular}
+\end{table}
+
+\noindent Best-of $f_{max}$ falls from $\sim$305\,MHz at 8 bits to $\sim$277\,MHz
+at 14 bits and $\sim$225\,MHz at 16 bits. The byte stuffer is off the critical
+path at every depth; the limit is the context RAM read into the prediction-error
+register, whose carry chains widen with pixel depth. Resources are for the
+default strategy.
 
 %======================================================================
 \section{Integration example}

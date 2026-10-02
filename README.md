@@ -11,7 +11,7 @@ OpenJLS is an open, verification-signed JPEG-LS encoder IP core for FPGAs - the 
 
 It implements the JPEG-LS standard (ISO/IEC 14495-1 / ITU-T T.87), a low-complexity lossless image codec with compression ratios comparable to JPEG 2000 lossless at a fraction of the computational cost. Every release is checked byte-exact against an independent reference encoder across 287 images, including post-synthesis (see [Verification report](https://isentropic-fpga.github.io/OpenJLS/)).
 
-OpenJLS reaches ~280 MHz on a Xilinx UltraScale+ ZU7EG (the MPSoC family used in onboard processors such as the Xiphos Q8), processing one pixel per clock (~280 Mpixel/s) for ~6.4k LUTs and no external memory. It handles single-component (grayscale) data, so a multi-band sensor instantiates one compressor per band - resource usage is low enough that all bands run in parallel cheaply.
+OpenJLS reaches ~280 MHz with 12-bit pixels on a Xilinx UltraScale+ ZU7EG (the MPSoC family used in onboard processors such as the Xiphos Q8), processing one pixel per clock (~280 Mpixel/s) for ~6.4k LUTs and no external memory; 8-bit reaches ~305 MHz and 16-bit ~225 MHz. It handles single-component (grayscale) data, so a multi-band sensor instantiates one compressor per band - resource usage is low enough that all bands run in parallel cheaply.
 
 The RTL is vendor-neutral by construction (plain VHDL-1993 on open-logic memory primitives, which are VHDL-2008) and builds in any synthesis tool; the figures above were characterized on Xilinx.
 
@@ -194,7 +194,7 @@ For driver code the map ships as a copy/paste C header — [`Sources/Xilinx/ojls
 
 ## Performance & Resources
 
-Characterized on a Xilinx Zynq UltraScale+ `xczu7eg-fbvb900-1-e` (speed grade −1, slowest), Vivado 2025.2, 12-bit grayscale. Frequencies are *true fmax* — read by over-constraining the clock until the design failed timing. Results are RTL-only, no floorplanning or vendor-specific optimizations, and vary with device, tool version, and implementation strategy; treat them as representative, not guaranteed. At one pixel/clock, ~280 MHz is ~280 Mpixel/s.
+Characterized on a Xilinx Zynq UltraScale+ `xczu7eg-fbvb900-1-e` (speed grade −1, slowest), Vivado 2025.2, 12-bit grayscale unless stated otherwise. Frequencies are *true fmax* — read by over-constraining the clock until the design failed timing. Results are RTL-only, no floorplanning or vendor-specific optimizations, and vary with device, tool version, and implementation strategy; treat them as representative, not guaranteed. At one pixel/clock, ~280 MHz is ~280 Mpixel/s.
 
 ### Maximum frequency vs `MAX_IMAGE_WIDTH`
 
@@ -229,6 +229,24 @@ Logic is essentially constant across image size — LUTs (~6.4k) and flip-flops 
 | 65535 | 6407 | 2072 | 23.0 |
 
 Resource usage by `MAX_IMAGE_WIDTH` (default strategy; near-identical across strategies). Reproduce both tables with [`Scripts/run_fmax_sweep.sh`](Scripts/run_fmax_sweep.sh).
+
+### Maximum frequency and resources vs `BITNESS`
+
+<img src="Docs/Images/fmax_vs_bitness.png" alt="Maximum frequency vs BITNESS" width="600">
+
+<img src="Docs/Images/util_vs_bitness.png" alt="Resource usage vs BITNESS" width="600">
+
+At a fixed `MAX_IMAGE_WIDTH` of 12288, the best-of fmax falls from ~305 MHz at 8 bits to ~277 MHz at 14 bits, then drops to ~225 MHz at 16 bits. The byte stuffer is not on the critical path at any depth: the limit is the context RAM read into the prediction-error register, whose carry chains widen with pixel depth. Logic grows ~43% from 8 to 16 bits; BRAM follows the line-buffer width.
+
+| `BITNESS` | Default | ExplorePostRoutePhysOpt | NetDelay_high | Congestion_SpreadLogic_high | LUTs | FFs | BRAM tiles |
+|----------:|--------:|------------------------:|--------------:|----------------------------:|-----:|----:|-----------:|
+| 8 | **305.3** | 305.2 | 290.8 | 294.6 | 5319 | 1772 | 3.5 |
+| 10 | 282.8 | 290.2 | **293.6** | 293.5 | 5908 | 1902 | 4.0 |
+| 12 | 273.1 | 284.0 | **289.4** | 274.9 | 6327 | 2033 | 5.5 |
+| 14 | 257.8 | 268.8 | **276.6** | 233.4 | 6845 | 2153 | 6.5 |
+| 16 | 215.4 | 224.4 | **224.7** | 218.4 | 7601 | 2287 | 7.5 |
+
+Maximum frequency (MHz) by `BITNESS` and implementation strategy at `MAX_IMAGE_WIDTH` = 12288, best per row in bold; resources for the default strategy. Reproduce with `FMAX_SIZES=12288 FMAX_BITNESS="8 10 12 14 16" ./Scripts/run_fmax_sweep.sh`.
 
 ---
 
