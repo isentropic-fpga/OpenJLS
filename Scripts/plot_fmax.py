@@ -80,7 +80,7 @@ all_x = sorted({p[0] for pts in series.values() for p in pts})
 ax = plt.gca()
 ax.set_xticks(all_x)
 if by_bitness:
-    plt.xlabel(f"Pixel bit depth  (MAX_IMAGE_WIDTH = {int(rows[0]['size']) // 1024}k)")
+    plt.xlabel("Pixel bit depth  (bits)")
 else:
     # Label ticks as 4k, 8k, 12k, ... instead of raw pixel counts
     ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{int(round(x / 1024))}k"))

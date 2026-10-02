@@ -57,7 +57,7 @@ l_bram, = ax2.plot(xs, bram, ls="-.", marker="^", color="#009E73", label="Block 
 # X axis: linear spacing so the BRAM line (~proportional to width) reads straight.
 ax1.set_xticks(xs)
 if by_bitness:
-    ax1.set_xlabel(f"Pixel bit depth  (MAX_IMAGE_WIDTH = {int(raw[0]['size']) // 1024}k)")
+    ax1.set_xlabel("Pixel bit depth  (bits)")
 else:
     ax1.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{int(round(x / 1024))}k"))
     ax1.set_xlabel("Maximum image width  (px)")
