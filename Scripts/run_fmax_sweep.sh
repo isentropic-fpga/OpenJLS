@@ -9,6 +9,7 @@
 # Launch the fmax sweep in Vivado batch mode. `vivado` must be on PATH (if
 # Vivado lives in a container on your machine, point a local shim at it).
 # Usage: ./Scripts/run_fmax_sweep.sh
+#        FMAX_SIZES=12288 FMAX_BITNESS="8 10 12 14 16" ./Scripts/run_fmax_sweep.sh  (bit-depth sweep)
 # Output: $FMAX_OUTDIR (default build/fmax_sweep_<timestamp>): fmax_sweep.csv + per-point
 #         rpt_*.log, vivado.log
 #

@@ -6,7 +6,8 @@
 # commercial license. See LICENSE and README for details.
 #
 
-"""Plot fmax vs maximum image width (one line per strategy) from fmax_sweep.csv.
+"""Plot fmax vs maximum image width, or vs pixel bit depth for a single-size
+bit-depth sweep (one line per strategy), from fmax_sweep.csv.
 
 Usage:
     python3 Scripts/plot_fmax.py [csv_path] [out_png]
@@ -25,15 +26,20 @@ import matplotlib.ticker as mticker
 csv_path = sys.argv[1] if len(sys.argv) > 1 else os.path.expanduser("~/EDA/Logs/fmax_sweep.csv")
 out_png = sys.argv[2] if len(sys.argv) > 2 else os.path.expanduser("~/EDA/Logs/fmax_vs_size.png")
 
-# strategy -> list of (size, fmax, met)
-series = defaultdict(list)
 with open(csv_path) as f:
-    for row in csv.DictReader(f):
-        if row["status"] != "OK":
-            continue
-        series[row["strategy"]].append(
-            (int(row["size"]), float(row["fmax_mhz"]), row["met"] == "1")
-        )
+    rows = [r for r in csv.DictReader(f) if r["status"] == "OK"]
+# Older CSVs predate the bitness column and are all 12-bit.
+for r in rows:
+    r.setdefault("bitness", "12")
+by_bitness = len({r["size"] for r in rows}) == 1 and len({r["bitness"] for r in rows}) > 1
+x_key = "bitness" if by_bitness else "size"
+
+# strategy -> list of (x, fmax, met)
+series = defaultdict(list)
+for row in rows:
+    series[row["strategy"]].append(
+        (int(row[x_key]), float(row["fmax_mhz"]), row["met"] == "1")
+    )
 
 fig = plt.figure(figsize=(8, 5))
 def pretty(strat):
@@ -70,12 +76,15 @@ for idx, strat in enumerate(sorted(series, key=lambda k: ("Default" not in k, k)
                     facecolors="none", edgecolors=line.get_color(),
                     label=f"{label} (floor only — re-probe)")
 
-all_sizes = sorted({p[0] for pts in series.values() for p in pts})
+all_x = sorted({p[0] for pts in series.values() for p in pts})
 ax = plt.gca()
-ax.set_xticks(all_sizes)
-# Label ticks as 4k, 8k, 12k, ... instead of raw pixel counts
-ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{int(round(x / 1024))}k"))
-plt.xlabel("Maximum image width  (px)")
+ax.set_xticks(all_x)
+if by_bitness:
+    plt.xlabel(f"Pixel bit depth  (MAX_IMAGE_WIDTH = {int(rows[0]['size']) // 1024}k)")
+else:
+    # Label ticks as 4k, 8k, 12k, ... instead of raw pixel counts
+    ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{int(round(x / 1024))}k"))
+    plt.xlabel("Maximum image width  (px)")
 plt.ylabel("Max. frequency  (MHz)")
 # No in-figure title: the LaTeX float caption supplies it.
 plt.grid(True, which="major", ls=":", alpha=0.5)
