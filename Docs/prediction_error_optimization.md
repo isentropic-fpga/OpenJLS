@@ -155,3 +155,53 @@ logs, routed reports, and checkpoints are retained under
 `build/context_ram_perf/{distributed,block}/`. Reproduce each with the timing
 helper command above using that experiment's Sources directory and a
 separate output directory.
+
+## Making prediction error independent of bit depth
+
+**Problem.** fmax dropped as pixels got wider: ~305 MHz at 8 bits, ~225 MHz
+at 16 bits. The slow path was the same at every bit depth:
+
+1. Read the bias `Cq` from the context RAM (slow, ~1.1 ns).
+2. Compute `Px ± Cq` to check clipping. Full pixel width.
+3. Compute `Delta - Cq` for the error. Full pixel width again.
+
+Both adders wait for `Cq`, and both get longer with every extra pixel bit.
+
+**Key fact.** `Cq` is only 8 bits (-128..127). `Ix`, `Px` and the sign
+arrive early. So do every wide calculation before `Cq` arrives, and let
+`Cq` touch only 8-bit logic.
+
+**Fix 1: clipping.** Asking "is `Px + Cq < 0`" is the same as asking
+"is `Cq < -Px`". `-Px` is ready early. Since `Cq` can only be -128..127,
+the limit is clamped to -129..128 (wider values give the same answer). The
+check is now a 9-bit compare, at any bit depth. The same applies to the
+MAXVAL limit and to the negative sign.
+
+**Fix 2: the error.** `Delta = Ix - Px` is ready early. To get `Delta - Cq`:
+
+- Subtract `Cq` from only the low 8 bits of `Delta`.
+- The result can borrow 1, carry 1, or neither into the upper bits.
+- Precompute upper bits `-1`, `+0` and `+1` early, then pick one.
+
+The late path is now one 8-bit subtract and a mux, at any bit depth.
+
+**Result** (width 12288, xczu7eg, 16-bit pixels, fmax in MHz):
+
+| Strategy | Before | After |
+|---|---:|---:|
+| Default | 215.4 | 233.1 |
+| ExplorePostRoutePhysOpt | 224.4 | 246.9 |
+| NetDelay_high | 224.7 | 243.3 |
+| Congestion_SpreadLogic_high | 218.4 | 237.3 |
+
++8–10% fmax for ~2% more LUTs. The slowest path is no longer prediction
+error. It is now the context-initialization check
+(`sReg1D*` → `u_ctx_ram/sUseInitReg_reg`).
+
+**Checks.**
+
+- A Python model matched T.87 A.6 → A.7 exactly (exhaustive at 8 bits).
+- `tb_a6_a7_osvvm` passes at 8, 10, 12, 14 and 16 bits, plus MAXVAL=200
+  (8 bit) and MAXVAL=1000 (12 bit).
+- Full OSVVM regression: 106/106 passed, coverage 99.8%.
+- Not yet run: the 8–14 bit sweep and the golden-image set.
