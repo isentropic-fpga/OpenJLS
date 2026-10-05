@@ -89,7 +89,7 @@ OpenJLS follows the JPEG-LS encoding pipeline:
 
 The hardware architecture is based on the optimizations in Mert's [*Key Architectural Optimizations for Hardware Efficient JPEG-LS Encoder*](https://www.researchgate.net/publication/331795298_Key_Architectural_Optimizations_for_Hardware_Efficient_JPEG-LS_Encoder), reworked into a vendor-agnostic, fully pipelined VHDL core.
 
-[`Docs/Requirements.md`](Docs/Requirements.md) is the **source of truth** for the RTL. Every source file under [`Sources/`](Sources/) implements exactly one topic from it — a code segment or written requirement — and is named after that topic. Each and every one of those topics was taken **verbatim from ISO/IEC 14495-1 (ITU-T T.87)**.
+[`Docs/Requirements.md`](Docs/Requirements.md) is the **source of truth** for the RTL: the code segments and written requirements taken **verbatim from ISO/IEC 14495-1 (ITU-T T.87)**. Source files under [`Sources/`](Sources/) are named after the segments they implement — some combine several, e.g. `A6_A7_prediction_error.vhd` — alongside the line buffer, context RAM, byte stuffer and framer.
 
 ---
 
