@@ -9,7 +9,7 @@
 
 OpenJLS is an open, verification-signed JPEG-LS encoder IP core for FPGAs - the open alternative to closed, commercial JPEG-LS cores, for teams who want to audit the RTL and evaluate before they buy.
 
-It implements the JPEG-LS standard (ISO/IEC 14495-1 / ITU-T T.87), a low-complexity lossless image codec with compression ratios comparable to JPEG 2000 lossless at a fraction of the computational cost. Every release is checked byte-exact against an independent reference encoder across 287 images, including post-synthesis (see [Verification report](https://isentropic-fpga.github.io/OpenJLS/)).
+It implements the JPEG-LS standard (ISO/IEC 14495-1 / ITU-T T.87), a low-complexity lossless image codec with compression ratios comparable to JPEG 2000 lossless at a fraction of the computational cost. Every release is checked byte-exact against an independent reference encoder across 287 images at RTL and on silicon, plus a post-synthesis subset (see [Verification report](https://isentropic-fpga.github.io/OpenJLS/)).
 
 OpenJLS reaches ~280 MHz with 12-bit pixels on a Xilinx UltraScale+ ZU7EG (the MPSoC family used in onboard processors such as the Xiphos Q8), processing one pixel per clock (~280 Mpixel/s) for ~6.4k LUTs and no external memory; 8-bit reaches ~305 MHz and 16-bit ~225 MHz. It handles single-component (grayscale) data, so a multi-band sensor instantiates one compressor per band - resource usage is low enough that all bands run in parallel cheaply.
 
@@ -30,25 +30,22 @@ The RTL is vendor-neutral by construction (plain VHDL-1993 on open-logic memory 
 
 ## Features
 
-Specifications
-
-- **Compression** — Lossless JPEG-LS
-- **Pixel Bit depth** — 8 to 16 bits
-- **Components** — Single-component (grayscale)
-- **Image size** — Configurable up to 64k × 64k px (minimum 4 × 1)
-- **Memory** — Line buffer, as big as image width, on-chip
-- **Throughput** — One pixel per clock cycle
-- **Interface** — Ready/valid streaming handshake (AXI4-Stream / Avalon-ST compatible)
-- **Conformance** — Bit-exact against the ISO/IEC 14495-1 reference and golden-model [CharLS](https://github.com/team-charls/charls)
-- **Portability** — Vendor-agnostic VHDL, due to memory-agnostic IPs from [open-logic](https://github.com/open-logic/open-logic)
+| | |
+|---|---|
+| **Compression** | Lossless JPEG-LS (ISO/IEC 14495-1 / ITU-T T.87) |
+| **Pixel depth** | 8–16 bits, single component (grayscale) |
+| **Image size** | 4 × 1 up to 65535 × 65535 px, set at run time |
+| **Throughput** | 1 pixel/clock, ~280 MHz at 12-bit on UltraScale+ |
+| **Memory** | On-chip line buffer, one image row; no external memory |
+| **Interface** | Ready/valid streaming (AXI4-Stream / Avalon-ST compatible) |
+| **Conformance** | Byte-exact vs the ISO reference vectors and [CharLS](https://github.com/team-charls/charls) |
+| **Portability** | Vendor-agnostic VHDL on [open-logic](https://github.com/open-logic/open-logic) primitives |
 
 ---
 
 ## Verification
 
-OpenJLS is verified by simulation with [NVC](https://www.nickg.me.uk/nvc/) using a layered suite that combines constrained-random self-checking tests, functional coverage, and byte-exact comparison against an independent reference encoder — run at both the RTL and post-synthesis (gate-level) stages:
-
-> **Browse the latest [verification report](https://isentropic-fpga.github.io/OpenJLS/)** — a published snapshot aggregating the OSVVM and NVC HTML reports and the post-synthesis verification logs. It is updated when the reports are regenerated and committed, not on every push.
+OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level, and on hardware. Results are published in the **[verification report](https://isentropic-fpga.github.io/OpenJLS/)**.
 
 | Suite | Status | Test/Cov | Summary |
 |---|---|---|---|
@@ -59,14 +56,14 @@ OpenJLS is verified by simulation with [NVC](https://www.nickg.me.uk/nvc/) using
 | Post-synth golden model | PASS | 100% | 156/156 images byte-exact vs CharLS |
 | Hardware-in-the-loop | PASS | 100% | 287/287 images byte-exact vs CharLS on PYNQ-Z2 silicon |
 
-- **OSVVM** — 29 module testbenches check each module against an independent behavioral reference derived from ITU-T T.87; a top-level testbench stresses the control plane (reset injection, backpressure, back-to-back images, dimension fallback); AXI wrapper testbenches drive the AXI4-Stream and AXI4-Lite wrappers with OSVVM verification components (byte-exact pass-through at 8- and 12-bit, register map, live reconfiguration, mid-image abort) — all with requirements tracking.
-- **Coverage** — OSVVM functional coverage plus NVC structural code coverage (99%+ statements).
-- **Golden model** — Output bitstream compared byte-exact against [CharLS](https://github.com/team-charls/charls), an independent C++ reference encoder, plus the official ISO/IEC 14495-1 reference vectors.
-- **Design contracts** — Embedded PSL assertions (ready/valid and internal handshakes) checked every run.
-- **Post-synthesis** — The top-level stress test and a golden-model subset re-run on the synthesized gate-level netlist, confirming synthesis preserved behavior.
-- **Hardware-in-the-loop** — The full 287-image corpus streamed to a PYNQ-Z2, encoded end-to-end in the FPGA across depths 8–16 (one bitstream per depth), and byte-compared against CharLS on real silicon — zero mismatches. Reproducible from a clean clone via the [EncodeOverEthernet demo](https://github.com/isentropic-fpga/OpenJLS-Demos).
+- **OSVVM** — 29 module testbenches against independent T.87 reference models, a top-level control-plane stress test, and AXI wrapper tests, all with requirements tracking.
+- **Coverage** — OSVVM functional coverage plus NVC statement coverage.
+- **Golden model** — byte-exact against [CharLS](https://github.com/team-charls/charls) and the official ISO/IEC 14495-1 reference vectors.
+- **Design contracts** — PSL assertions on the handshakes, checked every run.
+- **Post-synthesis** — stress test and a golden subset re-run on the gate-level netlist.
+- **Hardware-in-the-loop** — full corpus encoded on a PYNQ-Z2 at depths 8–16, zero mismatches; reproducible via the [EncodeOverEthernet demo](https://github.com/isentropic-fpga/OpenJLS-Demos).
 
-**Golden-model dataset.** The corpus is **287 images** pulled from public datasets and exercised across the full datapath:
+**Golden-model dataset** — 287 images, from 256×256 up to 39 MP:
 
 | Source | Set | Images |
 |---|---|--:|
@@ -74,24 +71,7 @@ OpenJLS is verified by simulation with [NVC](https://www.nickg.me.uk/nvc/) using
 | [imagecompression.info](http://imagecompression.info/test_images/) | 8-bit and 16-bit natural photographs | 30 |
 | Generated stress probes | Boundary, predictor-adversarial, high-entropy and fuzz patterns | 47 |
 
-The real datasets give natural image statistics from 256×256 up to **39 megapixels** (7216×5412); the generated probes target what real images never reach. [`gen_stress.py`](Verification/Golden%20model/imageprep/gen_stress.py) emits them deterministically (seeded, byte-reproducible), covering:
-
-- **Intermediate bit depths (9–15)** — the only coverage of this range; no natural dataset exists here.
-- **Boundary geometries** — smallest legal image (4×1), tall single-column images, and single rows up to 65535×1.
-- **Predictor-adversarial content** — checkerboard, stripes, and sparse spikes that defeat the MED predictor every pixel, plus incompressible noise.
-- **Tiny-image fuzz batch** — many small randomized images stressing start/end-of-image edges more densely than full-size images can.
-
----
-
-## Demos
-
-End-to-end example projects live in a companion repository,
-[**OpenJLS-Demos**](https://github.com/isentropic-fpga/OpenJLS-Demos), each pinning
-the core as a submodule at its verified commit.
-
-- **[EncodeOverEthernet](https://github.com/isentropic-fpga/OpenJLS-Demos/tree/main/EncodeOverEthernet)** — streams raw images to a PYNQ-Z2 over Ethernet, encodes them 100% in the FPGA, and streams the `.jls` files back. Its hardware-in-the-loop sweep is what produces the [HIL verification result](#verification) above.
-
-More demos (additional boards and integrations) are planned.
+The generated probes ([`gen_stress.py`](Verification/Golden%20model/imageprep/gen_stress.py), seeded and reproducible) cover what natural images never reach: bit depths 9–15, boundary geometries (4×1 up to 65535×1), MED-adversarial patterns and a tiny-image fuzz batch.
 
 ---
 
@@ -126,8 +106,6 @@ The core is a single entity, `openjls_top`, configured by generics and driven th
 | `MAX_IMAGE_HEIGHT` | 1–65535 | Largest image height supported. |
 | `OUT_WIDTH` | 48–1024 | Output data-bus width in bits (multiple of 8). |
 
-> `MAX_IMAGE_WIDTH` and `MAX_IMAGE_HEIGHT` set the **compile-time** maximum image size — they size the on-chip line buffer and the dimension counters, so a larger maximum costs more BRAM. They don't pick the size of any given image: the dimensions of each encoded image are selected at **run time** through the `iImageWidth`/`iImageHeight` ports (see [Ports](#ports)), which accept any value from the minimum up to the configured maximum.
-
 ### Ports
 
 The streaming ports use a plain **ready/valid handshake**; the *AXIS* column gives the 1:1 AXI4-Stream signal mapping for that ecosystem (Avalon-ST maps the same way at `readyLatency = 0`).
@@ -149,13 +127,11 @@ The streaming ports use a plain **ready/valid handshake**; the *AXIS* column giv
 
 ### Integration notes
 
-- **Pixel stream.** Feed pixels in **scan order** — the first row left to right, then the second row, and so on — one per accepted handshake (`iValid and oReady`), each an unsigned value on `iPixel`. The encoder sustains one pixel per clock and deasserts `oReady` *only* under downstream backpressure (`iReady` low). The output bitstream is byte-serial, MSB-first.
-- **Image dimensions are configuration, sampled while `iRst` is high** — hold them stable and pulse reset before a new resolution. They latch only during reset, so reset before the first image and whenever the size changes; **no reset is needed between same-size images** — they encode back-to-back. Unwired inputs (`0`) select the `MAX_IMAGE_*` maxima; an out-of-range value falls back to the maximum with a simulation warning. Both ports are a fixed 16 bits regardless of the `MAX_IMAGE_*` generics, so any out-of-range value is caught. Minimum image is **4 × 1**.
-- **No input end-of-frame.** End-of-image is derived internally from the dimensions, so the input has no `TLAST` (optional in AXI4-Stream). The *output* stream is self-delimiting: `oLast` marks the last beat and `oKeep` flags its valid bytes.
-- **Naming.** Port names follow the project's house style; the signals map 1:1 onto AXI4-Stream (see the *AXIS* column), so a conventional-naming `s_axis`/`m_axis` wrapper can be layered on top without touching the core.
-- **Block-diagram drop-in.** Being a single entity with standard ready/valid ports, `openjls_top` can be dropped onto a block diagram and wired there instead of instantiated in HDL. The dimension ports are fixed at 16 bits (rather than sized from the generics) because Vivado's block-design port-width evaluator only handles literal arithmetic.
+- **Pixel stream** — unsigned pixels in raster scan order, one per `iValid and oReady`; `oReady` drops only under output backpressure.
+- **Dimensions** — `MAX_IMAGE_*` generics size the hardware; `iImageWidth`/`iImageHeight` pick each image's size at run time and latch only while `iRst` is high. Reset on a size change; same-size images run back-to-back. `0` or out-of-range selects the maximum.
+- **No input end-of-frame** — end-of-image comes from the dimensions; the output marks it with `oLast` and `oKeep`.
 
-> Full signal timing, the reset/configuration sequence, latency figures, and a worked instantiation example live in the **datasheet** (`Docs/datasheet/`).
+Timing, reset sequencing, latency and an instantiation example are in the [datasheet](Docs/datasheet/openjls_datasheet.pdf).
 
 ### Xilinx IP cores
 
@@ -184,23 +160,19 @@ The AXI4-Lite variant replaces the native control pins with a register bank (32-
 | `0x18` | CTRL | WO | `[0]` APPLY — self-clearing, pulses the core reset |
 | `0x1C` | STATUS | RO | `[0]` BUSY (reset pulse active), `[1]` pixel-stream `TREADY` mirror |
 
-The core samples the dimensions only while its reset is high, so reconfiguration is: write WIDTH/HEIGHT, set CTRL.APPLY. APPLY pulses the core reset for one clock; while it is active STATUS.BUSY reads 1 and the pixel stream's `TREADY` is held low, so a stream started too early stalls instead of losing pixels — WIDTH/HEIGHT/CTRL writes while BUSY are dropped. Back-to-back images of unchanged dimensions need no APPLY.
-
-WIDTH/HEIGHT writes are merged per `WSTRB` and clamped to the core's rule (out-of-range values become the MAX generic), so a readback always returns the value the core will actually use. Writes to RO or unmapped offsets are acknowledged (OKAY) and dropped; unmapped reads return zero.
-
-For driver code the map ships as a copy/paste C header — [`Sources/Xilinx/ojls_regs.h`](Sources/Xilinx/ojls_regs.h) — including the CAPS/MAXDIM field-extraction macros and the core minima (`OJLS_MIN_WIDTH`/`OJLS_MIN_HEIGHT`).
+Reconfigure by writing WIDTH/HEIGHT and setting CTRL.APPLY: the wrapper resets the core itself and latches the new dimensions, so no separate reset is needed. **APPLY aborts any image in flight — only apply between images**, not during an acquisition. Same-size images need no APPLY. The map ships as a C header, [`Sources/Xilinx/ojls_regs.h`](Sources/Xilinx/ojls_regs.h).
 
 ---
 
 ## Performance & Resources
 
-Characterized on a Xilinx Zynq UltraScale+ `xczu7eg-fbvb900-1-e` (speed grade −1, slowest), Vivado 2025.2, 12-bit grayscale unless stated otherwise. Frequencies are *true fmax* — read by over-constraining the clock until the design failed timing. Results are RTL-only, no floorplanning or vendor-specific optimizations, and vary with device, tool version, and implementation strategy; treat them as representative, not guaranteed. At one pixel/clock, ~280 MHz is ~280 Mpixel/s.
+Xilinx Zynq UltraScale+ `xczu7eg-fbvb900-1-e` (speed grade −1), Vivado 2025.2, 12-bit unless stated. True fmax (over-constrained until timing fails), RTL-only — no floorplanning or vendor primitives. Representative, not guaranteed.
 
 ### Maximum frequency vs `MAX_IMAGE_WIDTH`
 
 <img src="Docs/Images/fmax_vs_size.png" alt="Maximum frequency vs MAX_IMAGE_WIDTH" width="600">
 
-No single strategy wins at every size: the design is congestion-bound, so the best implementation strategy shifts with the image's on-chip BRAM footprint. `NetDelay_high` takes the small-to-mid range, while the Default strategy, post-route optimisation and congestion-spreading each take a size of their own. Taking the best strategy per size, fmax stays in the **~282–289 MHz** band; the Default strategy ranges ~249–285 MHz. Strategy choice also matters much less than it used to — the spread within a size is now typically 7–22 MHz, so a default run lands close to the best-of number at most sizes.
+Best-of fmax holds **~282–289 MHz** across all sizes; the Default strategy alone gives ~249–285 MHz.
 
 | `MAX_IMAGE_WIDTH` | Default | ExplorePostRoutePhysOpt | NetDelay_high | Congestion_SpreadLogic_high |
 |------------------:|--------:|------------------------:|--------------:|----------------------------:|
@@ -211,13 +183,11 @@ No single strategy wins at every size: the design is congestion-bound, so the be
 | 32768 | 284.9 | **288.4** | 274.1 | 266.2 |
 | 65535 | 271.5 | 269.2 | 279.4 | **282.3** |
 
-Maximum frequency (MHz) by `MAX_IMAGE_WIDTH` and implementation strategy; best per row in bold. A given netlist is deterministic (re-running a size/strategy reproduces the number exactly), but because the design is congestion-bound the per-size winner is placement-sensitive and can shift when the netlist changes — treat the best-of band as the headline number rather than any single cell.
-
 ### Resource usage vs `MAX_IMAGE_WIDTH`
 
 <img src="Docs/Images/util_vs_size.png" alt="Resource usage vs MAX_IMAGE_WIDTH" width="600">
 
-Logic is essentially constant across image size — LUTs (~6.4k) and flip-flops (~2.0k) are set by the encoder, not the image. Only Block RAM scales: the line buffer holds one image row, so it grows ~linearly with image width and pixel bit depth.
+Logic is constant (~6.4k LUTs, ~2.0k FFs); only Block RAM scales, with the line buffer.
 
 | `MAX_IMAGE_WIDTH` | LUTs | FFs | BRAM tiles |
 |------------------:|-----:|----:|-----------:|
@@ -228,25 +198,49 @@ Logic is essentially constant across image size — LUTs (~6.4k) and flip-flops 
 | 32768 | 6350 | 2053 | 12.0 |
 | 65535 | 6407 | 2072 | 23.0 |
 
-Resource usage by `MAX_IMAGE_WIDTH` (default strategy; near-identical across strategies). Reproduce both tables with [`Scripts/run_fmax_sweep.sh`](Scripts/run_fmax_sweep.sh).
-
-### Maximum frequency and resources vs `BITNESS`
+### Maximum frequency vs `BITNESS`
 
 <img src="Docs/Images/fmax_vs_bitness.png" alt="Maximum frequency vs BITNESS" width="600">
 
+At `MAX_IMAGE_WIDTH` = 12288: ~305 MHz at 8 bits, ~277 MHz at 14 bits, ~225 MHz at 16 bits.
+
+| `BITNESS` | Default | ExplorePostRoutePhysOpt | NetDelay_high | Congestion_SpreadLogic_high |
+|----------:|--------:|------------------------:|--------------:|----------------------------:|
+| 8 | **305.3** | 305.2 | 290.8 | 294.6 |
+| 10 | 282.8 | 290.2 | **293.6** | 293.5 |
+| 12 | 273.1 | 284.0 | **289.4** | 274.9 |
+| 14 | 257.8 | 268.8 | **276.6** | 233.4 |
+| 16 | 215.4 | 224.4 | **224.7** | 218.4 |
+
+### Resource usage vs `BITNESS`
+
 <img src="Docs/Images/util_vs_bitness.png" alt="Resource usage vs BITNESS" width="600">
 
-At a fixed `MAX_IMAGE_WIDTH` of 12288, the best-of fmax falls from ~305 MHz at 8 bits to ~277 MHz at 14 bits, then drops to ~225 MHz at 16 bits. The byte stuffer is not on the critical path at any depth: the limit is the context RAM read into the prediction-error register, whose carry chains widen with pixel depth. Logic grows ~43% from 8 to 16 bits; BRAM follows the line-buffer width.
+Pixel depth widens the datapath: ~43% more LUTs from 8 to 16 bits.
 
-| `BITNESS` | Default | ExplorePostRoutePhysOpt | NetDelay_high | Congestion_SpreadLogic_high | LUTs | FFs | BRAM tiles |
-|----------:|--------:|------------------------:|--------------:|----------------------------:|-----:|----:|-----------:|
-| 8 | **305.3** | 305.2 | 290.8 | 294.6 | 5319 | 1772 | 3.5 |
-| 10 | 282.8 | 290.2 | **293.6** | 293.5 | 5908 | 1902 | 4.0 |
-| 12 | 273.1 | 284.0 | **289.4** | 274.9 | 6327 | 2033 | 5.5 |
-| 14 | 257.8 | 268.8 | **276.6** | 233.4 | 6845 | 2153 | 6.5 |
-| 16 | 215.4 | 224.4 | **224.7** | 218.4 | 7601 | 2287 | 7.5 |
+| `BITNESS` | LUTs | FFs | BRAM tiles |
+|----------:|-----:|----:|-----------:|
+| 8 | 5319 | 1772 | 3.5 |
+| 10 | 5908 | 1902 | 4.0 |
+| 12 | 6327 | 2033 | 5.5 |
+| 14 | 6845 | 2153 | 6.5 |
+| 16 | 7601 | 2287 | 7.5 |
 
-Maximum frequency (MHz) by `BITNESS` and implementation strategy at `MAX_IMAGE_WIDTH` = 12288, best per row in bold; resources for the default strategy. Reproduce with `FMAX_SIZES=12288 FMAX_BITNESS="8 10 12 14 16" ./Scripts/run_fmax_sweep.sh`.
+fmax tables in MHz, best per row in bold; resources from the Default strategy. Reproduce with [`Scripts/run_fmax_sweep.sh`](Scripts/run_fmax_sweep.sh).
+
+---
+
+## Demos
+
+End-to-end example projects live in a companion repository,
+[**OpenJLS-Demos**](https://github.com/isentropic-fpga/OpenJLS-Demos), each pinning
+the core as a submodule at its verified commit.
+
+- **[EncodeOverEthernet](https://github.com/isentropic-fpga/OpenJLS-Demos/tree/main/EncodeOverEthernet)** — streams raw images to a PYNQ-Z2 over Ethernet, encodes them 100% in the FPGA, and streams the `.jls` files back. Its hardware-in-the-loop sweep is what produces the [HIL verification result](#verification) above.
+
+More demos (additional boards and integrations) are planned.
+
+---
 
 ---
 
