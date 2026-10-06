@@ -68,8 +68,10 @@ ax2.set_ylim(bottom=0)
 
 # No in-figure title: the LaTeX float caption supplies it.
 ax1.grid(True, which="major", ls=":", alpha=0.5)
-ax1.legend(handles=[l_lut, l_ff, l_bram], title="Resource", loc="center left",
-           framealpha=0.95)
+# Centre-left covers the low BRAM points of the bit-depth sweep; the upper-left
+# corner is clear there because LUTs start well below the top of the axis.
+ax1.legend(handles=[l_lut, l_ff, l_bram], title="Resource",
+           loc="upper left" if by_bitness else "center left", framealpha=0.95)
 
 plt.tight_layout()
 plt.savefig(out_png, dpi=150)
