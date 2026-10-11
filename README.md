@@ -166,13 +166,12 @@ Reconfigure by writing WIDTH/HEIGHT and setting CTRL.APPLY: the wrapper resets t
 
 ## Performance & Resources
 
-Xilinx Zynq UltraScale+ `xczu7eg-fbvb900-1-e` (speed grade −1), Vivado 2025.2, 12-bit unless stated. True fmax (over-constrained until timing fails), RTL-only — no floorplanning or vendor primitives. Representative, not guaranteed.
+Xilinx Zynq UltraScale+ `xczu7eg-fbvb900-1-e` (speed grade −1), Vivado 2025.2. True fmax (over-constrained until timing fails), RTL-only — no floorplanning or vendor primitives. Representative, not guaranteed.
 
 ### Maximum frequency vs `MAX_IMAGE_WIDTH`
 
-<img src="Docs/Images/fmax_vs_size.png" alt="Maximum frequency vs MAX_IMAGE_WIDTH" width="600">
-
-Best-of fmax holds **~282–289 MHz** across all sizes; the Default strategy alone gives ~249–285 MHz.
+<img src="Docs/Images/fmax_vs_size.png" alt="Maximum frequency vs MAX_IMAGE_WIDTH" width="600"><br>
+<sub>Constant: <code>BITNESS</code> = 12 bits</sub>
 
 | `MAX_IMAGE_WIDTH` | Default | ExplorePostRoutePhysOpt | NetDelay_high | Congestion_SpreadLogic_high |
 |------------------:|--------:|------------------------:|--------------:|----------------------------:|
@@ -185,9 +184,8 @@ Best-of fmax holds **~282–289 MHz** across all sizes; the Default strategy alo
 
 ### Resource usage vs `MAX_IMAGE_WIDTH`
 
-<img src="Docs/Images/util_vs_size.png" alt="Resource usage vs MAX_IMAGE_WIDTH" width="600">
-
-Logic is constant (~6.4k LUTs, ~2.0k FFs); only Block RAM scales, with the line buffer.
+<img src="Docs/Images/util_vs_size.png" alt="Resource usage vs MAX_IMAGE_WIDTH" width="600"><br>
+<sub>Constant: <code>BITNESS</code> = 12 bits</sub>
 
 | `MAX_IMAGE_WIDTH` | LUTs | FFs | BRAM tiles |
 |------------------:|-----:|----:|-----------:|
@@ -200,9 +198,8 @@ Logic is constant (~6.4k LUTs, ~2.0k FFs); only Block RAM scales, with the line 
 
 ### Maximum frequency vs `BITNESS`
 
-<img src="Docs/Images/fmax_vs_bitness.png" alt="Maximum frequency vs BITNESS" width="600">
-
-At `MAX_IMAGE_WIDTH` = 12288: ~305 MHz at 8 bits, ~277 MHz at 14 bits, ~225 MHz at 16 bits.
+<img src="Docs/Images/fmax_vs_bitness.png" alt="Maximum frequency vs BITNESS" width="600"><br>
+<sub>Constant: <code>MAX_IMAGE_WIDTH</code> = 12288</sub>
 
 | `BITNESS` | Default | ExplorePostRoutePhysOpt | NetDelay_high | Congestion_SpreadLogic_high |
 |----------:|--------:|------------------------:|--------------:|----------------------------:|
@@ -214,9 +211,8 @@ At `MAX_IMAGE_WIDTH` = 12288: ~305 MHz at 8 bits, ~277 MHz at 14 bits, ~225 MHz 
 
 ### Resource usage vs `BITNESS`
 
-<img src="Docs/Images/util_vs_bitness.png" alt="Resource usage vs BITNESS" width="600">
-
-Pixel depth widens the datapath: ~43% more LUTs from 8 to 16 bits.
+<img src="Docs/Images/util_vs_bitness.png" alt="Resource usage vs BITNESS" width="600"><br>
+<sub>Constant: <code>MAX_IMAGE_WIDTH</code> = 12288</sub>
 
 | `BITNESS` | LUTs | FFs | BRAM tiles |
 |----------:|-----:|----:|-----------:|
