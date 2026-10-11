@@ -474,8 +474,8 @@ while the registers are held stable; the AXI-Lite endpoint itself stays on
 \texttt{aresetn} only, so the bus never disappears mid-reconfigure. While the
 pulse is active STATUS.BUSY reads 1 and the pixel stream's TREADY is held low, so
 a stream started too early stalls instead of losing pixels --- WIDTH/HEIGHT/CTRL
-writes while BUSY are dropped. Back-to-back images of unchanged dimensions need
-no APPLY.
+writes while BUSY are dropped. \textbf{APPLY aborts any image in flight --- only
+apply between images.} Back-to-back images of unchanged dimensions need no APPLY.
 
 WIDTH/HEIGHT writes are merged per WSTRB and clamped to the core's rule
 (out-of-range values become the MAX generic), so a readback always returns the
@@ -517,7 +517,7 @@ both RTL and post-synthesis (gate-level) stages:
   \textbf{Suite} & \textbf{Status} & \textbf{Test/Cov} & \textbf{Summary} \\
   \midrule
   NVC code coverage       & info & 99.8\% & Per-DUT-file statement breakdown \\
-  OSVVM suite             & PASS & 100\%  & 60 tests, 2\,877\,433 affirmations (module + top + AXI wrappers) \\
+  OSVVM suite             & PASS & 100\%  & 106 tests, 7\,303\,829 affirmations (module + top + AXI wrappers) \\
   Golden model            & PASS & 100\%  & 287/287 images byte-exact vs CharLS \\
   Post-synth OSVVM        & PASS & 100\%  & Control-plane stress on the gate-level netlist \\
   Post-synth golden model & PASS & 100\%  & 156/156 images byte-exact vs CharLS \\

@@ -34,7 +34,7 @@ The RTL is vendor-neutral by construction (plain VHDL-1993 on open-logic memory 
 |---|---|
 | **Compression** | Lossless JPEG-LS (ISO/IEC 14495-1 / ITU-T T.87) |
 | **Pixel depth** | 8–16 bits, single component (grayscale) |
-| **Image size** | 4 × 1 up to 65535 × 65535 px, set at run time |
+| **Image size** | Up to 65535 × 65535 px, set at run time |
 | **Throughput** | 1 pixel/clock, ~280 MHz at 12-bit on UltraScale+ |
 | **Memory** | On-chip line buffer, one image row; no external memory |
 | **Interface** | Ready/valid streaming (AXI4-Stream / Avalon-ST compatible) |
@@ -50,7 +50,7 @@ OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level
 | Suite | Status | Test/Cov | Summary |
 |---|---|---|---|
 | NVC code coverage | info | 99.8% | Per-DUT-file statement breakdown |
-| OSVVM suite | PASS | 100% | 60 tests, 2,877,433 affirmations (module + top + AXI wrappers) |
+| OSVVM suite | PASS | 100% | 106 tests, 7,303,829 affirmations (module + top + AXI wrappers) |
 | Golden model | PASS | 100% | 287/287 images byte-exact vs CharLS |
 | Post-synth OSVVM | PASS | 100% | Control-plane stress on the gate-level netlist |
 | Post-synth golden model | PASS | 100% | 156/156 images byte-exact vs CharLS |
