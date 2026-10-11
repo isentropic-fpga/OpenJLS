@@ -168,6 +168,8 @@ Reconfigure by writing WIDTH/HEIGHT and setting CTRL.APPLY: the wrapper resets t
 
 Xilinx Zynq UltraScale+ `xczu7eg-fbvb900-1-e` (speed grade −1), Vivado 2025.2. True fmax (over-constrained until timing fails), RTL-only — no floorplanning or vendor primitives. Representative, not guaranteed.
 
+fmax and resource usage are characterized against the two generics that size the core: `MAX_IMAGE_WIDTH` (while keeping `BITNESS` fixed at 12b) and `BITNESS` (while keeping `MAX_IMAGE_WIDTH` fixed at 12288).
+
 ### Maximum frequency vs `MAX_IMAGE_WIDTH`
 
 <img src="Docs/Images/fmax_vs_size.png" alt="Maximum frequency vs MAX_IMAGE_WIDTH" width="600"><br>
