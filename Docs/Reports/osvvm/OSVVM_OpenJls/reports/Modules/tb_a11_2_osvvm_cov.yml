@@ -22,35 +22,35 @@ Models:
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "case"
       NumBins: 4
     Bins: 
-      - Name: "case"
+      - Name: "idle"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
         Count: 47
         AtLeast: 1
         PercentCov: 4700.0000
-      - Name: "case"
+      - Name: "raw only"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
         Count: 57
         AtLeast: 1
         PercentCov: 5700.0000
-      - Name: "case"
+      - Name: "Golomb only"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
         Count: 41
         AtLeast: 1
         PercentCov: 4100.0000
-      - Name: "case"
+      - Name: "raw and Golomb"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
-        Count: 63
+        Count: 709
         AtLeast: 1
-        PercentCov: 6300.0000
+        PercentCov: 70900.0000
 

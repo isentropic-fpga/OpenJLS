@@ -1,0 +1,24 @@
+Version: "0.1"
+TestCaseName: "tb_line_buffer_osvvm"
+TestCaseFile:  "../../../Modules/tb_line_buffer_osvvm.vhd"
+TestSuiteName: "Modules"
+BuildName: "OSVVM_OpenJls"
+Generics:
+  BITNESS: "16"
+ReportsTestSuiteDirectory:  "reports/Modules"
+RequirementsYamlFile: ""
+AlertYamlFile:  "reports/Modules/tb_line_buffer_osvvm_BITNESS_16_alerts.yml"
+CovYamlFile:  "reports/Modules/tb_line_buffer_osvvm_BITNESS_16_cov.yml"
+ScoreboardDict:           null
+TranscriptFiles: ""
+TestCaseFileName: "tb_line_buffer_osvvm_BITNESS_16"
+GenericNames: "_BITNESS_16"
+OsvvmSettingsInfo:
+  ReportsSubdirectory:  "reports"
+  SimulationLogFile: "logs/OSVVM_OpenJls.log"
+  SimulationHtmlLogFile: "logs/OSVVM_OpenJls_log.html"
+  RequirementsSubdirectory: ""
+  CoverageSubdirectory:    "CodeCoverage/OSVVM_OpenJls_code_cov.html"
+  Report2CssFiles:
+    - "reports/CssOsvvmStyle.css"
+  Report2PngFile:  "reports/OsvvmLogo.png"

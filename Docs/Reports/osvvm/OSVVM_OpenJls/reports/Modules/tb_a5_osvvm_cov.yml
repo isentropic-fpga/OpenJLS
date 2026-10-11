@@ -22,28 +22,28 @@ Models:
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "branch"
       NumBins: 3
     Bins: 
-      - Name: "branch"
+      - Name: "C >= max: choose min"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 72
-        AtLeast: 1
-        PercentCov: 7200.0000
-      - Name: "branch"
-        Type: "COUNT"
-        Range: 
-          - {Min: 1, Max: 1}
         Count: 76
         AtLeast: 1
         PercentCov: 7600.0000
-      - Name: "branch"
+      - Name: "C <= min: choose max"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 80
+        AtLeast: 1
+        PercentCov: 8000.0000
+      - Name: "interpolate"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
-        Count: 60
+        Count: 64
         AtLeast: 1
-        PercentCov: 6000.0000
+        PercentCov: 6400.0000
 

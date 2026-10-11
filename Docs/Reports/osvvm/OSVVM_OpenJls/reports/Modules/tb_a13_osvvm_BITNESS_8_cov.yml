@@ -1,0 +1,114 @@
+Version: "0.1"
+Coverage: 100.00
+Settings: 
+  WritePassFail: 0
+Models: 
+  - Name: "event"
+    TestCases: 
+      - "tb_a13_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1129194420, 516721889]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 5
+      TotalCovGoal: 5
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "event"
+      NumBins: 5
+    Bins: 
+      - Name: "negative adjust"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+        Count: 49175
+        AtLeast: 1
+        PercentCov: 4917500.0000
+      - Name: "negative clamp"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 33125
+        AtLeast: 1
+        PercentCov: 3312500.0000
+      - Name: "positive adjust"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+        Count: 48934
+        AtLeast: 1
+        PercentCov: 4893400.0000
+      - Name: "positive clamp"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+        Count: 16505
+        AtLeast: 1
+        PercentCov: 1650500.0000
+      - Name: "unchanged"
+        Type: "COUNT"
+        Range: 
+          - {Min: 4, Max: 4}
+        Count: 49177
+        AtLeast: 1
+        PercentCov: 4917700.0000
+
+  - Name: "cUpdate"
+    TestCases: 
+      - "tb_a13_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [748332538, 1701460472]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 4
+      TotalCovGoal: 4
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "cUpdate"
+      NumBins: 4
+    Bins: 
+      - Name: "held"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+        Count: 49177
+        AtLeast: 1
+        PercentCov: 4917700.0000
+      - Name: "moved"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 147159
+        AtLeast: 1
+        PercentCov: 14715900.0000
+      - Name: "clampMin"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+        Count: 323
+        AtLeast: 1
+        PercentCov: 32300.0000
+      - Name: "clampMax"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+        Count: 257
+        AtLeast: 1
+        PercentCov: 25700.0000
+

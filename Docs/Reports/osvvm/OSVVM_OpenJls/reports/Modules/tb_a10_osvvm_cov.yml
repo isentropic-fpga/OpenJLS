@@ -17,33 +17,145 @@ Models:
       Threshold: 45.0
       ThresholdEnable: "FALSE"
       IsRequirement: "FALSE"
-      TotalCovCount: 3
-      TotalCovGoal: 3
+      TotalCovCount: 19
+      TotalCovGoal: 19
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
-      NumBins: 3
+        - "kZero"
+      NumBins: 19
     Bins: 
-      - Name: "kZero"
+      - Name: "k=0"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 2
+        Count: 257
         AtLeast: 1
-        PercentCov: 200.0000
-      - Name: "kMid"
+        PercentCov: 25700.0000
+      - Name: "k=1"
         Type: "COUNT"
         Range: 
-          - {Min: 1, Max: 17}
-        Count: 400
+          - {Min: 1, Max: 1}
+        Count: 383
         AtLeast: 1
-        PercentCov: 40000.0000
-      - Name: "kMax"
+        PercentCov: 38300.0000
+      - Name: "k=2"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+        Count: 381
+        AtLeast: 1
+        PercentCov: 38100.0000
+      - Name: "k=3"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+        Count: 382
+        AtLeast: 1
+        PercentCov: 38200.0000
+      - Name: "k=4"
+        Type: "COUNT"
+        Range: 
+          - {Min: 4, Max: 4}
+        Count: 382
+        AtLeast: 1
+        PercentCov: 38200.0000
+      - Name: "k=5"
+        Type: "COUNT"
+        Range: 
+          - {Min: 5, Max: 5}
+        Count: 381
+        AtLeast: 1
+        PercentCov: 38100.0000
+      - Name: "k=6"
+        Type: "COUNT"
+        Range: 
+          - {Min: 6, Max: 6}
+        Count: 384
+        AtLeast: 1
+        PercentCov: 38400.0000
+      - Name: "k=7"
+        Type: "COUNT"
+        Range: 
+          - {Min: 7, Max: 7}
+        Count: 388
+        AtLeast: 1
+        PercentCov: 38800.0000
+      - Name: "k=8"
+        Type: "COUNT"
+        Range: 
+          - {Min: 8, Max: 8}
+        Count: 393
+        AtLeast: 1
+        PercentCov: 39300.0000
+      - Name: "k=9"
+        Type: "COUNT"
+        Range: 
+          - {Min: 9, Max: 9}
+        Count: 410
+        AtLeast: 1
+        PercentCov: 41000.0000
+      - Name: "k=10"
+        Type: "COUNT"
+        Range: 
+          - {Min: 10, Max: 10}
+        Count: 440
+        AtLeast: 1
+        PercentCov: 44000.0000
+      - Name: "k=11"
+        Type: "COUNT"
+        Range: 
+          - {Min: 11, Max: 11}
+        Count: 464
+        AtLeast: 1
+        PercentCov: 46400.0000
+      - Name: "k=12"
+        Type: "COUNT"
+        Range: 
+          - {Min: 12, Max: 12}
+        Count: 359
+        AtLeast: 1
+        PercentCov: 35900.0000
+      - Name: "k=13"
+        Type: "COUNT"
+        Range: 
+          - {Min: 13, Max: 13}
+        Count: 178
+        AtLeast: 1
+        PercentCov: 17800.0000
+      - Name: "k=14"
+        Type: "COUNT"
+        Range: 
+          - {Min: 14, Max: 14}
+        Count: 86
+        AtLeast: 1
+        PercentCov: 8600.0000
+      - Name: "k=15"
+        Type: "COUNT"
+        Range: 
+          - {Min: 15, Max: 15}
+        Count: 44
+        AtLeast: 1
+        PercentCov: 4400.0000
+      - Name: "k=16"
+        Type: "COUNT"
+        Range: 
+          - {Min: 16, Max: 16}
+        Count: 19
+        AtLeast: 1
+        PercentCov: 1900.0000
+      - Name: "k=17"
+        Type: "COUNT"
+        Range: 
+          - {Min: 17, Max: 17}
+        Count: 8
+        AtLeast: 1
+        PercentCov: 800.0000
+      - Name: "k=18"
         Type: "COUNT"
         Range: 
           - {Min: 18, Max: 18}
-        Count: 4
+        Count: 6
         AtLeast: 1
-        PercentCov: 400.0000
+        PercentCov: 600.0000
 

@@ -1,0 +1,102 @@
+Version: "0.1"
+Coverage: 100.00
+Settings: 
+  WritePassFail: 0
+Models: 
+  - Name: "sgnD1 x sgnD2 x sgnD3"
+    TestCases: 
+      - "tb_a1_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [225763413, 1015325881]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 8
+      TotalCovGoal: 8
+    BinInfo: 
+      Dimensions: 3
+      FieldNames: 
+        - "sgnD1"
+        - "sgnD2"
+        - "sgnD3"
+      NumBins: 8
+    Bins: 
+      - Name: "sgnD1=0 / sgnD2=0 / sgnD3=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 0, Max: 0}
+          - {Min: 0, Max: 0}
+        Count: 30
+        AtLeast: 1
+        PercentCov: 3000.0000
+      - Name: "sgnD1=0 / sgnD2=0 / sgnD3=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 0, Max: 0}
+          - {Min: 1, Max: 1}
+        Count: 40
+        AtLeast: 1
+        PercentCov: 4000.0000
+      - Name: "sgnD1=0 / sgnD2=1 / sgnD3=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 1, Max: 1}
+          - {Min: 0, Max: 0}
+        Count: 47
+        AtLeast: 1
+        PercentCov: 4700.0000
+      - Name: "sgnD1=0 / sgnD2=1 / sgnD3=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 1, Max: 1}
+          - {Min: 1, Max: 1}
+        Count: 22
+        AtLeast: 1
+        PercentCov: 2200.0000
+      - Name: "sgnD1=1 / sgnD2=0 / sgnD3=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 0, Max: 0}
+          - {Min: 0, Max: 0}
+        Count: 49
+        AtLeast: 1
+        PercentCov: 4900.0000
+      - Name: "sgnD1=1 / sgnD2=0 / sgnD3=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 0, Max: 0}
+          - {Min: 1, Max: 1}
+        Count: 50
+        AtLeast: 1
+        PercentCov: 5000.0000
+      - Name: "sgnD1=1 / sgnD2=1 / sgnD3=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 1, Max: 1}
+          - {Min: 0, Max: 0}
+        Count: 25
+        AtLeast: 1
+        PercentCov: 2500.0000
+      - Name: "sgnD1=1 / sgnD2=1 / sgnD3=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 1, Max: 1}
+          - {Min: 1, Max: 1}
+        Count: 6
+        AtLeast: 1
+        PercentCov: 600.0000
+

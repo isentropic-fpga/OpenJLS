@@ -22,23 +22,23 @@ Models:
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "terminal"
       NumBins: 2
     Bins: 
-      - Name: "terminal"
+      - Name: "interruption"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 36
+        Count: 29
         AtLeast: 1
-        PercentCov: 3600.0000
-      - Name: "terminal"
+        PercentCov: 2900.0000
+      - Name: "end of line"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 30
+        Count: 37
         AtLeast: 1
-        PercentCov: 3000.0000
+        PercentCov: 3700.0000
 
   - Name: "immediateBreak"
     TestCases: 
@@ -59,23 +59,23 @@ Models:
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "immediateBreak"
       NumBins: 2
     Bins: 
-      - Name: "immediateBreak"
+      - Name: "nonempty run"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 59
+        Count: 64
         AtLeast: 1
-        PercentCov: 5900.0000
-      - Name: "immediateBreak"
+        PercentCov: 6400.0000
+      - Name: "immediate break"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 7
+        Count: 2
         AtLeast: 1
-        PercentCov: 700.0000
+        PercentCov: 200.0000
 
   - Name: "eoiReset"
     TestCases: 
@@ -96,17 +96,17 @@ Models:
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "eoiReset"
       NumBins: 2
     Bins: 
-      - Name: "eoiReset"
+      - Name: "within image"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
         Count: 60
         AtLeast: 1
         PercentCov: 6000.0000
-      - Name: "eoiReset"
+      - Name: "end of image"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
@@ -133,35 +133,35 @@ Models:
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "startIdx"
       NumBins: 4
     Bins: 
       - Name: "startIdx0"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 10
+        Count: 11
         AtLeast: 1
-        PercentCov: 1000.0000
+        PercentCov: 1100.0000
       - Name: "startIdxLo"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 3}
-        Count: 2
+        Count: 3
         AtLeast: 1
-        PercentCov: 200.0000
+        PercentCov: 300.0000
       - Name: "startIdxMid"
         Type: "COUNT"
         Range: 
           - {Min: 4, Max: 10}
-        Count: 27
+        Count: 16
         AtLeast: 1
-        PercentCov: 2700.0000
+        PercentCov: 1600.0000
       - Name: "startIdxHi"
         Type: "COUNT"
         Range: 
           - {Min: 11, Max: 31}
-        Count: 27
+        Count: 36
         AtLeast: 1
-        PercentCov: 2700.0000
+        PercentCov: 3600.0000
 

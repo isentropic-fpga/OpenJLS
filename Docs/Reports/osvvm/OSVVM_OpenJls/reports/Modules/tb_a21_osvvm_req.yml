@@ -2,4 +2,4 @@
   TestCases: 
   - TestName: "tb_a21_osvvm"
     Status: PASSED
-    Results: {Goal: 400, Passed: 406, Errors: 0, Checked: 406, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+    Results: {Goal: 400, Passed: 200086, Errors: 0, Checked: 200086, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}

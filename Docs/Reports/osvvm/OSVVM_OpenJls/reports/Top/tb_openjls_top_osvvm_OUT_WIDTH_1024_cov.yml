@@ -22,12 +22,12 @@ Models:
     BinInfo: 
       Dimensions: 3
       FieldNames: 
-        - "Bin1"
-        - "Bin2"
-        - "Bin3"
+        - "bp"
+        - "inputStall"
+        - "prelude"
       NumBins: 12
     Bins: 
-      - Name: "bp x inputStall x prelude"
+      - Name: "bp=0 / inputStall=0 / prelude=0"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
@@ -36,7 +36,7 @@ Models:
         Count: 1
         AtLeast: 1
         PercentCov: 100.0000
-      - Name: "bp x inputStall x prelude"
+      - Name: "bp=0 / inputStall=0 / prelude=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
@@ -45,7 +45,7 @@ Models:
         Count: 1
         AtLeast: 1
         PercentCov: 100.0000
-      - Name: "bp x inputStall x prelude"
+      - Name: "bp=0 / inputStall=0 / prelude=2"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
@@ -54,7 +54,7 @@ Models:
         Count: 1
         AtLeast: 1
         PercentCov: 100.0000
-      - Name: "bp x inputStall x prelude"
+      - Name: "bp=0 / inputStall=1 / prelude=0"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
@@ -63,7 +63,7 @@ Models:
         Count: 1
         AtLeast: 1
         PercentCov: 100.0000
-      - Name: "bp x inputStall x prelude"
+      - Name: "bp=0 / inputStall=1 / prelude=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
@@ -72,7 +72,7 @@ Models:
         Count: 1
         AtLeast: 1
         PercentCov: 100.0000
-      - Name: "bp x inputStall x prelude"
+      - Name: "bp=0 / inputStall=1 / prelude=2"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
@@ -81,7 +81,7 @@ Models:
         Count: 1
         AtLeast: 1
         PercentCov: 100.0000
-      - Name: "bp x inputStall x prelude"
+      - Name: "bp=1 / inputStall=0 / prelude=0"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
@@ -90,7 +90,7 @@ Models:
         Count: 1
         AtLeast: 1
         PercentCov: 100.0000
-      - Name: "bp x inputStall x prelude"
+      - Name: "bp=1 / inputStall=0 / prelude=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
@@ -99,7 +99,7 @@ Models:
         Count: 1
         AtLeast: 1
         PercentCov: 100.0000
-      - Name: "bp x inputStall x prelude"
+      - Name: "bp=1 / inputStall=0 / prelude=2"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
@@ -108,7 +108,7 @@ Models:
         Count: 1
         AtLeast: 1
         PercentCov: 100.0000
-      - Name: "bp x inputStall x prelude"
+      - Name: "bp=1 / inputStall=1 / prelude=0"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
@@ -117,7 +117,7 @@ Models:
         Count: 1
         AtLeast: 1
         PercentCov: 100.0000
-      - Name: "bp x inputStall x prelude"
+      - Name: "bp=1 / inputStall=1 / prelude=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
@@ -126,7 +126,7 @@ Models:
         Count: 1
         AtLeast: 1
         PercentCov: 100.0000
-      - Name: "bp x inputStall x prelude"
+      - Name: "bp=1 / inputStall=1 / prelude=2"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
@@ -155,7 +155,7 @@ Models:
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "upstreamStallPropagated"
       NumBins: 1
     Bins: 
       - Name: "upstreamStallPropagated"
@@ -185,24 +185,24 @@ Models:
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "backToBack clean/stressed/minimal"
       NumBins: 3
     Bins: 
-      - Name: "backToBack clean/stressed/minimal"
+      - Name: "clean overlap"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
         Count: 1
         AtLeast: 1
         PercentCov: 100.0000
-      - Name: "backToBack clean/stressed/minimal"
+      - Name: "stressed overlap"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
         Count: 1
         AtLeast: 1
         PercentCov: 100.0000
-      - Name: "backToBack clean/stressed/minimal"
+      - Name: "minimal image overlap"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
@@ -229,24 +229,24 @@ Models:
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "reset midFeed/midFeedStress/midDrain"
       NumBins: 3
     Bins: 
-      - Name: "reset midFeed/midFeedStress/midDrain"
+      - Name: "reset during input"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
         Count: 1
         AtLeast: 1
         PercentCov: 100.0000
-      - Name: "reset midFeed/midFeedStress/midDrain"
+      - Name: "reset during stressed input"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
         Count: 1
         AtLeast: 1
         PercentCov: 100.0000
-      - Name: "reset midFeed/midFeedStress/midDrain"
+      - Name: "reset during output"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}

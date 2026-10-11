@@ -2,4 +2,4 @@
   TestCases: 
   - TestName: "tb_a13_osvvm"
     Status: PASSED
-    Results: {Goal: 300, Passed: 616, Errors: 0, Checked: 616, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+    Results: {Goal: 300, Passed: 393832, Errors: 0, Checked: 393832, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}

@@ -22,11 +22,11 @@ Models:
     BinInfo: 
       Dimensions: 2
       FieldNames: 
-        - "Bin1"
-        - "Bin2"
+        - "wrapNeg"
+        - "geHalf"
       NumBins: 4
     Bins: 
-      - Name: "wrapNeg x geHalf"
+      - Name: "wrapNeg=0 / geHalf=0"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
@@ -34,7 +34,7 @@ Models:
         Count: 1026
         AtLeast: 1
         PercentCov: 102600.0000
-      - Name: "wrapNeg x geHalf"
+      - Name: "wrapNeg=0 / geHalf=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
@@ -42,7 +42,7 @@ Models:
         Count: 1026
         AtLeast: 1
         PercentCov: 102600.0000
-      - Name: "wrapNeg x geHalf"
+      - Name: "wrapNeg=1 / geHalf=0"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
@@ -50,7 +50,7 @@ Models:
         Count: 1025
         AtLeast: 1
         PercentCov: 102500.0000
-      - Name: "wrapNeg x geHalf"
+      - Name: "wrapNeg=1 / geHalf=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}

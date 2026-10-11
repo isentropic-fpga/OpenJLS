@@ -22,81 +22,81 @@ Models:
     BinInfo: 
       Dimensions: 3
       FieldNames: 
-        - "Bin1"
-        - "Bin2"
-        - "Bin3"
+        - "sign"
+        - "wrapNeg"
+        - "geHalf"
       NumBins: 8
     Bins: 
-      - Name: "sign x wrapNeg x geHalf"
+      - Name: "sign=0 / wrapNeg=0 / geHalf=0"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
-        Count: 28
+        Count: 43
         AtLeast: 1
-        PercentCov: 2800.0000
-      - Name: "sign x wrapNeg x geHalf"
+        PercentCov: 4300.0000
+      - Name: "sign=0 / wrapNeg=0 / geHalf=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
-        Count: 28
+        Count: 38
         AtLeast: 1
-        PercentCov: 2800.0000
-      - Name: "sign x wrapNeg x geHalf"
+        PercentCov: 3800.0000
+      - Name: "sign=0 / wrapNeg=1 / geHalf=0"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 31
+        Count: 36
         AtLeast: 1
-        PercentCov: 3100.0000
-      - Name: "sign x wrapNeg x geHalf"
+        PercentCov: 3600.0000
+      - Name: "sign=0 / wrapNeg=1 / geHalf=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-          - {Min: 1, Max: 1}
-          - {Min: 1, Max: 1}
-        Count: 30
-        AtLeast: 1
-        PercentCov: 3000.0000
-      - Name: "sign x wrapNeg x geHalf"
-        Type: "COUNT"
-        Range: 
-          - {Min: 1, Max: 1}
-          - {Min: 0, Max: 0}
-          - {Min: 0, Max: 0}
-        Count: 47
-        AtLeast: 1
-        PercentCov: 4700.0000
-      - Name: "sign x wrapNeg x geHalf"
-        Type: "COUNT"
-        Range: 
-          - {Min: 1, Max: 1}
-          - {Min: 0, Max: 0}
-          - {Min: 1, Max: 1}
-        Count: 50
-        AtLeast: 1
-        PercentCov: 5000.0000
-      - Name: "sign x wrapNeg x geHalf"
-        Type: "COUNT"
-        Range: 
-          - {Min: 1, Max: 1}
-          - {Min: 1, Max: 1}
-          - {Min: 0, Max: 0}
-        Count: 46
-        AtLeast: 1
-        PercentCov: 4600.0000
-      - Name: "sign x wrapNeg x geHalf"
-        Type: "COUNT"
-        Range: 
-          - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
         Count: 45
         AtLeast: 1
         PercentCov: 4500.0000
+      - Name: "sign=1 / wrapNeg=0 / geHalf=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 0, Max: 0}
+          - {Min: 0, Max: 0}
+        Count: 50
+        AtLeast: 1
+        PercentCov: 5000.0000
+      - Name: "sign=1 / wrapNeg=0 / geHalf=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 0, Max: 0}
+          - {Min: 1, Max: 1}
+        Count: 52
+        AtLeast: 1
+        PercentCov: 5200.0000
+      - Name: "sign=1 / wrapNeg=1 / geHalf=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 1, Max: 1}
+          - {Min: 0, Max: 0}
+        Count: 47
+        AtLeast: 1
+        PercentCov: 4700.0000
+      - Name: "sign=1 / wrapNeg=1 / geHalf=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 1, Max: 1}
+          - {Min: 1, Max: 1}
+        Count: 48
+        AtLeast: 1
+        PercentCov: 4800.0000
 

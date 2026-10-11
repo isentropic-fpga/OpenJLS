@@ -1,0 +1,61 @@
+Version: "0.1"
+Coverage: 100.00
+Settings: 
+  WritePassFail: 0
+Models: 
+  - Name: "Special x ErrSign"
+    TestCases: 
+      - "tb_a11_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1393073810, 932217430]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 400
+      TotalCovGoal: 400
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "Special"
+        - "ErrSign"
+      NumBins: 4
+    Bins: 
+      - Name: "special=0 / negative=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 0, Max: 0}
+        Count: 123
+        AtLeast: 100
+        PercentCov: 123.0000
+      - Name: "special=0 / negative=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 1, Max: 1}
+        Count: 118
+        AtLeast: 100
+        PercentCov: 118.0000
+      - Name: "special=1 / negative=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 0, Max: 0}
+        Count: 130
+        AtLeast: 100
+        PercentCov: 130.0000
+      - Name: "special=1 / negative=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 1, Max: 1}
+        Count: 130
+        AtLeast: 100
+        PercentCov: 130.0000
+

@@ -22,11 +22,11 @@ Models:
     BinInfo: 
       Dimensions: 2
       FieldNames: 
-        - "Bin1"
-        - "Bin2"
+        - "Special"
+        - "ErrSign"
       NumBins: 4
     Bins: 
-      - Name: "Special x ErrSign"
+      - Name: "special=0 / negative=0"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
@@ -34,7 +34,7 @@ Models:
         Count: 123
         AtLeast: 100
         PercentCov: 123.0000
-      - Name: "Special x ErrSign"
+      - Name: "special=0 / negative=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
@@ -42,7 +42,7 @@ Models:
         Count: 118
         AtLeast: 100
         PercentCov: 118.0000
-      - Name: "Special x ErrSign"
+      - Name: "special=1 / negative=0"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
@@ -50,7 +50,7 @@ Models:
         Count: 130
         AtLeast: 100
         PercentCov: 130.0000
-      - Name: "Special x ErrSign"
+      - Name: "special=1 / negative=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}

@@ -22,44 +22,44 @@ Models:
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "event"
       NumBins: 5
     Bins: 
-      - Name: "event"
+      - Name: "negative adjust"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 19
+        Count: 49171
         AtLeast: 1
-        PercentCov: 1900.0000
-      - Name: "event"
+        PercentCov: 4917100.0000
+      - Name: "negative clamp"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 111
+        Count: 33135
         AtLeast: 1
-        PercentCov: 11100.0000
-      - Name: "event"
+        PercentCov: 3313500.0000
+      - Name: "positive adjust"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
-        Count: 27
+        Count: 48923
         AtLeast: 1
-        PercentCov: 2700.0000
-      - Name: "event"
+        PercentCov: 4892300.0000
+      - Name: "positive clamp"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
-        Count: 133
+        Count: 16517
         AtLeast: 1
-        PercentCov: 13300.0000
-      - Name: "event"
+        PercentCov: 1651700.0000
+      - Name: "unchanged"
         Type: "COUNT"
         Range: 
           - {Min: 4, Max: 4}
-        Count: 18
+        Count: 49170
         AtLeast: 1
-        PercentCov: 1800.0000
+        PercentCov: 4917000.0000
 
   - Name: "cUpdate"
     TestCases: 
@@ -80,35 +80,35 @@ Models:
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "cUpdate"
       NumBins: 4
     Bins: 
       - Name: "held"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 18
+        Count: 49170
         AtLeast: 1
-        PercentCov: 1800.0000
+        PercentCov: 4917000.0000
       - Name: "moved"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 285
+        Count: 147165
         AtLeast: 1
-        PercentCov: 28500.0000
+        PercentCov: 14716500.0000
       - Name: "clampMin"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
-        Count: 3
+        Count: 324
         AtLeast: 1
-        PercentCov: 300.0000
+        PercentCov: 32400.0000
       - Name: "clampMax"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
-        Count: 2
+        Count: 257
         AtLeast: 1
-        PercentCov: 200.0000
+        PercentCov: 25700.0000
 

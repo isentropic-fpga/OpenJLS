@@ -121,8 +121,8 @@
             <tr>
               <td>tb_openjls_axis_osvvm</td>
               <td class="passed">PASSED</td>
-              <td class="passed">320</td>
-              <td class="passed">320</td>
+              <td class="passed">1303</td>
+              <td class="passed">1303</td>
               <td class="passed">0</td>
               <td >1</td>
               <td >1</td>
@@ -194,7 +194,7 @@
               <td >0</td>
             </tr>
             <tr>
-              <td>&emsp; u_tx</td>
+              <td>&emsp; PixelInput</td>
               <td class="passed">PASSED</td>
               <td class="passed">0</td>
               <td class="passed">0</td>
@@ -239,7 +239,7 @@
               <td >0</td>
             </tr>
             <tr>
-              <td>&emsp; u_rx</td>
+              <td>&emsp; EncodedOutput</td>
               <td class="passed">PASSED</td>
               <td class="passed">0</td>
               <td class="passed">0</td>
@@ -298,6 +298,36 @@
               <td >0</td>
               <td >0</td>
             </tr>
+            <tr>
+              <td>&emsp; StreamProtocol</td>
+              <td class="passed">PASSED</td>
+              <td class="passed">983</td>
+              <td class="passed">983</td>
+              <td class="passed">0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+            </tr>
+            <tr>
+              <td>&emsp; KnownOutputs</td>
+              <td class="passed">PASSED</td>
+              <td class="passed">0</td>
+              <td class="passed">0</td>
+              <td class="passed">0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+            </tr>
           <tbody>
         </table>
       </details>
@@ -308,9 +338,9 @@
     <h2 id="FunctionalCoverage">tb_openjls_axis_osvvm Coverage Report</h2>
     <p>Total Coverage: 100.00</p>
     <details><summary class="subtitle">Coverage Models with CovWeight = 0.  Ignored in GetCov calculations.  Used for OSVVM DelayCoverage. </summary>
-    <details open><summary class="subtitle">DelayCov BurstLength Coverage Model &emsp; &emsp; Coverage: 0.0</summary>
+    <details open><summary class="subtitle">Pixel input burst length Coverage Model &emsp; &emsp; Coverage: 0.0</summary>
       <div class="CoverageSettings">
-        <details><summary class="subindented">DelayCov BurstLength Coverage Settings</summary>
+        <details><summary class="subindented">Pixel input burst length Coverage Settings</summary>
           <table class="CoverageSettings">
             <thead>
               <tr>
@@ -322,7 +352,7 @@
               <tr><td>CovWeight</td><td>0</td></tr>
               <tr><td>Goal</td><td>100.0</td></tr>
               <tr><td>WeightMode</td><td>REMAIN</td></tr>
-              <tr><td>Seeds</td><td>1551618641, &nbsp;1873531553</td></tr>
+              <tr><td>Seeds</td><td>1436086199, &nbsp;62562446</td></tr>
               <tr><td>CountMode</td><td>COUNT_FIRST</td></tr>
               <tr><td>IllegalMode</td><td>ILLEGAL_ON</td></tr>
               <tr><td>Threshold</td><td>45.0</td></tr>
@@ -335,13 +365,13 @@
         </details>
       </div>
       <div class="CoverageTable">
-        <details open><summary class="subindented">DelayCov BurstLength Coverage Bins</summary>
+        <details open><summary class="subindented">Pixel input burst length Coverage Bins</summary>
           <table class="CoverageTable">
             <thead>
               <tr>
                 <th rowspan="2">Name</th>
                 <th rowspan="2">Type</th>
-                <th rowspan="2">Bin1</th>
+                <th rowspan="2">burst length</th>
                 <th rowspan="2">Count</th>
                 <th rowspan="2">AtLeast</th>
                 <th rowspan="2">Percent<br>Coverage</th>
@@ -349,7 +379,7 @@
             </thead>
             <tbody>
               <tr>
-                <td></td>
+                <td>Pixel input burst length 3..11</td>
                 <td>COUNT</td>
                 <td>3 to 11</td>
                 <td>0</td>
@@ -357,7 +387,7 @@
                 <td>0.0</td>
               </tr>
               <tr>
-                <td></td>
+                <td>Pixel input burst length 109..131</td>
                 <td>COUNT</td>
                 <td>109 to 131</td>
                 <td>0</td>
@@ -372,9 +402,9 @@
         </details>
       </div>
     </details>
-    <details open><summary class="subtitle">DelayCov BurstDelay Coverage Model &emsp; &emsp; Coverage: 0.0</summary>
+    <details open><summary class="subtitle">Pixel input burst delay Coverage Model &emsp; &emsp; Coverage: 0.0</summary>
       <div class="CoverageSettings">
-        <details><summary class="subindented">DelayCov BurstDelay Coverage Settings</summary>
+        <details><summary class="subindented">Pixel input burst delay Coverage Settings</summary>
           <table class="CoverageSettings">
             <thead>
               <tr>
@@ -386,7 +416,7 @@
               <tr><td>CovWeight</td><td>0</td></tr>
               <tr><td>Goal</td><td>100.0</td></tr>
               <tr><td>WeightMode</td><td>REMAIN</td></tr>
-              <tr><td>Seeds</td><td>1055197901, &nbsp;705523959</td></tr>
+              <tr><td>Seeds</td><td>1868600281, &nbsp;1628463643</td></tr>
               <tr><td>CountMode</td><td>COUNT_FIRST</td></tr>
               <tr><td>IllegalMode</td><td>ILLEGAL_ON</td></tr>
               <tr><td>Threshold</td><td>45.0</td></tr>
@@ -399,13 +429,13 @@
         </details>
       </div>
       <div class="CoverageTable">
-        <details open><summary class="subindented">DelayCov BurstDelay Coverage Bins</summary>
+        <details open><summary class="subindented">Pixel input burst delay Coverage Bins</summary>
           <table class="CoverageTable">
             <thead>
               <tr>
                 <th rowspan="2">Name</th>
                 <th rowspan="2">Type</th>
-                <th rowspan="2">Bin1</th>
+                <th rowspan="2">burst delay</th>
                 <th rowspan="2">Count</th>
                 <th rowspan="2">AtLeast</th>
                 <th rowspan="2">Percent<br>Coverage</th>
@@ -413,7 +443,7 @@
             </thead>
             <tbody>
               <tr>
-                <td></td>
+                <td>Pixel input burst delay 2..8</td>
                 <td>COUNT</td>
                 <td>2 to 8</td>
                 <td>0</td>
@@ -421,7 +451,7 @@
                 <td>0.0</td>
               </tr>
               <tr>
-                <td></td>
+                <td>Pixel input burst delay 108..156</td>
                 <td>COUNT</td>
                 <td>108 to 156</td>
                 <td>0</td>
@@ -436,9 +466,9 @@
         </details>
       </div>
     </details>
-    <details open><summary class="subtitle">DelayCov BeatDelay Coverage Model &emsp; &emsp; Coverage: 0.0</summary>
+    <details open><summary class="subtitle">Pixel input beat delay Coverage Model &emsp; &emsp; Coverage: 0.0</summary>
       <div class="CoverageSettings">
-        <details><summary class="subindented">DelayCov BeatDelay Coverage Settings</summary>
+        <details><summary class="subindented">Pixel input beat delay Coverage Settings</summary>
           <table class="CoverageSettings">
             <thead>
               <tr>
@@ -450,7 +480,7 @@
               <tr><td>CovWeight</td><td>0</td></tr>
               <tr><td>Goal</td><td>100.0</td></tr>
               <tr><td>WeightMode</td><td>REMAIN</td></tr>
-              <tr><td>Seeds</td><td>1054477649, &nbsp;865789184</td></tr>
+              <tr><td>Seeds</td><td>1868600281, &nbsp;962823823</td></tr>
               <tr><td>CountMode</td><td>COUNT_FIRST</td></tr>
               <tr><td>IllegalMode</td><td>ILLEGAL_ON</td></tr>
               <tr><td>Threshold</td><td>45.0</td></tr>
@@ -463,13 +493,13 @@
         </details>
       </div>
       <div class="CoverageTable">
-        <details open><summary class="subindented">DelayCov BeatDelay Coverage Bins</summary>
+        <details open><summary class="subindented">Pixel input beat delay Coverage Bins</summary>
           <table class="CoverageTable">
             <thead>
               <tr>
                 <th rowspan="2">Name</th>
                 <th rowspan="2">Type</th>
-                <th rowspan="2">Bin1</th>
+                <th rowspan="2">beat delay</th>
                 <th rowspan="2">Count</th>
                 <th rowspan="2">AtLeast</th>
                 <th rowspan="2">Percent<br>Coverage</th>
@@ -477,7 +507,7 @@
             </thead>
             <tbody>
               <tr>
-                <td></td>
+                <td>Pixel input beat delay 0..0</td>
                 <td>COUNT</td>
                 <td>0</td>
                 <td>0</td>
@@ -485,7 +515,7 @@
                 <td>0.0</td>
               </tr>
               <tr>
-                <td></td>
+                <td>Pixel input beat delay 1..1</td>
                 <td>COUNT</td>
                 <td>1</td>
                 <td>0</td>
@@ -493,7 +523,7 @@
                 <td>0.0</td>
               </tr>
               <tr>
-                <td></td>
+                <td>Pixel input beat delay 2..2</td>
                 <td>COUNT</td>
                 <td>2</td>
                 <td>0</td>
@@ -508,9 +538,9 @@
         </details>
       </div>
     </details>
-    <details open><summary class="subtitle">DelayCov BurstLength Coverage Model &emsp; &emsp; Coverage: 0.0</summary>
+    <details open><summary class="subtitle">Encoded output burst length Coverage Model &emsp; &emsp; Coverage: 0.0</summary>
       <div class="CoverageSettings">
-        <details><summary class="subindented">DelayCov BurstLength Coverage Settings</summary>
+        <details><summary class="subindented">Encoded output burst length Coverage Settings</summary>
           <table class="CoverageSettings">
             <thead>
               <tr>
@@ -522,7 +552,7 @@
               <tr><td>CovWeight</td><td>0</td></tr>
               <tr><td>Goal</td><td>100.0</td></tr>
               <tr><td>WeightMode</td><td>REMAIN</td></tr>
-              <tr><td>Seeds</td><td>455852208, &nbsp;426451566</td></tr>
+              <tr><td>Seeds</td><td>37053181, &nbsp;162863842</td></tr>
               <tr><td>CountMode</td><td>COUNT_FIRST</td></tr>
               <tr><td>IllegalMode</td><td>ILLEGAL_ON</td></tr>
               <tr><td>Threshold</td><td>45.0</td></tr>
@@ -535,13 +565,13 @@
         </details>
       </div>
       <div class="CoverageTable">
-        <details open><summary class="subindented">DelayCov BurstLength Coverage Bins</summary>
+        <details open><summary class="subindented">Encoded output burst length Coverage Bins</summary>
           <table class="CoverageTable">
             <thead>
               <tr>
                 <th rowspan="2">Name</th>
                 <th rowspan="2">Type</th>
-                <th rowspan="2">Bin1</th>
+                <th rowspan="2">burst length</th>
                 <th rowspan="2">Count</th>
                 <th rowspan="2">AtLeast</th>
                 <th rowspan="2">Percent<br>Coverage</th>
@@ -549,7 +579,7 @@
             </thead>
             <tbody>
               <tr>
-                <td></td>
+                <td>Encoded output burst length 3..11</td>
                 <td>COUNT</td>
                 <td>3 to 11</td>
                 <td>0</td>
@@ -557,7 +587,7 @@
                 <td>0.0</td>
               </tr>
               <tr>
-                <td></td>
+                <td>Encoded output burst length 109..131</td>
                 <td>COUNT</td>
                 <td>109 to 131</td>
                 <td>0</td>
@@ -572,9 +602,9 @@
         </details>
       </div>
     </details>
-    <details open><summary class="subtitle">DelayCov BurstDelay Coverage Model &emsp; &emsp; Coverage: 0.0</summary>
+    <details open><summary class="subtitle">Encoded output burst delay Coverage Model &emsp; &emsp; Coverage: 0.0</summary>
       <div class="CoverageSettings">
-        <details><summary class="subindented">DelayCov BurstDelay Coverage Settings</summary>
+        <details><summary class="subindented">Encoded output burst delay Coverage Settings</summary>
           <table class="CoverageSettings">
             <thead>
               <tr>
@@ -586,7 +616,7 @@
               <tr><td>CovWeight</td><td>0</td></tr>
               <tr><td>Goal</td><td>100.0</td></tr>
               <tr><td>WeightMode</td><td>REMAIN</td></tr>
-              <tr><td>Seeds</td><td>1739263641, &nbsp;1705026400</td></tr>
+              <tr><td>Seeds</td><td>752943655, &nbsp;1567041904</td></tr>
               <tr><td>CountMode</td><td>COUNT_FIRST</td></tr>
               <tr><td>IllegalMode</td><td>ILLEGAL_ON</td></tr>
               <tr><td>Threshold</td><td>45.0</td></tr>
@@ -599,14 +629,14 @@
         </details>
       </div>
       <div class="CoverageTable">
-        <details open><summary class="subindented">DelayCov BurstDelay Coverage Bins</summary>
+        <details open><summary class="subindented">Encoded output burst delay Coverage Bins</summary>
           <table class="CoverageTable">
             <thead>
               <tr>
                 <th rowspan="2">Name</th>
                 <th rowspan="2">Type</th>
-                <th rowspan="2">Bin1</th>
-                <th rowspan="2">Bin2</th>
+                <th rowspan="2">ready after valid (0/1)</th>
+                <th rowspan="2">delay cycles</th>
                 <th rowspan="2">Count</th>
                 <th rowspan="2">AtLeast</th>
                 <th rowspan="2">Percent<br>Coverage</th>
@@ -614,7 +644,7 @@
             </thead>
             <tbody>
               <tr>
-                <td></td>
+                <td>Encoded output burst delay readyAfterValid=0 cycles=2..8</td>
                 <td>COUNT</td>
                 <td>0</td>
                 <td>2 to 8</td>
@@ -623,7 +653,7 @@
                 <td>0.0</td>
               </tr>
               <tr>
-                <td></td>
+                <td>Encoded output burst delay readyAfterValid=0 cycles=108..156</td>
                 <td>COUNT</td>
                 <td>0</td>
                 <td>108 to 156</td>
@@ -632,7 +662,7 @@
                 <td>0.0</td>
               </tr>
               <tr>
-                <td></td>
+                <td>Encoded output burst delay readyAfterValid=1 cycles=2..8</td>
                 <td>COUNT</td>
                 <td>1</td>
                 <td>2 to 8</td>
@@ -641,7 +671,7 @@
                 <td>0.0</td>
               </tr>
               <tr>
-                <td></td>
+                <td>Encoded output burst delay readyAfterValid=1 cycles=108..156</td>
                 <td>COUNT</td>
                 <td>1</td>
                 <td>108 to 156</td>
@@ -657,9 +687,9 @@
         </details>
       </div>
     </details>
-    <details open><summary class="subtitle">DelayCov BeatDelay Coverage Model &emsp; &emsp; Coverage: 0.0</summary>
+    <details open><summary class="subtitle">Encoded output beat delay Coverage Model &emsp; &emsp; Coverage: 0.0</summary>
       <div class="CoverageSettings">
-        <details><summary class="subindented">DelayCov BeatDelay Coverage Settings</summary>
+        <details><summary class="subindented">Encoded output beat delay Coverage Settings</summary>
           <table class="CoverageSettings">
             <thead>
               <tr>
@@ -671,7 +701,7 @@
               <tr><td>CovWeight</td><td>0</td></tr>
               <tr><td>Goal</td><td>100.0</td></tr>
               <tr><td>WeightMode</td><td>REMAIN</td></tr>
-              <tr><td>Seeds</td><td>1738543389, &nbsp;768229425</td></tr>
+              <tr><td>Seeds</td><td>2105660688, &nbsp;765429755</td></tr>
               <tr><td>CountMode</td><td>COUNT_FIRST</td></tr>
               <tr><td>IllegalMode</td><td>ILLEGAL_ON</td></tr>
               <tr><td>Threshold</td><td>45.0</td></tr>
@@ -684,14 +714,14 @@
         </details>
       </div>
       <div class="CoverageTable">
-        <details open><summary class="subindented">DelayCov BeatDelay Coverage Bins</summary>
+        <details open><summary class="subindented">Encoded output beat delay Coverage Bins</summary>
           <table class="CoverageTable">
             <thead>
               <tr>
                 <th rowspan="2">Name</th>
                 <th rowspan="2">Type</th>
-                <th rowspan="2">Bin1</th>
-                <th rowspan="2">Bin2</th>
+                <th rowspan="2">ready after valid (0/1)</th>
+                <th rowspan="2">delay cycles</th>
                 <th rowspan="2">Count</th>
                 <th rowspan="2">AtLeast</th>
                 <th rowspan="2">Percent<br>Coverage</th>
@@ -699,7 +729,7 @@
             </thead>
             <tbody>
               <tr>
-                <td></td>
+                <td>Encoded output beat delay readyAfterValid=0 cycles=0..0</td>
                 <td>COUNT</td>
                 <td>0</td>
                 <td>0</td>
@@ -708,7 +738,7 @@
                 <td>0.0</td>
               </tr>
               <tr>
-                <td></td>
+                <td>Encoded output beat delay readyAfterValid=0 cycles=1..1</td>
                 <td>COUNT</td>
                 <td>0</td>
                 <td>1</td>
@@ -717,7 +747,7 @@
                 <td>0.0</td>
               </tr>
               <tr>
-                <td></td>
+                <td>Encoded output beat delay readyAfterValid=1 cycles=0..0</td>
                 <td>COUNT</td>
                 <td>1</td>
                 <td>0</td>
@@ -726,7 +756,7 @@
                 <td>0.0</td>
               </tr>
               <tr>
-                <td></td>
+                <td>Encoded output beat delay readyAfterValid=1 cycles=1..1</td>
                 <td>COUNT</td>
                 <td>1</td>
                 <td>1</td>
@@ -764,7 +794,7 @@
           <tbody>
             <tr>
               <td>TransmitFifo</td>
-              <td>u_tx</td>
+              <td>PixelInput</td>
               <td>80</td>
               <td>0</td>
               <td>0</td>
@@ -774,7 +804,7 @@
             </tr>
             <tr>
               <td>ReceiveFifo</td>
-              <td>u_rx</td>
+              <td>EncodedOutput</td>
               <td>40</td>
               <td>0</td>
               <td>0</td>
@@ -784,7 +814,7 @@
             </tr>
             <tr>
               <td>TxBurstFifo</td>
-              <td>u_tx</td>
+              <td>PixelInput</td>
               <td>80</td>
               <td>0</td>
               <td>0</td>
@@ -794,7 +824,7 @@
             </tr>
             <tr>
               <td>RxBurstFifo</td>
-              <td>u_rx</td>
+              <td>EncodedOutput</td>
               <td>315</td>
               <td>0</td>
               <td>0</td>
@@ -809,7 +839,7 @@
 </main>
 <footer>
   <hr />
-  <p class="generated-by-osvvm">Generated by OSVVM-Scripts 2026.01 on 2026-09-08 - 23:13:42 (-03).</p>
+  <p class="generated-by-osvvm">Generated by OSVVM-Scripts 2026.01 on 2026-10-02 - 20:41:11 (-03).</p>
 </footer>
 </body>
 </html>

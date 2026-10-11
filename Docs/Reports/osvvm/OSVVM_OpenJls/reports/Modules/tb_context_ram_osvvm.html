@@ -119,8 +119,8 @@
             <tr>
               <td>tb_context_ram_osvvm</td>
               <td class="passed">PASSED</td>
-              <td class="passed">221</td>
-              <td class="passed">221</td>
+              <td class="passed">2059</td>
+              <td class="passed">2059</td>
               <td class="passed">0</td>
               <td >0</td>
               <td >0</td>
@@ -134,8 +134,8 @@
             <tr>
               <td>&emsp; Default</td>
               <td class="passed">PASSED</td>
-              <td class="passed">221</td>
-              <td class="passed">221</td>
+              <td class="passed">0</td>
+              <td class="passed">0</td>
               <td class="passed">0</td>
               <td >0</td>
               <td >0</td>
@@ -191,6 +191,51 @@
               <td >0</td>
               <td >0</td>
             </tr>
+            <tr>
+              <td>&emsp; DataChecks</td>
+              <td class="passed">PASSED</td>
+              <td class="passed">1322</td>
+              <td class="passed">1322</td>
+              <td class="passed">0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+            </tr>
+            <tr>
+              <td>&emsp; ReadEnableHold</td>
+              <td class="passed">PASSED</td>
+              <td class="passed">735</td>
+              <td class="passed">735</td>
+              <td class="passed">0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+            </tr>
+            <tr>
+              <td>&emsp; CoverageClosure</td>
+              <td class="passed">PASSED</td>
+              <td class="passed">2</td>
+              <td class="passed">2</td>
+              <td class="passed">0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+            </tr>
           <tbody>
         </table>
       </details>
@@ -233,7 +278,7 @@
               <tr>
                 <th rowspan="2">Name</th>
                 <th rowspan="2">Type</th>
-                <th rowspan="2">Bin1</th>
+                <th rowspan="2">readOutcome</th>
                 <th rowspan="2">Count</th>
                 <th rowspan="2">AtLeast</th>
                 <th rowspan="2">Percent<br>Coverage</th>
@@ -241,28 +286,28 @@
             </thead>
             <tbody>
               <tr>
-                <td>readOutcome</td>
+                <td>initial value</td>
                 <td>COUNT</td>
                 <td>0</td>
-                <td>204</td>
+                <td>578</td>
                 <td>1</td>
-                <td>20400.0</td>
+                <td>57800.0</td>
               </tr>
               <tr>
-                <td>readOutcome</td>
+                <td>stored value</td>
                 <td>COUNT</td>
                 <td>1</td>
-                <td>6</td>
+                <td>740</td>
                 <td>1</td>
-                <td>600.0</td>
+                <td>74000.0</td>
               </tr>
               <tr>
-                <td>readOutcome</td>
+                <td>forwarded write</td>
                 <td>COUNT</td>
                 <td>2</td>
-                <td>9</td>
+                <td>4</td>
                 <td>1</td>
-                <td>900.0</td>
+                <td>400.0</td>
               </tr>
               <tr>
                 <td style="text-align: left" colspan="6"><strong>Total Percent Coverage:</strong> &emsp; 100.0</td>
@@ -292,8 +337,8 @@
               <tr><td>Threshold</td><td>45.0</td></tr>
               <tr><td>ThresholdEnable</td><td>FALSE</td></tr>
               <tr><td>IsRequirement</td><td>FALSE</td></tr>
-              <tr><td>TotalCovCount</td><td>2</td></tr>
-              <tr><td>TotalCovGoal</td><td>2</td></tr>
+              <tr><td>TotalCovCount</td><td>3</td></tr>
+              <tr><td>TotalCovGoal</td><td>3</td></tr>
             </tbody>
           </table>
         </details>
@@ -305,7 +350,7 @@
               <tr>
                 <th rowspan="2">Name</th>
                 <th rowspan="2">Type</th>
-                <th rowspan="2">Bin1</th>
+                <th rowspan="2">readOnEoiCycle</th>
                 <th rowspan="2">Count</th>
                 <th rowspan="2">AtLeast</th>
                 <th rowspan="2">Percent<br>Coverage</th>
@@ -313,17 +358,25 @@
             </thead>
             <tbody>
               <tr>
-                <td>readOnEoiCycle</td>
+                <td>initial on EOI</td>
                 <td>COUNT</td>
                 <td>0</td>
-                <td>7</td>
+                <td>9</td>
                 <td>1</td>
-                <td>700.0</td>
+                <td>900.0</td>
               </tr>
               <tr>
-                <td>readOnEoiCycle</td>
+                <td>stored on EOI</td>
                 <td>COUNT</td>
                 <td>1</td>
+                <td>1</td>
+                <td>1</td>
+                <td>100.0</td>
+              </tr>
+              <tr>
+                <td>forwarded on EOI</td>
+                <td>COUNT</td>
+                <td>2</td>
                 <td>1</td>
                 <td>1</td>
                 <td>100.0</td>
@@ -340,7 +393,7 @@
 </main>
 <footer>
   <hr />
-  <p class="generated-by-osvvm">Generated by OSVVM-Scripts 2026.01 on 2026-09-08 - 23:13:37 (-03).</p>
+  <p class="generated-by-osvvm">Generated by OSVVM-Scripts 2026.01 on 2026-10-02 - 20:40:51 (-03).</p>
 </footer>
 </body>
 </html>

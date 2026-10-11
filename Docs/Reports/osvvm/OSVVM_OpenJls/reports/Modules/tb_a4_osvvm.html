@@ -119,8 +119,8 @@
             <tr>
               <td>tb_a4_osvvm</td>
               <td class="passed">PASSED</td>
-              <td class="passed">622</td>
-              <td class="passed">622</td>
+              <td class="passed">49768</td>
+              <td class="passed">49768</td>
               <td class="passed">0</td>
               <td >1</td>
               <td >1</td>
@@ -134,8 +134,8 @@
             <tr>
               <td>&emsp; Default</td>
               <td class="passed">PASSED</td>
-              <td class="passed">1</td>
-              <td class="passed">1</td>
+              <td class="passed">0</td>
+              <td class="passed">0</td>
               <td class="passed">0</td>
               <td >0</td>
               <td >0</td>
@@ -194,11 +194,41 @@
             <tr>
               <td>&emsp; &emsp; T87.A4</td>
               <td class="passed">PASSED</td>
-              <td class="passed">621</td>
-              <td class="passed">621</td>
+              <td class="passed">49767</td>
+              <td class="passed">49767</td>
               <td class="passed">0</td>
               <td >200</td>
-              <td >621</td>
+              <td >49767</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+            </tr>
+            <tr>
+              <td>&emsp; KnownOutputs</td>
+              <td class="passed">PASSED</td>
+              <td class="passed">0</td>
+              <td class="passed">0</td>
+              <td class="passed">0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+            </tr>
+            <tr>
+              <td>&emsp; CoverageClosure</td>
+              <td class="passed">PASSED</td>
+              <td class="passed">1</td>
+              <td class="passed">1</td>
+              <td class="passed">0</td>
+              <td >0</td>
+              <td >0</td>
               <td >0</td>
               <td >0</td>
               <td >0</td>
@@ -235,8 +265,8 @@
               <tr><td>Threshold</td><td>45.0</td></tr>
               <tr><td>ThresholdEnable</td><td>FALSE</td></tr>
               <tr><td>IsRequirement</td><td>FALSE</td></tr>
-              <tr><td>TotalCovCount</td><td>9</td></tr>
-              <tr><td>TotalCovGoal</td><td>9</td></tr>
+              <tr><td>TotalCovCount</td><td>27</td></tr>
+              <tr><td>TotalCovGoal</td><td>27</td></tr>
             </tbody>
           </table>
         </details>
@@ -248,7 +278,8 @@
               <tr>
                 <th rowspan="2">Name</th>
                 <th rowspan="2">Type</th>
-                <th rowspan="2">Bin1</th>
+                <th rowspan="2">gradient lane</th>
+                <th rowspan="2">quantized level</th>
                 <th rowspan="2">Count</th>
                 <th rowspan="2">AtLeast</th>
                 <th rowspan="2">Percent<br>Coverage</th>
@@ -256,79 +287,250 @@
             </thead>
             <tbody>
               <tr>
-                <td>Qi</td>
+                <td>lane=1 / level=-4</td>
                 <td>COUNT</td>
-                <td>-4</td>
-                <td>264</td>
                 <td>1</td>
-                <td>26400.0</td>
+                <td>-4</td>
+                <td>3909</td>
+                <td>1</td>
+                <td>390900.0</td>
               </tr>
               <tr>
-                <td>Qi</td>
+                <td>lane=1 / level=-3</td>
                 <td>COUNT</td>
+                <td>1</td>
                 <td>-3</td>
+                <td>213</td>
+                <td>1</td>
+                <td>21300.0</td>
+              </tr>
+              <tr>
+                <td>lane=1 / level=-2</td>
+                <td>COUNT</td>
+                <td>1</td>
+                <td>-2</td>
+                <td>51</td>
+                <td>1</td>
+                <td>5100.0</td>
+              </tr>
+              <tr>
+                <td>lane=1 / level=-1</td>
+                <td>COUNT</td>
+                <td>1</td>
+                <td>-1</td>
+                <td>20</td>
+                <td>1</td>
+                <td>2000.0</td>
+              </tr>
+              <tr>
+                <td>lane=1 / level=0</td>
+                <td>COUNT</td>
+                <td>1</td>
+                <td>0</td>
+                <td>8193</td>
+                <td>1</td>
+                <td>819300.0</td>
+              </tr>
+              <tr>
+                <td>lane=1 / level=1</td>
+                <td>COUNT</td>
+                <td>1</td>
+                <td>1</td>
                 <td>18</td>
                 <td>1</td>
                 <td>1800.0</td>
               </tr>
               <tr>
-                <td>Qi</td>
+                <td>lane=1 / level=2</td>
                 <td>COUNT</td>
+                <td>1</td>
+                <td>2</td>
+                <td>50</td>
+                <td>1</td>
+                <td>5000.0</td>
+              </tr>
+              <tr>
+                <td>lane=1 / level=3</td>
+                <td>COUNT</td>
+                <td>1</td>
+                <td>3</td>
+                <td>215</td>
+                <td>1</td>
+                <td>21500.0</td>
+              </tr>
+              <tr>
+                <td>lane=1 / level=4</td>
+                <td>COUNT</td>
+                <td>1</td>
+                <td>4</td>
+                <td>3920</td>
+                <td>1</td>
+                <td>392000.0</td>
+              </tr>
+              <tr>
+                <td>lane=2 / level=-4</td>
+                <td>COUNT</td>
+                <td>2</td>
+                <td>-4</td>
+                <td>7729</td>
+                <td>1</td>
+                <td>772900.0</td>
+              </tr>
+              <tr>
+                <td>lane=2 / level=-3</td>
+                <td>COUNT</td>
+                <td>2</td>
+                <td>-3</td>
+                <td>421</td>
+                <td>1</td>
+                <td>42100.0</td>
+              </tr>
+              <tr>
+                <td>lane=2 / level=-2</td>
+                <td>COUNT</td>
+                <td>2</td>
                 <td>-2</td>
-                <td>6</td>
+                <td>101</td>
                 <td>1</td>
-                <td>600.0</td>
+                <td>10100.0</td>
               </tr>
               <tr>
-                <td>Qi</td>
+                <td>lane=2 / level=-1</td>
                 <td>COUNT</td>
+                <td>2</td>
                 <td>-1</td>
-                <td>5</td>
+                <td>34</td>
                 <td>1</td>
-                <td>500.0</td>
+                <td>3400.0</td>
               </tr>
               <tr>
-                <td>Qi</td>
+                <td>lane=2 / level=0</td>
                 <td>COUNT</td>
+                <td>2</td>
                 <td>0</td>
                 <td>2</td>
                 <td>1</td>
                 <td>200.0</td>
               </tr>
               <tr>
-                <td>Qi</td>
-                <td>COUNT</td>
-                <td>1</td>
-                <td>2</td>
-                <td>1</td>
-                <td>200.0</td>
-              </tr>
-              <tr>
-                <td>Qi</td>
+                <td>lane=2 / level=1</td>
                 <td>COUNT</td>
                 <td>2</td>
-                <td>6</td>
                 <td>1</td>
-                <td>600.0</td>
+                <td>35</td>
+                <td>1</td>
+                <td>3500.0</td>
               </tr>
               <tr>
-                <td>Qi</td>
+                <td>lane=2 / level=2</td>
+                <td>COUNT</td>
+                <td>2</td>
+                <td>2</td>
+                <td>100</td>
+                <td>1</td>
+                <td>10000.0</td>
+              </tr>
+              <tr>
+                <td>lane=2 / level=3</td>
+                <td>COUNT</td>
+                <td>2</td>
+                <td>3</td>
+                <td>426</td>
+                <td>1</td>
+                <td>42600.0</td>
+              </tr>
+              <tr>
+                <td>lane=2 / level=4</td>
+                <td>COUNT</td>
+                <td>2</td>
+                <td>4</td>
+                <td>7741</td>
+                <td>1</td>
+                <td>774100.0</td>
+              </tr>
+              <tr>
+                <td>lane=3 / level=-4</td>
                 <td>COUNT</td>
                 <td>3</td>
+                <td>-4</td>
+                <td>3906</td>
+                <td>1</td>
+                <td>390600.0</td>
+              </tr>
+              <tr>
+                <td>lane=3 / level=-3</td>
+                <td>COUNT</td>
+                <td>3</td>
+                <td>-3</td>
+                <td>220</td>
+                <td>1</td>
+                <td>22000.0</td>
+              </tr>
+              <tr>
+                <td>lane=3 / level=-2</td>
+                <td>COUNT</td>
+                <td>3</td>
+                <td>-2</td>
+                <td>50</td>
+                <td>1</td>
+                <td>5000.0</td>
+              </tr>
+              <tr>
+                <td>lane=3 / level=-1</td>
+                <td>COUNT</td>
+                <td>3</td>
+                <td>-1</td>
                 <td>19</td>
                 <td>1</td>
                 <td>1900.0</td>
               </tr>
               <tr>
-                <td>Qi</td>
+                <td>lane=3 / level=0</td>
                 <td>COUNT</td>
-                <td>4</td>
-                <td>299</td>
+                <td>3</td>
+                <td>0</td>
+                <td>8193</td>
                 <td>1</td>
-                <td>29900.0</td>
+                <td>819300.0</td>
               </tr>
               <tr>
-                <td style="text-align: left" colspan="6"><strong>Total Percent Coverage:</strong> &emsp; 100.0</td>
+                <td>lane=3 / level=1</td>
+                <td>COUNT</td>
+                <td>3</td>
+                <td>1</td>
+                <td>17</td>
+                <td>1</td>
+                <td>1700.0</td>
+              </tr>
+              <tr>
+                <td>lane=3 / level=2</td>
+                <td>COUNT</td>
+                <td>3</td>
+                <td>2</td>
+                <td>52</td>
+                <td>1</td>
+                <td>5200.0</td>
+              </tr>
+              <tr>
+                <td>lane=3 / level=3</td>
+                <td>COUNT</td>
+                <td>3</td>
+                <td>3</td>
+                <td>214</td>
+                <td>1</td>
+                <td>21400.0</td>
+              </tr>
+              <tr>
+                <td>lane=3 / level=4</td>
+                <td>COUNT</td>
+                <td>3</td>
+                <td>4</td>
+                <td>3918</td>
+                <td>1</td>
+                <td>391800.0</td>
+              </tr>
+              <tr>
+                <td style="text-align: left" colspan="7"><strong>Total Percent Coverage:</strong> &emsp; 100.0</td>
               </tr>
             </tbody>
           </table>
@@ -339,7 +541,7 @@
 </main>
 <footer>
   <hr />
-  <p class="generated-by-osvvm">Generated by OSVVM-Scripts 2026.01 on 2026-09-08 - 23:13:31 (-03).</p>
+  <p class="generated-by-osvvm">Generated by OSVVM-Scripts 2026.01 on 2026-10-02 - 20:40:44 (-03).</p>
 </footer>
 </body>
 </html>

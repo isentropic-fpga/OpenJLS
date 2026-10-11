@@ -22,42 +22,42 @@ Models:
     BinInfo: 
       Dimensions: 2
       FieldNames: 
-        - "Bin1"
-        - "Bin2"
+        - "ri"
+        - "map"
       NumBins: 4
     Bins: 
-      - Name: "ri x map"
+      - Name: "ri=0 / map=0"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
-        Count: 105
+        Count: 8297
         AtLeast: 1
-        PercentCov: 10500.0000
-      - Name: "ri x map"
+        PercentCov: 829700.0000
+      - Name: "ri=0 / map=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
-        Count: 74
+        Count: 8265
         AtLeast: 1
-        PercentCov: 7400.0000
-      - Name: "ri x map"
+        PercentCov: 826500.0000
+      - Name: "ri=1 / map=0"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 98
+        Count: 8289
         AtLeast: 1
-        PercentCov: 9800.0000
-      - Name: "ri x map"
+        PercentCov: 828900.0000
+      - Name: "ri=1 / map=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 95
+        Count: 8286
         AtLeast: 1
-        PercentCov: 9500.0000
+        PercentCov: 828600.0000
 
   - Name: "emZero"
     TestCases: 
@@ -78,21 +78,21 @@ Models:
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "emZero"
       NumBins: 2
     Bins: 
-      - Name: "emZero"
+      - Name: "nonzero mapped error"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 327
+        Count: 33089
         AtLeast: 1
-        PercentCov: 32700.0000
-      - Name: "emZero"
+        PercentCov: 3308900.0000
+      - Name: "zero mapped error"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 45
+        Count: 48
         AtLeast: 1
-        PercentCov: 4500.0000
+        PercentCov: 4800.0000
 

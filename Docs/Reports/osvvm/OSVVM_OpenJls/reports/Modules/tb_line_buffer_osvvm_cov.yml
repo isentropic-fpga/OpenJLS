@@ -22,56 +22,56 @@ Models:
     BinInfo: 
       Dimensions: 2
       FieldNames: 
-        - "Bin1"
-        - "Bin2"
+        - "rowPos"
+        - "colPos"
       NumBins: 6
     Bins: 
-      - Name: "rowPos x colPos"
+      - Name: "rowPos=0 / colPos=0"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
-        Count: 7
+        Count: 33
         AtLeast: 1
-        PercentCov: 700.0000
-      - Name: "rowPos x colPos"
+        PercentCov: 3300.0000
+      - Name: "rowPos=0 / colPos=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
-        Count: 37
+        Count: 245
         AtLeast: 1
-        PercentCov: 3700.0000
-      - Name: "rowPos x colPos"
+        PercentCov: 24500.0000
+      - Name: "rowPos=0 / colPos=2"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 2, Max: 2}
-        Count: 7
+        Count: 33
         AtLeast: 1
-        PercentCov: 700.0000
-      - Name: "rowPos x colPos"
+        PercentCov: 3300.0000
+      - Name: "rowPos=1 / colPos=0"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 19
+        Count: 214
         AtLeast: 1
-        PercentCov: 1900.0000
-      - Name: "rowPos x colPos"
+        PercentCov: 21400.0000
+      - Name: "rowPos=1 / colPos=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 118
+        Count: 1678
         AtLeast: 1
-        PercentCov: 11800.0000
-      - Name: "rowPos x colPos"
+        PercentCov: 167800.0000
+      - Name: "rowPos=1 / colPos=2"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 2, Max: 2}
-        Count: 19
+        Count: 214
         AtLeast: 1
-        PercentCov: 1900.0000
+        PercentCov: 21400.0000
 

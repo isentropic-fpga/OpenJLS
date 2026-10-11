@@ -17,24 +17,24 @@ Models:
       Threshold: 45.0
       ThresholdEnable: "FALSE"
       IsRequirement: "FALSE"
-      TotalCovCount: 4
-      TotalCovGoal: 4
+      TotalCovCount: 6
+      TotalCovGoal: 6
     BinInfo: 
       Dimensions: 2
       FieldNames: 
-        - "Bin1"
-        - "Bin2"
-      NumBins: 4
+        - "signIn"
+        - "signErr"
+      NumBins: 6
     Bins: 
-      - Name: "signIn x signErr"
+      - Name: "signIn=0 / signErr=0"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
-        Count: 58
+        Count: 56
         AtLeast: 1
-        PercentCov: 5800.0000
-      - Name: "signIn x signErr"
+        PercentCov: 5600.0000
+      - Name: "signIn=0 / signErr=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
@@ -42,7 +42,15 @@ Models:
         Count: 63
         AtLeast: 1
         PercentCov: 6300.0000
-      - Name: "signIn x signErr"
+      - Name: "signIn=0 / signErr=2"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 2, Max: 2}
+        Count: 4098
+        AtLeast: 1
+        PercentCov: 409800.0000
+      - Name: "signIn=1 / signErr=0"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
@@ -50,7 +58,7 @@ Models:
         Count: 36
         AtLeast: 1
         PercentCov: 3600.0000
-      - Name: "signIn x signErr"
+      - Name: "signIn=1 / signErr=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
@@ -58,4 +66,12 @@ Models:
         Count: 49
         AtLeast: 1
         PercentCov: 4900.0000
+      - Name: "signIn=1 / signErr=2"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 2, Max: 2}
+        Count: 4096
+        AtLeast: 1
+        PercentCov: 409600.0000
 

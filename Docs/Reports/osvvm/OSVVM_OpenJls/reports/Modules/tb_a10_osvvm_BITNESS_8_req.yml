@@ -1,0 +1,5 @@
+- Requirement: "T87.A10"
+  TestCases: 
+  - TestName: "tb_a10_osvvm"
+    Status: PASSED
+    Results: {Goal: 400, Passed: 3821, Errors: 0, Checked: 3821, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}

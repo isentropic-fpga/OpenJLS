@@ -1,0 +1,56 @@
+Version: "0.1"
+Coverage: 100.00
+Settings: 
+  WritePassFail: 0
+Models: 
+  - Name: "case"
+    TestCases: 
+      - "tb_a11_2_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1207074421, 881603516]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 4
+      TotalCovGoal: 4
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "case"
+      NumBins: 4
+    Bins: 
+      - Name: "idle"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+        Count: 47
+        AtLeast: 1
+        PercentCov: 4700.0000
+      - Name: "raw only"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 57
+        AtLeast: 1
+        PercentCov: 5700.0000
+      - Name: "Golomb only"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+        Count: 41
+        AtLeast: 1
+        PercentCov: 4100.0000
+      - Name: "raw and Golomb"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+        Count: 845
+        AtLeast: 1
+        PercentCov: 84500.0000
+

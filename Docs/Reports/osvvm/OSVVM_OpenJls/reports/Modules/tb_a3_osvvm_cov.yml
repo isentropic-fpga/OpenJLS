@@ -22,17 +22,17 @@ Models:
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "modeRun"
       NumBins: 2
     Bins: 
-      - Name: "modeRun"
+      - Name: "regular"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 87
+        Count: 126
         AtLeast: 1
-        PercentCov: 8700.0000
-      - Name: "modeRun"
+        PercentCov: 12600.0000
+      - Name: "run"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}

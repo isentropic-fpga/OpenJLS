@@ -1,0 +1,5 @@
+- Requirement: "T87.A23"
+  TestCases: 
+  - TestName: "tb_a23_osvvm"
+    Status: PASSED
+    Results: {Goal: 600, Passed: 114138, Errors: 0, Checked: 114138, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}

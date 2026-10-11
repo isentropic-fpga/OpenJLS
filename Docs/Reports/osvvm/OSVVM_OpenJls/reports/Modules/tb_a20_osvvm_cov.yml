@@ -22,21 +22,21 @@ Models:
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "RItype"
       NumBins: 2
     Bins: 
-      - Name: "RItype"
+      - Name: "A only"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 22
+        Count: 150
         AtLeast: 1
-        PercentCov: 2200.0000
-      - Name: "RItype"
+        PercentCov: 15000.0000
+      - Name: "A plus floor N/2"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 33
+        Count: 289
         AtLeast: 1
-        PercentCov: 3300.0000
+        PercentCov: 28900.0000
 

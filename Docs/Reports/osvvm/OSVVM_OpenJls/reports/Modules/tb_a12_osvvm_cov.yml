@@ -22,40 +22,40 @@ Models:
     BinInfo: 
       Dimensions: 2
       FieldNames: 
-        - "Bin1"
-        - "Bin2"
+        - "rescale"
+        - "bSumSign"
       NumBins: 4
     Bins: 
-      - Name: "rescale x bSumSign"
+      - Name: "rescale=0 / bSumSign=0"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
-        Count: 90
+        Count: 118
         AtLeast: 1
-        PercentCov: 9000.0000
-      - Name: "rescale x bSumSign"
+        PercentCov: 11800.0000
+      - Name: "rescale=0 / bSumSign=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
-        Count: 107
+        Count: 128
         AtLeast: 1
-        PercentCov: 10700.0000
-      - Name: "rescale x bSumSign"
+        PercentCov: 12800.0000
+      - Name: "rescale=1 / bSumSign=0"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 51
+        Count: 79
         AtLeast: 1
-        PercentCov: 5100.0000
-      - Name: "rescale x bSumSign"
+        PercentCov: 7900.0000
+      - Name: "rescale=1 / bSumSign=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 57
+        Count: 78
         AtLeast: 1
-        PercentCov: 5700.0000
+        PercentCov: 7800.0000
 

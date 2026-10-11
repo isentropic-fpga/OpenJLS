@@ -22,7 +22,7 @@ Models:
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "partialBeat"
       NumBins: 2
     Bins: 
       - Name: "partialBeat"

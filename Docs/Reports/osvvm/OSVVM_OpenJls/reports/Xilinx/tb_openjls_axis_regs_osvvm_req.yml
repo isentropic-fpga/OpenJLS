@@ -2,7 +2,7 @@
   TestCases: 
   - TestName: "tb_openjls_axis_regs_osvvm"
     Status: PASSED
-    Results: {Goal: 16, Passed: 17, Errors: 0, Checked: 17, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+    Results: {Goal: 16, Passed: 22, Errors: 0, Checked: 22, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
 - Requirement: "OJLS.AxiApplyReconfig"
   TestCases: 
   - TestName: "tb_openjls_axis_regs_osvvm"

@@ -3,187 +3,187 @@ Coverage: 100.00
 Settings: 
   WritePassFail: 0
 Models: 
-  - Name: "WriteAddrDelayCov BurstLength"
+  - Name: "AXI-Lite channel 1 burst length"
     TestCases: 
       - "tb_openjls_axis_regs_osvvm"
-    Coverage: 0.00
+    Coverage: 100.00
     Settings: 
       CovWeight: 0
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [645950163, 1034705521]
+      Seeds: [253727523, 1898157072]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
       ThresholdEnable: "FALSE"
       IsRequirement: "FALSE"
-      TotalCovCount: 0
+      TotalCovCount: 1
       TotalCovGoal: 1
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "burst length"
       NumBins: 1
     Bins: 
-      - Name: ""
+      - Name: "AXI-Lite channel 1 burst length 2..10"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 10}
-        Count: 0
+        Count: 3
         AtLeast: 1
-        PercentCov: 0.0000
+        PercentCov: 300.0000
 
-  - Name: "WriteAddrDelayCov BurstDelay"
+  - Name: "AXI-Lite channel 1 burst delay"
     TestCases: 
       - "tb_openjls_axis_regs_osvvm"
-    Coverage: 0.00
+    Coverage: 100.00
     Settings: 
       CovWeight: 0
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [1768436911, 1311413072]
+      Seeds: [1925737874, 1042595050]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
       ThresholdEnable: "FALSE"
       IsRequirement: "FALSE"
-      TotalCovCount: 0
+      TotalCovCount: 1
       TotalCovGoal: 1
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "burst delay"
       NumBins: 1
     Bins: 
-      - Name: ""
+      - Name: "AXI-Lite channel 1 burst delay 2..5"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 5}
-        Count: 0
+        Count: 3
         AtLeast: 1
-        PercentCov: 0.0000
+        PercentCov: 300.0000
 
-  - Name: "WriteAddrDelayCov BeatDelay"
+  - Name: "AXI-Lite channel 1 beat delay"
     TestCases: 
       - "tb_openjls_axis_regs_osvvm"
-    Coverage: 0.00
+    Coverage: 100.00
     Settings: 
       CovWeight: 0
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [964875763, 1924412768]
+      Seeds: [14071966, 1523423827]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
       ThresholdEnable: "FALSE"
       IsRequirement: "FALSE"
-      TotalCovCount: 0
+      TotalCovCount: 1
       TotalCovGoal: 1
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "beat delay"
       NumBins: 1
     Bins: 
-      - Name: ""
+      - Name: "AXI-Lite channel 1 beat delay 0..0"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 0
+        Count: 16
         AtLeast: 1
-        PercentCov: 0.0000
+        PercentCov: 1600.0000
 
-  - Name: "WriteDataDelayCov BurstLength"
+  - Name: "AXI-Lite channel 2 burst length"
     TestCases: 
       - "tb_openjls_axis_regs_osvvm"
-    Coverage: 0.00
+    Coverage: 100.00
     Settings: 
       CovWeight: 0
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [645950163, 241384789]
+      Seeds: [253727523, 667635673]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
       ThresholdEnable: "FALSE"
       IsRequirement: "FALSE"
-      TotalCovCount: 0
+      TotalCovCount: 1
       TotalCovGoal: 1
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "burst length"
       NumBins: 1
     Bins: 
-      - Name: ""
+      - Name: "AXI-Lite channel 2 burst length 2..10"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 10}
-        Count: 0
+        Count: 3
         AtLeast: 1
-        PercentCov: 0.0000
+        PercentCov: 300.0000
 
-  - Name: "WriteDataDelayCov BurstDelay"
+  - Name: "AXI-Lite channel 2 burst delay"
     TestCases: 
       - "tb_openjls_axis_regs_osvvm"
-    Coverage: 0.00
+    Coverage: 100.00
     Settings: 
       CovWeight: 0
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [1768436911, 523158494]
+      Seeds: [1925737874, 2039059274]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
       ThresholdEnable: "FALSE"
       IsRequirement: "FALSE"
-      TotalCovCount: 0
+      TotalCovCount: 1
       TotalCovGoal: 1
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "burst delay"
       NumBins: 1
     Bins: 
-      - Name: ""
+      - Name: "AXI-Lite channel 2 burst delay 2..5"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 5}
-        Count: 0
+        Count: 3
         AtLeast: 1
-        PercentCov: 0.0000
+        PercentCov: 300.0000
 
-  - Name: "WriteDataDelayCov BeatDelay"
+  - Name: "AXI-Lite channel 2 beat delay"
     TestCases: 
       - "tb_openjls_axis_regs_osvvm"
-    Coverage: 0.00
+    Coverage: 100.00
     Settings: 
       CovWeight: 0
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [964875763, 1131092036]
+      Seeds: [14071966, 692667552]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
       ThresholdEnable: "FALSE"
       IsRequirement: "FALSE"
-      TotalCovCount: 0
+      TotalCovCount: 1
       TotalCovGoal: 1
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "beat delay"
       NumBins: 1
     Bins: 
-      - Name: ""
+      - Name: "AXI-Lite channel 2 beat delay 0..0"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 0
+        Count: 16
         AtLeast: 1
-        PercentCov: 0.0000
+        PercentCov: 1600.0000
 
-  - Name: "WriteRespDelayCov BurstLength"
+  - Name: "AXI-Lite channel 3 burst length"
     TestCases: 
       - "tb_openjls_axis_regs_osvvm"
     Coverage: 0.00
@@ -202,10 +202,10 @@ Models:
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "burst length"
       NumBins: 1
     Bins: 
-      - Name: ""
+      - Name: "AXI-Lite channel 3 burst length 2..10"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 10}
@@ -213,7 +213,7 @@ Models:
         AtLeast: 1
         PercentCov: 0.0000
 
-  - Name: "WriteRespDelayCov BurstDelay"
+  - Name: "AXI-Lite channel 3 burst delay"
     TestCases: 
       - "tb_openjls_axis_regs_osvvm"
     Coverage: 0.00
@@ -232,11 +232,11 @@ Models:
     BinInfo: 
       Dimensions: 2
       FieldNames: 
-        - "Bin1"
-        - "Bin2"
+        - "ready after valid (0/1)"
+        - "delay cycles"
       NumBins: 1
     Bins: 
-      - Name: ""
+      - Name: "AXI-Lite channel 3 burst delay readyAfterValid=0 cycles=2..5"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 1}
@@ -245,7 +245,7 @@ Models:
         AtLeast: 1
         PercentCov: 0.0000
 
-  - Name: "WriteRespDelayCov BeatDelay"
+  - Name: "AXI-Lite channel 3 beat delay"
     TestCases: 
       - "tb_openjls_axis_regs_osvvm"
     Coverage: 0.00
@@ -264,11 +264,11 @@ Models:
     BinInfo: 
       Dimensions: 2
       FieldNames: 
-        - "Bin1"
-        - "Bin2"
+        - "ready after valid (0/1)"
+        - "delay cycles"
       NumBins: 1
     Bins: 
-      - Name: ""
+      - Name: "AXI-Lite channel 3 beat delay readyAfterValid=0 cycles=0..0"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
@@ -277,220 +277,220 @@ Models:
         AtLeast: 1
         PercentCov: 0.0000
 
-  - Name: "ReadAddrDelayCov BurstLength"
+  - Name: "AXI-Lite channel 4 burst length"
     TestCases: 
       - "tb_openjls_axis_regs_osvvm"
-    Coverage: 0.00
+    Coverage: 100.00
     Settings: 
       CovWeight: 0
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [1192126913, 1888307575]
+      Seeds: [1173294434, 1902463574]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
       ThresholdEnable: "FALSE"
       IsRequirement: "FALSE"
-      TotalCovCount: 0
+      TotalCovCount: 1
       TotalCovGoal: 1
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "burst length"
       NumBins: 1
     Bins: 
-      - Name: ""
+      - Name: "AXI-Lite channel 4 burst length 2..10"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 10}
-        Count: 0
+        Count: 4
         AtLeast: 1
-        PercentCov: 0.0000
+        PercentCov: 400.0000
 
-  - Name: "ReadAddrDelayCov BurstDelay"
+  - Name: "AXI-Lite channel 4 burst delay"
     TestCases: 
       - "tb_openjls_axis_regs_osvvm"
-    Coverage: 0.00
+    Coverage: 100.00
     Settings: 
       CovWeight: 0
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [1768436911, 401189957]
+      Seeds: [79429063, 788208001]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
       ThresholdEnable: "FALSE"
       IsRequirement: "FALSE"
-      TotalCovCount: 0
+      TotalCovCount: 1
       TotalCovGoal: 1
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "burst delay"
       NumBins: 1
     Bins: 
-      - Name: ""
+      - Name: "AXI-Lite channel 4 burst delay 2..5"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 5}
-        Count: 0
+        Count: 4
         AtLeast: 1
-        PercentCov: 0.0000
+        PercentCov: 400.0000
 
-  - Name: "ReadAddrDelayCov BeatDelay"
+  - Name: "AXI-Lite channel 4 beat delay"
     TestCases: 
       - "tb_openjls_axis_regs_osvvm"
-    Coverage: 0.00
+    Coverage: 100.00
     Settings: 
       CovWeight: 0
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [745604884, 1783122134]
+      Seeds: [140325446, 1994161023]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
       ThresholdEnable: "FALSE"
       IsRequirement: "FALSE"
-      TotalCovCount: 0
+      TotalCovCount: 1
       TotalCovGoal: 1
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "beat delay"
       NumBins: 1
     Bins: 
-      - Name: ""
+      - Name: "AXI-Lite channel 4 beat delay 0..0"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 0
+        Count: 17
         AtLeast: 1
-        PercentCov: 0.0000
+        PercentCov: 1700.0000
 
-  - Name: "ReadDataDelayCov BurstLength"
+  - Name: "AXI-Lite channel 5 burst length"
     TestCases: 
       - "tb_openjls_axis_regs_osvvm"
-    Coverage: 0.00
+    Coverage: 100.00
     Settings: 
       CovWeight: 0
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [1192126913, 2056422920]
+      Seeds: [896408804, 1293957560]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
       ThresholdEnable: "FALSE"
       IsRequirement: "FALSE"
-      TotalCovCount: 0
+      TotalCovCount: 1
       TotalCovGoal: 1
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "burst length"
       NumBins: 1
     Bins: 
-      - Name: ""
+      - Name: "AXI-Lite channel 5 burst length 2..10"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 10}
-        Count: 0
+        Count: 6
         AtLeast: 1
-        PercentCov: 0.0000
+        PercentCov: 600.0000
 
-  - Name: "ReadDataDelayCov BurstDelay"
+  - Name: "AXI-Lite channel 5 burst delay"
     TestCases: 
       - "tb_openjls_axis_regs_osvvm"
-    Coverage: 0.00
+    Coverage: 100.00
     Settings: 
       CovWeight: 0
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [1768436911, 569305302]
+      Seeds: [2095992679, 275953463]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
       ThresholdEnable: "FALSE"
       IsRequirement: "FALSE"
-      TotalCovCount: 0
+      TotalCovCount: 1
       TotalCovGoal: 1
     BinInfo: 
       Dimensions: 2
       FieldNames: 
-        - "Bin1"
-        - "Bin2"
+        - "ready after valid (0/1)"
+        - "delay cycles"
       NumBins: 1
     Bins: 
-      - Name: ""
+      - Name: "AXI-Lite channel 5 burst delay readyAfterValid=0 cycles=2..5"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 1}
           - {Min: 2, Max: 5}
-        Count: 0
+        Count: 6
         AtLeast: 1
-        PercentCov: 0.0000
+        PercentCov: 600.0000
 
-  - Name: "ReadDataDelayCov BeatDelay"
+  - Name: "AXI-Lite channel 5 beat delay"
     TestCases: 
       - "tb_openjls_axis_regs_osvvm"
-    Coverage: 0.00
+    Coverage: 100.00
     Settings: 
       CovWeight: 0
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [745604884, 1956303633]
+      Seeds: [1095067360, 126815365]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
       ThresholdEnable: "FALSE"
       IsRequirement: "FALSE"
-      TotalCovCount: 0
+      TotalCovCount: 1
       TotalCovGoal: 1
     BinInfo: 
       Dimensions: 2
       FieldNames: 
-        - "Bin1"
-        - "Bin2"
+        - "ready after valid (0/1)"
+        - "delay cycles"
       NumBins: 1
     Bins: 
-      - Name: ""
+      - Name: "AXI-Lite channel 5 beat delay readyAfterValid=0 cycles=0..0"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
-        Count: 0
+        Count: 34
         AtLeast: 1
-        PercentCov: 0.0000
+        PercentCov: 3400.0000
 
-  - Name: "DelayCov BurstLength"
+  - Name: "Pixel input burst length"
     TestCases: 
       - "tb_openjls_axis_regs_osvvm"
-    Coverage: 0.00
+    Coverage: 5.00
     Settings: 
       CovWeight: 0
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [1551618641, 1873531553]
+      Seeds: [295522145, 544506984]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
       ThresholdEnable: "FALSE"
       IsRequirement: "FALSE"
-      TotalCovCount: 0
+      TotalCovCount: 5
       TotalCovGoal: 100
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "burst length"
       NumBins: 2
     Bins: 
-      - Name: ""
+      - Name: "Pixel input burst length 3..11"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 11}
-        Count: 0
+        Count: 5
         AtLeast: 80
-        PercentCov: 0.0000
-      - Name: ""
+        PercentCov: 6.2500
+      - Name: "Pixel input burst length 109..131"
         Type: "COUNT"
         Range: 
           - {Min: 109, Max: 131}
@@ -498,88 +498,88 @@ Models:
         AtLeast: 20
         PercentCov: 0.0000
 
-  - Name: "DelayCov BurstDelay"
+  - Name: "Pixel input burst delay"
     TestCases: 
       - "tb_openjls_axis_regs_osvvm"
-    Coverage: 0.00
+    Coverage: 5.00
     Settings: 
       CovWeight: 0
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [1055197901, 705523959]
+      Seeds: [466542740, 924197101]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
       ThresholdEnable: "FALSE"
       IsRequirement: "FALSE"
-      TotalCovCount: 0
+      TotalCovCount: 5
       TotalCovGoal: 100
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "burst delay"
       NumBins: 2
     Bins: 
-      - Name: ""
+      - Name: "Pixel input burst delay 2..8"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 8}
-        Count: 0
+        Count: 4
         AtLeast: 80
-        PercentCov: 0.0000
-      - Name: ""
+        PercentCov: 5.0000
+      - Name: "Pixel input burst delay 108..156"
         Type: "COUNT"
         Range: 
           - {Min: 108, Max: 156}
-        Count: 0
+        Count: 1
         AtLeast: 20
-        PercentCov: 0.0000
+        PercentCov: 5.0000
 
-  - Name: "DelayCov BeatDelay"
+  - Name: "Pixel input beat delay"
     TestCases: 
       - "tb_openjls_axis_regs_osvvm"
-    Coverage: 0.00
+    Coverage: 35.00
     Settings: 
       CovWeight: 0
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [1054477649, 865789184]
+      Seeds: [1877928354, 2047352407]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
       ThresholdEnable: "FALSE"
       IsRequirement: "FALSE"
-      TotalCovCount: 0
+      TotalCovCount: 35
       TotalCovGoal: 100
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "beat delay"
       NumBins: 3
     Bins: 
-      - Name: ""
+      - Name: "Pixel input beat delay 0..0"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 0
+        Count: 31
         AtLeast: 85
-        PercentCov: 0.0000
-      - Name: ""
+        PercentCov: 36.4706
+      - Name: "Pixel input beat delay 1..1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 0
+        Count: 2
         AtLeast: 10
-        PercentCov: 0.0000
-      - Name: ""
+        PercentCov: 20.0000
+      - Name: "Pixel input beat delay 2..2"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
-        Count: 0
+        Count: 2
         AtLeast: 5
-        PercentCov: 0.0000
+        PercentCov: 40.0000
 
-  - Name: "DelayCov BurstLength"
+  - Name: "Encoded output burst length"
     TestCases: 
       - "tb_openjls_axis_regs_osvvm"
     Coverage: 0.00
@@ -587,7 +587,7 @@ Models:
       CovWeight: 0
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [455852208, 426451566]
+      Seeds: [37053181, 162863842]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
@@ -598,17 +598,17 @@ Models:
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "burst length"
       NumBins: 2
     Bins: 
-      - Name: ""
+      - Name: "Encoded output burst length 3..11"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 11}
         Count: 0
         AtLeast: 80
         PercentCov: 0.0000
-      - Name: ""
+      - Name: "Encoded output burst length 109..131"
         Type: "COUNT"
         Range: 
           - {Min: 109, Max: 131}
@@ -616,7 +616,7 @@ Models:
         AtLeast: 20
         PercentCov: 0.0000
 
-  - Name: "DelayCov BurstDelay"
+  - Name: "Encoded output burst delay"
     TestCases: 
       - "tb_openjls_axis_regs_osvvm"
     Coverage: 0.00
@@ -624,7 +624,7 @@ Models:
       CovWeight: 0
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [1739263641, 1705026400]
+      Seeds: [752943655, 1567041904]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
@@ -635,11 +635,11 @@ Models:
     BinInfo: 
       Dimensions: 2
       FieldNames: 
-        - "Bin1"
-        - "Bin2"
+        - "ready after valid (0/1)"
+        - "delay cycles"
       NumBins: 4
     Bins: 
-      - Name: ""
+      - Name: "Encoded output burst delay readyAfterValid=0 cycles=2..8"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
@@ -647,7 +647,7 @@ Models:
         Count: 0
         AtLeast: 65
         PercentCov: 0.0000
-      - Name: ""
+      - Name: "Encoded output burst delay readyAfterValid=0 cycles=108..156"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
@@ -655,7 +655,7 @@ Models:
         Count: 0
         AtLeast: 10
         PercentCov: 0.0000
-      - Name: ""
+      - Name: "Encoded output burst delay readyAfterValid=1 cycles=2..8"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
@@ -663,7 +663,7 @@ Models:
         Count: 0
         AtLeast: 15
         PercentCov: 0.0000
-      - Name: ""
+      - Name: "Encoded output burst delay readyAfterValid=1 cycles=108..156"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
@@ -672,7 +672,7 @@ Models:
         AtLeast: 10
         PercentCov: 0.0000
 
-  - Name: "DelayCov BeatDelay"
+  - Name: "Encoded output beat delay"
     TestCases: 
       - "tb_openjls_axis_regs_osvvm"
     Coverage: 0.00
@@ -680,7 +680,7 @@ Models:
       CovWeight: 0
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [1738543389, 768229425]
+      Seeds: [2105660688, 765429755]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
@@ -691,11 +691,11 @@ Models:
     BinInfo: 
       Dimensions: 2
       FieldNames: 
-        - "Bin1"
-        - "Bin2"
+        - "ready after valid (0/1)"
+        - "delay cycles"
       NumBins: 4
     Bins: 
-      - Name: ""
+      - Name: "Encoded output beat delay readyAfterValid=0 cycles=0..0"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
@@ -703,7 +703,7 @@ Models:
         Count: 0
         AtLeast: 85
         PercentCov: 0.0000
-      - Name: ""
+      - Name: "Encoded output beat delay readyAfterValid=0 cycles=1..1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
@@ -711,7 +711,7 @@ Models:
         Count: 0
         AtLeast: 5
         PercentCov: 0.0000
-      - Name: ""
+      - Name: "Encoded output beat delay readyAfterValid=1 cycles=0..0"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
@@ -719,7 +719,7 @@ Models:
         Count: 0
         AtLeast: 5
         PercentCov: 0.0000
-      - Name: ""
+      - Name: "Encoded output beat delay readyAfterValid=1 cycles=1..1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}

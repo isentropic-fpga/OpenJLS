@@ -1,0 +1,49 @@
+Version: "0.1"
+Coverage: 100.00
+Settings: 
+  WritePassFail: 0
+Models: 
+  - Name: "branch"
+    TestCases: 
+      - "tb_a5_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1129194420, 1382161634]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 3
+      TotalCovGoal: 3
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "branch"
+      NumBins: 3
+    Bins: 
+      - Name: "C >= max: choose min"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+        Count: 75
+        AtLeast: 1
+        PercentCov: 7500.0000
+      - Name: "C <= min: choose max"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 80
+        AtLeast: 1
+        PercentCov: 8000.0000
+      - Name: "interpolate"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+        Count: 65
+        AtLeast: 1
+        PercentCov: 6500.0000
+

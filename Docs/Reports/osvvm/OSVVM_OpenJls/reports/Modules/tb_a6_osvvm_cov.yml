@@ -22,56 +22,56 @@ Models:
     BinInfo: 
       Dimensions: 2
       FieldNames: 
-        - "Bin1"
-        - "Bin2"
+        - "sign"
+        - "region"
       NumBins: 6
     Bins: 
-      - Name: "sign x region"
+      - Name: "sign=0 / region=0"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
-        Count: 4
+        Count: 132
         AtLeast: 1
-        PercentCov: 400.0000
-      - Name: "sign x region"
+        PercentCov: 13200.0000
+      - Name: "sign=0 / region=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
-        Count: 138
+        Count: 654
         AtLeast: 1
-        PercentCov: 13800.0000
-      - Name: "sign x region"
+        PercentCov: 65400.0000
+      - Name: "sign=0 / region=2"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 2, Max: 2}
-        Count: 3
+        Count: 130
         AtLeast: 1
-        PercentCov: 300.0000
-      - Name: "sign x region"
+        PercentCov: 13000.0000
+      - Name: "sign=1 / region=0"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 2
+        Count: 129
         AtLeast: 1
-        PercentCov: 200.0000
-      - Name: "sign x region"
+        PercentCov: 12900.0000
+      - Name: "sign=1 / region=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 155
+        Count: 671
         AtLeast: 1
-        PercentCov: 15500.0000
-      - Name: "sign x region"
+        PercentCov: 67100.0000
+      - Name: "sign=1 / region=2"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 2, Max: 2}
-        Count: 4
+        Count: 132
         AtLeast: 1
-        PercentCov: 400.0000
+        PercentCov: 13200.0000
 

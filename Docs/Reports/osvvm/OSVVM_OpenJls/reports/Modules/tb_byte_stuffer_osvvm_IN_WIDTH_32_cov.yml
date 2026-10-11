@@ -22,44 +22,44 @@ Models:
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "emitBytes"
       NumBins: 5
     Bins: 
-      - Name: "emitBytes"
+      - Name: "emitted bytes=0"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 9
+        Count: 16
         AtLeast: 1
-        PercentCov: 900.0000
-      - Name: "emitBytes"
+        PercentCov: 1600.0000
+      - Name: "emitted bytes=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 115
+        Count: 188
         AtLeast: 1
-        PercentCov: 11500.0000
-      - Name: "emitBytes"
+        PercentCov: 18800.0000
+      - Name: "emitted bytes=2"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
-        Count: 15
+        Count: 31
         AtLeast: 1
-        PercentCov: 1500.0000
-      - Name: "emitBytes"
+        PercentCov: 3100.0000
+      - Name: "emitted bytes=3"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
-        Count: 21
+        Count: 35
         AtLeast: 1
-        PercentCov: 2100.0000
-      - Name: "emitBytes"
+        PercentCov: 3500.0000
+      - Name: "emitted bytes=4"
         Type: "COUNT"
         Range: 
           - {Min: 4, Max: 4}
-        Count: 644
+        Count: 649
         AtLeast: 1
-        PercentCov: 64400.0000
+        PercentCov: 64900.0000
 
   - Name: "flushType"
     TestCases: 
@@ -80,30 +80,30 @@ Models:
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "flushType"
       NumBins: 3
     Bins: 
-      - Name: "flushType"
+      - Name: "byte aligned"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 9
+        Count: 16
         AtLeast: 1
-        PercentCov: 900.0000
-      - Name: "flushType"
+        PercentCov: 1600.0000
+      - Name: "padded residue"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
-        Count: 58
+        Count: 114
         AtLeast: 1
-        PercentCov: 5800.0000
-      - Name: "flushType"
+        PercentCov: 11400.0000
+      - Name: "dangling FF"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
-        Count: 3
+        Count: 5
         AtLeast: 1
-        PercentCov: 300.0000
+        PercentCov: 500.0000
 
   - Name: "data x almostFull"
     TestCases: 
@@ -124,26 +124,26 @@ Models:
     BinInfo: 
       Dimensions: 2
       FieldNames: 
-        - "Bin1"
-        - "Bin2"
+        - "data"
+        - "almostFull"
       NumBins: 2
     Bins: 
-      - Name: "data x almostFull"
+      - Name: "data beat / almostFull=0"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 753
+        Count: 875
         AtLeast: 1
-        PercentCov: 75300.0000
-      - Name: "data x almostFull"
+        PercentCov: 87500.0000
+      - Name: "data beat / almostFull=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 42
+        Count: 28
         AtLeast: 1
-        PercentCov: 4200.0000
+        PercentCov: 2800.0000
 
   - Name: "stuffEvent"
     TestCases: 
@@ -164,28 +164,28 @@ Models:
     BinInfo: 
       Dimensions: 1
       FieldNames: 
-        - "Bin1"
+        - "stuffEvent"
       NumBins: 3
     Bins: 
       - Name: "noStuff"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 2177
+        Count: 2251
         AtLeast: 1
-        PercentCov: 217700.0000
+        PercentCov: 225100.0000
       - Name: "firstStuff"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 60
+        Count: 85
         AtLeast: 1
-        PercentCov: 6000.0000
+        PercentCov: 8500.0000
       - Name: "runStuff"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
-        Count: 486
+        Count: 496
         AtLeast: 1
-        PercentCov: 48600.0000
+        PercentCov: 49600.0000
 

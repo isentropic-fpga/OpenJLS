@@ -1,0 +1,98 @@
+Version: "0.1"
+Coverage: 100.00
+Settings: 
+  WritePassFail: 0
+Models: 
+  - Name: "ri x map"
+    TestCases: 
+      - "tb_a22_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [748772692, 396443684]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 4
+      TotalCovGoal: 4
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "ri"
+        - "map"
+      NumBins: 4
+    Bins: 
+      - Name: "ri=0 / map=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 0, Max: 0}
+        Count: 131177
+        AtLeast: 1
+        PercentCov: 13117700.0000
+      - Name: "ri=0 / map=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 1, Max: 1}
+        Count: 131145
+        AtLeast: 1
+        PercentCov: 13114500.0000
+      - Name: "ri=1 / map=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 0, Max: 0}
+        Count: 131169
+        AtLeast: 1
+        PercentCov: 13116900.0000
+      - Name: "ri=1 / map=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 1, Max: 1}
+        Count: 131166
+        AtLeast: 1
+        PercentCov: 13116600.0000
+
+  - Name: "emZero"
+    TestCases: 
+      - "tb_a22_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1129194420, 845253172]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 2
+      TotalCovGoal: 2
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "emZero"
+      NumBins: 2
+    Bins: 
+      - Name: "nonzero mapped error"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+        Count: 524609
+        AtLeast: 1
+        PercentCov: 52460900.0000
+      - Name: "zero mapped error"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 48
+        AtLeast: 1
+        PercentCov: 4800.0000
+

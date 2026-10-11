@@ -1,0 +1,93 @@
+Version: "0.1"
+Coverage: 100.00
+Settings: 
+  WritePassFail: 0
+Models: 
+  - Name: "readOutcome"
+    TestCases: 
+      - "tb_context_ram_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1136918162, 592566722]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 3
+      TotalCovGoal: 3
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "readOutcome"
+      NumBins: 3
+    Bins: 
+      - Name: "initial value"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+        Count: 578
+        AtLeast: 1
+        PercentCov: 57800.0000
+      - Name: "stored value"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 740
+        AtLeast: 1
+        PercentCov: 74000.0000
+      - Name: "forwarded write"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+        Count: 4
+        AtLeast: 1
+        PercentCov: 400.0000
+
+  - Name: "readOnEoiCycle"
+    TestCases: 
+      - "tb_context_ram_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [910583614, 1690910151]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 3
+      TotalCovGoal: 3
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "readOnEoiCycle"
+      NumBins: 3
+    Bins: 
+      - Name: "initial on EOI"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+        Count: 9
+        AtLeast: 1
+        PercentCov: 900.0000
+      - Name: "stored on EOI"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "forwarded on EOI"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+

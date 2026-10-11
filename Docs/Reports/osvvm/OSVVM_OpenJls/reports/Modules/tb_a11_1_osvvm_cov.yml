@@ -3,6 +3,409 @@ Coverage: 100.00
 Settings: 
   WritePassFail: 0
 Models: 
+  - Name: "Golomb k"
+    TestCases: 
+      - "tb_a11_1_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [748572622, 2101715156]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 19
+      TotalCovGoal: 19
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "k"
+      NumBins: 19
+    Bins: 
+      - Name: "k=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+        Count: 347
+        AtLeast: 1
+        PercentCov: 34700.0000
+      - Name: "k=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 338
+        AtLeast: 1
+        PercentCov: 33800.0000
+      - Name: "k=2"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+        Count: 348
+        AtLeast: 1
+        PercentCov: 34800.0000
+      - Name: "k=3"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+        Count: 342
+        AtLeast: 1
+        PercentCov: 34200.0000
+      - Name: "k=4"
+        Type: "COUNT"
+        Range: 
+          - {Min: 4, Max: 4}
+        Count: 346
+        AtLeast: 1
+        PercentCov: 34600.0000
+      - Name: "k=5"
+        Type: "COUNT"
+        Range: 
+          - {Min: 5, Max: 5}
+        Count: 343
+        AtLeast: 1
+        PercentCov: 34300.0000
+      - Name: "k=6"
+        Type: "COUNT"
+        Range: 
+          - {Min: 6, Max: 6}
+        Count: 346
+        AtLeast: 1
+        PercentCov: 34600.0000
+      - Name: "k=7"
+        Type: "COUNT"
+        Range: 
+          - {Min: 7, Max: 7}
+        Count: 337
+        AtLeast: 1
+        PercentCov: 33700.0000
+      - Name: "k=8"
+        Type: "COUNT"
+        Range: 
+          - {Min: 8, Max: 8}
+        Count: 335
+        AtLeast: 1
+        PercentCov: 33500.0000
+      - Name: "k=9"
+        Type: "COUNT"
+        Range: 
+          - {Min: 9, Max: 9}
+        Count: 204
+        AtLeast: 1
+        PercentCov: 20400.0000
+      - Name: "k=10"
+        Type: "COUNT"
+        Range: 
+          - {Min: 10, Max: 10}
+        Count: 151
+        AtLeast: 1
+        PercentCov: 15100.0000
+      - Name: "k=11"
+        Type: "COUNT"
+        Range: 
+          - {Min: 11, Max: 11}
+        Count: 152
+        AtLeast: 1
+        PercentCov: 15200.0000
+      - Name: "k=12"
+        Type: "COUNT"
+        Range: 
+          - {Min: 12, Max: 12}
+        Count: 144
+        AtLeast: 1
+        PercentCov: 14400.0000
+      - Name: "k=13"
+        Type: "COUNT"
+        Range: 
+          - {Min: 13, Max: 13}
+        Count: 154
+        AtLeast: 1
+        PercentCov: 15400.0000
+      - Name: "k=14"
+        Type: "COUNT"
+        Range: 
+          - {Min: 14, Max: 14}
+        Count: 148
+        AtLeast: 1
+        PercentCov: 14800.0000
+      - Name: "k=15"
+        Type: "COUNT"
+        Range: 
+          - {Min: 15, Max: 15}
+        Count: 154
+        AtLeast: 1
+        PercentCov: 15400.0000
+      - Name: "k=16"
+        Type: "COUNT"
+        Range: 
+          - {Min: 16, Max: 16}
+        Count: 151
+        AtLeast: 1
+        PercentCov: 15100.0000
+      - Name: "k=17"
+        Type: "COUNT"
+        Range: 
+          - {Min: 17, Max: 17}
+        Count: 150
+        AtLeast: 1
+        PercentCov: 15000.0000
+      - Name: "k=18"
+        Type: "COUNT"
+        Range: 
+          - {Min: 18, Max: 18}
+        Count: 141
+        AtLeast: 1
+        PercentCov: 14100.0000
+
+  - Name: "Run interruption J table"
+    TestCases: 
+      - "tb_a11_1_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [315095234, 1384041674]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 32
+      TotalCovGoal: 32
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "RUNindex"
+      NumBins: 32
+    Bins: 
+      - Name: "RUNindex=0 J=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+        Count: 70
+        AtLeast: 1
+        PercentCov: 7000.0000
+      - Name: "RUNindex=1 J=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 72
+        AtLeast: 1
+        PercentCov: 7200.0000
+      - Name: "RUNindex=2 J=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+        Count: 72
+        AtLeast: 1
+        PercentCov: 7200.0000
+      - Name: "RUNindex=3 J=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+        Count: 76
+        AtLeast: 1
+        PercentCov: 7600.0000
+      - Name: "RUNindex=4 J=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 4, Max: 4}
+        Count: 69
+        AtLeast: 1
+        PercentCov: 6900.0000
+      - Name: "RUNindex=5 J=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 5, Max: 5}
+        Count: 73
+        AtLeast: 1
+        PercentCov: 7300.0000
+      - Name: "RUNindex=6 J=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 6, Max: 6}
+        Count: 74
+        AtLeast: 1
+        PercentCov: 7400.0000
+      - Name: "RUNindex=7 J=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 7, Max: 7}
+        Count: 71
+        AtLeast: 1
+        PercentCov: 7100.0000
+      - Name: "RUNindex=8 J=2"
+        Type: "COUNT"
+        Range: 
+          - {Min: 8, Max: 8}
+        Count: 71
+        AtLeast: 1
+        PercentCov: 7100.0000
+      - Name: "RUNindex=9 J=2"
+        Type: "COUNT"
+        Range: 
+          - {Min: 9, Max: 9}
+        Count: 71
+        AtLeast: 1
+        PercentCov: 7100.0000
+      - Name: "RUNindex=10 J=2"
+        Type: "COUNT"
+        Range: 
+          - {Min: 10, Max: 10}
+        Count: 70
+        AtLeast: 1
+        PercentCov: 7000.0000
+      - Name: "RUNindex=11 J=2"
+        Type: "COUNT"
+        Range: 
+          - {Min: 11, Max: 11}
+        Count: 73
+        AtLeast: 1
+        PercentCov: 7300.0000
+      - Name: "RUNindex=12 J=3"
+        Type: "COUNT"
+        Range: 
+          - {Min: 12, Max: 12}
+        Count: 73
+        AtLeast: 1
+        PercentCov: 7300.0000
+      - Name: "RUNindex=13 J=3"
+        Type: "COUNT"
+        Range: 
+          - {Min: 13, Max: 13}
+        Count: 77
+        AtLeast: 1
+        PercentCov: 7700.0000
+      - Name: "RUNindex=14 J=3"
+        Type: "COUNT"
+        Range: 
+          - {Min: 14, Max: 14}
+        Count: 76
+        AtLeast: 1
+        PercentCov: 7600.0000
+      - Name: "RUNindex=15 J=3"
+        Type: "COUNT"
+        Range: 
+          - {Min: 15, Max: 15}
+        Count: 73
+        AtLeast: 1
+        PercentCov: 7300.0000
+      - Name: "RUNindex=16 J=4"
+        Type: "COUNT"
+        Range: 
+          - {Min: 16, Max: 16}
+        Count: 75
+        AtLeast: 1
+        PercentCov: 7500.0000
+      - Name: "RUNindex=17 J=4"
+        Type: "COUNT"
+        Range: 
+          - {Min: 17, Max: 17}
+        Count: 74
+        AtLeast: 1
+        PercentCov: 7400.0000
+      - Name: "RUNindex=18 J=5"
+        Type: "COUNT"
+        Range: 
+          - {Min: 18, Max: 18}
+        Count: 76
+        AtLeast: 1
+        PercentCov: 7600.0000
+      - Name: "RUNindex=19 J=5"
+        Type: "COUNT"
+        Range: 
+          - {Min: 19, Max: 19}
+        Count: 71
+        AtLeast: 1
+        PercentCov: 7100.0000
+      - Name: "RUNindex=20 J=6"
+        Type: "COUNT"
+        Range: 
+          - {Min: 20, Max: 20}
+        Count: 71
+        AtLeast: 1
+        PercentCov: 7100.0000
+      - Name: "RUNindex=21 J=6"
+        Type: "COUNT"
+        Range: 
+          - {Min: 21, Max: 21}
+        Count: 77
+        AtLeast: 1
+        PercentCov: 7700.0000
+      - Name: "RUNindex=22 J=7"
+        Type: "COUNT"
+        Range: 
+          - {Min: 22, Max: 22}
+        Count: 72
+        AtLeast: 1
+        PercentCov: 7200.0000
+      - Name: "RUNindex=23 J=7"
+        Type: "COUNT"
+        Range: 
+          - {Min: 23, Max: 23}
+        Count: 74
+        AtLeast: 1
+        PercentCov: 7400.0000
+      - Name: "RUNindex=24 J=8"
+        Type: "COUNT"
+        Range: 
+          - {Min: 24, Max: 24}
+        Count: 75
+        AtLeast: 1
+        PercentCov: 7500.0000
+      - Name: "RUNindex=25 J=9"
+        Type: "COUNT"
+        Range: 
+          - {Min: 25, Max: 25}
+        Count: 74
+        AtLeast: 1
+        PercentCov: 7400.0000
+      - Name: "RUNindex=26 J=10"
+        Type: "COUNT"
+        Range: 
+          - {Min: 26, Max: 26}
+        Count: 75
+        AtLeast: 1
+        PercentCov: 7500.0000
+      - Name: "RUNindex=27 J=11"
+        Type: "COUNT"
+        Range: 
+          - {Min: 27, Max: 27}
+        Count: 75
+        AtLeast: 1
+        PercentCov: 7500.0000
+      - Name: "RUNindex=28 J=12"
+        Type: "COUNT"
+        Range: 
+          - {Min: 28, Max: 28}
+        Count: 77
+        AtLeast: 1
+        PercentCov: 7700.0000
+      - Name: "RUNindex=29 J=13"
+        Type: "COUNT"
+        Range: 
+          - {Min: 29, Max: 29}
+        Count: 78
+        AtLeast: 1
+        PercentCov: 7800.0000
+      - Name: "RUNindex=30 J=14"
+        Type: "COUNT"
+        Range: 
+          - {Min: 30, Max: 30}
+        Count: 70
+        AtLeast: 1
+        PercentCov: 7000.0000
+      - Name: "RUNindex=31 J=15"
+        Type: "COUNT"
+        Range: 
+          - {Min: 31, Max: 31}
+        Count: 79
+        AtLeast: 1
+        PercentCov: 7900.0000
+
   - Name: "riMode x escape"
     TestCases: 
       - "tb_a11_1_osvvm"
@@ -22,40 +425,40 @@ Models:
     BinInfo: 
       Dimensions: 2
       FieldNames: 
-        - "Bin1"
-        - "Bin2"
+        - "riMode"
+        - "escape"
       NumBins: 4
     Bins: 
-      - Name: "riMode x escape"
+      - Name: "riMode=0 / escape=0"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
-        Count: 74
+        Count: 1325
         AtLeast: 1
-        PercentCov: 7400.0000
-      - Name: "riMode x escape"
+        PercentCov: 132500.0000
+      - Name: "riMode=0 / escape=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
-        Count: 123
+        Count: 952
         AtLeast: 1
-        PercentCov: 12300.0000
-      - Name: "riMode x escape"
+        PercentCov: 95200.0000
+      - Name: "riMode=1 / escape=0"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 79
+        Count: 1339
         AtLeast: 1
-        PercentCov: 7900.0000
-      - Name: "riMode x escape"
+        PercentCov: 133900.0000
+      - Name: "riMode=1 / escape=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 131
+        Count: 1015
         AtLeast: 1
-        PercentCov: 13100.0000
+        PercentCov: 101500.0000
 

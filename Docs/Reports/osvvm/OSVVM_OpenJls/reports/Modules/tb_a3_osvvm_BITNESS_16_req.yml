@@ -1,0 +1,5 @@
+- Requirement: "T87.A3"
+  TestCases: 
+  - TestName: "tb_a3_osvvm"
+    Status: PASSED
+    Results: {Goal: 100, Passed: 157, Errors: 0, Checked: 157, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}

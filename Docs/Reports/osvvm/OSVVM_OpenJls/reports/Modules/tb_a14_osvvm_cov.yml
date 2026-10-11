@@ -22,11 +22,11 @@ Models:
     BinInfo: 
       Dimensions: 2
       FieldNames: 
-        - "Bin1"
-        - "Bin2"
+        - "runHit"
+        - "eol"
       NumBins: 4
     Bins: 
-      - Name: "runHit x eol"
+      - Name: "runHit=0 / eol=0"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
@@ -34,7 +34,7 @@ Models:
         Count: 23
         AtLeast: 1
         PercentCov: 2300.0000
-      - Name: "runHit x eol"
+      - Name: "runHit=0 / eol=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
@@ -42,7 +42,7 @@ Models:
         Count: 29
         AtLeast: 1
         PercentCov: 2900.0000
-      - Name: "runHit x eol"
+      - Name: "runHit=1 / eol=0"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
@@ -50,7 +50,7 @@ Models:
         Count: 29
         AtLeast: 1
         PercentCov: 2900.0000
-      - Name: "runHit x eol"
+      - Name: "runHit=1 / eol=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}

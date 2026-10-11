@@ -1,0 +1,77 @@
+Version: "0.1"
+Coverage: 100.00
+Settings: 
+  WritePassFail: 0
+Models: 
+  - Name: "rowPos x colPos"
+    TestCases: 
+      - "tb_line_buffer_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [2033362149, 925304603]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 6
+      TotalCovGoal: 6
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "rowPos"
+        - "colPos"
+      NumBins: 6
+    Bins: 
+      - Name: "rowPos=0 / colPos=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 0, Max: 0}
+        Count: 33
+        AtLeast: 1
+        PercentCov: 3300.0000
+      - Name: "rowPos=0 / colPos=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 1, Max: 1}
+        Count: 245
+        AtLeast: 1
+        PercentCov: 24500.0000
+      - Name: "rowPos=0 / colPos=2"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 2, Max: 2}
+        Count: 33
+        AtLeast: 1
+        PercentCov: 3300.0000
+      - Name: "rowPos=1 / colPos=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 0, Max: 0}
+        Count: 214
+        AtLeast: 1
+        PercentCov: 21400.0000
+      - Name: "rowPos=1 / colPos=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 1, Max: 1}
+        Count: 1678
+        AtLeast: 1
+        PercentCov: 167800.0000
+      - Name: "rowPos=1 / colPos=2"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 2, Max: 2}
+        Count: 214
+        AtLeast: 1
+        PercentCov: 21400.0000
+

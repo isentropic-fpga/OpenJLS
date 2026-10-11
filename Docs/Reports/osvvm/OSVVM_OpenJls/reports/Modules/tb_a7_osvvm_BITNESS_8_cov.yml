@@ -1,0 +1,77 @@
+Version: "0.1"
+Coverage: 100.00
+Settings: 
+  WritePassFail: 0
+Models: 
+  - Name: "signIn x signErr"
+    TestCases: 
+      - "tb_a7_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1366532975, 1271038632]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 6
+      TotalCovGoal: 6
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "signIn"
+        - "signErr"
+      NumBins: 6
+    Bins: 
+      - Name: "signIn=0 / signErr=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 0, Max: 0}
+        Count: 56
+        AtLeast: 1
+        PercentCov: 5600.0000
+      - Name: "signIn=0 / signErr=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 1, Max: 1}
+        Count: 63
+        AtLeast: 1
+        PercentCov: 6300.0000
+      - Name: "signIn=0 / signErr=2"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 2, Max: 2}
+        Count: 258
+        AtLeast: 1
+        PercentCov: 25800.0000
+      - Name: "signIn=1 / signErr=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 0, Max: 0}
+        Count: 36
+        AtLeast: 1
+        PercentCov: 3600.0000
+      - Name: "signIn=1 / signErr=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 1, Max: 1}
+        Count: 49
+        AtLeast: 1
+        PercentCov: 4900.0000
+      - Name: "signIn=1 / signErr=2"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 2, Max: 2}
+        Count: 256
+        AtLeast: 1
+        PercentCov: 25600.0000
+
