@@ -58,63 +58,6 @@ The RTL is vendor-neutral by construction (plain VHDL-1993 on open-logic memory 
 
 ---
 
-## Verification
-
-OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level, and on hardware. Results are published in the **[verification report](https://isentropic-fpga.github.io/OpenJLS/)**.
-
-| Suite | Status | Test/Cov | Summary |
-|---|---|---|---|
-| NVC code coverage | info | 99.8% | Statement coverage<sup>1</sup> |
-| OSVVM suite | PASS | 100% | 106 tests<sup>2</sup> |
-| Golden model | PASS | 100% | 5555/5555 images<sup>3</sup> |
-| Post-synth OSVVM | PASS | 100% | Control-plane stress<sup>4</sup> |
-| Post-synth golden model | PASS | 100% | 167/167 images<sup>5</sup> |
-| HIL golden model | PASS | 100% | 5639/5639 images<sup>6</sup> |
-
-<sub>
-<sup>1</sup> Per-DUT-file breakdown.<br>
-<sup>2</sup> 7,303,829 affirmations (module + top + AXI wrappers).<br>
-<sup>3</sup> Byte-exact vs CharLS.<br>
-<sup>4</sup> On the gate-level netlist.<br>
-<sup>5</sup> 8-bit images up to 0.05 MP, byte-exact vs CharLS.<br>
-<sup>6</sup> Byte-exact vs CharLS on PYNQ-Z2 silicon.
-</sub>
-
-- **OSVVM** — 29 module testbenches against independent T.87 reference models, a top-level control-plane stress test, and AXI wrapper tests, all with requirements tracking.
-- **Coverage** — OSVVM functional coverage plus NVC statement coverage.
-- **Golden model** — byte-exact against [CharLS](https://github.com/team-charls/charls) and the official ISO/IEC 14495-1 reference vectors.
-- **Design contracts** — PSL assertions on the handshakes, checked every run.
-- **Post-synthesis** — stress test and a golden subset re-run on the gate-level netlist.
-- **Hardware-in-the-loop** — full corpus encoded on a PYNQ-Z2 at depths 8–16, zero mismatches; reproducible via the [EncodeOverEthernet demo](https://github.com/isentropic-fpga/OpenJLS-Demos).
-
-**Golden-model dataset** — 5639 images: 5555 from 4×1 up to 0.5 MP, run in simulation and on hardware, plus 84 full-size originals run on hardware only:
-
-| Source | Set | Images |
-|---|---|--:|
-| [USC-SIPI](https://sipi.usc.edu/database/) | Aerials, textures, miscellaneous, sequences | 318 |
-| [imagecompression.info](http://imagecompression.info/test_images/) | 8-bit and 16-bit natural photographs | 90 |
-| Generated stress probes | Boundary, predictor-adversarial, high-entropy and fuzz patterns | 45 |
-| Natural derived | Random crops of the 16-bit photographs, rescaled to each depth 9–16 (~300 per depth) | 2402 |
-| Generated noise probes | White and 1/f^β (smoothed) noise, random sizes and value ranges, 300 per depth 8–16 | 2700 |
-| Full-size originals | Unsliced USC-SIPI and imagecompression.info images over 0.5 MP, hardware only | 84 |
-
-| Bits | Natural | Natural derived | Noise probes | Stress probes | Full-size originals | Total |
-|--:|--:|--:|--:|--:|--:|--:|
-| 8 | 363 | 0 | 300 | 0 | 69 | 732 |
-| 9 | 0 | 300 | 300 | 2 | 0 | 602 |
-| 10 | 0 | 301 | 300 | 2 | 0 | 603 |
-| 11 | 0 | 300 | 300 | 2 | 0 | 602 |
-| 12 | 0 | 300 | 300 | 2 | 0 | 602 |
-| 13 | 0 | 300 | 300 | 2 | 0 | 602 |
-| 14 | 0 | 301 | 300 | 2 | 0 | 603 |
-| 15 | 0 | 300 | 300 | 2 | 0 | 602 |
-| 16 | 45 | 300 | 300 | 31 | 15 | 691 |
-| **All** | **408** | **2402** | **2700** | **45** | **84** | **5639** |
-
-The public datasets are natural only at 8 and 16 bits. The natural-derived images ([`gen_depth_tiles.py`](Verification/Golden%20model/imageprep/gen_depth_tiles.py)) rescale random 4×1 to 640×384 crops of the 16-bit photographs to each depth 9–16, giving every depth real texture. The noise probes ([`gen_noise_probes.py`](Verification/Golden%20model/imageprep/gen_noise_probes.py)) span incompressible white noise to smooth, run-mode-heavy 1/f^β gradients. The stress probes ([`gen_stress.py`](Verification/Golden%20model/imageprep/gen_stress.py)) cover boundary geometries (4×1 up to 65535×1), MED-adversarial patterns and a tiny-image fuzz batch. All generators are seeded. Images over 0.5 MP are sliced into three full-width strips of up to 64 rows ([`slice_large.py`](Verification/Golden%20model/imageprep/slice_large.py)); their originals run on hardware only.
-
----
-
 ## Architecture
 
 ![OpenJLS Architecture](Docs/Images/OpenJLS_arch.png)
@@ -263,6 +206,63 @@ Each configuration is implemented with four Vivado strategies. fmax tables in MH
 | 12 | 6327 | 2033 | 5.5 |
 | 14 | 6845 | 2153 | 6.5 |
 | 16 | 7601 | 2287 | 7.5 |
+
+---
+
+## Verification
+
+OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level, and on hardware. Results are published in the **[verification report](https://isentropic-fpga.github.io/OpenJLS/)**.
+
+| Suite | Status | Test/Cov | Summary |
+|---|---|---|---|
+| NVC code coverage | info | 99.8% | Statement coverage<sup>1</sup> |
+| OSVVM suite | PASS | 100% | 106 tests<sup>2</sup> |
+| Golden model | PASS | 100% | 5555/5555 images<sup>3</sup> |
+| Post-synth OSVVM | PASS | 100% | Control-plane stress<sup>4</sup> |
+| Post-synth golden model | PASS | 100% | 167/167 images<sup>5</sup> |
+| HIL golden model | PASS | 100% | 5639/5639 images<sup>6</sup> |
+
+<sub>
+<sup>1</sup> Per-DUT-file breakdown.<br>
+<sup>2</sup> 7,303,829 affirmations (module + top + AXI wrappers).<br>
+<sup>3</sup> Byte-exact vs CharLS.<br>
+<sup>4</sup> On the gate-level netlist.<br>
+<sup>5</sup> 8-bit images up to 0.05 MP, byte-exact vs CharLS.<br>
+<sup>6</sup> Byte-exact vs CharLS on PYNQ-Z2 silicon.
+</sub>
+
+- **OSVVM** — 29 module testbenches against independent T.87 reference models, a top-level control-plane stress test, and AXI wrapper tests, all with requirements tracking.
+- **Coverage** — OSVVM functional coverage plus NVC statement coverage.
+- **Golden model** — byte-exact against [CharLS](https://github.com/team-charls/charls) and the official ISO/IEC 14495-1 reference vectors.
+- **Design contracts** — PSL assertions on the handshakes, checked every run.
+- **Post-synthesis** — stress test and a golden subset re-run on the gate-level netlist.
+- **Hardware-in-the-loop** — full corpus encoded on a PYNQ-Z2 at depths 8–16, zero mismatches; reproducible via the [EncodeOverEthernet demo](https://github.com/isentropic-fpga/OpenJLS-Demos).
+
+**Golden-model dataset** — 5639 images: 5555 from 4×1 up to 0.5 MP, run in simulation and on hardware, plus 84 full-size originals run on hardware only:
+
+| Source | Set | Images |
+|---|---|--:|
+| [USC-SIPI](https://sipi.usc.edu/database/) | Aerials, textures, miscellaneous, sequences | 318 |
+| [imagecompression.info](http://imagecompression.info/test_images/) | 8-bit and 16-bit natural photographs | 90 |
+| Generated stress probes | Boundary, predictor-adversarial, high-entropy and fuzz patterns | 45 |
+| Natural derived | Random crops of the 16-bit photographs, rescaled to each depth 9–16 (~300 per depth) | 2402 |
+| Generated noise probes | White and 1/f^β (smoothed) noise, random sizes and value ranges, 300 per depth 8–16 | 2700 |
+| Full-size originals | Unsliced USC-SIPI and imagecompression.info images over 0.5 MP, hardware only | 84 |
+
+| Bits | Natural | Natural derived | Noise probes | Stress probes | Full-size originals | Total |
+|--:|--:|--:|--:|--:|--:|--:|
+| 8 | 363 | 0 | 300 | 0 | 69 | 732 |
+| 9 | 0 | 300 | 300 | 2 | 0 | 602 |
+| 10 | 0 | 301 | 300 | 2 | 0 | 603 |
+| 11 | 0 | 300 | 300 | 2 | 0 | 602 |
+| 12 | 0 | 300 | 300 | 2 | 0 | 602 |
+| 13 | 0 | 300 | 300 | 2 | 0 | 602 |
+| 14 | 0 | 301 | 300 | 2 | 0 | 603 |
+| 15 | 0 | 300 | 300 | 2 | 0 | 602 |
+| 16 | 45 | 300 | 300 | 31 | 15 | 691 |
+| **All** | **408** | **2402** | **2700** | **45** | **84** | **5639** |
+
+The public datasets are natural only at 8 and 16 bits. The natural-derived images ([`gen_depth_tiles.py`](Verification/Golden%20model/imageprep/gen_depth_tiles.py)) rescale random 4×1 to 640×384 crops of the 16-bit photographs to each depth 9–16, giving every depth real texture. The noise probes ([`gen_noise_probes.py`](Verification/Golden%20model/imageprep/gen_noise_probes.py)) span incompressible white noise to smooth, run-mode-heavy 1/f^β gradients. The stress probes ([`gen_stress.py`](Verification/Golden%20model/imageprep/gen_stress.py)) cover boundary geometries (4×1 up to 65535×1), MED-adversarial patterns and a tiny-image fuzz batch. All generators are seeded. Images over 0.5 MP are sliced into three full-width strips of up to 64 rows ([`slice_large.py`](Verification/Golden%20model/imageprep/slice_large.py)); their originals run on hardware only.
 
 ---
 

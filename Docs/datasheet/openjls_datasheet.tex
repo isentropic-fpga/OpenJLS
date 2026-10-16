@@ -344,6 +344,94 @@ its valid bytes. The bitstream is byte-serial and MSB-first: the earliest byte
 occupies the most-significant byte of \texttt{oData}.
 
 %======================================================================
+\section{Integration example}
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}
+u_enc : entity work.openjls_top
+  generic map (
+    BITNESS          => 8,
+    MAX_IMAGE_WIDTH  => 4096,
+    MAX_IMAGE_HEIGHT => 4096,
+    OUT_WIDTH        => 64 )
+  port map (
+    iClk         => clk,
+    iRst         => rst,
+    iImageWidth  => img_w,                -- latched on reset
+    iImageHeight => img_h,                -- latched on reset
+    iValid       => s_valid,              -- pixel stream (AXIS slave)
+    iPixel       => s_data,
+    oReady       => s_ready,
+    oData        => m_tdata,              -- bitstream (AXIS master)
+    oValid       => m_tvalid,
+    oKeep        => m_tkeep,
+    oLast        => m_tlast,
+    iReady       => m_tready );
+\end{lstlisting}
+\end{minipage}
+
+\noindent It can also be added to a block design as an RTL module.
+
+\subsection{Xilinx IP cores}
+For the Vivado flow the core ships the following pre-packaged IPs:
+
+\begin{table}[H]
+  \centering
+\begin{tabularx}{\textwidth}{@{}X X@{}}
+  \toprule
+  \hd{IP Catalog name} & \hd{Interfaces} \\
+  \midrule
+  OpenJLS Encoder (Native)                  & Plain ready/valid \\
+  OpenJLS Encoder (AXI4-Stream)             & AXI-Stream for the data, native pins for control \\
+  OpenJLS Encoder (AXI4-Stream + AXI4-Lite) & AXI-Stream for the data, AXI-Lite for control \\
+  \bottomrule
+\end{tabularx}
+\end{table}
+
+Add \texttt{Sources/Xilinx/ip\_repo/} to the project's IP repositories and the
+three cores appear in the IP Catalog, ready to drop onto a block design.
+
+\subsection{AXI4-Lite register map}
+The AXI4-Lite variant replaces the native control pins with a register bank
+(32-bit registers, word-aligned offsets):
+
+\begin{table}[H]
+  \centering
+\begin{tabularx}{\textwidth}{@{}l l l X@{}}
+  \toprule
+  \hd{Offset} & \hd{Name} & \hd{Access} & \hd{Contents} \\
+  \midrule
+  \texttt{0x00} & ID      & RO & ASCII \texttt{"OJLS"} (\texttt{0x4F4A4C53}) \\
+  \texttt{0x04} & VERSION & RO & \texttt{0x00MMmmpp} (major/minor/patch) \\
+  \texttt{0x08} & CAPS    & RO & [7:0] \texttt{BITNESS}, [15:8] output bytes per beat (\texttt{OUT\_WIDTH}/8) \\
+  \texttt{0x0C} & MAXDIM  & RO & [15:0] \texttt{MAX\_IMAGE\_WIDTH}, [31:16] \texttt{MAX\_IMAGE\_HEIGHT} \\
+  \texttt{0x10} & WIDTH   & RW & [15:0] image width (clamped on write) \\
+  \texttt{0x14} & HEIGHT  & RW & [15:0] image height (clamped on write) \\
+  \texttt{0x18} & CTRL    & WO & [0] APPLY --- self-clearing, pulses the core reset \\
+  \texttt{0x1C} & STATUS  & RO & [0] BUSY (reset pulse active), [1] pixel-stream TREADY mirror \\
+  \bottomrule
+\end{tabularx}
+\end{table}
+
+The core samples the dimensions only while its reset is high, so reconfiguration
+is: write WIDTH/HEIGHT, set CTRL.APPLY. APPLY pulses the core reset for one clock
+while the registers are held stable; the AXI-Lite endpoint itself stays on
+\texttt{aresetn} only, so the bus never disappears mid-reconfigure. While the
+pulse is active STATUS.BUSY reads 1 and the pixel stream's TREADY is held low, so
+a stream started too early stalls instead of losing pixels --- WIDTH/HEIGHT/CTRL
+writes while BUSY are dropped. \textbf{APPLY aborts any image in flight --- only
+apply between images.} Back-to-back images of unchanged dimensions need no APPLY.
+
+WIDTH/HEIGHT writes are merged per WSTRB and clamped to the core's rule
+(out-of-range values become the MAX generic), so a readback always returns the
+value the core will actually use. Writes to RO or unmapped offsets are
+acknowledged (OKAY) and dropped; unmapped reads return zero.
+
+\medskip
+\noindent For driver code there is a C header in the repository,
+\href{https://github.com/isentropic-fpga/OpenJLS/blob/main/Sources/Xilinx/ojls_regs.h}{ojls\_regs.h}.
+
+
+%======================================================================
 \section{Resources and performance}
 Characterized on Xilinx Zynq UltraScale+ \texttt{xczu7eg-fbvb900-1-e},
 Vivado 2025.2, with \texttt{OUT\_WIDTH = 64}, RTL-only with no floorplanning.
@@ -471,94 +559,6 @@ carry chains widen with pixel depth. Logic and line-buffer BRAM both grow with d
   \bottomrule
 \end{tabular}
 \end{table}
-
-%======================================================================
-\section{Integration example}
-\noindent\begin{minipage}{\linewidth}
-\begin{lstlisting}
-u_enc : entity work.openjls_top
-  generic map (
-    BITNESS          => 8,
-    MAX_IMAGE_WIDTH  => 4096,
-    MAX_IMAGE_HEIGHT => 4096,
-    OUT_WIDTH        => 64 )
-  port map (
-    iClk         => clk,
-    iRst         => rst,
-    iImageWidth  => img_w,                -- latched on reset
-    iImageHeight => img_h,                -- latched on reset
-    iValid       => s_valid,              -- pixel stream (AXIS slave)
-    iPixel       => s_data,
-    oReady       => s_ready,
-    oData        => m_tdata,              -- bitstream (AXIS master)
-    oValid       => m_tvalid,
-    oKeep        => m_tkeep,
-    oLast        => m_tlast,
-    iReady       => m_tready );
-\end{lstlisting}
-\end{minipage}
-
-\noindent It can also be added to a block design as an RTL module.
-
-\subsection{Xilinx IP cores}
-For the Vivado flow the core ships the following pre-packaged IPs:
-
-\begin{table}[H]
-  \centering
-\begin{tabularx}{\textwidth}{@{}X X@{}}
-  \toprule
-  \hd{IP Catalog name} & \hd{Interfaces} \\
-  \midrule
-  OpenJLS Encoder (Native)                  & Plain ready/valid \\
-  OpenJLS Encoder (AXI4-Stream)             & AXI-Stream for the data, native pins for control \\
-  OpenJLS Encoder (AXI4-Stream + AXI4-Lite) & AXI-Stream for the data, AXI-Lite for control \\
-  \bottomrule
-\end{tabularx}
-\end{table}
-
-Add \texttt{Sources/Xilinx/ip\_repo/} to the project's IP repositories and the
-three cores appear in the IP Catalog, ready to drop onto a block design.
-
-\subsection{AXI4-Lite register map}
-The AXI4-Lite variant replaces the native control pins with a register bank
-(32-bit registers, word-aligned offsets):
-
-\begin{table}[H]
-  \centering
-\begin{tabularx}{\textwidth}{@{}l l l X@{}}
-  \toprule
-  \hd{Offset} & \hd{Name} & \hd{Access} & \hd{Contents} \\
-  \midrule
-  \texttt{0x00} & ID      & RO & ASCII \texttt{"OJLS"} (\texttt{0x4F4A4C53}) \\
-  \texttt{0x04} & VERSION & RO & \texttt{0x00MMmmpp} (major/minor/patch) \\
-  \texttt{0x08} & CAPS    & RO & [7:0] \texttt{BITNESS}, [15:8] output bytes per beat (\texttt{OUT\_WIDTH}/8) \\
-  \texttt{0x0C} & MAXDIM  & RO & [15:0] \texttt{MAX\_IMAGE\_WIDTH}, [31:16] \texttt{MAX\_IMAGE\_HEIGHT} \\
-  \texttt{0x10} & WIDTH   & RW & [15:0] image width (clamped on write) \\
-  \texttt{0x14} & HEIGHT  & RW & [15:0] image height (clamped on write) \\
-  \texttt{0x18} & CTRL    & WO & [0] APPLY --- self-clearing, pulses the core reset \\
-  \texttt{0x1C} & STATUS  & RO & [0] BUSY (reset pulse active), [1] pixel-stream TREADY mirror \\
-  \bottomrule
-\end{tabularx}
-\end{table}
-
-The core samples the dimensions only while its reset is high, so reconfiguration
-is: write WIDTH/HEIGHT, set CTRL.APPLY. APPLY pulses the core reset for one clock
-while the registers are held stable; the AXI-Lite endpoint itself stays on
-\texttt{aresetn} only, so the bus never disappears mid-reconfigure. While the
-pulse is active STATUS.BUSY reads 1 and the pixel stream's TREADY is held low, so
-a stream started too early stalls instead of losing pixels --- WIDTH/HEIGHT/CTRL
-writes while BUSY are dropped. \textbf{APPLY aborts any image in flight --- only
-apply between images.} Back-to-back images of unchanged dimensions need no APPLY.
-
-WIDTH/HEIGHT writes are merged per WSTRB and clamped to the core's rule
-(out-of-range values become the MAX generic), so a readback always returns the
-value the core will actually use. Writes to RO or unmapped offsets are
-acknowledged (OKAY) and dropped; unmapped reads return zero.
-
-\medskip
-\noindent For driver code there is a C header in the repository,
-\href{https://github.com/isentropic-fpga/OpenJLS/blob/main/Sources/Xilinx/ojls_regs.h}{ojls\_regs.h}.
-
 
 %======================================================================
 \section{Conformance and verification}
