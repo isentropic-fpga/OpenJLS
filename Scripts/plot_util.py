@@ -25,6 +25,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
+from plot_style import SERIES
+
 csv_path = sys.argv[1] if len(sys.argv) > 1 else os.path.expanduser("~/EDA/Logs/fmax_sweep.csv")
 out_png = sys.argv[2] if len(sys.argv) > 2 else os.path.expanduser("~/EDA/Logs/util_vs_size.png")
 
@@ -48,11 +50,11 @@ ax2 = ax1.twinx()
 
 # Redundant encoding: dash pattern and marker separate the series without
 # colour, so the figure survives greyscale printing and colour-vision
-# deficiency. Colours are the Okabe-Ito colour-blind-safe palette.
+# deficiency. LUTs carry the accent.
 kw = dict(lw=1.6, ms=6, mfc="white", mew=1.4)
-l_lut,  = ax1.plot(xs, lut,  ls="-",  marker="o", color="#0072B2", label="LUTs", **kw)
-l_ff,   = ax1.plot(xs, ff,   ls="--", marker="s", color="#D55E00", label="Flip-flops", **kw)
-l_bram, = ax2.plot(xs, bram, ls="-.", marker="^", color="#009E73", label="Block RAM", **kw)
+l_lut,  = ax1.plot(xs, lut,  ls="-",  marker="o", color=SERIES[0], label="LUTs", **kw)
+l_ff,   = ax1.plot(xs, ff,   ls="--", marker="s", color=SERIES[1], label="Flip-flops", **kw)
+l_bram, = ax2.plot(xs, bram, ls="-.", marker="^", color=SERIES[2], label="Block RAM", **kw)
 
 # X axis: linear spacing so the BRAM line (~proportional to width) reads straight.
 ax1.set_xticks(xs)
@@ -67,11 +69,12 @@ ax1.set_ylim(bottom=0)
 ax2.set_ylim(bottom=0)
 
 # No in-figure title: the LaTeX float caption supplies it.
-ax1.grid(True, which="major", ls=":", alpha=0.5)
+ax1.grid(True, which="major", axis="y")
+ax2.spines["right"].set_visible(True)
 # Centre-left covers the low BRAM points of the bit-depth sweep; the upper-left
 # corner is clear there because LUTs start well below the top of the axis.
 ax1.legend(handles=[l_lut, l_ff, l_bram], title="Resource",
-           loc="upper left" if by_bitness else "center left", framealpha=0.95)
+           loc="upper left" if by_bitness else "center left", alignment="left")
 
 plt.tight_layout()
 plt.savefig(out_png, dpi=150)

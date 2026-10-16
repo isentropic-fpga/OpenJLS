@@ -23,6 +23,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
+from plot_style import SERIES
+
 csv_path = sys.argv[1] if len(sys.argv) > 1 else os.path.expanduser("~/EDA/Logs/fmax_sweep.csv")
 out_png = sys.argv[2] if len(sys.argv) > 2 else os.path.expanduser("~/EDA/Logs/fmax_vs_size.png")
 
@@ -50,13 +52,8 @@ def pretty(strat):
 
 # Redundant encoding: every series is separable by dash pattern and marker
 # alone, so the figure survives greyscale printing and colour-vision
-# deficiency. Colours are the Okabe-Ito colour-blind-safe palette.
-STYLES = [
-    ("-",  "o", "#0072B2"),
-    ("--", "s", "#D55E00"),
-    ("-.", "^", "#009E73"),
-    (":",  "D", "#CC79A7"),
-]
+# deficiency. The default strategy carries the accent.
+STYLES = list(zip(["-", "--", "-.", ":"], ["o", "s", "^", "D"], SERIES))
 
 # Fixed order so the styles stay bound to the same strategy across re-runs.
 for idx, strat in enumerate(sorted(series, key=lambda k: ("Default" not in k, k))):
@@ -87,8 +84,10 @@ else:
     plt.xlabel("Maximum image width  (px)")
 plt.ylabel("Max. frequency  (MHz)")
 # No in-figure title: the LaTeX float caption supplies it.
-plt.grid(True, which="major", ls=":", alpha=0.5)
-plt.legend(title="Implementation strategy", framealpha=0.95)
+plt.grid(True, which="major", axis="y")
+# Below the axes: the series cross everywhere, so no inside corner is clear.
+plt.legend(title="Implementation strategy", alignment="left", ncol=2,
+           loc="upper left", bbox_to_anchor=(0, -0.16))
 plt.tight_layout()
 plt.savefig(out_png, dpi=150)
 print(f"wrote {out_png}")
