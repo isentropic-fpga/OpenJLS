@@ -37,23 +37,24 @@ The RTL is vendor-neutral by construction (plain VHDL-1993 on open-logic memory 
 | **Compression ratio** | ~1.6:1<sup>2</sup> |
 | **Components** | Grayscale |
 | **Pixel depth** | 8–16 bit<sup>3</sup> |
-| **Image size** | Up to 65535 × 65535 px |
+| **Image size** | Up to ~64k × 64k px<sup>4</sup> |
 | **Throughput** | 1 pixel / clock |
 | **Latency** | 14 cycles |
-| **f<sub>max</sub>** | ~280 MHz<sup>4</sup> |
-| **Interface** | Ready/valid stream<sup>5</sup> |
-| **Memory** | On-chip only<sup>6</sup> |
-| **Resources** | 5.3–7.6k LUT, 1.8–2.3k FF<sup>7</sup> |
+| **f<sub>max</sub>** | ~280 MHz<sup>5</sup> |
+| **Interface** | Ready/valid stream<sup>6</sup> |
+| **Memory** | On-chip only<sup>7</sup> |
+| **Resources** | 5.3–7.6k LUT, 1.8–2.3k FF<sup>8</sup> |
 | **Portability** | Vendor-agnostic VHDL |
 
 <sub>
 <sup>1</sup> ISO/IEC 14495-1, ITU-T T.87.<br>
 <sup>2</sup> Aggregate over the 240 natural photographs of the test corpus; content-dependent.<br>
 <sup>3</sup> Set by the <code>BITNESS</code> generic.<br>
-<sup>4</sup> 12-bit, Xilinx <code>xczu7eg-1</code>.<br>
-<sup>5</sup> AXI4-Stream and Avalon-ST compatible.<br>
-<sup>6</sup> One image row; no external RAM.<br>
-<sup>7</sup> Across 8–16 bit, plus block RAM that scales with image width and pixel depth.
+<sup>4</sup> Nominally 65535 × 65535 (64k − 1), the largest value that fits the 2-byte dimension fields.<br>
+<sup>5</sup> 12-bit, Xilinx <code>xczu7eg-1</code>.<br>
+<sup>6</sup> AXI4-Stream and Avalon-ST compatible.<br>
+<sup>7</sup> One image row; no external RAM.<br>
+<sup>8</sup> Across 8–16 bit, plus block RAM that scales with image width and pixel depth.
 </sub>
 
 ---

@@ -180,13 +180,13 @@ Demo projects: \url{https://github.com/isentropic-fpga/OpenJLS-Demos}
   Compression ratio & \about1.6:1\footnotemark[2] \\
   Components    & Grayscale \\
   Pixel depth   & 8--16 bit\footnotemark[3] \\
-  Image size    & Up to 65535\,×\,65535 px \\
+  Image size    & Up to \about64k\,×\,64k px\footnotemark[4] \\
   Throughput    & 1 pixel / clock \\
   Latency       & 14 cycles \\
-  \fmax{}       & \about280\,MHz\footnotemark[4] \\
-  Interface     & Ready/valid stream\footnotemark[5] \\
-  Memory        & On-chip only\footnotemark[6] \\
-  Resources     & 5.3--7.6k LUT, 1.8--2.3k FF\footnotemark[7] \\
+  \fmax{}       & \about280\,MHz\footnotemark[5] \\
+  Interface     & Ready/valid stream\footnotemark[6] \\
+  Memory        & On-chip only\footnotemark[7] \\
+  Resources     & 5.3--7.6k LUT, 1.8--2.3k FF\footnotemark[8] \\
   Portability   & Vendor-agnostic VHDL \\
   \bottomrule
 \end{tabularx}
@@ -194,11 +194,12 @@ Demo projects: \url{https://github.com/isentropic-fpga/OpenJLS-Demos}
 \footnotetext[1]{ISO/IEC 14495-1, ITU-T T.87.}
 \footnotetext[2]{Aggregate over the 240 natural photographs of the test corpus; content-dependent.}
 \footnotetext[3]{Set by the \texttt{BITNESS} generic.}
-\footnotetext[4]{12-bit, Xilinx \texttt{xczu7eg-1}.}
-\footnotetext[5]{AXI4-Stream and Avalon-ST compatible.}
-\footnotetext[6]{One image row; no external RAM.}
-\footnotetext[7]{Across 8--16 bit, plus block RAM that scales with image width and pixel depth.}
-\setcounter{footnote}{7}
+\footnotetext[4]{Nominally 65535\,×\,65535 (64k\,−\,1), the largest value that fits the 2-byte dimension fields.}
+\footnotetext[5]{12-bit, Xilinx \texttt{xczu7eg-1}.}
+\footnotetext[6]{AXI4-Stream and Avalon-ST compatible.}
+\footnotetext[7]{One image row; no external RAM.}
+\footnotetext[8]{Across 8--16 bit, plus block RAM that scales with image width and pixel depth.}
+\setcounter{footnote}{8}
 
 %======================================================================
 \section{Functional description}
@@ -617,22 +618,22 @@ simulation; their 84 full-size originals are part of the corpus but run on hardw
   \toprule
   \hd{Suite} & \hd{Status} & \hd{Test/Cov} & \hd{Summary} \\
   \midrule
-  NVC code coverage       & info & 99.8\% & Statement coverage\footnotemark[8] \\
-  OSVVM suite             & PASS & 100\%  & 106 tests\footnotemark[9] \\
-  Golden model            & PASS & 100\%  & 5555/5555 images\footnotemark[10] \\
-  Post-synth OSVVM        & PASS & 100\%  & Control-plane stress\footnotemark[11] \\
-  Post-synth golden model & PASS & 100\%  & 167/167 images\footnotemark[12] \\
-  HIL golden model        & PASS & 100\%  & 5639/5639 images\footnotemark[13] \\
+  NVC code coverage       & info & 99.8\% & Statement coverage\footnotemark[9] \\
+  OSVVM suite             & PASS & 100\%  & 106 tests\footnotemark[10] \\
+  Golden model            & PASS & 100\%  & 5555/5555 images\footnotemark[11] \\
+  Post-synth OSVVM        & PASS & 100\%  & Control-plane stress\footnotemark[12] \\
+  Post-synth golden model & PASS & 100\%  & 167/167 images\footnotemark[13] \\
+  HIL golden model        & PASS & 100\%  & 5639/5639 images\footnotemark[14] \\
   \bottomrule
 \end{tabular}
 \end{table}
-\footnotetext[8]{Per-DUT-file breakdown.}
-\footnotetext[9]{7\,303\,829 affirmations (module + top + AXI wrappers).}
-\footnotetext[10]{Byte-exact vs CharLS.}
-\footnotetext[11]{On the gate-level netlist.}
-\footnotetext[12]{8-bit images up to 0.05\,MP, byte-exact vs CharLS.}
-\footnotetext[13]{Byte-exact vs CharLS on PYNQ-Z2 silicon.}
-\setcounter{footnote}{13}
+\footnotetext[9]{Per-DUT-file breakdown.}
+\footnotetext[10]{7\,303\,829 affirmations (module + top + AXI wrappers).}
+\footnotetext[11]{Byte-exact vs CharLS.}
+\footnotetext[12]{On the gate-level netlist.}
+\footnotetext[13]{8-bit images up to 0.05\,MP, byte-exact vs CharLS.}
+\footnotetext[14]{Byte-exact vs CharLS on PYNQ-Z2 silicon.}
+\setcounter{footnote}{14}
 
 %======================================================================
 \section{Revision and contact}
