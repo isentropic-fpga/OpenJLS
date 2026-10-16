@@ -32,15 +32,27 @@ The RTL is vendor-neutral by construction (plain VHDL-1993 on open-logic memory 
 
 | | |
 |---|---|
-| **Compression** | Lossless JPEG-LS (ISO/IEC 14495-1 / ITU-T T.87) |
-| **Compression ratio** | ~1.6:1 on natural photographs (content-dependent) |
-| **Pixel depth** | 8–16 bits, single component (grayscale) |
-| **Image size** | Up to 65535 × 65535 px, set at run time |
-| **Throughput** | ~280 Mpixel/s (1 pixel/clock, ~280 MHz at 12-bit, UltraScale+) |
-| **Memory** | On-chip line buffer, one image row; no external memory |
-| **Interface** | Ready/valid streaming (AXI4-Stream / Avalon-ST compatible) |
-| **Conformance** | Byte-exact vs the ISO reference vectors and [CharLS](https://github.com/team-charls/charls) |
-| **Portability** | Vendor-agnostic VHDL on [open-logic](https://github.com/open-logic/open-logic) primitives |
+| **Standard** | JPEG-LS<sup>1</sup> |
+| **Compression** | Lossless |
+| **Compression ratio** | ~1.6:1<sup>2</sup> |
+| **Pixel depth** | 8–16 bit, grayscale<sup>3</sup> |
+| **Image size** | Up to 65535 × 65535 px<sup>4</sup> |
+| **Throughput** | ~280 Mpixel/s<sup>5</sup> |
+| **Interface** | Ready/valid stream<sup>6</sup> |
+| **Memory** | On-chip only<sup>7</sup> |
+| **Conformance** | Byte-exact vs the ISO vectors and [CharLS](https://github.com/team-charls/charls) |
+| **Portability** | Vendor-agnostic VHDL<sup>8</sup> |
+
+<sub>
+<sup>1</sup> ISO/IEC 14495-1 / ITU-T T.87.<br>
+<sup>2</sup> Aggregate over the 240 natural photographs of the test corpus; content-dependent.<br>
+<sup>3</sup> Set by the <code>BITNESS</code> generic; single component.<br>
+<sup>4</sup> Set at run time.<br>
+<sup>5</sup> 1 pixel/clock at ~280 MHz, 12-bit, Xilinx <code>xczu7eg-1</code>.<br>
+<sup>6</sup> AXI4-Stream and Avalon-ST compatible.<br>
+<sup>7</sup> One image row; no external RAM.<br>
+<sup>8</sup> On <a href="https://github.com/open-logic/open-logic">open-logic</a> primitives.
+</sub>
 
 ---
 
@@ -50,12 +62,21 @@ OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level
 
 | Suite | Status | Test/Cov | Summary |
 |---|---|---|---|
-| NVC code coverage | info | 99.8% | Per-DUT-file statement breakdown |
-| OSVVM suite | PASS | 100% | 106 tests, 7,303,829 affirmations (module + top + AXI wrappers) |
-| Golden model | PASS | 100% | 5555/5555 images byte-exact vs CharLS |
-| Post-synth OSVVM | PASS | 100% | Control-plane stress on the gate-level netlist |
-| Post-synth golden model | PASS | 100% | 167/167 8-bit images up to 0.05 MP byte-exact vs CharLS |
-| HIL golden model | PASS | 100% | 5639/5639 images byte-exact vs CharLS on PYNQ-Z2 silicon |
+| NVC code coverage | info | 99.8% | Statement coverage<sup>1</sup> |
+| OSVVM suite | PASS | 100% | 106 tests<sup>2</sup> |
+| Golden model | PASS | 100% | 5555/5555 images<sup>3</sup> |
+| Post-synth OSVVM | PASS | 100% | Control-plane stress<sup>4</sup> |
+| Post-synth golden model | PASS | 100% | 167/167 images<sup>5</sup> |
+| HIL golden model | PASS | 100% | 5639/5639 images<sup>6</sup> |
+
+<sub>
+<sup>1</sup> Per DUT file.<br>
+<sup>2</sup> 7,303,829 affirmations across module, top and AXI wrapper testbenches.<br>
+<sup>3</sup> Byte-exact vs CharLS; all images up to 0.5 MP.<br>
+<sup>4</sup> On the gate-level netlist.<br>
+<sup>5</sup> 8-bit images up to 0.05 MP, byte-exact vs CharLS on the gate-level netlist.<br>
+<sup>6</sup> Byte-exact vs CharLS on PYNQ-Z2 silicon, including the 84 full-size originals.
+</sub>
 
 - **OSVVM** — 29 module testbenches against independent T.87 reference models, a top-level control-plane stress test, and AXI wrapper tests, all with requirements tracking.
 - **Coverage** — OSVVM functional coverage plus NVC statement coverage.
