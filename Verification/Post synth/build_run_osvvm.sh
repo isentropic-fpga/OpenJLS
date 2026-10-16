@@ -102,12 +102,14 @@ if "${NVC[@]}" --work=work:"$LIBS/work.08" \
     -r --exit-severity=error "$TB" 2>&1 | tee "$PSLOG"; then ps_rc=0; else ps_rc=1; fi
 
 # Status line for the published report (Verification/OSVVM/publish_reports.sh).
+ps_aff=$(awk '/DONE/ && /Affirmations Checked:/ {
+  for (i = 1; i <= NF; i++) if ($i == "Checked:") a = $(i+1) } END { print a + 0 }' "$PSLOG")
 {
   echo "NAME=\"Post-synth OSVVM\""
   echo "NOTE=\"control-plane stress on funcsim netlist\""
   echo "STATUS=$([ "$ps_rc" -eq 0 ] && echo PASS || echo FAIL)"
   echo "PCT=\"$([ "$ps_rc" -eq 0 ] && echo 100% || echo 0%)\""
-  echo "SUMMARY=\"tb_openjls_top_osvvm on gate-level netlist (BITNESS=8, 4096x4096, OUT_WIDTH=64)\""
+  echo "SUMMARY=\"Control-plane stress test &middot; $(printf "%'d" "$ps_aff") affirmations\""
   echo "DATE=\"$(date -Iseconds)\""
 } > "$HERE/Output/report_status_osvvm.env"
 exit "$ps_rc"

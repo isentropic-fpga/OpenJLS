@@ -296,7 +296,7 @@ gpct=$(awk -v p="$tpass" -v t="$((tpass + tfail))" 'BEGIN{ if (t > 0) printf "%.
   echo "NOTE=\"CharLS byte-exact cross-check\""
   echo "STATUS=$([ "$tfail" -eq 0 ] && echo PASS || echo FAIL)"
   echo "PCT=\"$gpct\""
-  echo "SUMMARY=\"$tpass of $((tpass + tfail)) images byte-exact vs CharLS ($tskip never run)\""
+  echo "SUMMARY=\"$tpass of $((tpass + tfail)) images byte-exact vs CharLS$([ "$tskip" -gt 0 ] && echo " ($tskip never run)")\""
   echo "DATE=\"$(date -Iseconds)\""
 } > "$HERE/Output/report_status.env"
 if [ -f "$TMPD/stalls" ]; then

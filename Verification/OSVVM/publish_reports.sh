@@ -51,7 +51,57 @@ if [ -n "$HIL_TMP" ]; then
   rm -rf "$HIL_TMP"
 fi
 
+# Site chrome (isentropic.com.br look): stylesheet, theme switch and wordmarks.
+mkdir -p "$DEST/assets"
+cp "$HERE/report_assets/report.css" "$HERE/report_assets/theme.js" "$DEST/assets/"
+for f in openjls-wordmark openjls-wordmark-dark isentropic-wordmark isentropic-wordmark-dark; do
+  cp "$ROOT/Docs/Images/$f.svg" "$DEST/assets/"
+done
+cp "$ROOT/Docs/Images/isentropic-icon-64.png" "$DEST/assets/"
+
+# page_head <title> <asset-prefix> / page_foot <asset-prefix>: shared chrome.
+page_head() {
+  local title="$1" p="$2"
+  cat <<HDR
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>$title</title>
+<link rel="icon" href="${p}assets/isentropic-icon-64.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@400;600&display=swap">
+<link rel="stylesheet" href="${p}assets/report.css">
+<script src="${p}assets/theme.js"></script>
+</head><body>
+<nav class="site-nav">
+  <a class="brand" href="https://isentropic.com.br" aria-label="Isentropic — home"><img class="wm-light" src="${p}assets/isentropic-wordmark.svg" alt="Isentropic"><img class="wm-dark" src="${p}assets/isentropic-wordmark-dark.svg" alt="Isentropic"></a>
+  <a class="nlink" href="https://isentropic.com.br/openjls">OpenJLS</a>
+  <a class="nlink" href="https://github.com/isentropic-fpga/OpenJLS">GitHub</a>
+  <button type="button" class="theme-btn" data-theme-toggle aria-label="Switch color theme" title="Switch color theme">
+    <svg class="ico-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+    <svg class="ico-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+  </button>
+</nav>
+<main><div class="wrap">
+HDR
+}
+page_foot() {
+  cat <<FTR
+</div></main>
+<footer>
+  <span style="font-weight:600;color:var(--color-text);">Isentropic</span>
+  <a href="https://isentropic.com.br">isentropic.com.br</a>
+  <a href="mailto:contact@isentropic.com.br">contact@isentropic.com.br</a>
+  <a href="https://github.com/isentropic-fpga">GitHub</a>
+  <span>&copy; $(date -u +%Y)</span>
+</footer>
+</body></html>
+FTR
+}
+
 ROWS=""
+NOTES=""
 # emit_row <name> <note> <status> <pct> <summary> <report-link-or-empty> <date-or-empty>
 emit_row() {
   local name="$1" note="$2" status="$3" pct="$4" summary="$5" link="$6" date="$7"
@@ -63,10 +113,11 @@ emit_row() {
     *)       cls="na"; status="not run" ;;
   esac
   if [ -n "$link" ]; then report="<a href=\"$link\">view</a>"; else report="&mdash;"; fi
-  ROWS+="    <tr><td>$name</td><td><span class=\"badge $cls\">$status</span></td>"
+  ROWS+="    <tr><td class=\"suite\">$name</td><td><span class=\"badge $cls\">$status</span></td>"
   ROWS+="<td class=\"pct\">${pct:-&mdash;}</td><td>${summary:-&mdash;}</td>"
-  ROWS+="<td class=\"note\">${note:-&mdash;}</td>"
-  ROWS+="<td>$report</td><td>${date:-&mdash;}</td></tr>"$'\n'
+  ROWS+="<td>$report</td><td class=\"date\">${date:-&mdash;}</td></tr>"$'\n'
+  [ -n "$note" ] && NOTES+=" <strong>$name.</strong> $note"
+  return 0
 }
 
 # --- NVC code coverage (HTML tree) ----------------------------------------
@@ -80,10 +131,11 @@ if [ -d "$COV_HTML" ]; then
   # Coverage HTML carries no machine-readable date, so take the generation time
   # from the report's mtime (it is rewritten on every build_run.sh).
   cov_date=$(date -u -r "$COV_HTML/index.html" '+%Y-%m-%d' 2>/dev/null || true)
-  emit_row "NVC code coverage" "statement, union over all tests" "INFO" \
+  COV_NOTE="Statement coverage of the RTL, unioned over every OSVVM test; the report breaks it down per source file."
+  emit_row "NVC code coverage" "$COV_NOTE" "INFO" \
     "${pct:-n/a}" "per-file breakdown in report" "coverage/index.html" "$cov_date"
 else
-  emit_row "NVC code coverage" "statement, union over all tests" "NA" "" \
+  emit_row "NVC code coverage" "" "NA" "" \
     "run ./build_run.sh to populate" "" ""
 fi
 
@@ -102,11 +154,11 @@ if [ -f "$HERE/index.html" ] && [ -f "$OSVVM_YML" ]; then
   opct=$(awk -v p="$pass" -v t="$total" 'BEGIN{ if (t > 0) printf "%.0f%%", 100 * p / t }')
   # Deep-link to this build's summary, not osvvm/index.html (the "Index of
   # Builds" accumulates every past build, including stale failed ones).
-  emit_row "OSVVM suite" "module + top + AXI wrappers" "$st" "$opct" \
-    "$total tests &middot; $affirm affirmations" \
+  emit_row "OSVVM suite" "Module testbenches against independent T.87 reference models, the top-level control-plane stress test and the AXI wrapper tests, all with requirements tracking." "$st" "$opct" \
+    "$total tests &middot; $(printf "%'d" "$affirm") affirmations" \
     "osvvm/OSVVM_OpenJls/OSVVM_OpenJls.html" "${rdate%T*}"
 else
-  emit_row "OSVVM suite" "module + top + AXI wrappers" "NA" "" \
+  emit_row "OSVVM suite" "" "NA" "" \
     "run ./build_run.sh to populate" "" ""
 fi
 
@@ -121,7 +173,7 @@ env_row() {
   local NAME="" NOTE="" STATUS="" PCT="" SUMMARY="" DATE=""
   # shellcheck disable=SC1090
   source "$f"
-  emit_row "${NAME:-$fb_name}" "${NOTE:-$fb_note}" "${STATUS:-NA}" "${PCT:-}" \
+  emit_row "${NAME:-$fb_name}" "${fb_note:-$NOTE}" "${STATUS:-NA}" "${PCT:-}" \
     "${SUMMARY:-}" "$link" "${DATE%%T*}"
 }
 
@@ -133,26 +185,11 @@ render_tsv_page() {
   [ -f "$tsv" ] || { echo ""; return; }
   mkdir -p "$DEST/$sub"
   {
+    page_head "$title" "../"
     cat <<HDR
-<!doctype html>
-<html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>$title</title>
-<style>
-  :root { color-scheme: light dark; }
-  body { font: 15px/1.5 system-ui, sans-serif; max-width: 64rem; margin: 2.5rem auto; padding: 0 1.2rem; }
-  table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
-  th, td { text-align: left; padding: .4rem .7rem; border-bottom: 1px solid #8884; }
-  th { font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; color: #888; }
-  td { font-variant-numeric: tabular-nums; }
-  td.r-ok { color: #1a7f37; font-weight: 600; }
-  td.r-bad { color: #cf222e; font-weight: 600; }
-  td.r-na { color: #888; }
-  a { color: #0969da; }
-</style></head><body>
-<p><a href="../index.html">&larr; all reports</a></p>
-<h1>$title</h1>
-<table><thead><tr>
+<a class="back" href="../index.html">&larr; All reports</a>
+<div class="hero" style="margin-top:14px;"><h1 class="text">$title</h1></div>
+<div class="tbl-scroll"><table><thead><tr>
 HDR
     head -1 "$tsv" | awk -F'\t' '{for (i=1;i<=NF;i++) printf "<th>%s</th>", $i; print ""}'
     echo "</tr></thead><tbody>"
@@ -167,7 +204,8 @@ HDR
       }
       print "</tr>"
     }'
-    echo "</tbody></table></body></html>"
+    echo "</tbody></table></div>"
+    page_foot "../"
   } > "$DEST/$sub/index.html"
   echo "$sub/index.html"
 }
@@ -180,24 +218,15 @@ render_log_page() {
   [ -f "$log" ] || { echo ""; return; }
   mkdir -p "$DEST/$sub"
   {
+    page_head "$title" "../"
     cat <<HDR
-<!doctype html>
-<html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>$title</title>
-<style>
-  :root { color-scheme: light dark; }
-  body { font: 14px/1.5 system-ui, sans-serif; max-width: 72rem; margin: 2.5rem auto; padding: 0 1.2rem; }
-  pre { white-space: pre-wrap; word-break: break-word; background: #8881; padding: 1rem;
-        border-radius: .5rem; font: 12px/1.45 ui-monospace, monospace; }
-  a { color: #0969da; }
-</style></head><body>
-<p><a href="../index.html">&larr; all reports</a></p>
-<h1>$title</h1>
-<pre>
+<a class="back" href="../index.html">&larr; All reports</a>
+<div class="hero" style="margin-top:14px;"><h1 class="text">$title</h1></div>
+<pre class="log">
 HDR
     sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' "$log"
-    echo "</pre></body></html>"
+    echo "</pre>"
+    page_foot "../"
   } > "$DEST/$sub/index.html"
   echo "$sub/index.html"
 }
@@ -210,9 +239,15 @@ ps_osvvm_link=""
 ps_golden_link=""
 [ -f "$PS_GOLDEN_ENV" ] && ps_golden_link="$(render_tsv_page "$PS_GOLDEN_TSV" post-synth-golden "Post-synth Golden Model — processed images")"
 
-env_row "$GOLDEN_ENV"    "Golden model"            "CharLS byte-exact, 8-bit corpus"   "$golden_link"
-env_row "$PS_OSVVM_ENV"  "Post-synth OSVVM"        "control-plane stress on netlist"   "$ps_osvvm_link"
-env_row "$PS_GOLDEN_ENV" "Post-synth Golden Model" "byte-exact vs CharLS on netlist"   "$ps_golden_link"
+env_row "$GOLDEN_ENV"    "Golden model" \
+  "RTL encode of the simulation corpus (images up to 0.5&nbsp;MP, depths 8&ndash;16) compared byte-for-byte with the CharLS reference encoder." \
+  "$golden_link"
+env_row "$PS_OSVVM_ENV"  "Post-synth OSVVM" \
+  "The top-level control-plane stress test re-run on the synthesized gate-level netlist (BITNESS=8, 4096x4096, OUT_WIDTH=64)." \
+  "$ps_osvvm_link"
+env_row "$PS_GOLDEN_ENV" "Post-synth Golden Model" \
+  "8-bit corpus images up to 0.05&nbsp;MP encoded on the gate-level netlist and compared with CharLS; the cap keeps gate-level simulation time bounded." \
+  "$ps_golden_link"
 
 # --- hardware-in-the-loop (published out of band from OpenJLS-Demos) ------
 if [ -f "$DEST/hil/results.csv" ]; then
@@ -225,60 +260,30 @@ if [ -f "$DEST/hil/results.csv" ]; then
   fi
   hil_depths=$(awk -F, 'NR>1{if(min==""||$1+0<min)min=$1;if($1+0>max)max=$1} END{print min"&ndash;"max}' "$DEST/hil/results.csv")
   hil_date=$(git -C "$ROOT" log -1 --format=%cs -- "Docs/Reports/hil" 2>/dev/null || true)
-  emit_row "Hardware-in-the-loop" "on-board FPGA encode, byte-exact" "$hil_status" "$hil_pct" \
-    "$hil_pass of $hil_total images byte-exact vs CharLS on PYNQ-Z2 silicon (depths $hil_depths)" \
+  emit_row "Hardware-in-the-loop" "The whole corpus, including the full-size originals too large to simulate, encoded on a PYNQ-Z2 FPGA at depths $hil_depths (one bitstream per depth) by the OpenJLS-Demos EncodeOverEthernet sweep." "$hil_status" "$hil_pct" \
+    "$hil_pass of $hil_total images byte-exact vs CharLS on PYNQ-Z2 silicon" \
     "hil/index.html" "$hil_date"
 fi
 
 # --- landing page ----------------------------------------------------------
 GEN_DATE="$(date -u '+%Y-%m-%d %H:%M UTC')"
-cat > "$DEST/index.html" <<EOF
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>OpenJLS — verification reports</title>
-<meta name="description" content="Verification results for OpenJLS, an open-source JPEG-LS (ISO/IEC 14495-1) FPGA encoder IP core: OSVVM regression, NVC coverage and byte-exact CharLS cross-checks.">
-<style>
-  :root { color-scheme: light dark; }
-  body { font: 15px/1.5 system-ui, sans-serif; max-width: 60rem; margin: 2.5rem auto;
-         padding: 0 1.2rem; }
-  h1 { margin-bottom: .2rem; }
-  p.sub { color: #888; margin-top: 0; }
-  table { border-collapse: collapse; width: 100%; margin-top: 1.5rem; }
-  th, td { text-align: left; padding: .55rem .7rem; border-bottom: 1px solid #8884; }
-  th { font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; color: #888; }
-  .badge { display: inline-block; padding: .1rem .5rem; border-radius: .5rem;
-           font-size: .8rem; font-weight: 600; }
-  .ok   { background: #1a7f37; color: #fff; }
-  .bad  { background: #cf222e; color: #fff; }
-  .info { background: #0969da; color: #fff; }
-  .na   { background: #8884; color: inherit; }
-  td.pct { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
-  td.note { color: #888; }
-  a { color: #0969da; }
-  footer { margin-top: 2rem; color: #888; font-size: .85rem; }
-</style>
-</head>
-<body>
-<h1>OpenJLS — verification reports</h1>
-<p class="sub">JPEG-LS encoder IP &middot; results published from the project's own
-verification suites. Drill into a row's report for per-test detail.
-<a href="https://isentropic.com.br/openjls">IP core specifications, throughput figures and licensing &rarr;</a></p>
-<table>
-  <thead><tr><th>Suite</th><th>Status</th><th>Pass / cov</th><th>Summary</th><th>Notes</th><th>Report</th><th>Run date</th></tr></thead>
+{
+  page_head "OpenJLS — verification report" ""
+  cat <<EOF
+<div class="hero">
+  <span class="kicker">Verification report</span>
+  <h1><img class="wm-light" src="assets/openjls-wordmark.svg" alt="OpenJLS"><img class="wm-dark" src="assets/openjls-wordmark-dark.svg" alt="OpenJLS"></h1>
+  <p class="lede">Results from the project's own verification suites for the OpenJLS JPEG-LS (ISO/IEC 14495-1) encoder IP core. Open a row's report for per-test and per-image detail.</p>
+</div>
+<div class="tbl-scroll"><table>
+  <thead><tr><th>Suite</th><th>Status</th><th>Pass / cov</th><th>Summary</th><th>Report</th><th>Run date</th></tr></thead>
   <tbody>
 $ROWS  </tbody>
-</table>
-<footer>
-  Generated $GEN_DATE by <code>Verification/OSVVM/publish_reports.sh</code>.
-  OSVVM reports and NVC coverage are full HTML; golden and post-synth are
-  byte-exact cross-checks summarized here (they emit PASS/FAIL, not HTML).
-</footer>
-</body>
-</html>
+</table></div>
+<p class="notes">$NOTES The OSVVM and coverage reports are full HTML; the golden-model, post-synthesis and hardware pages list every image or log line. Generated $GEN_DATE by <code>Verification/OSVVM/publish_reports.sh</code>. <a href="https://isentropic.com.br/openjls">IP core specifications, throughput figures and licensing &rarr;</a></p>
 EOF
+  page_foot ""
+} > "$DEST/index.html"
 
 echo "Published report tree -> $DEST"
 echo "  open $DEST/index.html"

@@ -2,21 +2,26 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Post-synth Golden Model — processed images</title>
-<style>
-  :root { color-scheme: light dark; }
-  body { font: 15px/1.5 system-ui, sans-serif; max-width: 64rem; margin: 2.5rem auto; padding: 0 1.2rem; }
-  table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
-  th, td { text-align: left; padding: .4rem .7rem; border-bottom: 1px solid #8884; }
-  th { font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; color: #888; }
-  td { font-variant-numeric: tabular-nums; }
-  td.r-ok { color: #1a7f37; font-weight: 600; }
-  td.r-bad { color: #cf222e; font-weight: 600; }
-  td.r-na { color: #888; }
-  a { color: #0969da; }
-</style></head><body>
-<p><a href="../index.html">&larr; all reports</a></p>
-<h1>Post-synth Golden Model — processed images</h1>
-<table><thead><tr>
+<link rel="icon" href="../assets/isentropic-icon-64.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@400;600&display=swap">
+<link rel="stylesheet" href="../assets/report.css">
+<script src="../assets/theme.js"></script>
+</head><body>
+<nav class="site-nav">
+  <a class="brand" href="https://isentropic.com.br" aria-label="Isentropic — home"><img class="wm-light" src="../assets/isentropic-wordmark.svg" alt="Isentropic"><img class="wm-dark" src="../assets/isentropic-wordmark-dark.svg" alt="Isentropic"></a>
+  <a class="nlink" href="https://isentropic.com.br/openjls">OpenJLS</a>
+  <a class="nlink" href="https://github.com/isentropic-fpga/OpenJLS">GitHub</a>
+  <button type="button" class="theme-btn" data-theme-toggle aria-label="Switch color theme" title="Switch color theme">
+    <svg class="ico-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+    <svg class="ico-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+  </button>
+</nav>
+<main><div class="wrap">
+<a class="back" href="../index.html">&larr; All reports</a>
+<div class="hero" style="margin-top:14px;"><h1 class="text">Post-synth Golden Model — processed images</h1></div>
+<div class="tbl-scroll"><table><thead><tr>
 <th>Image</th><th>Dims</th><th>Bits</th><th>Bytes (match/total)</th><th>Result</th>
 </tr></thead><tbody>
 <tr><td>noise8-smooth-153</td><td>321x24</td><td>8</td><td>3652/3652</td><td class="r-ok">PASS</td></tr>
@@ -186,4 +191,13 @@
 <tr><td>noise8-white-144</td><td>258x13</td><td>8</td><td>3266/3266</td><td class="r-ok">PASS</td></tr>
 <tr><td>noise8-white-145</td><td>188x235</td><td>8</td><td>40205/40205</td><td class="r-ok">PASS</td></tr>
 <tr><td>noise8-white-148</td><td>293x8</td><td>8</td><td>2246/2246</td><td class="r-ok">PASS</td></tr>
-</tbody></table></body></html>
+</tbody></table></div>
+</div></main>
+<footer>
+  <span style="font-weight:600;color:var(--color-text);">Isentropic</span>
+  <a href="https://isentropic.com.br">isentropic.com.br</a>
+  <a href="mailto:contact@isentropic.com.br">contact@isentropic.com.br</a>
+  <a href="https://github.com/isentropic-fpga">GitHub</a>
+  <span>&copy; 2026</span>
+</footer>
+</body></html>

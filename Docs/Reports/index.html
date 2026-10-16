@@ -1,51 +1,47 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
+<html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>OpenJLS — verification reports</title>
-<meta name="description" content="Verification results for OpenJLS, an open-source JPEG-LS (ISO/IEC 14495-1) FPGA encoder IP core: OSVVM regression, NVC coverage and byte-exact CharLS cross-checks.">
-<style>
-  :root { color-scheme: light dark; }
-  body { font: 15px/1.5 system-ui, sans-serif; max-width: 60rem; margin: 2.5rem auto;
-         padding: 0 1.2rem; }
-  h1 { margin-bottom: .2rem; }
-  p.sub { color: #888; margin-top: 0; }
-  table { border-collapse: collapse; width: 100%; margin-top: 1.5rem; }
-  th, td { text-align: left; padding: .55rem .7rem; border-bottom: 1px solid #8884; }
-  th { font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; color: #888; }
-  .badge { display: inline-block; padding: .1rem .5rem; border-radius: .5rem;
-           font-size: .8rem; font-weight: 600; }
-  .ok   { background: #1a7f37; color: #fff; }
-  .bad  { background: #cf222e; color: #fff; }
-  .info { background: #0969da; color: #fff; }
-  .na   { background: #8884; color: inherit; }
-  td.pct { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
-  td.note { color: #888; }
-  a { color: #0969da; }
-  footer { margin-top: 2rem; color: #888; font-size: .85rem; }
-</style>
-</head>
-<body>
-<h1>OpenJLS — verification reports</h1>
-<p class="sub">JPEG-LS encoder IP &middot; results published from the project's own
-verification suites. Drill into a row's report for per-test detail.
-<a href="https://isentropic.com.br/openjls">IP core specifications, throughput figures and licensing &rarr;</a></p>
-<table>
-  <thead><tr><th>Suite</th><th>Status</th><th>Pass / cov</th><th>Summary</th><th>Notes</th><th>Report</th><th>Run date</th></tr></thead>
+<title>OpenJLS — verification report</title>
+<link rel="icon" href="assets/isentropic-icon-64.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@400;600&display=swap">
+<link rel="stylesheet" href="assets/report.css">
+<script src="assets/theme.js"></script>
+</head><body>
+<nav class="site-nav">
+  <a class="brand" href="https://isentropic.com.br" aria-label="Isentropic — home"><img class="wm-light" src="assets/isentropic-wordmark.svg" alt="Isentropic"><img class="wm-dark" src="assets/isentropic-wordmark-dark.svg" alt="Isentropic"></a>
+  <a class="nlink" href="https://isentropic.com.br/openjls">OpenJLS</a>
+  <a class="nlink" href="https://github.com/isentropic-fpga/OpenJLS">GitHub</a>
+  <button type="button" class="theme-btn" data-theme-toggle aria-label="Switch color theme" title="Switch color theme">
+    <svg class="ico-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+    <svg class="ico-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+  </button>
+</nav>
+<main><div class="wrap">
+<div class="hero">
+  <span class="kicker">Verification report</span>
+  <h1><img class="wm-light" src="assets/openjls-wordmark.svg" alt="OpenJLS"><img class="wm-dark" src="assets/openjls-wordmark-dark.svg" alt="OpenJLS"></h1>
+  <p class="lede">Results from the project's own verification suites for the OpenJLS JPEG-LS (ISO/IEC 14495-1) encoder IP core. Open a row's report for per-test and per-image detail.</p>
+</div>
+<div class="tbl-scroll"><table>
+  <thead><tr><th>Suite</th><th>Status</th><th>Pass / cov</th><th>Summary</th><th>Report</th><th>Run date</th></tr></thead>
   <tbody>
-    <tr><td>NVC code coverage</td><td><span class="badge info">INFO</span></td><td class="pct">99.8%</td><td>per-file breakdown in report</td><td class="note">statement, union over all tests</td><td><a href="coverage/index.html">view</a></td><td>2026-10-16</td></tr>
-    <tr><td>OSVVM suite</td><td><span class="badge ok">PASS</span></td><td class="pct">100%</td><td>106 tests &middot; 7303829 affirmations</td><td class="note">module + top + AXI wrappers</td><td><a href="osvvm/OSVVM_OpenJls/OSVVM_OpenJls.html">view</a></td><td>2026-10-15</td></tr>
-    <tr><td>Golden model</td><td><span class="badge ok">PASS</span></td><td class="pct">100%</td><td>5555 of 5555 images byte-exact vs CharLS (0 never run)</td><td class="note">CharLS byte-exact cross-check</td><td><a href="golden/index.html">view</a></td><td>2026-10-15</td></tr>
-    <tr><td>Post-synth OSVVM</td><td><span class="badge ok">PASS</span></td><td class="pct">100%</td><td>tb_openjls_top_osvvm on gate-level netlist (BITNESS=8, 4096x4096, OUT_WIDTH=64)</td><td class="note">control-plane stress on funcsim netlist</td><td><a href="post-synth-osvvm/index.html">view</a></td><td>2026-10-16</td></tr>
-    <tr><td>Post-synth Golden Model</td><td><span class="badge ok">PASS</span></td><td class="pct">100%</td><td>167 of 167 images byte-exact vs CharLS</td><td class="note">byte-exact vs CharLS on funcsim netlist</td><td><a href="post-synth-golden/index.html">view</a></td><td>2026-10-16</td></tr>
-    <tr><td>Hardware-in-the-loop</td><td><span class="badge ok">PASS</span></td><td class="pct">100%</td><td>5639 of 5639 images byte-exact vs CharLS on PYNQ-Z2 silicon (depths 8&ndash;16)</td><td class="note">on-board FPGA encode, byte-exact</td><td><a href="hil/index.html">view</a></td><td>2026-09-09</td></tr>
+    <tr><td class="suite">NVC code coverage</td><td><span class="badge info">INFO</span></td><td class="pct">99.8%</td><td>per-file breakdown in report</td><td><a href="coverage/index.html">view</a></td><td class="date">2026-10-16</td></tr>
+    <tr><td class="suite">OSVVM suite</td><td><span class="badge ok">PASS</span></td><td class="pct">100%</td><td>106 tests &middot; 7,303,829 affirmations</td><td><a href="osvvm/OSVVM_OpenJls/OSVVM_OpenJls.html">view</a></td><td class="date">2026-10-15</td></tr>
+    <tr><td class="suite">Golden model</td><td><span class="badge ok">PASS</span></td><td class="pct">100%</td><td>5555 of 5555 images byte-exact vs CharLS</td><td><a href="golden/index.html">view</a></td><td class="date">2026-10-15</td></tr>
+    <tr><td class="suite">Post-synth OSVVM</td><td><span class="badge ok">PASS</span></td><td class="pct">100%</td><td>Control-plane stress test &middot; 136,239 affirmations</td><td><a href="post-synth-osvvm/index.html">view</a></td><td class="date">2026-10-16</td></tr>
+    <tr><td class="suite">Post-synth Golden Model</td><td><span class="badge ok">PASS</span></td><td class="pct">100%</td><td>167 of 167 images byte-exact vs CharLS</td><td><a href="post-synth-golden/index.html">view</a></td><td class="date">2026-10-16</td></tr>
+    <tr><td class="suite">Hardware-in-the-loop</td><td><span class="badge ok">PASS</span></td><td class="pct">100%</td><td>5639 of 5639 images byte-exact vs CharLS on PYNQ-Z2 silicon</td><td><a href="hil/index.html">view</a></td><td class="date">2026-10-16</td></tr>
   </tbody>
-</table>
+</table></div>
+<p class="notes"> <strong>NVC code coverage.</strong> Statement coverage of the RTL, unioned over every OSVVM test; the report breaks it down per source file. <strong>OSVVM suite.</strong> Module testbenches against independent T.87 reference models, the top-level control-plane stress test and the AXI wrapper tests, all with requirements tracking. <strong>Golden model.</strong> RTL encode of the simulation corpus (images up to 0.5&nbsp;MP, depths 8&ndash;16) compared byte-for-byte with the CharLS reference encoder. <strong>Post-synth OSVVM.</strong> The top-level control-plane stress test re-run on the synthesized gate-level netlist (BITNESS=8, 4096x4096, OUT_WIDTH=64). <strong>Post-synth Golden Model.</strong> 8-bit corpus images up to 0.05&nbsp;MP encoded on the gate-level netlist and compared with CharLS; the cap keeps gate-level simulation time bounded. <strong>Hardware-in-the-loop.</strong> The whole corpus, including the full-size originals too large to simulate, encoded on a PYNQ-Z2 FPGA at depths 8&ndash;16 (one bitstream per depth) by the OpenJLS-Demos EncodeOverEthernet sweep. The OSVVM and coverage reports are full HTML; the golden-model, post-synthesis and hardware pages list every image or log line. Generated 2026-10-16 03:44 UTC by <code>Verification/OSVVM/publish_reports.sh</code>. <a href="https://isentropic.com.br/openjls">IP core specifications, throughput figures and licensing &rarr;</a></p>
+</div></main>
 <footer>
-  Generated 2026-10-16 03:21 UTC by <code>Verification/OSVVM/publish_reports.sh</code>.
-  OSVVM reports and NVC coverage are full HTML; golden and post-synth are
-  byte-exact cross-checks summarized here (they emit PASS/FAIL, not HTML).
+  <span style="font-weight:600;color:var(--color-text);">Isentropic</span>
+  <a href="https://isentropic.com.br">isentropic.com.br</a>
+  <a href="mailto:contact@isentropic.com.br">contact@isentropic.com.br</a>
+  <a href="https://github.com/isentropic-fpga">GitHub</a>
+  <span>&copy; 2026</span>
 </footer>
-</body>
-</html>
+</body></html>
