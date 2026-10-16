@@ -432,6 +432,7 @@ counts described above.
 | `T87.A6-A7` | Combined correction/error path | `tb_a6_a7_osvvm` | 20000 |
 | `T87.A6` | Prediction correction | `tb_a6_osvvm` | 300 |
 | `T87.A7` | Prediction error | `tb_a7_osvvm` | 200 |
+| `T87.A8.1` | Lossless reconstruction (Rx = Ix) | `tb_a8_1_osvvm` | 2^BITNESS |
 | `T87.A9` | Modulo reduction | `tb_a9_osvvm` | 200 |
 | `T87.A10` | Golomb parameter k | `tb_a10_osvvm` | 400 |
 | `T87.A11` | Error mapping (incl. special case) | `tb_a11_osvvm` | 500 |
@@ -445,6 +446,8 @@ counts described above.
 | `T87.A18` | Run interruption prediction error | `tb_a18_osvvm` | 200 |
 | `T87.A19` | Run interruption error computation | `tb_a19_osvvm` | 300 |
 | `T87.A20` | Temp computation | `tb_a20_osvvm` | 50 |
+| `T87.A20.1` | Run interruption context (Q = RItype + 365) | `tb_a20_1_osvvm` | 4 |
+| `T87.A20.2` | Golomb k from TEMP (shared A.10) | `tb_a20_2_osvvm` | 400 |
 | `T87.A21` | Map computation | `tb_a21_osvvm` | 400 |
 | `T87.A22` | RI errval mapping | `tb_a22_osvvm` | 300 |
 | `T87.A23` | Run interruption update | `tb_a23_osvvm` | 600 |
