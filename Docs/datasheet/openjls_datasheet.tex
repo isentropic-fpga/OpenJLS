@@ -8,83 +8,159 @@
 % OpenJLS datasheet. Build: tectonic openjls_datasheet.tex
 \documentclass[10pt,a4paper]{article}
 
-\usepackage[margin=22mm]{geometry}
+\usepackage[margin=22mm,headsep=8mm]{geometry}
 \usepackage{amsmath}
+\usepackage{fontspec}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{tabularx}
-\usepackage{xcolor}
+\usepackage[table]{xcolor}
 \usepackage{enumitem}
 \usepackage{ragged2e}
 \usepackage{float}
 \usepackage{caption}
-\captionsetup{font=small,labelfont=bf,position=top,skip=6pt}
+\usepackage{titlesec}
 \usepackage{fancyhdr}
 \usepackage{listings}
 \usepackage{tikz}
 \usepackage{tikz-timing}
 \usepackage{hyperref}
 
-\hypersetup{
-    colorlinks=true,
-    linkcolor=blue,
-    filecolor=magenta,
-    urlcolor=blue
-  }
+% Styled after isentropic.com.br: tokens mirror ~/Repos/Site/site.css (light theme).
+\definecolor{ink}{HTML}{1C1A16}
+\definecolor{accent}{HTML}{914F08}    % accent-700: text, links, labels
+\definecolor{amber}{HTML}{D97706}     % accent-500: marks and rules
+\definecolor{muted}{HTML}{7E7362}     % neutral-600
+\definecolor{divider}{HTML}{D7CDBE}   % neutral-300
+\definecolor{surface}{HTML}{F4F0EA}   % neutral-100
 
+% Barlow (OFL) is vendored in fonts/ so the build needs nothing installed.
+\setmainfont{Barlow}[Path=fonts/, Extension=.ttf,
+  UprightFont=*-Regular, BoldFont=*-SemiBold,
+  ItalicFont=*-Italic, BoldItalicFont=*-SemiBoldItalic]
+\setmonofont{Inconsolatazi4-Regular.otf}[Scale=0.94]
+\newfontfamily\headfont{BarlowCondensed-SemiBold}[Path=fonts/, Extension=.ttf]
+\newfontfamily\kickerfont{Barlow-SemiBold}[Path=fonts/, Extension=.ttf, LetterSpace=14]
+\color{ink}
+
+% Kicker: small letterspaced uppercase label, the site's .kicker / .sec-num.
+\newcommand{\kicker}[1]{{\kickerfont\footnotesize\MakeUppercase{#1}}}
+% Table header cell, the report's <th>.
+\newcommand{\hd}[1]{\leavevmode{\kickerfont\scriptsize\color{muted}\MakeUppercase{#1}}}
+
+\hypersetup{colorlinks=true, linkcolor=accent, urlcolor=accent, filecolor=accent,
+  pdftitle={OpenJLS Datasheet}, pdfauthor={Isentropic}}
 
 \graphicspath{{../Images/}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
 \setlist{nosep,leftmargin=1.4em}
+\setlist[itemize]{label={\color{amber}\textbullet}}
 \newcolumntype{C}{>{\centering\arraybackslash}m{0.10\textwidth}}
-\renewcommand{\arraystretch}{1.08}
+\renewcommand{\arraystretch}{1.25}
+\arrayrulecolor{divider}
+\setlength{\aboverulesep}{0pt}
+\setlength{\belowrulesep}{0pt}
+\setlength{\heavyrulewidth}{0.6pt}
+\setlength{\lightrulewidth}{0.4pt}
 
-\definecolor{ojblue}{RGB}{0,80,140}
+\captionsetup{font={small,color=muted},labelfont={bf,color=accent},
+  labelsep=quad,position=top,skip=8pt,justification=centering}
+
+\setcounter{secnumdepth}{1}
+\titleformat{\section}[display]
+  {\headfont\fontsize{19}{22}\selectfont}
+  {\normalfont\color{accent}\kicker{\twodigit{\value{section}}}\hspace{1em}%
+   {\color{divider}\leaders\hrule height 0.4pt\hfill\kern0pt}}
+  {5pt}{}
+\titleformat{name=\section,numberless}[block]
+  {\headfont\fontsize{19}{22}\selectfont}{}{0pt}{}
+\titlespacing*{\section}{0pt}{20pt}{8pt}
+\titleformat{\subsection}{\headfont\fontsize{14}{17}\selectfont}{}{0pt}{}
+\titlespacing*{\subsection}{0pt}{14pt}{5pt}
+% Text-font math: Barlow has no U+223C, and CM math clashes with it.
+\newcommand{\fmax}{\textit{f}\textsubscript{max}}
+\newcommand{\about}{≈}
+\makeatletter
+\renewcommand{\@makefntext}[1]{\noindent\makebox[1em][l]{\@makefnmark}#1}
+\makeatother
+\renewcommand{\footnoterule}{\kern-3pt{\color{divider}\hrule width 0.3\textwidth}\kern2.6pt}
+\newcommand{\twodigit}[1]{\ifnum#1<10 0\fi\number#1}
 
 \lstset{
-  basicstyle=\ttfamily\scriptsize,
-  keywordstyle=\color{ojblue}\bfseries,
-  commentstyle=\color{gray},
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{accent}\bfseries,
+  commentstyle=\color{muted},
   language=VHDL,
   showstringspaces=false,
-  frame=single,
+  frame=none,
+  backgroundcolor=\color{surface},
+  xleftmargin=6pt, xrightmargin=6pt, framexleftmargin=6pt, framexrightmargin=6pt,
+  aboveskip=10pt, belowskip=10pt,
   columns=fullflexible,
 }
 
+% Wordmark PNGs carry transparent padding; trim (in px = bp) to the ink box.
+\newcommand{\isentropicmark}[1]{\includegraphics[height=#1,trim=36 60 86 108,clip]{isentropic-wordmark.png}}
+\newcommand{\openjlsmark}[1]{\includegraphics[height=#1,trim=88 60 87 118,clip]{openjls-wordmark.png}}
+
 \pagestyle{fancy}
 \fancyhf{}
-\lhead{\textbf{OpenJLS} — JPEG-LS Encoder IP}
-\rhead{Datasheet}
-\lfoot{\small v1.3}
-\rfoot{\small \thepage}
-\renewcommand{\headrulewidth}{0.4pt}
-
-\setcounter{secnumdepth}{1}
+\lhead{\raisebox{-0.5pt}{\isentropicmark{3.2mm}}}
+\rhead{{\color{muted}\kicker{OpenJLS \textperiodcentered{} Datasheet \textperiodcentered{} v1.3}}}
+\lfoot{{\color{muted}\small isentropic.com.br}}
+\rfoot{{\color{muted}\small\thepage}}
+\renewcommand{\headrule}{{\color{divider}\hrule height 0.4pt}}
+\renewcommand{\footrulewidth}{0pt}
+\setlength{\headheight}{14pt}
 
 \begin{document}
 
-% wordmark PNGs carry ~9% transparent padding; the negative kern pulls the
-% mark's ink flush with the right margin instead of the image box.
-{\raggedleft\includegraphics[height=9mm]{isentropic-wordmark.png}\hspace*{-2.15mm}\par}
+%======================================================================
+% Title page
+\begin{titlepage}
+\newgeometry{margin=22mm}
+\color{ink}
+\isentropicmark{5.5mm}\hfill{\color{muted}\kicker{Datasheet}}\par
+\vspace{0.5mm}{\color{divider}\hrule height 0.4pt}
 
-\vspace{3mm}
+\vspace*{58mm}
+{\color{accent}\kicker{JPEG-LS Encoder IP Core \textperiodcentered{} v1.3}}\par
+\vspace{6mm}
+\openjlsmark{24mm}\par
+\vspace{8mm}
+{\fontsize{15}{21}\selectfont\color{muted}
+Lossless JPEG-LS encoder for FPGAs.\\One pixel per clock, no external memory.\par}
+\vspace{8mm}
+{\color{amber}\rule{18mm}{1.2pt}}
 
-\begin{center}
-  \includegraphics[height=20mm]{openjls-wordmark.png}\\[-2pt]
-  {\large JPEG-LS Lossless Encoder IP Core --- Datasheet}
-\end{center}
+\vfill
+{\color{divider}\hrule height 0.4pt}\vspace{6mm}
+\noindent
+\begin{minipage}[t]{0.23\linewidth}{\headfont\fontsize{26}{28}\selectfont 280\,MHz}\par\vspace{3pt}{\color{muted}\kicker{Fmax, 12-bit}}\end{minipage}\hfill
+\begin{minipage}[t]{0.23\linewidth}{\headfont\fontsize{26}{28}\selectfont 1\,px/clk}\par\vspace{3pt}{\color{muted}\kicker{Throughput}}\end{minipage}\hfill
+\begin{minipage}[t]{0.23\linewidth}{\headfont\fontsize{26}{28}\selectfont 8--16\,bit}\par\vspace{3pt}{\color{muted}\kicker{Pixel depth}}\end{minipage}\hfill
+\begin{minipage}[t]{0.23\linewidth}{\headfont\fontsize{26}{28}\selectfont 5639/5639}\par\vspace{3pt}{\color{muted}\kicker{Byte-exact on silicon}}\end{minipage}
+\vspace{14mm}
 
-\vspace{4pt}
+{\color{divider}\hrule height 0.4pt}\vspace{3mm}
+{\small\color{muted}
+\href{https://isentropic.com.br}{isentropic.com.br}\hfill
+\href{https://github.com/isentropic-fpga/OpenJLS}{github.com/isentropic-fpga/OpenJLS}\hfill
+\href{mailto:contact@isentropic.com.br}{contact@isentropic.com.br}\par}
+\restoregeometry
+\end{titlepage}
 
 %======================================================================
 \section{Overview}
-OpenJLS is a JPEG-LS lossless encoder for FPGAs.
-It encodes single-component (grayscale) images at one pixel per clock with no
-external memory, streaming a standards-compliant JPEG-LS bitstream out over
-a standard ready/valid streaming handshake. Source code, license and the full
-verification suite are public at
-\url{https://github.com/isentropic-fpga/OpenJLS}. There's also a companion public
-repository with demo projects for OpenJLS at \url{https://github.com/isentropic-fpga/OpenJLS-Demos}.
+{\large OpenJLS is a lossless JPEG-LS encoder IP core for FPGAs. It takes one
+grayscale pixel per clock over a ready/valid stream and emits a standard
+JPEG-LS bitstream, buffering a single image row on-chip. It is portable VHDL,
+verified byte-exact against the CharLS reference in simulation and on silicon.\par}
+\medskip
+Source and verification suite: \url{https://github.com/isentropic-fpga/OpenJLS}\\
+Demo projects: \url{https://github.com/isentropic-fpga/OpenJLS-Demos}
 
 \begin{table}[H]
   \centering
@@ -92,21 +168,28 @@ repository with demo projects for OpenJLS at \url{https://github.com/isentropic-
   \label{tab:overview}
 \begin{tabularx}{\textwidth}{@{}>{\bfseries}l X@{}}
   \toprule
-  Standard      & JPEG-LS (ISO/IEC 14495-1, ITU-T T.87) \\
-  Compression   & Lossless only \\
-  Components    & Single (grayscale) \\
-  Pixel depth   & 8--16 bits (\texttt{BITNESS}) \\
-  Image size    & Up to $65535\times65535$ px\\
+  Standard      & JPEG-LS\footnotemark[1] \\
+  Compression   & Lossless \\
+  Components    & Grayscale \\
+  Pixel depth   & 8--16 bit\footnotemark[2] \\
+  Image size    & Up to 65535\,×\,65535 px \\
   Throughput    & 1 pixel / clock \\
-  Latency       & 14 clock cycles \\
-  $f_{max}$     & $\sim$280\,MHz at 12 bit (Xilinx \texttt{xczu7eg-1}) \\
-  Interface     & Ready/valid streaming (AXI4-Stream / Avalon-ST compatible) \\
-  Memory        & On-chip line buffer, one image row; no external RAM \\
-  Resources     & $\sim$6.4k LUT, $\sim$2.0k FF + BRAM scaling with image width \\
+  Latency       & 14 cycles \\
+  \fmax{}       & \about280\,MHz\footnotemark[3] \\
+  Interface     & Ready/valid stream\footnotemark[4] \\
+  Memory        & On-chip only\footnotemark[5] \\
+  Resources     & 5.3--7.6k LUT, 1.8--2.3k FF\footnotemark[6] \\
   Portability   & Vendor-agnostic VHDL \\
   \bottomrule
 \end{tabularx}
 \end{table}
+\footnotetext[1]{ISO/IEC 14495-1, ITU-T T.87.}
+\footnotetext[2]{Set by the \texttt{BITNESS} generic.}
+\footnotetext[3]{12-bit, Xilinx \texttt{xczu7eg-1}.}
+\footnotetext[4]{AXI4-Stream and Avalon-ST compatible.}
+\footnotetext[5]{One image row; no external RAM.}
+\footnotetext[6]{8 to 16 bit; plus block RAM scaling with image width and pixel depth.}
+\setcounter{footnote}{6}
 
 %======================================================================
 \section{Revision and contact}
@@ -116,13 +199,13 @@ repository with demo projects for OpenJLS at \url{https://github.com/isentropic-
   \label{tab:revision}
 \begin{tabular}{@{}l l l@{}}
   \toprule
-  \textbf{Version} & \textbf{Date} & \textbf{Notes} \\
+  \hd{Version} & \hd{Date} & \hd{Notes} \\
   \midrule
   1.0 & 2026-06 & Initial release. \\
   1.1 & 2026-07 & Packaged IPs for Vivado. \\
   1.2 & 2026-07 & Isentropic branding; cores repackaged under the
   \texttt{isentropic} vendor. \\
-  1.3 & 2026-09 & Frequency increased $\sim$15\%, LUT reduction $\sim$16\%,
+  1.3 & 2026-09 & Frequency increased \about15\%, LUT reduction \about16\%,
   BRAM up 1 tile. \\
   \bottomrule
 \end{tabular}
@@ -175,7 +258,7 @@ The core is configured by the four generics in Table~\ref{tab:generics}.
   \label{tab:generics}
 \begin{tabularx}{\textwidth}{@{}l C X@{}}
   \toprule
-  \textbf{Generic} & \textbf{Range} & \textbf{Description} \\
+  \hd{Generic} & \hd{Range} & \hd{Description} \\
   \midrule
   \texttt{BITNESS}          & 8--16       & Pixel bit depth. \\
   \texttt{MAX\_IMAGE\_WIDTH}  & 4--65535    & Largest width supported; sets line-buffer depth. \\
@@ -207,7 +290,7 @@ ecosystem (Avalon-ST maps the same way at \texttt{readyLatency}~=~0).
   \label{tab:ports}
 \begin{tabularx}{\textwidth}{@{}l c l l X@{}}
   \toprule
-  \textbf{Port} & \textbf{Dir} & \textbf{Width} & \textbf{AXIS} & \textbf{Role} \\
+  \hd{Port} & \hd{Dir} & \hd{Width} & \hd{AXIS} & \hd{Role} \\
   \midrule
   \texttt{iClk}        & in  & 1                       & ---             & Clock. \\
   \texttt{iRst}        & in  & 1                       & ---             & Synchronous reset, active high; latches dimensions. \\
@@ -295,13 +378,13 @@ clock cycles.
 \section{Resources and performance}
 Characterized on Xilinx Zynq UltraScale+ \texttt{xczu7eg-fbvb900-1-e},
 Vivado 2025.2, using the generics \texttt{BITNESS = 12} (unless stated otherwise) and \texttt{OUT\_WIDTH = 64}, RTL-only with no floorplanning.
-$f_{max}$ is the true maximum, found by over-constraining the clock until timing fails.
-At one pixel per clock, $\sim$280\,MHz is $\sim$280\,Mpixel/s.
+\fmax{} is the true maximum, found by over-constraining the clock until timing fails.
+At one pixel per clock, \about280\,MHz is \about280\,Mpixel/s.
 
-\noindent Figure~\ref{fig:fmax} and Table~\ref{tab:fmax} report $f_{max}$ across
+\noindent Figure~\ref{fig:fmax} and Table~\ref{tab:fmax} report \fmax{} across
 \texttt{MAX\_IMAGE\_WIDTH}; Figure~\ref{fig:util} and Table~\ref{tab:util} report
-the resource usage; Figure~\ref{fig:fmaxbits} and Table~\ref{tab:bits} report both
-across \texttt{BITNESS}.
+the resource usage; Figures~\ref{fig:fmaxbits}--\ref{fig:utilbits} and
+Tables~\ref{tab:bits}--\ref{tab:utilbits} repeat both across \texttt{BITNESS}.
 
 \begin{figure}[H]
   \centering
@@ -314,9 +397,9 @@ across \texttt{BITNESS}.
   \centering
   \caption{Maximum frequency by maximum image width and strategy.}
   \label{tab:fmax}
-\begin{tabular}{@{}r @{\hspace{1.2em}}|@{\hspace{1.2em}} r r r r@{}}
+\begin{tabular}{@{}r @{\hspace{2.4em}} r r r r@{}}
   \toprule
-  \texttt{MAX\_IMAGE\_WIDTH} & Default & EPRPO & NetDelay & Congestion \\
+  \hd{MAX\_IMAGE\_WIDTH} & \hd{Default} & \hd{EPRPO} & \hd{NetDelay} & \hd{Congestion} \\
   \midrule
   4096  & \textbf{282.7} & 276.2          & 281.5          & 279.2          \\
   8192  & 249.0          & 256.7          & \textbf{284.4} & 270.7          \\
@@ -339,9 +422,9 @@ across \texttt{BITNESS}.
   \centering
   \caption{Resource usage by maximum image width.}
   \label{tab:util}
-\begin{tabular}{@{}r @{\hspace{1.2em}}|@{\hspace{1.2em}} r r r@{}}
+\begin{tabular}{@{}r @{\hspace{2.4em}} r r r@{}}
   \toprule
-  \texttt{MAX\_IMAGE\_WIDTH} & LUT & FF & BRAM \\
+  \hd{MAX\_IMAGE\_WIDTH} & \hd{LUT} & \hd{FF} & \hd{BRAM} \\
   \midrule
   4096  & 6563 & 2013 & 2.5 \\
   8192  & 6429 & 2032 & 4.0 \\
@@ -360,7 +443,7 @@ per row is in bold; the strategies are \texttt{Performance\_\allowbreak Explore\
 \texttt{Congestion\_\allowbreak SpreadLogic\_\allowbreak high} (Congestion). The design is congestion-bound,
 so the winning strategy shifts with image size; a given netlist is deterministic,
 but the per-size winner is placement-sensitive and can shift when the netlist
-changes, so the best-of band ($\sim$282--289\,MHz) is the headline figure; the per-size spread across strategies is 7--22\,MHz, so a default run lands close to it at most sizes. Table~\ref{tab:util} is for the default
+changes, so the best-of band (\about282--289\,MHz) is the headline figure; the per-size spread across strategies is 7--22\,MHz, so a default run lands close to it at most sizes. Table~\ref{tab:util} is for the default
 strategy; utilization is near-identical across strategies. Logic is essentially
 constant with image size; only the line-buffer BRAM scales with width and pixel
 depth.
@@ -375,23 +458,47 @@ depth.
 
 \begin{table}[H]
   \centering
-  \caption{Maximum frequency and resource usage by pixel bit depth (\texttt{MAX\_IMAGE\_WIDTH = 12288}).}
+  \caption{Maximum frequency by pixel bit depth and strategy (\texttt{MAX\_IMAGE\_WIDTH = 12288}).}
   \label{tab:bits}
-\begin{tabular}{@{}r @{\hspace{1.2em}}|@{\hspace{1.2em}} r r r r @{\hspace{1.2em}}|@{\hspace{1.2em}} r r r@{}}
+\begin{tabular}{@{}r @{\hspace{2.4em}} r r r r@{}}
   \toprule
-  \texttt{BITNESS} & Default & EPRPO & NetDelay & Congestion & LUT & FF & BRAM \\
+  \hd{BITNESS} & \hd{Default} & \hd{EPRPO} & \hd{NetDelay} & \hd{Congestion} \\
   \midrule
-  8  & \textbf{305.3} & 305.2          & 290.8          & 294.6 & 5319 & 1772 & 3.5 \\
-  10 & 282.8          & 290.2          & \textbf{293.6} & 293.5 & 5908 & 1902 & 4.0 \\
-  12 & 273.1          & 284.0          & \textbf{289.4} & 274.9 & 6327 & 2033 & 5.5 \\
-  14 & 257.8          & 268.8          & \textbf{276.6} & 233.4 & 6845 & 2153 & 6.5 \\
-  16 & 215.4          & 224.4          & \textbf{224.7} & 218.4 & 7601 & 2287 & 7.5 \\
+  8  & \textbf{305.3} & 305.2          & 290.8          & 294.6 \\
+  10 & 282.8          & 290.2          & \textbf{293.6} & 293.5 \\
+  12 & 273.1          & 284.0          & \textbf{289.4} & 274.9 \\
+  14 & 257.8          & 268.8          & \textbf{276.6} & 233.4 \\
+  16 & 215.4          & 224.4          & \textbf{224.7} & 218.4 \\
   \bottomrule
 \end{tabular}
 \end{table}
 
-\noindent Best-of $f_{max}$ falls from $\sim$305\,MHz at 8 bits to $\sim$277\,MHz
-at 14 bits and $\sim$225\,MHz at 16 bits. The byte stuffer is off the critical
+\begin{figure}[H]
+  \centering
+  \caption{Resource usage vs pixel bit depth (\texttt{MAX\_IMAGE\_WIDTH = 12288}).}
+  \label{fig:utilbits}
+  \includegraphics[width=0.70\linewidth]{util_vs_bitness.png}
+\end{figure}
+
+\begin{table}[H]
+  \centering
+  \caption{Resource usage by pixel bit depth (\texttt{MAX\_IMAGE\_WIDTH = 12288}).}
+  \label{tab:utilbits}
+\begin{tabular}{@{}r @{\hspace{2.4em}} r r r@{}}
+  \toprule
+  \hd{BITNESS} & \hd{LUT} & \hd{FF} & \hd{BRAM} \\
+  \midrule
+  8  & 5319 & 1772 & 3.5 \\
+  10 & 5908 & 1902 & 4.0 \\
+  12 & 6327 & 2033 & 5.5 \\
+  14 & 6845 & 2153 & 6.5 \\
+  16 & 7601 & 2287 & 7.5 \\
+  \bottomrule
+\end{tabular}
+\end{table}
+
+\noindent Best-of \fmax{} falls from \about305\,MHz at 8 bits to \about277\,MHz
+at 14 bits and \about225\,MHz at 16 bits. The byte stuffer is off the critical
 path at every depth; the limit is the context RAM read into the prediction-error
 register, whose carry chains widen with pixel depth. Resources are for the
 default strategy.
@@ -433,7 +540,7 @@ For the Vivado flow the core ships the following pre-packaged IPs
   \centering
 \begin{tabularx}{\textwidth}{@{}X X@{}}
   \toprule
-  \textbf{IP Catalog name} & \textbf{Interfaces} \\
+  \hd{IP Catalog name} & \hd{Interfaces} \\
   \midrule
   OpenJLS Encoder (Native)                  & Plain Ready/Valid\\
   OpenJLS Encoder (AXI4-Stream)             & AXI-Stream for the data, native pins for control \\
@@ -454,7 +561,7 @@ The AXI4-Lite variant replaces the native control pins with a register bank
   \centering
 \begin{tabularx}{\textwidth}{@{}l l l X@{}}
   \toprule
-  \textbf{Offset} & \textbf{Name} & \textbf{Access} & \textbf{Contents} \\
+  \hd{Offset} & \hd{Name} & \hd{Access} & \hd{Contents} \\
   \midrule
   \texttt{0x00} & ID      & RO & ASCII \texttt{"OJLS"} (\texttt{0x4F4A4C53}) \\
   \texttt{0x04} & VERSION & RO & \texttt{0x00MMmmpp} (major/minor/patch) \\
@@ -519,7 +626,7 @@ simulation; their 84 full-size originals are part of the corpus but run on hardw
   \label{tab:corpus}
 \begin{tabular}{@{}r r r r r r r@{}}
   \toprule
-  \textbf{Bits} & \textbf{Natural} & \textbf{Natural derived} & \textbf{Noise} & \textbf{Stress} & \textbf{Full-size} & \textbf{Total} \\
+  \hd{Bits} & \hd{Natural} & \hd{Natural derived} & \hd{Noise} & \hd{Stress} & \hd{Full-size} & \hd{Total} \\
   \midrule
   8  & 363 & 0   & 300 & 0  & 69 & 732 \\
   9  & 0   & 300 & 300 & 2  & 0  & 602 \\
@@ -544,7 +651,7 @@ simulation; their 84 full-size originals are part of the corpus but run on hardw
   \label{tab:regression}
 \begin{tabularx}{\textwidth}{@{}l c c X@{}}
   \toprule
-  \textbf{Suite} & \textbf{Status} & \textbf{Test/Cov} & \textbf{Summary} \\
+  \hd{Suite} & \hd{Status} & \hd{Test/Cov} & \hd{Summary} \\
   \midrule
   NVC code coverage       & info & 99.8\% & Per-DUT-file statement breakdown \\
   OSVVM suite             & PASS & 100\%  & 106 tests, 7\,303\,829 affirmations (module + top + AXI wrappers) \\
