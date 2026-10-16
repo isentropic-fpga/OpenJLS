@@ -18,6 +18,10 @@
 # T16E0.JLS byte-for-byte; if not, the golden generator is suspect and we abort.
 #
 # Usage:  ./build_run.sh
+#
+# Incremental: images that already PASSed against the same RTL (hash of
+# Sources/ + TB in the results table) and are older than the table are not
+# re-run. RERUN=1 forces every image.
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -137,12 +141,25 @@ if [ "${#PGMS[@]}" -eq 0 ]; then
   exit 1
 fi
 
-# Eligible images (under the MP cap), tagged with file size for balancing.
-skip=0
+# RTL fingerprint: a PASS row is reused only while this matches.
+RTL_HASH="$(cat "${SRC_FILES[@]/#/$SRC/}" "$HERE/$TB.vhd" | sha256sum | cut -c1-12)"
+TSV="$HERE/Output/golden_image_results.tsv"
+declare -A CACHED
+if [ "${RERUN:-0}" != 1 ] && [ -f "$TSV" ]; then
+  while IFS=$'\t' read -r s _ _ _ _ r _ h; do
+    [ "$r" = PASS ] && [ "$h" = "$RTL_HASH" ] && CACHED[$s]=1
+  done < <(tail -n +2 "$TSV")
+fi
+
+# Eligible images (under the MP cap, not cached), tagged with file size for balancing.
+skip=0; cached=0
 ELIG=()      # entries: "<size_bytes>\t<pgm_path>\t<bits>"
 SKIPPED=()   # processed-image report rows for over-cap skips: "stem\tWxH\tmp\tbits\tSKIP"
 for pgm in "${PGMS[@]}"; do
   stem="$(basename "${pgm%.pgm}")"
+  if [ -n "${CACHED[$stem]:-}" ] && [ ! "$pgm" -nt "$TSV" ]; then
+    cached=$((cached + 1)); continue
+  fi
   read -r W H MX BITS < <(python3 "$PREP/pgm_info.py" "$pgm")
   mp=$(awk -v w="$W" -v h="$H" 'BEGIN{printf "%.3f", w*h/1e6}')
   if awk -v mp="$mp" -v cap="$MAX_MP" 'BEGIN{exit !(mp>cap)}'; then
@@ -248,27 +265,38 @@ if [ "$NELIG" -gt 0 ]; then
 fi
 
 echo "=============================================================="
-echo "Golden-model suite: PASS=$pass FAIL=$fail SKIP=$skip (cap ${MAX_MP} MP, ${NT} thread(s))"
+echo "Golden-model suite: PASS=$pass FAIL=$fail SKIP=$skip CACHED=$cached (cap ${MAX_MP} MP, ${NT} thread(s), RTL $RTL_HASH)"
 
-# Per-image results table (rendered to HTML by publish_reports.sh). Header row
-# first, then processed images and any over-cap skips, sorted by name.
+# Per-image results table (rendered to HTML by publish_reports.sh), merged into
+# the previous one: images run now replace their row, images skipped now keep
+# their last result, images gone from Images/ drop out. Run = date of the row,
+# RTL = fingerprint it ran against.
+today="$(date +%F)"
 {
-  printf 'Image\tDims\tMP\tBits\tBytes (match/total)\tResult\n'
+  printf 'Image\tDims\tMP\tBits\tBytes (match/total)\tResult\tRun\tRTL\n'
   {
-    [ -f "$TMPD/results" ] && cat "$TMPD/results"
-    [ "${#SKIPPED[@]}" -gt 0 ] && printf '%s\n' "${SKIPPED[@]}"
+    [ -f "$TSV" ] && tail -n +2 "$TSV" | awk -F'\t' -v OFS='\t' '{ for (i = NF + 1; i <= 8; i++) $i = "—"; print "old", $0 }'
+    [ -f "$TMPD/results" ] && awk -v d="$today" -v h="$RTL_HASH" '{ print "new\t" $0 "\t" d "\t" h }' "$TMPD/results"
+    [ "${#SKIPPED[@]}" -gt 0 ] && printf 'skip\t%s\t—\t—\n' "${SKIPPED[@]}"
     :   # keep the producer's exit 0 (empty SKIPPED + pipefail would else abort)
-  } | sort
-} > "$HERE/Output/golden_image_results.tsv" || true
+  } | awk -F'\t' -v OFS='\t' -v imgs="$IMAGES_DIR" '
+      BEGIN { while (("ls \"" imgs "\"" | getline f) > 0) if (f ~ /\.pgm$/) live[substr(f, 1, length(f) - 4)] = 1 }
+      { k = $2; src = $1; sub(/^[^\t]*\t/, "")
+        if (!(k in live)) next
+        if (src == "new" || !(k in row)) row[k] = $0 }
+      END { for (k in row) print row[k] }' | sort
+} > "$TSV.tmp" && mv "$TSV.tmp" "$TSV" || true
 
-# Status line for the published report (Verification/OSVVM/publish_reports.sh).
-gpct=$(awk -v p="$pass" -v t="$((pass + fail))" 'BEGIN{ if (t > 0) printf "%.0f%%", 100 * p / t }')
+# Status line for the published report (Verification/OSVVM/publish_reports.sh),
+# over the merged table so a capped run does not hide earlier full-sweep results.
+read -r tpass tfail tskip < <(awk -F'\t' 'NR > 1 { c[$6]++ } END { print c["PASS"] + 0, c["FAIL"] + c["FAIL (charls)"] + 0, c["SKIP"] + 0 }' "$TSV")
+gpct=$(awk -v p="$tpass" -v t="$((tpass + tfail))" 'BEGIN{ if (t > 0) printf "%.0f%%", 100 * p / t }')
 {
   echo "NAME=\"Golden model\""
   echo "NOTE=\"CharLS byte-exact cross-check\""
-  echo "STATUS=$([ "$fail" -eq 0 ] && echo PASS || echo FAIL)"
+  echo "STATUS=$([ "$tfail" -eq 0 ] && echo PASS || echo FAIL)"
   echo "PCT=\"$gpct\""
-  echo "SUMMARY=\"$pass of $((pass + fail)) images byte-exact vs CharLS (cap ${MAX_MP} MP)\""
+  echo "SUMMARY=\"$tpass of $((tpass + tfail)) images byte-exact vs CharLS ($tskip never run)\""
   echo "DATE=\"$(date -Iseconds)\""
 } > "$HERE/Output/report_status.env"
 if [ -f "$TMPD/stalls" ]; then

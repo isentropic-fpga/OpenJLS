@@ -29,6 +29,7 @@ set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 IMAGES="$HERE/Images"
 PREP="$HERE/imageprep"
+FULL="$HERE/Images_full"
 
 FETCH=1
 [ "${1:-}" = "--no-fetch" ] && FETCH=0
@@ -42,6 +43,11 @@ fi
 
 echo "== normalize =="
 python3 "$PREP/normalize.py" "$IMAGES"
+
+# Images over the routine 0.5 MP cap become 3 full-width strips (top/middle/
+# bottom, <= 64 rows); originals move to Images_full/ (depth-tile source, HIL).
+echo "== slice large images =="
+python3 "$PREP/slice_large.py" "$IMAGES" "$FULL"
 
 # 16-bit byte_stuffer stall probes: random noise (several seeds) + adversarial
 # patterns (checkerboard/stripes/spikes). Built to try to overrun the byte_stuffer
@@ -95,7 +101,17 @@ for b in 9 10 11 12 13 14 15; do
   python3 "$PREP/gen_stress.py" "$IMAGES/synth-rand${b}_1.pgm" --pattern random --maxval "$mx"
   python3 "$PREP/gen_stress.py" "$IMAGES/synth-checker-$b.pgm" --pattern checker --maxval "$mx"
 done
-python3 "$PREP/requantize.py" "$IMAGES/ic-gray16_cathedral.pgm" "$IMAGES/requant10-cathedral.pgm" --bits 10 --crop 700 700
-python3 "$PREP/requantize.py" "$IMAGES/ic-gray16_deer.pgm" "$IMAGES/requant14-deer.pgm" --bits 14 --crop 700 700
+python3 "$PREP/requantize.py" "$FULL/ic-gray16_cathedral.pgm" "$IMAGES/requant10-cathedral.pgm" --bits 10 --crop 700 700
+python3 "$PREP/requantize.py" "$FULL/ic-gray16_deer.pgm" "$IMAGES/requant14-deer.pgm" --bits 14 --crop 700 700
+
+# Bulk natural coverage per depth: ~300 random crops of the 16-bit photos at
+# each of 9..16 bits (the probes above are a handful per depth).
+echo "== depth tiles =="
+python3 "$PREP/gen_depth_tiles.py" "$FULL" "$IMAGES"
+
+# Bulk synthetic coverage per depth: ~300 white + 1/f^beta noise probes at
+# each of 8..16 bits, random sizes and value windows.
+echo "== noise probes =="
+python3 "$PREP/gen_noise_probes.py" "$IMAGES"
 
 echo "Images ready: $(find "$IMAGES" -name '*.pgm' | wc -l) PGM(s) in $IMAGES"

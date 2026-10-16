@@ -25,7 +25,7 @@
 #         ./build_run_golden.sh --sim     reuse the existing 8-bit netlist
 #         IMAGE=<stem> ./build_run_golden.sh --sim   run one image (timing)
 #
-# Env: NVC_HEAP (default 3g), MAX_MP (default 100), MEM_MAX (cgroup cap, default 24G).
+# Env: NVC_HEAP (default 3g), MAX_MP (default 0.05), MEM_MAX (cgroup cap, default 24G).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -49,7 +49,7 @@ MAX_H=5412
 OUT_WIDTH=64
 
 NVC_HEAP="${NVC_HEAP:-2g}"
-MAX_MP="${MAX_MP:-100}"
+MAX_MP="${MAX_MP:-0.05}"
 NT="${NUMBER_OF_THREADS:-20}"   # one shard per core (24-core box, leave headroom)
 PER_MEM="${PER_MEM:-2G}"        # per-worker cgroup cap; ~1 GB real on <=4 MP images
 
