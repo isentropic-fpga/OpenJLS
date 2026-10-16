@@ -1,0 +1,5 @@
+- Requirement: "T87.A20.2"
+  TestCases: 
+  - TestName: "tb_a20_2_osvvm"
+    Status: PASSED
+    Results: {Goal: 400, Passed: 13331, Errors: 0, Checked: 13331, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}

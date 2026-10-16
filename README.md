@@ -217,7 +217,7 @@ OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level
 | Suite | Status | Test/Cov | Summary |
 |---|---|---|---|
 | NVC code coverage | info | 99.8% | Statement coverage<sup>1</sup> |
-| OSVVM suite | PASS | 100% | 106 tests<sup>2</sup> |
+| OSVVM suite | PASS | 100% | 113 tests<sup>2</sup> |
 | Golden model | PASS | 100% | 5555/5555 images<sup>3</sup> |
 | Post-synth OSVVM | PASS | 100% | Control-plane stress<sup>4</sup> |
 | Post-synth golden model | PASS | 100% | 167/167 images<sup>5</sup> |
@@ -225,7 +225,7 @@ OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level
 
 <sub>
 <sup>1</sup> Per-DUT-file breakdown.<br>
-<sup>2</sup> 7,303,829 affirmations (module + top + AXI wrappers).<br>
+<sup>2</sup> 7,404,577 affirmations (module + top + AXI wrappers).<br>
 <sup>3</sup> Byte-exact vs CharLS.<br>
 <sup>4</sup> On the gate-level netlist.<br>
 <sup>5</sup> 8-bit images up to 0.05 MP, byte-exact vs CharLS.<br>

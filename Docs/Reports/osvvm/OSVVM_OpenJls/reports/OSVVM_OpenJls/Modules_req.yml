@@ -35,13 +35,13 @@
   TestCases:
   - TestName: tb_a11_1_osvvm
     Status: PASSED
-    Results: { Goal: 400, Passed: 10545, Errors: 0, Checked: 10545, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
+    Results: { Goal: 400, Passed: 5199, Errors: 0, Checked: 5199, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
   - TestName: tb_a11_1_osvvm
     Status: PASSED
-    Results: { Goal: 400, Passed: 13893, Errors: 0, Checked: 13893, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
+    Results: { Goal: 400, Passed: 6831, Errors: 0, Checked: 6831, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
   - TestName: tb_a11_1_osvvm
     Status: PASSED
-    Results: { Goal: 400, Passed: 17553, Errors: 0, Checked: 17553, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
+    Results: { Goal: 400, Passed: 8751, Errors: 0, Checked: 8751, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
 - Requirement: T87.A11.2
   TestCases:
   - TestName: tb_a11_2_osvvm
@@ -141,6 +141,22 @@
   - TestName: tb_a20_osvvm
     Status: PASSED
     Results: { Goal: 50, Passed: 439, Errors: 0, Checked: 439, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
+- Requirement: T87.A20.1
+  TestCases:
+  - TestName: tb_a20_1_osvvm
+    Status: PASSED
+    Results: { Goal: 4, Passed: 4, Errors: 0, Checked: 4, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
+- Requirement: T87.A20.2
+  TestCases:
+  - TestName: tb_a20_2_osvvm
+    Status: PASSED
+    Results: { Goal: 400, Passed: 13331, Errors: 0, Checked: 13331, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
+  - TestName: tb_a20_2_osvvm
+    Status: PASSED
+    Results: { Goal: 400, Passed: 10283, Errors: 0, Checked: 10283, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
+  - TestName: tb_a20_2_osvvm
+    Status: PASSED
+    Results: { Goal: 400, Passed: 7235, Errors: 0, Checked: 7235, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
 - Requirement: T87.A21
   TestCases:
   - TestName: tb_a21_osvvm
@@ -163,6 +179,17 @@
   - TestName: tb_a22_osvvm
     Status: PASSED
     Results: { Goal: 300, Passed: 524657, Errors: 0, Checked: 524657, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
+- Requirement: T87.A22.1
+  TestCases:
+  - TestName: tb_a11_1_osvvm
+    Status: PASSED
+    Results: { Goal: 192, Passed: 5346, Errors: 0, Checked: 5346, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
+  - TestName: tb_a11_1_osvvm
+    Status: PASSED
+    Results: { Goal: 192, Passed: 7062, Errors: 0, Checked: 7062, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
+  - TestName: tb_a11_1_osvvm
+    Status: PASSED
+    Results: { Goal: 192, Passed: 8802, Errors: 0, Checked: 8802, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
 - Requirement: T87.A23
   TestCases:
   - TestName: tb_a23_osvvm
@@ -253,6 +280,17 @@
   - TestName: tb_a7_osvvm
     Status: PASSED
     Results: { Goal: 200, Passed: 131278, Errors: 0, Checked: 131278, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
+- Requirement: T87.A8.1
+  TestCases:
+  - TestName: tb_a8_1_osvvm
+    Status: PASSED
+    Results: { Goal: 4096, Passed: 4096, Errors: 0, Checked: 4096, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
+  - TestName: tb_a8_1_osvvm
+    Status: PASSED
+    Results: { Goal: 256, Passed: 256, Errors: 0, Checked: 256, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
+  - TestName: tb_a8_1_osvvm
+    Status: PASSED
+    Results: { Goal: 65536, Passed: 65536, Errors: 0, Checked: 65536, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
 - Requirement: T87.A9
   TestCases:
   - TestName: tb_a9_osvvm

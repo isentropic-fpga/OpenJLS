@@ -1,7 +1,7 @@
 Version: "0.1"
 Name: "tb_a11_1_osvvm"
 Status: PASSED
-Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 10548, AffirmCount: 10548, RequirementsPassed: 1, RequirementsGoal: 1, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}, ExpectedCount: {Failure: 0, Error: 0, Warning: 0}}
+Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 10548, AffirmCount: 10548, RequirementsPassed: 2, RequirementsGoal: 2, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}, ExpectedCount: {Failure: 0, Error: 0, Warning: 0}}
 Settings: {ExternalErrors: {Failure: 0, Error: 0, Warning: 0}, FailOnDisabledErrors: "true", FailOnRequirementErrors: "true", FailOnWarning: "true"}
 Children: 
   - Name: "Default"
@@ -30,7 +30,11 @@ Children:
     Children: 
       - Name: "T87.A11.1"
         Status: PASSED
-        Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 10545, AffirmCount: 10545, RequirementsPassed: 10545, RequirementsGoal: 400, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+        Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 5199, AffirmCount: 5199, RequirementsPassed: 5199, RequirementsGoal: 400, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+        Children: []
+      - Name: "T87.A22.1"
+        Status: PASSED
+        Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 5346, AffirmCount: 5346, RequirementsPassed: 5346, RequirementsGoal: 192, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
         Children: []
   - Name: "KnownOutputs"
     Status: PASSED

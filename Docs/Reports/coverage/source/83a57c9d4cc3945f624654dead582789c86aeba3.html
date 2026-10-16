@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>NVC code coverage report</title>
+  <style>
+:root {
+    --table-row-color: #e8e8e8;
+    --margin-left: 20%;
+}
+
+body {
+    background-color: #f0f0e0ff;
+}
+
+header {
+    padding: 0.5em;
+    text-align: center;
+    font-size: 14pt;
+}
+
+h1 {
+    text-align: center;
+}
+
+h2 {
+    word-wrap: break-word;
+}
+
+h3 {
+    word-wrap: break-word;
+    margin-bottom: 0px;
+}
+
+hr {
+    border:none;
+    height: 2px;
+    background: black;
+}
+
+footer {
+    display: table;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+nav {
+    float: left;
+    background-color: var(--table-row-color);
+    width: 17%;
+    overflow: auto;
+    padding: 10px;
+    margin-top: -2px;
+    border: 2px solid black;
+}
+nav details details {
+    margin-left: 1rem;
+}
+nav details > a {
+    padding-left: 1.9rem;
+    display: block;
+}
+nav summary {
+    display: inline-flex;
+    cursor: pointer;
+    align-items: center;
+}
+nav summary::before {
+    content: '▶';
+    font-size: 0.7em;
+    margin-right: 0.4em;
+}
+nav details[open] > summary::before {
+    transform: rotate(90deg);
+}
+
+table {
+    table-layout: fixed;
+}
+
+table, th, td {
+    border: 2px solid black;
+    border-collapse: collapse;
+    word-wrap: break-word;
+}
+
+.tabcontent {
+    display: none;
+    padding: 0px 0px;
+    border: 2px solid #ccc;
+    border-top: none;
+    word-wrap: break-word;
+}
+
+.tab {
+    overflow: hidden;
+    border: 2px solid;
+    margin-left: var(--margin-left);
+    margin-top: 10px;
+}
+
+.cbg:hover {
+    background-color: #dddddd;
+}
+.cbg {
+    background-color: #bbbbbb;
+    text-align: center;
+}
+
+.cbt {
+    margin-top: 8px;
+}
+.cbt th {
+    background-color: #bbbbbb;
+    text-align: center;
+}
+.cbt td, .cbt th {
+    width: 50px;
+    text-align: center;
+}
+.cbt td + td, .cbt th + th {
+    width: 150px;
+}
+.cbt td + td + td, .cbt th + th + th {
+    width: 150px;
+}
+.cbt td + td + td + td, .cbt th + th + th + th {
+    width: 150px;
+}
+
+.percent100 {
+    background-color: #00cc00;
+}
+.percent90 {
+    background-color: #e6e600;
+}
+.percent80 {
+    background-color: #ff9900;
+}
+.percent0 {
+    background-color: #ff0000;
+}
+.percentna {
+    background-color: #cccccc;
+}
+
+.nav-sel {
+    font-weight: bold;
+}
+  </style>
+</head>
+<body style="font-family: verdana">
+
+<header><h1 style="text-align: center;">NVC code coverage report
+</h1></header>
+
+<h2 style="text-align: left;">
+   File:&nbsp; ../../Sources/A20_1_run_context_index.vhd
+</h2><pre><code>     0: &nbsp; --&nbsp;Copyright&nbsp;(C)&nbsp;2026&nbsp;Vitor&nbsp;Mendes&nbsp;Camilo&nbsp;
+     1: &nbsp; --&nbsp;SPDX-License-Identifier:&nbsp;GPL-3.0-only&nbsp;
+     2: &nbsp; --&nbsp;
+     3: &nbsp; --&nbsp;This&nbsp;file&nbsp;is&nbsp;part&nbsp;of&nbsp;OpenJLS.&nbsp;Available&nbsp;under&nbsp;GPLv3&nbsp;or&nbsp;a&nbsp;
+     4: &nbsp; --&nbsp;commercial&nbsp;license.&nbsp;See&nbsp;LICENSE&nbsp;and&nbsp;README&nbsp;for&nbsp;details.&nbsp;
+     5: &nbsp; --&nbsp;
+     6: &nbsp; &nbsp;
+     7: &nbsp; ----------------------------------------------------------------------------------&nbsp;
+     8: &nbsp; --&nbsp;Engineer:&nbsp;&nbsp;&nbsp;&nbsp;Vitor&nbsp;Mendes&nbsp;Camilo&nbsp;
+     9: &nbsp; --&nbsp;
+    10: &nbsp; --&nbsp;Module&nbsp;Name:&nbsp;A20_1_run_context_index&nbsp;-&nbsp;Behavioral&nbsp;
+    11: &nbsp; --&nbsp;
+    12: &nbsp; --&nbsp;Description:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Written&nbsp;requirement&nbsp;A.20.1&nbsp;
+    13: &nbsp; --&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Run&nbsp;interruption&nbsp;context:&nbsp;Q&nbsp;=&nbsp;RItype&nbsp;+&nbsp;365&nbsp;
+    14: &nbsp; --&nbsp;
+    15: &nbsp; ----------------------------------------------------------------------------------&nbsp;
+    16: &nbsp; &nbsp;
+    17: &nbsp; library&nbsp;ieee;&nbsp;
+    18: &nbsp; &nbsp;&nbsp;use&nbsp;ieee.std_logic_1164.all;&nbsp;
+    19: &nbsp; &nbsp;&nbsp;use&nbsp;ieee.numeric_std.all;&nbsp;
+    20: &nbsp; &nbsp;
+    21: &nbsp; entity&nbsp;a20_1_run_context_index&nbsp;is&nbsp;
+    22: &nbsp; &nbsp;&nbsp;port&nbsp;(&nbsp;
+    23: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;iRItype&nbsp;:&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;std_logic;&nbsp;
+    24: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;oQ&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;out&nbsp;&nbsp;&nbsp;unsigned&nbsp;(8&nbsp;downto&nbsp;0)&nbsp;
+    25: &nbsp; &nbsp;&nbsp;);&nbsp;
+    26: &nbsp; end&nbsp;entity&nbsp;a20_1_run_context_index;&nbsp;
+    27: &nbsp; &nbsp;
+    28: &nbsp; architecture&nbsp;behavioral&nbsp;of&nbsp;a20_1_run_context_index&nbsp;is&nbsp;
+    29: &nbsp; &nbsp;
+    30: &nbsp; begin&nbsp;
+    31: &nbsp; &nbsp;
+    32: &nbsp; &nbsp;&nbsp;oQ&nbsp;&lt;=&nbsp;to_unsigned(366,&nbsp;9)&nbsp;when&nbsp;iRItype&nbsp;=&nbsp;'1'&nbsp;else&nbsp;
+    33: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to_unsigned(365,&nbsp;9);&nbsp;
+    34: &nbsp; &nbsp;
+    35: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
+</code></pre>

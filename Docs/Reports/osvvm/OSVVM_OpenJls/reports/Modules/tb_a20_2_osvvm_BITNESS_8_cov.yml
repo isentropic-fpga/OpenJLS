@@ -1,0 +1,77 @@
+Version: "0.1"
+Coverage: 100.00
+Settings: 
+  WritePassFail: 0
+Models: 
+  - Name: "mode x k"
+    TestCases: 
+      - "tb_a20_2_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [748572622, 222980400]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 6
+      TotalCovGoal: 6
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "RItype"
+        - "k"
+      NumBins: 6
+    Bins: 
+      - Name: "mode=0 / k=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 0, Max: 0}
+        Count: 257
+        AtLeast: 1
+        PercentCov: 25700.0000
+      - Name: "mode=0 / k interior"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 1, Max: 1}
+        Count: 3358
+        AtLeast: 1
+        PercentCov: 335800.0000
+      - Name: "mode=0 / k=MAX_K"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 2, Max: 2}
+        Count: 3
+        AtLeast: 1
+        PercentCov: 300.0000
+      - Name: "mode=1 / k=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 0, Max: 0}
+        Count: 256
+        AtLeast: 1
+        PercentCov: 25600.0000
+      - Name: "mode=1 / k interior"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 1, Max: 1}
+        Count: 3358
+        AtLeast: 1
+        PercentCov: 335800.0000
+      - Name: "mode=1 / k=MAX_K"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 2, Max: 2}
+        Count: 3
+        AtLeast: 1
+        PercentCov: 300.0000
+

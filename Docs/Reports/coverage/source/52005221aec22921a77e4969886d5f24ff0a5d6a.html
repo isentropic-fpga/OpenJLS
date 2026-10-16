@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>NVC code coverage report</title>
+  <style>
+:root {
+    --table-row-color: #e8e8e8;
+    --margin-left: 20%;
+}
+
+body {
+    background-color: #f0f0e0ff;
+}
+
+header {
+    padding: 0.5em;
+    text-align: center;
+    font-size: 14pt;
+}
+
+h1 {
+    text-align: center;
+}
+
+h2 {
+    word-wrap: break-word;
+}
+
+h3 {
+    word-wrap: break-word;
+    margin-bottom: 0px;
+}
+
+hr {
+    border:none;
+    height: 2px;
+    background: black;
+}
+
+footer {
+    display: table;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+nav {
+    float: left;
+    background-color: var(--table-row-color);
+    width: 17%;
+    overflow: auto;
+    padding: 10px;
+    margin-top: -2px;
+    border: 2px solid black;
+}
+nav details details {
+    margin-left: 1rem;
+}
+nav details > a {
+    padding-left: 1.9rem;
+    display: block;
+}
+nav summary {
+    display: inline-flex;
+    cursor: pointer;
+    align-items: center;
+}
+nav summary::before {
+    content: '▶';
+    font-size: 0.7em;
+    margin-right: 0.4em;
+}
+nav details[open] > summary::before {
+    transform: rotate(90deg);
+}
+
+table {
+    table-layout: fixed;
+}
+
+table, th, td {
+    border: 2px solid black;
+    border-collapse: collapse;
+    word-wrap: break-word;
+}
+
+.tabcontent {
+    display: none;
+    padding: 0px 0px;
+    border: 2px solid #ccc;
+    border-top: none;
+    word-wrap: break-word;
+}
+
+.tab {
+    overflow: hidden;
+    border: 2px solid;
+    margin-left: var(--margin-left);
+    margin-top: 10px;
+}
+
+.cbg:hover {
+    background-color: #dddddd;
+}
+.cbg {
+    background-color: #bbbbbb;
+    text-align: center;
+}
+
+.cbt {
+    margin-top: 8px;
+}
+.cbt th {
+    background-color: #bbbbbb;
+    text-align: center;
+}
+.cbt td, .cbt th {
+    width: 50px;
+    text-align: center;
+}
+.cbt td + td, .cbt th + th {
+    width: 150px;
+}
+.cbt td + td + td, .cbt th + th + th {
+    width: 150px;
+}
+.cbt td + td + td + td, .cbt th + th + th + th {
+    width: 150px;
+}
+
+.percent100 {
+    background-color: #00cc00;
+}
+.percent90 {
+    background-color: #e6e600;
+}
+.percent80 {
+    background-color: #ff9900;
+}
+.percent0 {
+    background-color: #ff0000;
+}
+.percentna {
+    background-color: #cccccc;
+}
+
+.nav-sel {
+    font-weight: bold;
+}
+  </style>
+</head>
+<body style="font-family: verdana">
+
+<header><h1 style="text-align: center;">NVC code coverage report
+</h1></header>
+
+<h2 style="text-align: left;">
+   File:&nbsp; Modules/tb_a8_1_osvvm.vhd
+</h2><pre><code>     0: &nbsp; --&nbsp;Copyright&nbsp;(C)&nbsp;2026&nbsp;Vitor&nbsp;Mendes&nbsp;Camilo&nbsp;
+     1: &nbsp; --&nbsp;SPDX-License-Identifier:&nbsp;GPL-3.0-only&nbsp;
+     2: &nbsp; --&nbsp;
+     3: &nbsp; --&nbsp;This&nbsp;file&nbsp;is&nbsp;part&nbsp;of&nbsp;OpenJLS.&nbsp;Available&nbsp;under&nbsp;GPLv3&nbsp;or&nbsp;a&nbsp;
+     4: &nbsp; --&nbsp;commercial&nbsp;license.&nbsp;See&nbsp;LICENSE&nbsp;and&nbsp;README&nbsp;for&nbsp;details.&nbsp;
+     5: &nbsp; --&nbsp;
+     6: &nbsp; &nbsp;
+     7: &nbsp; --------------------------------------------------------------------------------&nbsp;
+     8: &nbsp; --&nbsp;OSVVM&nbsp;testbench:&nbsp;a8_1_reconstructed_value&nbsp;(combinational).&nbsp;
+     9: &nbsp; --&nbsp;
+    10: &nbsp; --&nbsp;T.87&nbsp;written&nbsp;requirement&nbsp;A.8.1:&nbsp;with&nbsp;NEAR=0&nbsp;the&nbsp;reconstructed&nbsp;value&nbsp;Rx&nbsp;is&nbsp;Ix.&nbsp;
+    11: &nbsp; --&nbsp;Exhaustive&nbsp;over&nbsp;every&nbsp;pixel&nbsp;value;&nbsp;coverage&nbsp;closes&nbsp;the&nbsp;0&nbsp;and&nbsp;MAXVAL&nbsp;ends.&nbsp;
+    12: &nbsp; --------------------------------------------------------------------------------&nbsp;
+    13: &nbsp; &nbsp;
+    14: &nbsp; library&nbsp;ieee;&nbsp;
+    15: &nbsp; &nbsp;&nbsp;use&nbsp;ieee.std_logic_1164.all;&nbsp;
+    16: &nbsp; &nbsp;&nbsp;use&nbsp;ieee.numeric_std.all;&nbsp;
+    17: &nbsp; &nbsp;&nbsp;use&nbsp;work.openjls_pkg.all;&nbsp;
+    18: &nbsp; &nbsp;&nbsp;use&nbsp;work.olo_base_pkg_math.log2ceil;&nbsp;
+    19: &nbsp; &nbsp;
+    20: &nbsp; library&nbsp;osvvm;&nbsp;
+    21: &nbsp; &nbsp;&nbsp;context&nbsp;osvvm.OsvvmContext;&nbsp;
+    22: &nbsp; &nbsp;
+    23: &nbsp; library&nbsp;tb_support;&nbsp;
+    24: &nbsp; &nbsp;&nbsp;use&nbsp;tb_support.tb_support_pkg.all;&nbsp;
+    25: &nbsp; &nbsp;
+    26: &nbsp; entity&nbsp;tb_a8_1_osvvm&nbsp;is&nbsp;
+    27: &nbsp; &nbsp;&nbsp;generic&nbsp;(BITNESS&nbsp;:&nbsp;natural&nbsp;range&nbsp;8&nbsp;to&nbsp;16&nbsp;:=&nbsp;CO_BITNESS_STD);&nbsp;
+    28: &nbsp; end&nbsp;entity&nbsp;tb_a8_1_osvvm;&nbsp;
+    29: &nbsp; &nbsp;
+    30: &nbsp; architecture&nbsp;sim&nbsp;of&nbsp;tb_a8_1_osvvm&nbsp;is&nbsp;
+    31: &nbsp; &nbsp;
+    32: &nbsp; &nbsp;&nbsp;constant&nbsp;PX_MAX&nbsp;:&nbsp;integer&nbsp;:=&nbsp;(2&nbsp;**&nbsp;BITNESS)&nbsp;-&nbsp;1;&nbsp;
+    33: &nbsp; &nbsp;
+    34: &nbsp; &nbsp;&nbsp;signal&nbsp;sIx&nbsp;:&nbsp;unsigned(BITNESS&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+    35: &nbsp; &nbsp;&nbsp;signal&nbsp;sRx&nbsp;:&nbsp;unsigned(BITNESS&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+    36: &nbsp; &nbsp;
+    37: &nbsp; begin&nbsp;
+    38: &nbsp; &nbsp;
+    39: &nbsp; &nbsp;&nbsp;dut&nbsp;:&nbsp;entity&nbsp;work.a8_1_reconstructed_value(behavioral)&nbsp;
+    40: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;generic&nbsp;map&nbsp;(&nbsp;
+    41: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BITNESS&nbsp;=&gt;&nbsp;BITNESS&nbsp;
+    42: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;)&nbsp;
+    43: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;port&nbsp;map&nbsp;(&nbsp;
+    44: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iIx&nbsp;=&gt;&nbsp;sIx,&nbsp;
+    45: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;oRx&nbsp;=&gt;&nbsp;sRx&nbsp;
+    46: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;);&nbsp;
+    47: &nbsp; &nbsp;
+    48: &nbsp; &nbsp;&nbsp;stim&nbsp;:&nbsp;process&nbsp;is&nbsp;
+    49: &nbsp; &nbsp;
+    50: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;cov&nbsp;:&nbsp;CoverageIDType;&nbsp;
+    51: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;req&nbsp;:&nbsp;AlertLogIDType;&nbsp;
+    52: &nbsp; &nbsp;
+    53: &nbsp; &nbsp;&nbsp;begin&nbsp;
+    54: &nbsp; &nbsp;
+    55: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;SetAlertLogName("tb_a8_1_osvvm");&nbsp;
+    56: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;SetLogEnable(PASSED,&nbsp;FALSE);&nbsp;
+    57: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;req&nbsp;:=&nbsp;GetReqID("T87.A8.1",&nbsp;PX_MAX&nbsp;+&nbsp;1);&nbsp;
+    58: &nbsp; &nbsp;
+    59: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;cov&nbsp;:=&nbsp;NewID("Ix");&nbsp;
+    60: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;SetFieldName(cov,&nbsp;"Ix");&nbsp;
+    61: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;AddBins(cov,&nbsp;"zero",&nbsp;GenBin(0));&nbsp;
+    62: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;AddBins(cov,&nbsp;"interior",&nbsp;GenBin(1,&nbsp;PX_MAX&nbsp;-&nbsp;1,&nbsp;1));&nbsp;
+    63: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;AddBins(cov,&nbsp;"MAXVAL",&nbsp;GenBin(PX_MAX));&nbsp;
+    64: &nbsp; &nbsp;
+    65: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;ix&nbsp;in&nbsp;0&nbsp;to&nbsp;PX_MAX&nbsp;loop&nbsp;
+    66: &nbsp; &nbsp;
+    67: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sIx&nbsp;&lt;=&nbsp;to_unsigned(ix,&nbsp;BITNESS);&nbsp;
+    68: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait&nbsp;for&nbsp;1&nbsp;ns;&nbsp;
+    69: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AffirmIfEqual(req,&nbsp;checked_integer(sRx),&nbsp;ix,&nbsp;"Rx&nbsp;=&nbsp;Ix");&nbsp;
+    70: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ICover(cov,&nbsp;ix);&nbsp;
+    71: &nbsp; &nbsp;
+    72: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+    73: &nbsp; &nbsp;
+    74: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;WriteBin(cov);&nbsp;
+    75: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;AffirmIf(GetAlertLogID("CoverageClosure"),&nbsp;IsCovered(cov),&nbsp;"Ix&nbsp;coverage&nbsp;closed");&nbsp;
+    76: &nbsp; &nbsp;
+    77: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end_of_test("tb_a8_1_osvvm");&nbsp;
+    78: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;wait;&nbsp;
+    79: &nbsp; &nbsp;
+    80: &nbsp; &nbsp;&nbsp;end&nbsp;process&nbsp;stim;&nbsp;
+    81: &nbsp; &nbsp;
+    82: &nbsp; end&nbsp;architecture&nbsp;sim;&nbsp;
+</code></pre>

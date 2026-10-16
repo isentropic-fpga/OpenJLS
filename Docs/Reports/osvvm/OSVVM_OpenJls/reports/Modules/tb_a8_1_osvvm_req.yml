@@ -1,0 +1,5 @@
+- Requirement: "T87.A8.1"
+  TestCases: 
+  - TestName: "tb_a8_1_osvvm"
+    Status: PASSED
+    Results: {Goal: 4096, Passed: 4096, Errors: 0, Checked: 4096, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
