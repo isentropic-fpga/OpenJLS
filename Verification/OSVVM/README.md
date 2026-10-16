@@ -436,7 +436,7 @@ counts described above.
 | `T87.A9` | Modulo reduction | `tb_a9_osvvm` | 200 |
 | `T87.A10` | Golomb parameter k | `tb_a10_osvvm` | 400 |
 | `T87.A11` | Error mapping (incl. special case) | `tb_a11_osvvm` | 500 |
-| `T87.A11.1` | Golomb encoding (incl. escape) | `tb_a11_1_osvvm` | 400 |
+| `T87.A11.1` | Golomb encoding, regular mode (incl. escape) | `tb_a11_1_osvvm` | 400 |
 | `T87.A11.2` | Bit packing | `tb_a11_2_osvvm` | 100 |
 | `T87.A12` | Context variables update (A, B, N) | `tb_a12_osvvm` | 300 |
 | `T87.A13` | Bias update (B, C) | `tb_a13_osvvm` | 300 |
@@ -450,6 +450,7 @@ counts described above.
 | `T87.A20.2` | Golomb k from TEMP (shared A.10) | `tb_a20_2_osvvm` | 400 |
 | `T87.A21` | Map computation | `tb_a21_osvvm` | 400 |
 | `T87.A22` | RI errval mapping | `tb_a22_osvvm` | 300 |
+| `T87.A22.1` | RI Golomb encoding, glimit = LIMIT − J[RUNindex] − 1 | `tb_a11_1_osvvm` | 192 |
 | `T87.A23` | Run interruption update | `tb_a23_osvvm` | 600 |
 | `T87.H3` | Output byte-identical to the Annex H.3 golden stream under every Phase A stress | `tb_openjls_top_osvvm` | 57 |
 | `OJLS.BackToBack` | Next image accepted while the previous one is still draining — no inter-image gap required | `tb_openjls_top_osvvm` | 3 |

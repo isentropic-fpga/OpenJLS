@@ -99,6 +99,8 @@ begin
     variable rv      : RandomPType;
     variable cov     : CoverageIDType;
     variable req     : AlertLogIDType;
+    variable reqRi   : AlertLogIDType;
+    variable reqSel  : AlertLogIDType;
     variable covK, covJ : CoverageIDType;
     variable k       : integer;
     variable merr    : integer;
@@ -145,9 +147,14 @@ begin
         escape := 1;
       end if;
 
-      AffirmIfEqual(req, checked_integer(sUnary), expUn, msg & " unary");
-      AffirmIfEqual(req, checked_integer(sSuffixLen), expLen, msg & " sufLen");
-      AffirmIfEqual(req, checked_integer(sSuffixVal), expVal, msg & " sufVal");
+      if ri = '1' then
+        reqSel := reqRi;
+      else
+        reqSel := req;
+      end if;
+      AffirmIfEqual(reqSel, checked_integer(sUnary), expUn, msg & " unary");
+      AffirmIfEqual(reqSel, checked_integer(sSuffixLen), expLen, msg & " sufLen");
+      AffirmIfEqual(reqSel, checked_integer(sSuffixVal), expVal, msg & " sufVal");
 
       ICover(cov, (std_to_int(ri), escape));
       ICover(covK, kv);
@@ -160,7 +167,9 @@ begin
     SetAlertLogName("tb_a11_1_osvvm");
     SetLogEnable(PASSED, FALSE);
     rv.InitSeed(rv'instance_name);
-    req := GetReqID("T87.A11.1", 400);
+    req   := GetReqID("T87.A11.1", 400);
+    -- Guaranteed by the sweep: 32 RUNindex x 2 suffix cases x 3 fields.
+    reqRi := GetReqID("T87.A22.1", 192);
 
     covK := NewID("Golomb k");
     SetFieldName(covK, "k");
