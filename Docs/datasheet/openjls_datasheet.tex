@@ -55,6 +55,7 @@
 \graphicspath{{../Images/}}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{5pt}
+\setlength{\emergencystretch}{1.5em}
 \setlist{nosep,leftmargin=1.4em}
 \setlist[itemize]{label={\color{amber}\textbullet}}
 \newcolumntype{C}{>{\centering\arraybackslash}m{0.10\textwidth}}
@@ -188,55 +189,26 @@ Demo projects: \url{https://github.com/isentropic-fpga/OpenJLS-Demos}
 \footnotetext[3]{12-bit, Xilinx \texttt{xczu7eg-1}.}
 \footnotetext[4]{AXI4-Stream and Avalon-ST compatible.}
 \footnotetext[5]{One image row; no external RAM.}
-\footnotetext[6]{8 to 16 bit; plus block RAM scaling with image width and pixel depth.}
+\footnotetext[6]{Across 8--16 bit, plus block RAM that scales with image width and pixel depth.}
 \setcounter{footnote}{6}
-
-%======================================================================
-\section{Revision and contact}
-\begin{table}[H]
-  \centering
-  \caption{Revision history.}
-  \label{tab:revision}
-\begin{tabular}{@{}l l l@{}}
-  \toprule
-  \hd{Version} & \hd{Date} & \hd{Notes} \\
-  \midrule
-  1.0 & 2026-06 & Initial release. \\
-  1.1 & 2026-07 & Packaged IPs for Vivado. \\
-  1.2 & 2026-07 & Isentropic branding; cores repackaged under the
-  \texttt{isentropic} vendor. \\
-  1.3 & 2026-09 & Frequency increased \about15\%, LUT reduction \about16\%,
-  BRAM up 1 tile. \\
-  \bottomrule
-\end{tabular}
-\end{table}
-
-\noindent\textbf{License.} OpenJLS is dual-licensed: free under
-\href{https://www.gnu.org/licenses/gpl-3.0.html}{GPL\,v3} for any GPL-compliant
-use, or under a commercial license for proprietary products without GPL
-obligations. Evaluation --- clone, simulate, synthesize, test --- is
-unrestricted; a commercial license is required only to ship a product.
-
-\noindent OpenJLS is developed and maintained by Isentropic. For commercial
-licensing, technical questions, or collaboration inquiries, contact
-\textbf{\href{mailto:contact@isentropic.com.br}{contact\allowbreak @\allowbreak isentropic.com.br}}.
 
 %======================================================================
 \section{Functional description}
 The core is a fully pipelined encoder with a latency of 14 clock cycles: an
 input register, six processing stages (gradient computation, context modeling,
 MED prediction with bias correction, Golomb--Rice / run-length coding) and
-three internally registered output stages (bit packer, byte stuffer, framer).
+seven internally registered output stages (bit packer, byte stuffer, framer).
+The architecture builds on Mert~[2]; RAM primitives come from open-logic~[4].
 
 End-of-image is derived internally from the dimensions provided at the ports \texttt{iImageWidth} and \texttt{iImageHeight}.
-The core never stalls --- neither at EOI (end of image) nor at EOL (end of line) --- which allows processing multiple images back-to-back.
-The only exception is when the downstream stalls long enough for the byte-stuffer buffer to fill, which in turn stalls the upstream.
+The core never stalls at end of line or end of image, so images stream back-to-back.
+It stalls only when downstream backpressure fills the byte-stuffer buffer.
+In principle the byte stuffer's fixed 4-byte-per-clock drain could also stall the
+input if the code rate exceeded it for long enough, but none of the random,
+adversarial or worst-case natural images we measured caused a stall.
 
-While the pipeline latency is 14 cycles, the core does not emit an output beat
-every cycle: the output stages accumulate compressed bits and assert
-\texttt{oValid} only once a full \texttt{OUT\_WIDTH} word is ready. As the
-bitstream is compressed, these output beats are infrequent relative to the
-one-pixel-per-clock input.
+The output stages assert \texttt{oValid} only once a full \texttt{OUT\_WIDTH}
+word is ready, so output beats are much rarer than input pixels.
 
 \begin{figure}[H]
   \centering
@@ -250,8 +222,6 @@ repository.
 
 %======================================================================
 \section{Generics}
-The core is configured by the four generics in Table~\ref{tab:generics}.
-
 \begin{table}[H]
   \centering
   \caption{Configuration generics.}
@@ -268,13 +238,10 @@ The core is configured by the four generics in Table~\ref{tab:generics}.
 \end{tabularx}
 \end{table}
 
-\noindent \texttt{MAX\_IMAGE\_WIDTH} and \texttt{MAX\_IMAGE\_HEIGHT} fix the
-\emph{compile-time} maximum image size: they size the on-chip line buffer and the
-dimension counters, so a larger maximum costs more BRAM. They do not select the
-size of a given image --- the dimensions of each encoded image are chosen at
-\emph{run time} through the \texttt{iImageWidth} and \texttt{iImageHeight} ports
-(Table~\ref{tab:ports}), which accept any value from the minimum up to the
-configured maximum.
+\noindent \texttt{MAX\_IMAGE\_WIDTH} and \texttt{MAX\_IMAGE\_HEIGHT} set the
+\emph{compile-time} maximum and size the line buffer and dimension counters. Each
+image's actual size is set at \emph{run time} through \texttt{iImageWidth} and
+\texttt{iImageHeight} (Table~\ref{tab:ports}), up to that maximum.
 
 %======================================================================
 \section{Ports}
@@ -311,10 +278,9 @@ ecosystem (Avalon-ST maps the same way at \texttt{readyLatency}~=~0).
 \noindent \textit{IMPORTANT:}
 \begin{itemize}
   \item \texttt{iImageWidth} and \texttt{iImageHeight} are only sampled while \texttt{iRst} is asserted (\texttt{'1'}).
-  \item If an invalid value is provided to \texttt{iImageWidth}, that is \texttt{iImageWidth > MAX\_IMAGE\_WIDTH} or \texttt{iImageWidth < 4}, the encoder uses \texttt{MAX\_IMAGE\_WIDTH} as the image width.
-  \item If an invalid value is provided to \texttt{iImageHeight}, that is \texttt{iImageHeight > MAX\_IMAGE\_HEIGHT} or \texttt{iImageHeight < 1}, the encoder uses \texttt{MAX\_IMAGE\_HEIGHT} as the image height.
+  \item Out-of-range values (width outside 4--\texttt{MAX\_IMAGE\_WIDTH}, height outside 1--\texttt{MAX\_IMAGE\_HEIGHT}) fall back to the maximum.
   \item If you don't intend to change the image dimensions at run-time, wire both inputs to \texttt{0} so that the maximum values are used.
-  \item Both ports are a fixed 16 bits regardless of the \texttt{MAX\_IMAGE\_*} generics --- every representable value is checked, so any out-of-range value is caught and replaced by the maximum.
+  \item Both ports are a fixed 16 bits regardless of the \texttt{MAX\_IMAGE\_*} generics, which keeps them usable in Vivado block designs (their port-width evaluator handles only literal arithmetic).
 \end{itemize}
 
 %======================================================================
@@ -323,8 +289,8 @@ ecosystem (Avalon-ST maps the same way at \texttt{readyLatency}~=~0).
 \textbf{Pixel input.} Pixels are streamed in scan order --- the first row left
 to right, then the second row, and so on --- each an unsigned value on
 \texttt{iPixel}. A pixel transfers on every cycle where
-\texttt{iValid} and \texttt{oReady} are both high. The core asserts
-\texttt{oReady} continuously and deasserts it only when the FIFO in byte stuffer fills
+\texttt{iValid} and \texttt{oReady} are both high. Outside reset, the core
+holds \texttt{oReady} high and drops it only when the byte-stuffer buffer fills
 under downstream backpressure. Figure~\ref{fig:timing-input} shows a transfer
 with a brief downstream stall.
 
@@ -339,9 +305,7 @@ with a brief downstream stall.
   oReady  & HHLLHHHH     \\
 \end{tikztimingtable}
 \end{figure}
-\noindent In Figure~\ref{fig:timing-input}, \texttt{P2} is held flat across the
-stall and accepted when \texttt{oReady} returns high; no pixel is dropped while
-\texttt{oReady} is low.
+\noindent No pixel is dropped while \texttt{oReady} is low.
 
 \textbf{Reset and configuration.} \texttt{iRst} is level-sensitive (hold it high
 for at least one clock) and clears the pipeline. The image dimensions are
@@ -364,27 +328,36 @@ changes; with the size unchanged, images encode back-to-back.
   sImageHeight & 5D{H0} 2D{H1} \\
 \end{tikztimingtable}
 \end{figure}
-\noindent In Figure~\ref{fig:timing-reset}, the new size (\texttt{W1}/\texttt{H1})
-is driven for several cycles, then \texttt{iRst} pulses high; the dimensions
-register on the rising edge while \texttt{iRst} is high.
+\noindent \texttt{sImageWidth} and \texttt{sImageHeight} are the internal registers that hold the dimensions; they load on the rising edge while \texttt{iRst} is high.
 
 \textbf{Output.} Beats appear on \texttt{oData}/\texttt{oValid} subject to
 \texttt{iReady}; \texttt{oLast} marks the final beat (EOI) and \texttt{oKeep} flags
 its valid bytes. The bitstream is byte-serial and MSB-first: the earliest byte
-occupies the most-significant byte of \texttt{oData}. Pipeline latency is 14
-clock cycles.
+occupies the most-significant byte of \texttt{oData}.
 
 %======================================================================
 \section{Resources and performance}
 Characterized on Xilinx Zynq UltraScale+ \texttt{xczu7eg-fbvb900-1-e},
-Vivado 2025.2, using the generics \texttt{BITNESS = 12} (unless stated otherwise) and \texttt{OUT\_WIDTH = 64}, RTL-only with no floorplanning.
+Vivado 2025.2, with \texttt{OUT\_WIDTH = 64}, RTL-only with no floorplanning.
 \fmax{} is the true maximum, found by over-constraining the clock until timing fails.
 At one pixel per clock, \about280\,MHz is \about280\,Mpixel/s.
 
-\noindent Figure~\ref{fig:fmax} and Table~\ref{tab:fmax} report \fmax{} across
-\texttt{MAX\_IMAGE\_WIDTH}; Figure~\ref{fig:util} and Table~\ref{tab:util} report
-the resource usage; Figures~\ref{fig:fmaxbits}--\ref{fig:utilbits} and
-Tables~\ref{tab:bits}--\ref{tab:utilbits} repeat both across \texttt{BITNESS}.
+\begin{sloppypar}
+\noindent Every configuration is implemented with four strategies: the Vivado
+default, EPRPO (\texttt{Performance\_\allowbreak Explore\allowbreak PostRoute\allowbreak PhysOpt}),
+NetDelay (\texttt{Performance\_\allowbreak NetDelay\_\allowbreak high}) and
+Congestion (\texttt{Congestion\_\allowbreak SpreadLogic\_\allowbreak high}).
+Frequencies are in MHz; bold marks the best strategy per row. Resources are for
+the default strategy and near-identical across strategies.
+\end{sloppypar}
+
+\subsection{Image width sweep}
+\texttt{BITNESS = 12}, \texttt{MAX\_IMAGE\_WIDTH} from 4096 to 65535. The design is
+congestion-bound, so the winning strategy shifts with image size and with netlist
+changes; the best-of band (\about282--289\,MHz) is the headline figure.
+Strategies differ by 7--22\,MHz per size, so a default run lands close to it.
+Logic is essentially constant with image size; only the line-buffer BRAM scales
+with width.
 
 \begin{figure}[H]
   \centering
@@ -436,18 +409,12 @@ Tables~\ref{tab:bits}--\ref{tab:utilbits} repeat both across \texttt{BITNESS}.
 \end{tabular}
 \end{table}
 
-\begin{sloppypar}
-\noindent In Table~\ref{tab:fmax} frequencies are in MHz and the best strategy
-per row is in bold; the strategies are \texttt{Performance\_\allowbreak Explore\allowbreak PostRoute\allowbreak PhysOpt}
-(EPRPO), \texttt{Performance\_\allowbreak NetDelay\_\allowbreak high} (NetDelay) and
-\texttt{Congestion\_\allowbreak SpreadLogic\_\allowbreak high} (Congestion). The design is congestion-bound,
-so the winning strategy shifts with image size; a given netlist is deterministic,
-but the per-size winner is placement-sensitive and can shift when the netlist
-changes, so the best-of band (\about282--289\,MHz) is the headline figure; the per-size spread across strategies is 7--22\,MHz, so a default run lands close to it at most sizes. Table~\ref{tab:util} is for the default
-strategy; utilization is near-identical across strategies. Logic is essentially
-constant with image size; only the line-buffer BRAM scales with width and pixel
-depth.
-\end{sloppypar}
+\subsection{Pixel depth sweep}
+\texttt{MAX\_IMAGE\_WIDTH = 12288}, \texttt{BITNESS} from 8 to 16. Best-of \fmax{}
+falls from \about305\,MHz at 8 bits to \about277\,MHz at 14 bits and
+\about225\,MHz at 16 bits. The byte stuffer is off the critical path at every
+depth; the limit is the context RAM read into the prediction-error register, whose
+carry chains widen with pixel depth. Logic and line-buffer BRAM both grow with depth.
 
 \begin{figure}[H]
   \centering
@@ -497,14 +464,9 @@ depth.
 \end{tabular}
 \end{table}
 
-\noindent Best-of \fmax{} falls from \about305\,MHz at 8 bits to \about277\,MHz
-at 14 bits and \about225\,MHz at 16 bits. The byte stuffer is off the critical
-path at every depth; the limit is the context RAM read into the prediction-error
-register, whose carry chains widen with pixel depth. Resources are for the
-default strategy.
-
 %======================================================================
 \section{Integration example}
+\noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}
 u_enc : entity work.openjls_top
   generic map (
@@ -526,15 +488,12 @@ u_enc : entity work.openjls_top
     oLast        => m_tlast,
     iReady       => m_tready );
 \end{lstlisting}
+\end{minipage}
 
-\noindent Being a single entity with standard ready/valid ports, \texttt{openjls\_top}
-can equally be dropped onto a block diagram and wired there, instead of instantiating
-it in HDL. The dimension ports are fixed at 16 bits (rather than sized from the
-generics) because Vivado's block-design port-width evaluator only handles literal
-arithmetic in port expressions.
+\noindent It can also be added to a block design as an RTL module.
 
 \subsection{Xilinx IP cores}
-For the Vivado flow the core ships the following pre-packaged IPs
+For the Vivado flow the core ships the following pre-packaged IPs:
 
 \begin{table}[H]
   \centering
@@ -542,16 +501,15 @@ For the Vivado flow the core ships the following pre-packaged IPs
   \toprule
   \hd{IP Catalog name} & \hd{Interfaces} \\
   \midrule
-  OpenJLS Encoder (Native)                  & Plain Ready/Valid\\
+  OpenJLS Encoder (Native)                  & Plain ready/valid \\
   OpenJLS Encoder (AXI4-Stream)             & AXI-Stream for the data, native pins for control \\
   OpenJLS Encoder (AXI4-Stream + AXI4-Lite) & AXI-Stream for the data, AXI-Lite for control \\
   \bottomrule
 \end{tabularx}
 \end{table}
 
-To use simply add \texttt{Sources/Xilinx/ip\_repo/} to the project's IP repositories
-and the three cores appear in the
-IP Catalog, ready to drop onto a block design.
+Add \texttt{Sources/Xilinx/ip\_repo/} to the project's IP repositories and the
+three cores appear in the IP Catalog, ready to drop onto a block design.
 
 \subsection{AXI4-Lite register map}
 The AXI4-Lite variant replaces the native control pins with a register bank
@@ -605,12 +563,12 @@ both RTL and post-synthesis (gate-level) stages:
         tests (byte-exact AXI4-Stream pass-through at 8- and 12-bit, AXI4-Lite
         register map, live reconfiguration, mid-image abort), all with
         requirements tracking.
-  \item \textbf{Coverage} --- OSVVM functional coverage with NVC structural code coverage (99\%+ statements).
-  \item \textbf{Golden model} --- Byte-exact vs the independent CharLS C++
-        encoder over the 5555 simulation-size images (up to 0.5\,MP) of the 5639-image corpus at 8--16 bits, plus ISO/IEC 14495-1 vectors.
+  \item \textbf{Coverage} --- OSVVM functional coverage with NVC structural code coverage.
+  \item \textbf{Golden model} --- Byte-exact vs CharLS on all 5555
+        simulation-size images (up to 0.5\,MP, 8--16 bit) plus the ISO/IEC 14495-1 vectors.
   \item \textbf{Design contracts} --- Embedded PSL assertions (ready/valid handshake protocol, internal handshakes) on every run.
   \item \textbf{Post-synthesis} --- The stress test and a golden-model subset re-run on the synthesized netlist.
-  \item \textbf{Hardware-in-the-loop} --- The full 5639-image corpus, including the 84 full-size originals, encoded end-to-end on a PYNQ-Z2 FPGA and byte-compared against CharLS on real silicon. Produced in the demos repository \href{https://github.com/isentropic-fpga/OpenJLS-Demos}{OpenJLS-Demos} by the EncodeOverEthernet project.
+  \item \textbf{Hardware-in-the-loop} --- The golden-model comparison on silicon: the full 5639-image corpus, including the 84 full-size originals, encoded on a PYNQ-Z2 FPGA and byte-compared against CharLS. Run by the EncodeOverEthernet project in \href{https://github.com/isentropic-fpga/OpenJLS-Demos}{OpenJLS-Demos}.
 \end{itemize}
 
 \noindent The golden corpus (Table~\ref{tab:corpus}) combines natural photographs
@@ -643,8 +601,6 @@ simulation; their 84 full-size originals are part of the corpus but run on hardw
 \end{tabular}
 \end{table}
 
-\noindent Table~\ref{tab:regression} is the latest regression snapshot.
-
 \begin{table}[H]
   \centering
   \caption{Latest regression snapshot.}
@@ -658,14 +614,41 @@ simulation; their 84 full-size originals are part of the corpus but run on hardw
   Golden model            & PASS & 100\%  & 5555/5555 images byte-exact vs CharLS \\
   Post-synth OSVVM        & PASS & 100\%  & Control-plane stress on the gate-level netlist \\
   Post-synth golden model & PASS & 100\%  & 167/167 8-bit images up to 0.05\,MP byte-exact vs CharLS \\
-  Hardware-in-the-loop    & PASS & 100\%  & 5639/5639 images byte-exact vs CharLS on PYNQ-Z2 silicon \\
+  HIL golden model        & PASS & 100\%  & 5639/5639 images byte-exact vs CharLS on PYNQ-Z2 silicon \\
   \bottomrule
 \end{tabularx}
 \end{table}
 
+%======================================================================
+\section{Revision and contact}
+\begin{table}[H]
+  \centering
+  \caption{Revision history.}
+  \label{tab:revision}
+\begin{tabular}{@{}l l l@{}}
+  \toprule
+  \hd{Version} & \hd{Date} & \hd{Notes} \\
+  \midrule
+  1.0 & 2026-06 & Initial release. \\
+  1.1 & 2026-07 & Packaged IPs for Vivado. \\
+  1.2 & 2026-07 & Isentropic branding; cores repackaged under the
+  \texttt{isentropic} vendor. \\
+  1.3 & 2026-09 & Frequency increased \about15\%, LUT reduction \about16\%,
+  BRAM up 1 tile. \\
+  \bottomrule
+\end{tabular}
+\end{table}
 
+\noindent\textbf{License.} OpenJLS is dual-licensed: free under
+\href{https://www.gnu.org/licenses/gpl-3.0.html}{GPL\,v3} for any GPL-compliant
+use, or under a commercial license for proprietary products without GPL
+obligations. Evaluation --- clone, simulate, synthesize, test --- is
+unrestricted; a commercial license is required only to ship a product.
 
-\vspace{10pt}
+\noindent OpenJLS is developed and maintained by Isentropic. For commercial
+licensing, technical questions, or collaboration inquiries, contact
+\textbf{\href{mailto:contact@isentropic.com.br}{contact\allowbreak @\allowbreak isentropic.com.br}}.
+
 \section*{References}
 \begin{enumerate}[label={[\arabic*]}, leftmargin=*, itemsep=2pt]
   \item ITU-T T.87 | ISO/IEC 14495-1, \emph{Lossless and near-lossless compression of continuous-tone still images --- Baseline (JPEG-LS)}.
