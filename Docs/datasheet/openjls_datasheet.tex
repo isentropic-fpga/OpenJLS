@@ -500,10 +500,10 @@ both RTL and post-synthesis (gate-level) stages:
         requirements tracking.
   \item \textbf{Coverage} --- OSVVM functional coverage with NVC structural code coverage (99\%+ statements).
   \item \textbf{Golden model} --- Byte-exact vs the independent CharLS C++
-        encoder over 5555 real and synthetic images at 8--16 bits, plus ISO/IEC 14495-1 vectors.
+        encoder over the 5555 simulation-size images (up to 0.5\,MP) of the 5639-image corpus at 8--16 bits, plus ISO/IEC 14495-1 vectors.
   \item \textbf{Design contracts} --- Embedded PSL assertions (ready/valid handshake protocol, internal handshakes) on every run.
   \item \textbf{Post-synthesis} --- The stress test and a golden-model subset re-run on the synthesized netlist.
-  \item \textbf{Hardware-in-the-loop} --- The full corpus plus its 84 full-size originals (5639 images) encoded end-to-end on a PYNQ-Z2 FPGA and byte-compared against CharLS on real silicon. Produced in the demos repository \href{https://github.com/isentropic-fpga/OpenJLS-Demos}{OpenJLS-Demos} by the EncodeOverEthernet project.
+  \item \textbf{Hardware-in-the-loop} --- The full 5639-image corpus, including the 84 full-size originals, encoded end-to-end on a PYNQ-Z2 FPGA and byte-compared against CharLS on real silicon. Produced in the demos repository \href{https://github.com/isentropic-fpga/OpenJLS-Demos}{OpenJLS-Demos} by the EncodeOverEthernet project.
 \end{itemize}
 
 \noindent The golden corpus (Table~\ref{tab:corpus}) combines natural photographs
@@ -511,27 +511,27 @@ both RTL and post-synthesis (gate-level) stages:
 with natural-derived crops of the 16-bit photographs rescaled to each depth
 9--16, seeded white and 1/f$^\beta$ noise probes, and boundary/adversarial
 stress probes. Images over 0.5\,MP are sliced into full-width strips for
-simulation; their full-size originals run on hardware only.
+simulation; their 84 full-size originals are part of the corpus but run on hardware only.
 
 \begin{table}[H]
   \centering
   \caption{Golden-model corpus per bit depth.}
   \label{tab:corpus}
-\begin{tabular}{@{}r r r r r r@{}}
+\begin{tabular}{@{}r r r r r r r@{}}
   \toprule
-  \textbf{Bits} & \textbf{Natural} & \textbf{Natural derived} & \textbf{Noise} & \textbf{Stress} & \textbf{Total} \\
+  \textbf{Bits} & \textbf{Natural} & \textbf{Natural derived} & \textbf{Noise} & \textbf{Stress} & \textbf{Full-size} & \textbf{Total} \\
   \midrule
-  8  & 363 & 0   & 300 & 0  & 663 \\
-  9  & 0   & 300 & 300 & 2  & 602 \\
-  10 & 0   & 301 & 300 & 2  & 603 \\
-  11 & 0   & 300 & 300 & 2  & 602 \\
-  12 & 0   & 300 & 300 & 2  & 602 \\
-  13 & 0   & 300 & 300 & 2  & 602 \\
-  14 & 0   & 301 & 300 & 2  & 603 \\
-  15 & 0   & 300 & 300 & 2  & 602 \\
-  16 & 45  & 300 & 300 & 31 & 676 \\
+  8  & 363 & 0   & 300 & 0  & 69 & 732 \\
+  9  & 0   & 300 & 300 & 2  & 0  & 602 \\
+  10 & 0   & 301 & 300 & 2  & 0  & 603 \\
+  11 & 0   & 300 & 300 & 2  & 0  & 602 \\
+  12 & 0   & 300 & 300 & 2  & 0  & 602 \\
+  13 & 0   & 300 & 300 & 2  & 0  & 602 \\
+  14 & 0   & 301 & 300 & 2  & 0  & 603 \\
+  15 & 0   & 300 & 300 & 2  & 0  & 602 \\
+  16 & 45  & 300 & 300 & 31 & 15 & 691 \\
   \midrule
-  All & 408 & 2402 & 2700 & 45 & 5555 \\
+  All & 408 & 2402 & 2700 & 45 & 84 & 5639 \\
   \bottomrule
 \end{tabular}
 \end{table}
@@ -559,11 +559,12 @@ simulation; their full-size originals run on hardware only.
 
 
 \vspace{10pt}
-\noindent\textbf{References.}
-ITU-T T.87 / ISO/IEC 14495-1;
-Y.\,M.\,Mert, \emph{Key Architectural Optimizations for Hardware Efficient
-JPEG-LS Encoder}, IEEE 2018;
-\href{https://github.com/team-charls/charls}{CharLS};
-\href{https://github.com/open-logic/open-logic}{open-logic}.
+\section*{References}
+\begin{enumerate}[label={[\arabic*]}, leftmargin=*, itemsep=2pt]
+  \item ITU-T T.87 | ISO/IEC 14495-1, \emph{Lossless and near-lossless compression of continuous-tone still images --- Baseline (JPEG-LS)}.
+  \item Y.\,M.\,Mert, \emph{Key Architectural Optimizations for Hardware Efficient JPEG-LS Encoder}, IEEE, 2018.
+  \item CharLS, JPEG-LS reference C++ library, \url{https://github.com/team-charls/charls}.
+  \item open-logic, vendor-agnostic VHDL standard library, \url{https://github.com/open-logic/open-logic}.
+\end{enumerate}
 
 \end{document}
