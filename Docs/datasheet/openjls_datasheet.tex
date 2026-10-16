@@ -500,11 +500,41 @@ both RTL and post-synthesis (gate-level) stages:
         requirements tracking.
   \item \textbf{Coverage} --- OSVVM functional coverage with NVC structural code coverage (99\%+ statements).
   \item \textbf{Golden model} --- Byte-exact vs the independent CharLS C++
-        encoder over 287 real and synthetic images, plus ISO/IEC 14495-1 vectors.
+        encoder over 5555 real and synthetic images at 8--16 bits, plus ISO/IEC 14495-1 vectors.
   \item \textbf{Design contracts} --- Embedded PSL assertions (ready/valid handshake protocol, internal handshakes) on every run.
   \item \textbf{Post-synthesis} --- The stress test and a golden-model subset re-run on the synthesized netlist.
-  \item \textbf{Hardware-in-the-loop} --- The full 287-image corpus encoded end-to-end on a PYNQ-Z2 FPGA and byte-compared against CharLS on real silicon. Produced in the demos repository \href{https://github.com/isentropic-fpga/OpenJLS-Demos}{OpenJLS-Demos} by the EncodeOverEthernet project.
+  \item \textbf{Hardware-in-the-loop} --- The full corpus plus its 84 full-size originals (5639 images) encoded end-to-end on a PYNQ-Z2 FPGA and byte-compared against CharLS on real silicon. Produced in the demos repository \href{https://github.com/isentropic-fpga/OpenJLS-Demos}{OpenJLS-Demos} by the EncodeOverEthernet project.
 \end{itemize}
+
+\noindent The golden corpus (Table~\ref{tab:corpus}) combines natural photographs
+(USC-SIPI, imagecompression.info), which exist only at 8 and 16 bits,
+with natural-derived crops of the 16-bit photographs rescaled to each depth
+9--16, seeded white and 1/f$^\beta$ noise probes, and boundary/adversarial
+stress probes. Images over 0.5\,MP are sliced into full-width strips for
+simulation; their full-size originals run on hardware only.
+
+\begin{table}[H]
+  \centering
+  \caption{Golden-model corpus per bit depth.}
+  \label{tab:corpus}
+\begin{tabular}{@{}r r r r r r@{}}
+  \toprule
+  \textbf{Bits} & \textbf{Natural} & \textbf{Natural derived} & \textbf{Noise} & \textbf{Stress} & \textbf{Total} \\
+  \midrule
+  8  & 363 & 0   & 300 & 0  & 663 \\
+  9  & 0   & 300 & 300 & 2  & 602 \\
+  10 & 0   & 301 & 300 & 2  & 603 \\
+  11 & 0   & 300 & 300 & 2  & 602 \\
+  12 & 0   & 300 & 300 & 2  & 602 \\
+  13 & 0   & 300 & 300 & 2  & 602 \\
+  14 & 0   & 301 & 300 & 2  & 603 \\
+  15 & 0   & 300 & 300 & 2  & 602 \\
+  16 & 45  & 300 & 300 & 31 & 676 \\
+  \midrule
+  All & 408 & 2402 & 2700 & 45 & 5555 \\
+  \bottomrule
+\end{tabular}
+\end{table}
 
 \noindent Table~\ref{tab:regression} is the latest regression snapshot.
 
@@ -518,10 +548,10 @@ both RTL and post-synthesis (gate-level) stages:
   \midrule
   NVC code coverage       & info & 99.8\% & Per-DUT-file statement breakdown \\
   OSVVM suite             & PASS & 100\%  & 106 tests, 7\,303\,829 affirmations (module + top + AXI wrappers) \\
-  Golden model            & PASS & 100\%  & 287/287 images byte-exact vs CharLS \\
+  Golden model            & PASS & 100\%  & 5555/5555 images byte-exact vs CharLS \\
   Post-synth OSVVM        & PASS & 100\%  & Control-plane stress on the gate-level netlist \\
-  Post-synth golden model & PASS & 100\%  & 156/156 images byte-exact vs CharLS \\
-  Hardware-in-the-loop    & PASS & 100\%  & 287/287 images byte-exact vs CharLS on PYNQ-Z2 silicon \\
+  Post-synth golden model & PASS & 100\%  & 167/167 8-bit images up to 0.05\,MP byte-exact vs CharLS \\
+  Hardware-in-the-loop    & PASS & 100\%  & 5639/5639 images byte-exact vs CharLS on PYNQ-Z2 silicon \\
   \bottomrule
 \end{tabularx}
 \end{table}
