@@ -26,11 +26,11 @@
 -- RegInput -------
 --
 --   Stage 1     : A.1 gradients + A.3 mode select
---                 line_buffer
+--                 A.8.1 + line_buffer
 --
 -- Reg1 -----------
 --
---   Stage 2     : regular {A.4, A.4.1, A.4.2} | run {A.14, A.15/16, A.17, A.18}
+--   Stage 2     : regular {A.4, A.4.1, A.4.2} | run {A.14, A.15/16, A.17, A.18, A.20.1}
 --                 context_ram
 --
 -- Reg2 -----------
@@ -40,7 +40,7 @@
 --
 -- Reg3 -----------
 --
---   Stage 4     : shared {A.10} | regular {A.12, A.13} | RI {A.23};
+--   Stage 4     : shared {A.10 / A.20.2} | regular {A.12, A.13} | RI {A.23};
 --                 context writeback
 --
 -- Reg4 -----------
@@ -302,6 +302,7 @@ architecture rtl of openjls_top is
 
   -- Input stage
   signal sPixel                             : unsigned(BITNESS - 1 downto 0);
+  signal sRx                                : unsigned(BITNESS - 1 downto 0);
   signal sImageWidth                        : unsigned(log2ceil(MAX_IMAGE_WIDTH + 1) - 1 downto 0);
   signal sImageHeight                       : unsigned(log2ceil(MAX_IMAGE_HEIGHT + 1) - 1 downto 0);
   signal sValid                             : std_logic;                                              -- iValid & sReady
@@ -332,6 +333,7 @@ architecture rtl of openjls_top is
   signal sS2MQ3                             : signed(3 downto 0);
   signal sS2MSign                           : std_logic;
   signal sS2QReg                            : unsigned(8 downto 0);
+  signal sS2RunQ                            : unsigned(8 downto 0);
 
   -- Stage 2 — run
   signal sRunCntReg                         : unsigned(RUN_CNT_WIDTH - 1 downto 0);
@@ -399,7 +401,7 @@ architecture rtl of openjls_top is
 
   -- Stage 4
   signal sS4K                               : unsigned(K_WIDTH - 1 downto 0);
-  signal sS4AqSel                           : unsigned(A_WIDTH - 1 downto 0);                         -- iAq mux for shared A.10
+  signal sS4RiMode                          : std_logic;
   signal sS4AqNew                           : unsigned(A_WIDTH - 1 downto 0);
   signal sS4BqMid                           : signed(B_WIDTH - 1 downto 0);
   signal sS4NqNew                           : unsigned(N_WIDTH - 1 downto 0);
@@ -596,6 +598,15 @@ begin
   -------------------------------------------------------------------------------------------------------------
   -- Stage 1 — Line buffer + A.1 gradients + A.3 mode selection
   -------------------------------------------------------------------------------------------------------------
+  u_a8_1 : entity work.a8_1_reconstructed_value(behavioral)
+    generic map (
+      BITNESS => BITNESS
+    )
+    port map (
+      iIx => sPixel,
+      oRx => sRx
+    );
+
   u_line_buffer : entity work.line_buffer(behavioral)
     generic map (
       MAX_IMAGE_WIDTH  => MAX_IMAGE_WIDTH,
@@ -608,7 +619,7 @@ begin
       iImageWidth      => sImageWidth,
       iImageHeight     => sImageHeight,
       iValid           => sValid,
-      iPixel           => sPixel,
+      iPixel           => sRx,
       oA               => sLbRa,
       oB               => sLbRb,
       oC               => sLbRc,
@@ -827,10 +838,15 @@ begin
                   token_raw when sS2RawValid = '1' else
                   token_none;
 
-  -- A.20.1 inline: regular Q from A.4.2; run Q = 366 if RItype else 365
+  u_a20_1 : entity work.a20_1_run_context_index(behavioral)
+    port map (
+      iRItype => sS2RItype,
+      oQ      => sS2RunQ
+    );
+
+  -- Regular Q from A.4.2, run Q from A.20.1
   sS2Q <= sS2QReg when sReg1.mode = token_regular else
-          to_unsigned(366, 9) when sS2RItype = '1' else
-          to_unsigned(365, 9);
+          sS2RunQ;
 
   -- Sticky context-RAM owner: parity of the last valid token that issued a read,
   -- held across read bubbles. Effective owner = live Reg1 parity, else held.
@@ -1206,22 +1222,23 @@ begin
   end process p_reg3;
 
   -------------------------------------------------------------------------------------------------------------
-  -- Stage 4 — Shared A.10; regular A.12 + A.13; RI A.23
-  --           A.10's iAq is muxed: regular → Aq, RI → Temp.
+  -- Stage 4 — Shared A.10 (A.20.2); regular A.12 + A.13; RI A.23
   -------------------------------------------------------------------------------------------------------------
-  sS4AqSel <= sReg3.Temp when sReg3.mode = token_run_interruption else
-              sReg3.Aq;
+  sS4RiMode <= '1' when sReg3.mode = token_run_interruption else
+               '0';
 
-  u_a10 : entity work.a10_compute_k(behavioral)
+  u_a20_2 : entity work.a20_2_compute_k(behavioral)
     generic map (
       A_WIDTH => A_WIDTH,
       K_WIDTH => K_WIDTH,
       N_WIDTH => N_WIDTH
     )
     port map (
-      iNq     => sReg3.Nq,
-      iAq     => sS4AqSel,
-      oK      => sS4K
+      iRunInterruption => sS4RiMode,
+      iAq              => sReg3.Aq,
+      iTemp            => sReg3.Temp,
+      iNq              => sReg3.Nq,
+      oK               => sS4K
     );
 
   u_a12 : entity work.a12_variables_update(rtl)

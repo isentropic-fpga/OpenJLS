@@ -130,7 +130,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>ac374e1a</spirit:value>
+            <spirit:value>75b9a195</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -146,7 +146,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>ac374e1a</spirit:value>
+            <spirit:value>75b9a195</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -481,6 +481,16 @@
         <spirit:userFileType>IMPORTED_FILE</spirit:userFileType>
       </spirit:file>
       <spirit:file>
+        <spirit:name>src/A20_1_run_context_index.vhd</spirit:name>
+        <spirit:userFileType>vhdlSource-2008</spirit:userFileType>
+        <spirit:userFileType>IMPORTED_FILE</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>src/A20_2_compute_k.vhd</spirit:name>
+        <spirit:userFileType>vhdlSource-2008</spirit:userFileType>
+        <spirit:userFileType>IMPORTED_FILE</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
         <spirit:name>src/A20_compute_temp.vhd</spirit:name>
         <spirit:userFileType>vhdlSource-2008</spirit:userFileType>
         <spirit:userFileType>IMPORTED_FILE</spirit:userFileType>
@@ -527,6 +537,11 @@
       </spirit:file>
       <spirit:file>
         <spirit:name>src/A6_A7_prediction_error.vhd</spirit:name>
+        <spirit:userFileType>vhdlSource-2008</spirit:userFileType>
+        <spirit:userFileType>IMPORTED_FILE</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>src/A8_1_reconstructed_value.vhd</spirit:name>
         <spirit:userFileType>vhdlSource-2008</spirit:userFileType>
         <spirit:userFileType>IMPORTED_FILE</spirit:userFileType>
       </spirit:file>
@@ -665,6 +680,16 @@
         <spirit:userFileType>IMPORTED_FILE</spirit:userFileType>
       </spirit:file>
       <spirit:file>
+        <spirit:name>src/A20_1_run_context_index.vhd</spirit:name>
+        <spirit:userFileType>vhdlSource-2008</spirit:userFileType>
+        <spirit:userFileType>IMPORTED_FILE</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>src/A20_2_compute_k.vhd</spirit:name>
+        <spirit:userFileType>vhdlSource-2008</spirit:userFileType>
+        <spirit:userFileType>IMPORTED_FILE</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
         <spirit:name>src/A20_compute_temp.vhd</spirit:name>
         <spirit:userFileType>vhdlSource-2008</spirit:userFileType>
         <spirit:userFileType>IMPORTED_FILE</spirit:userFileType>
@@ -711,6 +736,11 @@
       </spirit:file>
       <spirit:file>
         <spirit:name>src/A6_A7_prediction_error.vhd</spirit:name>
+        <spirit:userFileType>vhdlSource-2008</spirit:userFileType>
+        <spirit:userFileType>IMPORTED_FILE</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>src/A8_1_reconstructed_value.vhd</spirit:name>
         <spirit:userFileType>vhdlSource-2008</spirit:userFileType>
         <spirit:userFileType>IMPORTED_FILE</spirit:userFileType>
       </spirit:file>
@@ -830,13 +860,13 @@
       <xilinx:definitionSource>package_project</xilinx:definitionSource>
       <xilinx:vendorDisplayName>Isentropic</xilinx:vendorDisplayName>
       <xilinx:vendorURL>https://github.com/isentropic-fpga/OpenJLS</xilinx:vendorURL>
-      <xilinx:coreRevision>26090823</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2026-09-09T02:18:05Z</xilinx:coreCreationDateTime>
+      <xilinx:coreRevision>26101615</xilinx:coreRevision>
+      <xilinx:coreCreationDateTime>2026-10-16T18:52:16Z</xilinx:coreCreationDateTime>
     </xilinx:coreExtensions>
     <xilinx:packagingInfo>
       <xilinx:xilinxVersion>2025.2</xilinx:xilinxVersion>
       <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="8e5b7ba9"/>
-      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="3ec08ad2"/>
+      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="626975e1"/>
       <xilinx:checksum xilinx:scope="ports" xilinx:value="76c8cdce"/>
       <xilinx:checksum xilinx:scope="hdlParameters" xilinx:value="b0b062b2"/>
       <xilinx:checksum xilinx:scope="parameters" xilinx:value="7b3665db"/>
