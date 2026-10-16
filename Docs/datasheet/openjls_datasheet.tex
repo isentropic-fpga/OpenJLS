@@ -87,6 +87,12 @@
 \renewcommand{\@makefntext}[1]{\noindent\makebox[1em][l]{\@makefnmark}#1}
 \makeatother
 \renewcommand{\footnoterule}{\kern-3pt{\color{divider}\hrule width 0.3\textwidth}\kern2.6pt}
+% Cover metric: spaced by the number's width alone (label overhangs right);
+% the starred form, used last, keeps the label inside the margin.
+\makeatletter
+\newcommand{\covermetric}{\@ifstar{\@covermetric{}}{\@covermetric{\rlap}}}
+\newcommand{\@covermetric}[3]{\begin{tabular}[t]{@{}l@{}}{\headfont\fontsize{26}{28}\selectfont #2}\\[3pt]#1{\color{muted}\kicker{#3}}\end{tabular}}
+\makeatother
 \newcommand{\twodigit}[1]{\ifnum#1<10 0\fi\number#1}
 
 \lstset{
@@ -139,10 +145,10 @@ Lossless JPEG-LS encoder for FPGAs.\\One pixel per clock, no external memory.\pa
 \vfill
 {\color{divider}\hrule height 0.4pt}\vspace{6mm}
 \noindent
-\begin{minipage}[t]{0.23\linewidth}{\headfont\fontsize{26}{28}\selectfont 280\,MHz}\par\vspace{3pt}{\color{muted}\kicker{Fmax, 12-bit}}\end{minipage}\hfill
-\begin{minipage}[t]{0.23\linewidth}{\headfont\fontsize{26}{28}\selectfont 1\,px/clk}\par\vspace{3pt}{\color{muted}\kicker{Throughput}}\end{minipage}\hfill
-\begin{minipage}[t]{0.23\linewidth}{\headfont\fontsize{26}{28}\selectfont 8--16\,bit}\par\vspace{3pt}{\color{muted}\kicker{Pixel depth}}\end{minipage}\hfill
-\begin{minipage}[t]{0.23\linewidth}{\headfont\fontsize{26}{28}\selectfont 5639/5639}\par\vspace{3pt}{\color{muted}\kicker{Byte-exact on silicon}}\end{minipage}
+\covermetric{280\,MPx/s}{Throughput, 12-bit}\hfill
+\covermetric{1.6:1}{Compression}\hfill
+\covermetric{8--16\,bit}{Pixel depth}\hfill
+\covermetric*{5639/5639}{Byte-exact images}
 \vspace{14mm}
 
 {\color{divider}\hrule height 0.4pt}\vspace{3mm}
@@ -171,26 +177,28 @@ Demo projects: \url{https://github.com/isentropic-fpga/OpenJLS-Demos}
   \toprule
   Standard      & JPEG-LS\footnotemark[1] \\
   Compression   & Lossless \\
+  Compression ratio & \about1.6:1\footnotemark[2] \\
   Components    & Grayscale \\
-  Pixel depth   & 8--16 bit\footnotemark[2] \\
+  Pixel depth   & 8--16 bit\footnotemark[3] \\
   Image size    & Up to 65535\,×\,65535 px \\
   Throughput    & 1 pixel / clock \\
   Latency       & 14 cycles \\
-  \fmax{}       & \about280\,MHz\footnotemark[3] \\
-  Interface     & Ready/valid stream\footnotemark[4] \\
-  Memory        & On-chip only\footnotemark[5] \\
-  Resources     & 5.3--7.6k LUT, 1.8--2.3k FF\footnotemark[6] \\
+  \fmax{}       & \about280\,MHz\footnotemark[4] \\
+  Interface     & Ready/valid stream\footnotemark[5] \\
+  Memory        & On-chip only\footnotemark[6] \\
+  Resources     & 5.3--7.6k LUT, 1.8--2.3k FF\footnotemark[7] \\
   Portability   & Vendor-agnostic VHDL \\
   \bottomrule
 \end{tabularx}
 \end{table}
 \footnotetext[1]{ISO/IEC 14495-1, ITU-T T.87.}
-\footnotetext[2]{Set by the \texttt{BITNESS} generic.}
-\footnotetext[3]{12-bit, Xilinx \texttt{xczu7eg-1}.}
-\footnotetext[4]{AXI4-Stream and Avalon-ST compatible.}
-\footnotetext[5]{One image row; no external RAM.}
-\footnotetext[6]{Across 8--16 bit, plus block RAM that scales with image width and pixel depth.}
-\setcounter{footnote}{6}
+\footnotetext[2]{Aggregate over the 240 natural photographs of the test corpus; content-dependent.}
+\footnotetext[3]{Set by the \texttt{BITNESS} generic.}
+\footnotetext[4]{12-bit, Xilinx \texttt{xczu7eg-1}.}
+\footnotetext[5]{AXI4-Stream and Avalon-ST compatible.}
+\footnotetext[6]{One image row; no external RAM.}
+\footnotetext[7]{Across 8--16 bit, plus block RAM that scales with image width and pixel depth.}
+\setcounter{footnote}{7}
 
 %======================================================================
 \section{Functional description}
