@@ -9,9 +9,9 @@
 
 OpenJLS is an open, verification-signed JPEG-LS encoder IP core for FPGAs - the open alternative to closed, commercial JPEG-LS cores, for teams who want to audit the RTL and evaluate before they buy.
 
-It implements the JPEG-LS standard (ISO/IEC 14495-1 / ITU-T T.87), a low-complexity lossless image codec with compression ratios comparable to JPEG 2000 lossless at a fraction of the computational cost. Every release is checked byte-exact against an independent reference encoder across 5639 images at 8–16 bits on silicon, 5555 of them also at RTL, and on a post-synthesis subset (see [Verification report](https://isentropic-fpga.github.io/OpenJLS/)).
+It implements the JPEG-LS standard (ISO/IEC 14495-1 / ITU-T T.87), a low-complexity lossless image codec reaching ~1.6:1 on natural photographs. Every release is checked byte-exact against an independent reference encoder across 5639 images at 8–16 bits on silicon, 5555 of them also at RTL, and on a post-synthesis subset.
 
-OpenJLS reaches ~280 MHz with 12-bit pixels on a Xilinx UltraScale+ ZU7EG (the MPSoC family used in onboard processors such as the Xiphos Q8), processing one pixel per clock (~280 Mpixel/s) for ~6.4k LUTs and no external memory; 8-bit reaches ~305 MHz and 16-bit ~225 MHz. It handles single-component (grayscale) data, so a multi-band sensor instantiates one compressor per band - resource usage is low enough that all bands run in parallel cheaply.
+OpenJLS reaches ~280 MHz with 12-bit pixels on a Xilinx UltraScale+ ZU7EG (the MPSoC family used in onboard processors such as the Xiphos Q8), processing one pixel per clock (~280 Mpixel/s) for ~6.3k LUTs and no external memory; 8-bit reaches ~305 MHz and 16-bit ~225 MHz. It handles single-component (grayscale) data, so a multi-band sensor instantiates one compressor per band - resource usage is low enough that all bands run in parallel cheaply.
 
 The RTL is vendor-neutral by construction (plain VHDL-1993 on open-logic memory primitives, which are VHDL-2008) and builds in any synthesis tool; the figures above were characterized on Xilinx.
 
@@ -33,9 +33,10 @@ The RTL is vendor-neutral by construction (plain VHDL-1993 on open-logic memory 
 | | |
 |---|---|
 | **Compression** | Lossless JPEG-LS (ISO/IEC 14495-1 / ITU-T T.87) |
+| **Compression ratio** | ~1.6:1 on natural photographs (content-dependent) |
 | **Pixel depth** | 8–16 bits, single component (grayscale) |
 | **Image size** | Up to 65535 × 65535 px, set at run time |
-| **Throughput** | 1 pixel/clock, ~280 MHz at 12-bit on UltraScale+ |
+| **Throughput** | ~280 Mpixel/s (1 pixel/clock, ~280 MHz at 12-bit, UltraScale+) |
 | **Memory** | On-chip line buffer, one image row; no external memory |
 | **Interface** | Ready/valid streaming (AXI4-Stream / Avalon-ST compatible) |
 | **Conformance** | Byte-exact vs the ISO reference vectors and [CharLS](https://github.com/team-charls/charls) |
@@ -54,7 +55,7 @@ OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level
 | Golden model | PASS | 100% | 5555/5555 images byte-exact vs CharLS |
 | Post-synth OSVVM | PASS | 100% | Control-plane stress on the gate-level netlist |
 | Post-synth golden model | PASS | 100% | 167/167 8-bit images up to 0.05 MP byte-exact vs CharLS |
-| Hardware-in-the-loop | PASS | 100% | 5639/5639 images byte-exact vs CharLS on PYNQ-Z2 silicon |
+| HIL golden model | PASS | 100% | 5639/5639 images byte-exact vs CharLS on PYNQ-Z2 silicon |
 
 - **OSVVM** — 29 module testbenches against independent T.87 reference models, a top-level control-plane stress test, and AXI wrapper tests, all with requirements tracking.
 - **Coverage** — OSVVM functional coverage plus NVC statement coverage.
@@ -87,7 +88,7 @@ OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level
 | 16 | 45 | 300 | 300 | 31 | 15 | 691 |
 | **All** | **408** | **2402** | **2700** | **45** | **84** | **5639** |
 
-The generated probes ([`gen_stress.py`](Verification/Golden%20model/imageprep/gen_stress.py), seeded and reproducible) cover what natural images never reach: bit depths 9–15 on synthetic content, boundary geometries (4×1 up to 65535×1), MED-adversarial patterns and a tiny-image fuzz batch. The public datasets are natural only at 8 and 16 bits, so the natural-derived images ([`gen_depth_tiles.py`](Verification/Golden%20model/imageprep/gen_depth_tiles.py), seeded) take random 4×1 to 640×384 crops of the original 16-bit photographs and rescale them to each new depth, giving every depth real texture; the noise probes ([`gen_noise_probes.py`](Verification/Golden%20model/imageprep/gen_noise_probes.py), seeded) span incompressible white noise down to smooth, run-mode-heavy 1/f^β gradients at the same sizes. Images over 0.5 MP are cut into three full-width strips of up to 64 rows ([`slice_large.py`](Verification/Golden%20model/imageprep/slice_large.py)), keeping their real line width; the full-size originals run on hardware only, as simulating them takes too long.
+The public datasets are natural only at 8 and 16 bits. The natural-derived images ([`gen_depth_tiles.py`](Verification/Golden%20model/imageprep/gen_depth_tiles.py)) rescale random 4×1 to 640×384 crops of the 16-bit photographs to each depth 9–16, giving every depth real texture. The noise probes ([`gen_noise_probes.py`](Verification/Golden%20model/imageprep/gen_noise_probes.py)) span incompressible white noise to smooth, run-mode-heavy 1/f^β gradients. The stress probes ([`gen_stress.py`](Verification/Golden%20model/imageprep/gen_stress.py)) cover boundary geometries (4×1 up to 65535×1), MED-adversarial patterns and a tiny-image fuzz batch. All generators are seeded. Images over 0.5 MP are sliced into three full-width strips of up to 64 rows ([`slice_large.py`](Verification/Golden%20model/imageprep/slice_large.py)); their originals run on hardware only.
 
 ---
 
@@ -98,10 +99,10 @@ The generated probes ([`gen_stress.py`](Verification/Golden%20model/imageprep/ge
 OpenJLS follows the JPEG-LS encoding pipeline:
 
 1. **Gradient computation** — local gradients from causal pixel neighbors (a, b, c, d)
-2. **Context modeling** — gradient quantization into 365 contexts with adaptive bias correction
-3. **Prediction** — MED (Median Edge Detector) with context-based bias cancellation
+2. **Context modeling** — gradient quantization into 365 contexts
+3. **Prediction** — MED (Median Edge Detector) with per-context bias correction
 4. **Encoding** — adaptive Golomb-Rice coding for regular mode, run-length encoding for uniform regions
-5. **Bitstream packing** — ISO/IEC 14495-1 compliant JPEG-LS output stream
+5. **Bitstream packing** — bit packing, byte stuffing and framing (header and markers) into an ISO/IEC 14495-1 stream
 
 The hardware architecture is based on the optimizations in Mert's [*Key Architectural Optimizations for Hardware Efficient JPEG-LS Encoder*](https://www.researchgate.net/publication/331795298_Key_Architectural_Optimizations_for_Hardware_Efficient_JPEG-LS_Encoder), reworked into a vendor-agnostic, fully pipelined VHDL core.
 
@@ -151,15 +152,15 @@ Timing, reset sequencing, latency and an instantiation example are in the [datas
 
 ### Xilinx IP cores
 
-For the Vivado flow the core ships the following pre-packaged IPs:
+Three pre-packaged Vivado IPs:
 
 | IP Catalog name | Interfaces |
 |---|---|
-| OpenJLS Encoder (Native) | Plain Ready/Valid |
+| OpenJLS Encoder (Native) | Plain ready/valid |
 | OpenJLS Encoder (AXI4-Stream) | AXI-Stream for the data, native pins for control |
 | OpenJLS Encoder (AXI4-Stream + AXI4-Lite) | AXI-Stream for the data, AXI-Lite for control |
 
-To use, simply add [`Sources/Xilinx/ip_repo/`](Sources/Xilinx/ip_repo/) to the project's IP repositories and the three cores appear in the IP Catalog, ready to drop onto a block design.
+Add [`Sources/Xilinx/ip_repo/`](Sources/Xilinx/ip_repo/) to the project's IP repositories; the cores appear in the IP Catalog.
 
 #### AXI4-Lite register map
 
@@ -184,7 +185,7 @@ Reconfigure by writing WIDTH/HEIGHT and setting CTRL.APPLY: the wrapper resets t
 
 Xilinx Zynq UltraScale+ `xczu7eg-fbvb900-1-e` (speed grade −1), Vivado 2025.2. True fmax (over-constrained until timing fails), RTL-only — no floorplanning or vendor primitives. Representative, not guaranteed.
 
-fmax and resource usage are characterized against the two generics that size the core: `MAX_IMAGE_WIDTH` (while keeping `BITNESS` fixed at 12b) and `BITNESS` (while keeping `MAX_IMAGE_WIDTH` fixed at 12288).
+Each configuration is implemented with four Vivado strategies. fmax tables in MHz, best per row in bold; resources from the Default strategy. Reproduce with [`Scripts/run_fmax_sweep.sh`](Scripts/run_fmax_sweep.sh).
 
 ### Maximum frequency vs `MAX_IMAGE_WIDTH`
 
@@ -240,21 +241,15 @@ fmax and resource usage are characterized against the two generics that size the
 | 14 | 6845 | 2153 | 6.5 |
 | 16 | 7601 | 2287 | 7.5 |
 
-fmax tables in MHz, best per row in bold; resources from the Default strategy. Reproduce with [`Scripts/run_fmax_sweep.sh`](Scripts/run_fmax_sweep.sh).
-
 ---
 
 ## Demos
 
-End-to-end example projects live in a companion repository,
-[**OpenJLS-Demos**](https://github.com/isentropic-fpga/OpenJLS-Demos), each pinning
-the core as a submodule at its verified commit.
+End-to-end example projects live in a companion repository, [**OpenJLS-Demos**](https://github.com/isentropic-fpga/OpenJLS-Demos), each pinning the core as a submodule at its verified commit.
 
-- **[EncodeOverEthernet](https://github.com/isentropic-fpga/OpenJLS-Demos/tree/main/EncodeOverEthernet)** — streams raw images to a PYNQ-Z2 over Ethernet, encodes them 100% in the FPGA, and streams the `.jls` files back. Its hardware-in-the-loop sweep is what produces the [HIL verification result](#verification) above.
+- **[EncodeOverEthernet](https://github.com/isentropic-fpga/OpenJLS-Demos/tree/main/EncodeOverEthernet)** — streams raw images to a PYNQ-Z2 over Ethernet, encodes them 100% in the FPGA, and streams the `.jls` files back.
 
 More demos (additional boards and integrations) are planned.
-
----
 
 ---
 
@@ -262,7 +257,7 @@ More demos (additional boards and integrations) are planned.
 
 OpenJLS is dual-licensed:
 
-- **[GPL v3](LICENSE.md)** — free for any use that complies with GPL v3 terms. This means if you distribute a product containing OpenJLS, your design must also be released under GPL v3.
+- **[GPL v3](LICENSE.md)** — free under GPL v3 terms: distributing a product that contains OpenJLS requires releasing the design under GPL v3.
 - **Commercial License** — for use in proprietary/closed-source products without GPL obligations. Contact [Isentropic](https://isentropic.com.br/contact) at contact@isentropic.com.br for pricing and terms.
 
 **Evaluation is unrestricted.** You can clone, simulate, synthesize, and test OpenJLS freely under the GPL. A commercial license is only required when shipping a product.
@@ -273,15 +268,13 @@ OpenJLS is dual-licensed:
 
 ## Dependencies
 
-Dependencies fall into two independent sets. **Using the IP** needs only the base set below — the core sources are plain VHDL-1993 and synthesize in any EDA tool on any OS; the vendored open-logic files are VHDL-2008, so the toolchain must accept 2008 for those files (any current one does). **Running the verification suite** needs the Linux toolchain in the second table; none of it is part of, or distributed with, the IP.
+**Using the IP** needs only open-logic, committed in-tree. **Running the verification suite** needs the Linux toolchain in the second table; none of it is part of, or distributed with, the IP.
 
 ### Base IP
 
 | Component | License | Notes |
 |---|---|---|
 | [open-logic](https://github.com/open-logic/open-logic) | LGPL-2.1+ with PSI HDL exception | Vendor-agnostic memory and FIFO primitives, written in VHDL-2008. Weak copyleft confined to its own files; the exception explicitly permits distributing FPGA bitstreams under your own terms. |
-
-The IP carries no OS or vendor lock-in — it builds with Vivado, Quartus, Libero, Lattice, or open-source tools. (The performance figures above were characterized with AMD Vivado, but any synthesis tool works.)
 
 ### Verification
 
@@ -296,7 +289,7 @@ None of the components below are committed to the repository — running [`Third
 | [OSVVM-Scripts](https://github.com/OSVVM/OSVVM-Scripts) | Apache-2.0 | Regression and report-generation script flow. |
 | [tcllib](https://github.com/tcltk/tcllib) | Tcl/BSD-style | `fileutil` and `yaml` modules required by the report scripts. |
 
-open-logic is committed in-tree, so the IP builds without the fetch step. NVC installs through your OS package manager — the script handles Ubuntu and Arch automatically; elsewhere install it manually from the [NVC docs](https://www.nickg.me.uk/nvc/). No dependency imposes copyleft on the OpenJLS sources, so the dual-licensing model above is unaffected. Redistribution must retain the third-party notices and license texts in `ThirdParty/`.
+NVC installs through your OS package manager — the script handles Ubuntu and Arch automatically; elsewhere install it manually from the [NVC docs](https://www.nickg.me.uk/nvc/). No dependency imposes copyleft on the OpenJLS sources, so the dual-licensing model above is unaffected. Redistribution must retain the third-party notices and license texts in `ThirdParty/`.
 
 ---
 
