@@ -227,7 +227,7 @@ OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level
 <sup>1</sup> Per-DUT-file breakdown.<br>
 <sup>2</sup> 7,550,766 affirmations (module + top + AXI wrappers).<br>
 <sup>3</sup> Byte-exact vs CharLS.<br>
-<sup>4</sup> On the gate-level netlist.<br>
+<sup>4</sup> 133,862 affirmations on the gate-level netlist.<br>
 <sup>5</sup> 8-bit images up to 0.05 MP, byte-exact vs CharLS.<br>
 <sup>6</sup> Byte-exact vs CharLS on PYNQ-Z2 silicon.
 </sub>

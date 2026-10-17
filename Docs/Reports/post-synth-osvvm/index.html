@@ -22,7 +22,7 @@
 <a class="back" href="../index.html">&larr; All reports</a>
 <div class="hero" style="margin-top:14px;"><h1 class="text">Post-synth OSVVM — simulation log</h1></div>
 <pre class="log">
-%% WriteBin: bp x inputStall x prelude
+%% WriteBin: G4.Stream bp x inputStall x prelude
 %% bp=0 / inputStall=0 / prelude=0  Bin:(0) (0) (0)   Count = 1  AtLeast = 1
 %% bp=0 / inputStall=0 / prelude=1  Bin:(0) (0) (1)   Count = 1  AtLeast = 1
 %% bp=0 / inputStall=0 / prelude=2  Bin:(0) (0) (2)   Count = 1  AtLeast = 1
@@ -36,27 +36,30 @@
 %% bp=1 / inputStall=1 / prelude=1  Bin:(1) (1) (1)   Count = 1  AtLeast = 1
 %% bp=1 / inputStall=1 / prelude=2  Bin:(1) (1) (2)   Count = 1  AtLeast = 1
 
-%% WriteBin: upstreamStallPropagated
+%% WriteBin: G4.Stream upstreamStallPropagated
 %% upstreamStallPropagated  Bin:(1)   Count = 1  AtLeast = 1
 
-%% WriteBin: backToBack clean/stressed/minimal
+%% WriteBin: G4.Stream backToBack clean/stressed/minimal
 %% clean overlap  Bin:(0)   Count = 1  AtLeast = 1
 %% stressed overlap  Bin:(1)   Count = 1  AtLeast = 1
 %% minimal image overlap  Bin:(2)   Count = 1  AtLeast = 1
 
-%% WriteBin: reset midFeed/midFeedStress/midDrain
+%% WriteBin: G5.States reset midFeed/midFeedStress/midDrain
 %% reset during input  Bin:(0)   Count = 1  AtLeast = 1
 %% reset during stressed input  Bin:(1)   Count = 1  AtLeast = 1
 %% reset during output  Bin:(2)   Count = 1  AtLeast = 1
 
-%% 253185 ns    DONE   PASSED   tb_openjls_top_osvvm  Passed: 136239  Affirmations Checked: 136239  Requirements Passed: 5 of 5
-** Note: 253185ns+1: tb_openjls_top_osvvm: PASS
-   Procedure END_OF_TEST [STRING] at Support/tb_support_pkg.vhd:235
-   Process :tb_openjls_top_osvvm:stim at /home/Vitor/Repos/OpenJLS/Verification/OSVVM/Top/tb_openjls_top_osvvm.vhd:929
-** Note: 253185ns+1: STOP called
+%% WriteBin: G4.Config width x height
+%% width=4 / height=1  Bin:(0)   Count = 1  AtLeast = 1
+
+%% 252625 ns    DONE   PASSED   tb_openjls_top_osvvm  Passed: 133862  Affirmations Checked: 133862  Requirements Passed: 5 of 5
+** Note: 252625ns+1: tb_openjls_top_osvvm: PASS
+   Procedure END_OF_TEST [STRING] at /home/Vitor/Repos/OpenJLS/Verification/OSVVM/Support/tb_support_pkg.vhd:259
+   Process :tb_openjls_top_osvvm:stim at /home/Vitor/Repos/OpenJLS/Verification/OSVVM/Top/tb_openjls_top_osvvm.vhd:955
+** Note: 252625ns+1: STOP called
    Procedure STOP [] at lib/std.08/env-body.vhd:32
-   Procedure END_OF_TEST [STRING] at Support/tb_support_pkg.vhd:249
-   Process :tb_openjls_top_osvvm:stim at /home/Vitor/Repos/OpenJLS/Verification/OSVVM/Top/tb_openjls_top_osvvm.vhd:929
+   Procedure END_OF_TEST [STRING] at /home/Vitor/Repos/OpenJLS/Verification/OSVVM/Support/tb_support_pkg.vhd:273
+   Process :tb_openjls_top_osvvm:stim at /home/Vitor/Repos/OpenJLS/Verification/OSVVM/Top/tb_openjls_top_osvvm.vhd:955
 </pre>
 </div></main>
 <footer>
