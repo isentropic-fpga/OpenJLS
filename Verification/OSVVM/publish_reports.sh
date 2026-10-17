@@ -267,6 +267,7 @@ fi
 
 # --- landing page ----------------------------------------------------------
 GEN_DATE="$(date -u '+%Y-%m-%d %H:%M UTC')"
+MATRIX="$(python3 "$HERE/matrix_html.py" "$ROOT/Docs/verification_requirements.md")"
 {
   page_head "OpenJLS — verification report" ""
   cat <<EOF
@@ -281,6 +282,9 @@ GEN_DATE="$(date -u '+%Y-%m-%d %H:%M UTC')"
 $ROWS  </tbody>
 </table></div>
 <p class="notes">$NOTES The OSVVM and coverage reports are full HTML; the golden-model, post-synthesis and hardware pages list every image or log line. Generated $GEN_DATE by <code>Verification/OSVVM/publish_reports.sh</code>. <a href="https://isentropic.com.br/openjls">IP core specifications, throughput figures and licensing &rarr;</a></p>
+<h2 class="section">Verification matrix</h2>
+<p class="notes">Every requirement the OSVVM suite tracks, with the RTL and testbench that cover it, the guaranteed minimum check count per run (Goal) and its status against verification rules G1&ndash;G6: &check; met, N/A not applicable. Source: <a href="https://github.com/isentropic-fpga/OpenJLS/blob/main/Docs/verification_requirements.md"><code>Docs/verification_requirements.md</code></a>; rules in <a href="https://github.com/isentropic-fpga/OpenJLS/blob/main/Docs/verification_guidelines.md"><code>Docs/verification_guidelines.md</code></a>.</p>
+$MATRIX
 EOF
   page_foot ""
 } > "$DEST/index.html"
