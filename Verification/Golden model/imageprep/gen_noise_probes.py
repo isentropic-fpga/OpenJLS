@@ -8,11 +8,8 @@
 
 """White and 1/f^beta (smoothed) noise probes at every depth 8..16.
 
-Per depth, half white noise and half coloured noise: Gaussian noise shaped in
-the frequency domain to a 1/f^beta spectrum, beta in [0.5, 4] (pink ~1, brown
-~2, smooth gradients above). Each probe also draws a random size and a random
-value window (log-uniform span, random offset), so the set spans
-incompressible noise down to near-flat run-mode content. Seeded per file.
+Half white, half 1/f^beta with beta in [0.5, 4], each with a random size and
+value window, spanning incompressible noise to near-flat runs. Seeded.
 
 Usage: gen_noise_probes.py <Images dir> [--per-depth N] [--seed S]
 """
@@ -27,7 +24,6 @@ BETA_RANGE = (0.5, 4.0)
 
 
 def window(rng, b):
-    """Random value window [lo, lo + span] inside the b-bit range."""
     mx = (1 << b) - 1
     span = min(mx, max(1, int(round(2 ** rng.uniform(1, b))) - 1))
     lo = int(rng.integers(0, mx - span + 1))
@@ -35,11 +31,10 @@ def window(rng, b):
 
 
 def coloured(rng, h, w, beta):
-    """Unit-range 1/f^beta noise via spectral shaping."""
     fy = np.fft.fftfreq(h)[:, None]
     fx = np.fft.rfftfreq(w)[None, :]
     f = np.hypot(fx, fy)
-    f[0, 0] = np.inf                       # drop DC
+    f[0, 0] = np.inf                       # no DC
     spec = np.fft.rfft2(rng.standard_normal((h, w))) / f ** (beta / 2)
     img = np.fft.irfft2(spec, s=(h, w))
     lo, hi = img.min(), img.max()

@@ -4,13 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM testbench: a9_modulo_reduction (combinational).
---
--- Reduces valid errors into [-floor(RANGE/2), ceil(RANGE/2)-1]: add RANGE if negative,
--- then subtract RANGE once the adjusted value reaches ceil(RANGE/2). Coverage
--- crosses the negative-wrap path with the upper-half subtract.
+-- tb_a9_osvvm: a9_modulo_reduction against the T.87 A.9 C code
 --
 -- Guidelines:
 --   G1.Req      T87.A9
@@ -25,7 +19,6 @@
 --   G4 other    N/A: Edge/Run/Coding/Stream not in scope
 --   G5          N/A: combinational
 --   G6.Code     fully covered
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -53,7 +46,7 @@ architecture sim of tb_a9_osvvm is
   signal sErrIn  : signed(BITNESS downto 0);
   signal sErrOut : signed(BITNESS downto 0);
 
-  -- T.87 A.9 reference value.
+  -- T.87 A.9
   function ref_mod (
     err : integer
   ) return integer is
@@ -76,7 +69,7 @@ architecture sim of tb_a9_osvvm is
 
   end function ref_mod;
 
-  -- adjusted (post negative-wrap) value, for the upper-half coverage axis.
+  -- Value after the negative wrap
   function adj_of (
     err : integer
   ) return integer is
@@ -153,7 +146,6 @@ begin
       end loop;
     end loop;
 
-    -- Directed corners.
     mm := NewID("G2.MinMax node x value");
     add_value_bin(mm, 1, "Errval in", ERR_MIN);
     add_value_bin(mm, 1, "Errval in", ERR_MAX);
@@ -168,8 +160,7 @@ begin
     drive_check((RANGE_P + 1) / 2 - 1, "just below half");
     drive_check(-1, "neg one");
 
-    -- Exhaust every representable input, including the unused-most-negative
-    -- code. This checks all wrap thresholds for both generated implementations.
+    -- Every representable input, including the unused most negative code
     for err in ERR_MIN to ERR_MAX loop
 
       drive_check(err, "exhaustive");

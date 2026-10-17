@@ -6,26 +6,15 @@
 # commercial license. See LICENSE and README for details.
 #
 
-# Post-synthesis GOLDEN cross-check — the real payload test on gate-level HW.
-#
-# Synthesizes an 8-bit openjls_top sized to fit the largest 8-bit image in the
-# golden corpus, then streams every (under-the-MP-cap) 8-bit image through the
-# funcsim NETLIST under NVC in a SINGLE elaboration and byte-compares each output
-# against the CharLS golden (same oracle the RTL golden flow uses). The netlist
-# load (~30 s) is paid once and amortized over the whole corpus — the dedicated
-# tb_postsynth_golden resets the core between images and loops a manifest.
-#
-# This validates that the synthesized hardware produces byte-exact JPEG-LS output
-# on real images, not just the T.87 H.3 vector the OSVVM control-plane TB checks.
-#
-# Needs `vivado` on PATH (synthesis only) and the NVC Xilinx sim libraries
-# (one-time `nvc --install vivado`, requires XILINX_VIVADO).
+# The 8-bit golden corpus (under MAX_MP) against CharLS on the funcsim netlist.
+# Each shard elaborates the netlist once and loops a manifest of images.
+# Needs vivado on PATH and XILINX_VIVADO for the one-time nvc --install vivado.
 #
 # Usage:  ./build_run_golden.sh           synthesize + run all eligible images
 #         ./build_run_golden.sh --sim     reuse the existing 8-bit netlist
-#         IMAGE=<stem> ./build_run_golden.sh --sim   run one image (timing)
+#         IMAGE=<stem> ./build_run_golden.sh --sim   run one image
 #
-# Env: NVC_HEAP (default 3g), MAX_MP (default 0.05), MEM_MAX (cgroup cap, default 24G).
+# Env: NVC_HEAP (2g), MAX_MP (0.05), NUMBER_OF_THREADS (20), PER_MEM (2G per worker).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -42,7 +31,7 @@ PREP="$GMODEL/imageprep"
 MANIFEST="$HERE/Output/manifest.txt"
 TB="tb_postsynth_golden"
 
-# Netlist config — sized to the 8-bit corpus (max 7216x5412), OUT_WIDTH=64.
+# Sized to the largest 8-bit image
 BITNESS=8
 MAX_W=7216
 MAX_H=5412
@@ -50,15 +39,14 @@ OUT_WIDTH=64
 
 NVC_HEAP="${NVC_HEAP:-2g}"
 MAX_MP="${MAX_MP:-0.05}"
-NT="${NUMBER_OF_THREADS:-20}"   # one shard per core (24-core box, leave headroom)
-PER_MEM="${PER_MEM:-2G}"        # per-worker cgroup cap; ~1 GB real on <=4 MP images
+NT="${NUMBER_OF_THREADS:-20}"
+PER_MEM="${PER_MEM:-2G}"        # ~1 GB real on <= 4 MP images
 
 mkdir -p "$LIBS" "$GOLDEN" "$OUTPUT" "$LOGD" "$HERE/Output"
 
-# 0. Reference encoder (built from source under ThirdParty/ on first use).
 [ -x "$CLI" ] || "$ROOT/ThirdParty/fetch_third_party.sh" charls
 
-# 1. Synthesis (8-bit netlist sized for the corpus). Space-free scratch dir.
+# Synthesis, in a space-free scratch dir (see synth_funcsim.tcl)
 if [[ "${1:-}" != "--sim" ]]; then
   SCRATCH="$(mktemp -d)"
   ( cd "$SCRATCH" && env \
@@ -74,16 +62,13 @@ if grep -qm1 '^[A-Z_]\+=' "$NETLIST"; then
   echo "netlist header corrupt — install lsb-release on the synthesis host" >&2; exit 1
 fi
 
-# 2. NVC Xilinx sim libraries (one-time; ~/.nvc/lib, auto-searched by NVC).
 if ! compgen -G "$HOME/.nvc/lib/unisim*" > /dev/null; then
   : "${XILINX_VIVADO:?set XILINX_VIVADO for the one-time nvc --install vivado}"
   ( cd /tmp && env XILINX_VIVADO="$XILINX_VIVADO" nvc --install vivado )
 fi
 
-# 3. Collect the eligible 8-bit images (maxval 255) under the MP cap, mint their
-#    CharLS goldens, and greedily bin-pack them by megapixels into NT shards. One
-#    NVC elaboration per shard amortizes the ~30 s netlist load across the shard's
-#    images while keeping NT-way parallelism (vs. one reload per image).
+# Mint the goldens and pack the images into NT shards by megapixels, so the
+# ~30 s netlist load is paid once per shard
 shopt -s nullglob
 PGMS=("$IMAGES_DIR"/*.pgm)
 shopt -u nullglob
@@ -93,7 +78,7 @@ for pgm in "${PGMS[@]}"; do
   stem="$(basename "${pgm%.pgm}")"
   [ -n "${IMAGE:-}" ] && [ "$stem" != "$IMAGE" ] && continue
   read -r W H MX BITS < <(python3 "$PREP/pgm_info.py" "$pgm")
-  [ "$MX" = "255" ] || continue          # 8-bit only
+  [ "$MX" = "255" ] || continue
   mp=$(awk -v w="$W" -v h="$H" 'BEGIN{printf "%.3f", w*h/1e6}')
   awk -v mp="$mp" -v cap="$MAX_MP" 'BEGIN{exit !(mp>cap)}' && { echo "SKIP $stem (${mp} MP)"; continue; }
   if [ ! -f "$GOLDEN/${stem}_charls.jls" ]; then
@@ -107,13 +92,10 @@ nelig=${#EL_STEM[@]}
 [ "$nelig" -gt 0 ] || { echo "no eligible 8-bit images" >&2; exit 1; }
 NSH=$(( NT < nelig ? NT : nelig ))
 
-# Clear shard files from any previous run: shard_<s> files are truncated per
-# shard below, but a run with fewer shards than the last leaves higher-numbered
-# shard_*.{txt,log} behind, and the shard_*.log glob in the aggregation would
-# count their stale PASS lines (npass > nelig => false FAIL).
+# Stale shards from a wider run would add PASS lines to the count below
 rm -f "$HERE/Output"/shard_*.txt "$LOGD"/shard_*.log
 
-# Greedy bin-packing: heaviest image first onto the least-loaded shard.
+# Heaviest image first onto the least-loaded shard
 ORDER=$(for i in "${!EL_STEM[@]}"; do echo "${EL_MP[$i]} $i"; done | sort -rn | awk '{print $2}')
 declare -a SH_LOAD
 for ((s=0; s<NSH; s++)); do SH_LOAD[$s]=0; : > "$HERE/Output/shard_$s.txt"; done
@@ -125,15 +107,12 @@ for i in $ORDER; do
   echo "${EL_STEM[$i]}" >> "$HERE/Output/shard_$best.txt"
   SH_LOAD[$best]=$(awk -v a="${SH_LOAD[$best]}" -v m="${EL_MP[$i]}" 'BEGIN{printf "%.3f", a+m}')
 done
-# Items were appended heaviest-first; reverse each shard so it runs SMALLEST-first
-# — small images PASS within seconds (early confidence) and the one slow giant per
-# shard trails at the end instead of blocking all visible progress.
+# Run smallest first so progress shows before each shard's giant
 for ((s=0; s<NSH; s++)); do tac "$HERE/Output/shard_$s.txt" > "$HERE/Output/shard_$s.tmp" && mv "$HERE/Output/shard_$s.tmp" "$HERE/Output/shard_$s.txt"; done
 echo "8-bit images: $nelig across $NSH shard(s) (heap=$NVC_HEAP, per-worker cap=$PER_MEM)"
 echo "=============================================================="
 
-# 4. Analyze: olo math (log2ceil) + openjls_pkg, the netlist as work.openjls_top,
-#    then the dedicated post-synth TB (binds work.openjls_top(STRUCTURE)).
+# The netlist is analyzed as work.openjls_top
 NVC=(nvc --std=2008 --ieee-warnings=off -H "$NVC_HEAP" -L "$LIBS")
 OL_SRC="$ROOT/ThirdParty/open-logic/src/base/vhdl"
 "${NVC[@]}" --work=work:"$LIBS/work.08" -a --relaxed \
@@ -144,9 +123,8 @@ OL_SRC="$ROOT/ThirdParty/open-logic/src/base/vhdl"
 "${NVC[@]}" --work=work:"$LIBS/work.08" -a --relaxed "$NETLIST"
 "${NVC[@]}" --work=work:"$LIBS/work.08" -a --relaxed "$HERE/$TB.vhd"
 
-# 5. One NVC elaboration per shard, in parallel. Gate-level sim is ~1 GB+ RSS
-#    plus the per-image pixel buffer, so each worker runs in its own cgroup scope
-#    capped at PER_MEM as the OOM backstop (a runaway worker can't take the box).
+# Each shard in its own cgroup scope capped at PER_MEM, so one runaway can't
+# take the machine
 run_shard() {
   local s="$1" rel="Verification/Post synth/Output/shard_$s.txt"
   local cmd=("${NVC[@]}" --work=work:"$LIBS/work.08" -e --jit --no-save
@@ -166,13 +144,12 @@ rc=0
 for ((s=0; s<NSH; s++)); do run_shard "$s" & done
 for ((s=0; s<NSH; s++)); do wait -n || rc=1; done
 
-# 6. Aggregate per-shard results.
 echo "=============================================================="
 npass=$(grep -hc '^\*\* Note:.*: PASS ' "$LOGD"/shard_*.log 2>/dev/null | awk '{s+=$1} END{print s+0}')
 echo "Per-image PASS lines: $npass of $nelig"
 grep -h 'MANIFEST RESULT' "$LOGD"/shard_*.log 2>/dev/null || true
 
-# Status line for the published report (Verification/OSVVM/publish_reports.sh).
+# Status for publish_reports.sh
 if [ "$rc" -ne 0 ] || [ "$npass" -ne "$nelig" ]; then ps_status=FAIL; else ps_status=PASS; fi
 gpct=$(awk -v p="$npass" -v t="$nelig" 'BEGIN{ if (t > 0) printf "%.0f%%", 100 * p / t }')
 {
@@ -184,11 +161,8 @@ gpct=$(awk -v p="$npass" -v t="$nelig" 'BEGIN{ if (t > 0) printf "%.0f%%", 100 *
   echo "DATE=\"$(date -Iseconds)\""
 } > "$HERE/Output/report_status_golden.env"
 
-# Per-image results table (rendered to HTML by publish_reports.sh), same idea as
-# the RTL golden flow. Parse the per-image PASS/FAIL lines the TB logged into the
-# shard logs; the PASS line carries the output byte count (byte-exact, so
-# matched == total), and a FAIL leaves a _PS.jls the TB saved, which we diff
-# against the CharLS golden to count matched bytes.
+# Per-image table. A PASS line carries the byte count; a FAIL leaves a _PS.jls
+# to diff against the golden.
 PREP="$GMODEL/imageprep"
 PSOUT="$GMODEL/Output/OpenJLS"
 declare -A PS_RES PS_BYTES

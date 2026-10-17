@@ -6,17 +6,10 @@
 # commercial license. See LICENSE and README for details.
 #
 
-# Package the three OpenJLS IP cores (openjls_top, openjls_axis,
-# openjls_axis_regs) into <repo>/Sources/Xilinx/ip_repo. `vivado` must be on
-# PATH (if Vivado
-# lives in a container on your machine, point a local shim at it).
+# Regenerate the IP cores in Sources/Xilinx/ip_repo; needs vivado on PATH.
 # Usage: ./Scripts/run_package_ip.sh [--verify]
-#   --verify: after packaging, create_ip each core with non-default generics
-#             and run OOC synthesis as a smoke test.
-# Output: <repo>/Sources/Xilinx/ip_repo/<core>/ (component.xml + src/ +
-#         xgui/), regenerated
-#         from scratch on every run. Vivado logs/scratch land in $WORKDIR
-#         (default ~/EDA/Logs), outside the repo.
+#   --verify also runs the verify_ip.tcl smoke test.
+# Vivado scratch goes to $OPENJLS_IP_OUTDIR (default ~/EDA/Logs).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"

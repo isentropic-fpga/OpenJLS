@@ -6,15 +6,10 @@
 # commercial license. See LICENSE and README for details.
 #
 
-# Assemble the published verification report tree under Docs/Reports/ (served by
-# GitHub Pages via .github/workflows/pages.yml).
+# Assemble Docs/Reports/ (GitHub Pages): the OSVVM and coverage HTML plus the
+# golden and post-synth suites from their Output/report_status.env.
 #
-# The OSVVM suite owns the report: this copies the OSVVM HTML and the NVC code
-# coverage HTML it generates, then stitches in the text-only suites (golden
-# model, post-synth) from the small report_status.env files each one drops in
-# its Output/ when run. Suites that haven't been run show as "not run".
-#
-# Typical flow — run the suites you want reflected, then publish:
+# Typical flow:
 #   ./build_run.sh                                   # OSVVM regression + coverage
 #   ( cd "../Golden model" && ./build_run.sh )       # golden cross-check
 #   ( cd "../Post synth"   && ./build_run_osvvm.sh ) # gate-level (needs Vivado)
@@ -37,8 +32,7 @@ PS_OSVVM_LOG="$ROOT/Verification/Post synth/Output/postsynth_osvvm.log"
 PS_GOLDEN_ENV="$ROOT/Verification/Post synth/Output/report_status_golden.env"
 PS_GOLDEN_TSV="$ROOT/Verification/Post synth/Output/ps_golden_image_results.tsv"
 
-# The hardware-in-the-loop pages (hil/) are published out of band from the
-# OpenJLS-Demos on-board sweep — preserve them across full rebuilds.
+# hil/ comes from the OpenJLS-Demos sweep; keep it
 HIL_TMP=""
 if [ -d "$DEST/hil" ]; then
   HIL_TMP="$(mktemp -d)"
@@ -51,7 +45,7 @@ if [ -n "$HIL_TMP" ]; then
   rm -rf "$HIL_TMP"
 fi
 
-# Site chrome (isentropic.com.br look): stylesheet, theme switch and wordmarks.
+# Site chrome
 mkdir -p "$DEST/assets"
 cp "$HERE/report_assets/report.css" "$HERE/report_assets/theme.js" "$DEST/assets/"
 for f in openjls-wordmark openjls-wordmark-dark isentropic-wordmark isentropic-wordmark-dark; do
@@ -59,7 +53,7 @@ for f in openjls-wordmark openjls-wordmark-dark isentropic-wordmark isentropic-w
 done
 cp "$ROOT/Docs/Images/isentropic-icon-64.png" "$DEST/assets/"
 
-# page_head <title> <asset-prefix> / page_foot <asset-prefix>: shared chrome.
+# page_head <title> <asset-prefix> / page_foot <asset-prefix>
 page_head() {
   local title="$1" p="$2"
   cat <<HDR
@@ -128,8 +122,7 @@ if [ -d "$COV_HTML" ]; then
     pct=$(cd "$HERE" && python3 cover_summary.py NVC_CodeCoverage ../../Sources 2>/dev/null \
             | awk '/^TOTAL/{print $3}')
   fi
-  # Coverage HTML carries no machine-readable date, so take the generation time
-  # from the report's mtime (it is rewritten on every build_run.sh).
+  # The coverage HTML has no date; use its mtime
   cov_date=$(date -u -r "$COV_HTML/index.html" '+%Y-%m-%d' 2>/dev/null || true)
   COV_NOTE="Statement coverage of the RTL, unioned over every OSVVM test; the report breaks it down per source file."
   emit_row "NVC code coverage" "$COV_NOTE" "INFO" \
@@ -141,7 +134,6 @@ fi
 
 # --- OSVVM regression (HTML tree) -----------------------------------------
 if [ -f "$HERE/index.html" ] && [ -f "$OSVVM_YML" ]; then
-  # one report dir holds index.html + OSVVM_OpenJls/ + osvvm/ (relative links)
   mkdir -p "$DEST/osvvm"
   cp -r "$HERE/index.html" "$HERE/OSVVM_OpenJls" "$HERE/osvvm" "$DEST/osvvm/"
   pass=$(grep -c 'Status: PASSED' "$OSVVM_YML" || true)
@@ -152,8 +144,7 @@ if [ -f "$HERE/index.html" ] && [ -f "$OSVVM_YML" ]; then
   [ -z "$rdate" ] && rdate=$(awk '/^Date:/{print $2; exit}' "$OSVVM_YML")
   st=PASS; [ "$fail" -ne 0 ] && st=FAIL
   opct=$(awk -v p="$pass" -v t="$total" 'BEGIN{ if (t > 0) printf "%.0f%%", 100 * p / t }')
-  # Deep-link to this build's summary, not osvvm/index.html (the "Index of
-  # Builds" accumulates every past build, including stale failed ones).
+  # Link this build's summary; osvvm/index.html lists stale builds too
   emit_row "OSVVM suite" "Module testbenches against independent T.87 reference models, the top-level control-plane stress test and the AXI wrapper tests, all with requirements tracking." "$st" "$opct" \
     "$total tests &middot; $(printf "%'d" "$affirm") affirmations" \
     "osvvm/OSVVM_OpenJls/OSVVM_OpenJls.html" "${rdate%T*}"
@@ -177,9 +168,7 @@ env_row() {
     "${SUMMARY:-}" "$link" "${DATE%%T*}"
 }
 
-# render_tsv_page <tsv> <dest-subdir> <title> -> echoes the relative link (or
-# nothing if the tsv is absent). First TSV line is the header; PASS/FAIL/SKIP
-# cells get coloured. Styled to match this dashboard.
+# render_tsv_page <tsv> <dest-subdir> <title> -> relative link, empty if no tsv
 render_tsv_page() {
   local tsv="$1" sub="$2" title="$3"
   [ -f "$tsv" ] || { echo ""; return; }
@@ -210,9 +199,7 @@ HDR
   echo "$sub/index.html"
 }
 
-# render_log_page <log> <dest-subdir> <title> -> echoes the relative link. For
-# suites with no table/HTML (post-synth OSVVM is a single plain-NVC TB run): the
-# captured console log is the report. HTML-escaped into a <pre>.
+# render_log_page <log> <dest-subdir> <title> -> relative link; the log as <pre>
 render_log_page() {
   local log="$1" sub="$2" title="$3"
   [ -f "$log" ] || { echo ""; return; }
@@ -231,7 +218,6 @@ HDR
   echo "$sub/index.html"
 }
 
-# Only link the detail page when the suite actually ran (status file present).
 golden_link=""
 [ -f "$GOLDEN_ENV" ] && golden_link="$(render_tsv_page "$GOLDEN_TSV" golden "Golden model — processed images")"
 ps_osvvm_link=""

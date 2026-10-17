@@ -20,11 +20,7 @@ package tb_support_pkg is
 
   constant CLK_PERIOD_DEFAULT : time := 10 ns;
 
-  -- T.87 Annex H.3 conformance image (4x4, 8-bit, NEAR=0) and its known-good
-  -- 57-byte JPEG-LS stream. Shared self-contained oracle for the Xilinx wrapper
-  -- TBs; the same vectors live in Top/tb_openjls_top_osvvm.vhd (the module that
-  -- owns payload correctness). Held as integer_vector so the OSVVM AxiStream
-  -- burst API (PushBurst / CheckBurst) consumes them directly.
+  -- T.87 H.3 image (4x4, 8-bit) and its 57-byte stream; integer_vector for PushBurst
   constant H3_WIDTH    : natural := 4;
   constant H3_HEIGHT   : natural := 4;
   constant H3_BITNESS  : natural := 8;
@@ -41,14 +37,8 @@ package tb_support_pkg is
      16#00#, 16#00#, 16#05#, 16#D8#, 16#00#, 16#00#, 16#91#, 16#60#,
      16#FF#, 16#D9#);
 
-  -- 12-bit companion image (4x4, NEAR=0) for the two-byte pixel lane of the
-  -- Xilinx stream wrapper (BITNESS 9..16 -> 16-bit TDATA). Golden minted with
-  -- the vendored CharLS encoder after the byte-exact T16E0.JLS trust gate
-  -- (same flow as "Verification/Golden model/build_run.sh"):
-  --   charls-cli encode b12.pgm b12.jls    # P5, 4x4, maxval 4095, big-endian
-  -- Pixel values span the full 12-bit range (0/4095), sit above the 8-bit
-  -- ceiling (so a dropped upper byte cannot go unnoticed) and include a flat
-  -- run to enter run mode.
+  -- 12-bit 4x4, minted with CharLS (charls-cli encode b12.pgm b12.jls). Full
+  -- range, values above 8 bits to catch a dropped upper byte, and a flat run.
   constant B12_WIDTH   : natural := 4;
   constant B12_HEIGHT  : natural := 4;
   constant B12_BITNESS : natural := 12;
@@ -65,8 +55,7 @@ package tb_support_pkg is
      16#FF#, 16#5E#, 16#EA#, 16#1D#, 16#C0#, 16#7D#, 16#00#, 16#0F#, 16#00#, 16#00#, 16#00#,
      16#00#, 16#28#, 16#00#, 16#FF#, 16#D9#);
 
-  -- 16-bit companion (G4.Config BITNESS 16), minted the same way from a
-  -- maxval 65535 PGM: full range (0/65535), MSB set and a flat run.
+  -- 16-bit 4x4, minted the same way: full range, MSB set and a flat run
   constant B16_WIDTH   : natural := 4;
   constant B16_HEIGHT  : natural := 4;
   constant B16_BITNESS : natural := 16;
@@ -82,11 +71,10 @@ package tb_support_pkg is
      16#F8#, 16#1F#, 16#A1#, 16#EF#, 16#EB#, 16#DC#, 16#26#, 16#9B#, 16#DF#, 16#D0#, 16#00#,
      16#3D#, 16#C0#, 16#00#, 16#00#, 16#00#, 16#02#, 16#69#, 16#00#, 16#FF#, 16#D9#);
 
-  -- Label the delay models created internally by the OSVVM AXI components.
-  -- Their stock bins have blank names and repeated model names in YAML.
+  -- Name the OSVVM AXI VC delay models; their stock bins are blank in the YAML
   procedure label_delay_coverage(id : DelayCoverageIDType; prefix : string);
 
-  -- Numeric conversion must not turn X/U outputs into an apparently correct 0.
+  -- Fail on X/U instead of converting it to 0
   impure function checked_integer(value : unsigned) return integer;
   impure function checked_integer(value : signed) return integer;
   impure function checked_bit(value : std_logic) return integer;
@@ -115,8 +103,7 @@ package tb_support_pkg is
     constant test_name : in string
   );
 
-  -- G2.MinMax / G3.Stim / G2.Clamp: one bin per named node value, cross of (node, value);
-  -- sample with ICover(cov, (node, value)).
+  -- One (node, value) bin; sample with ICover(cov, (node, value))
   procedure add_value_bin(cov : CoverageIDType; node : natural; name : string; lo : integer; hi : integer);
   procedure add_value_bin(cov : CoverageIDType; node : natural; name : string; value : integer);
 
@@ -130,8 +117,7 @@ package body tb_support_pkg is
     procedure label_model(model : CoverageIDType; label_text : string) is
       variable bounds : RangeArrayType(1 to GetBinValLength(model));
     begin
-      -- SetName is the pinned OSVVM API for renaming an already-created model;
-      -- replacing its ID would discard the VC's configured distributions.
+      -- A new ID would discard the VC's distributions
       SetName(model, prefix & " " & label_text);
       if bounds'length = 1 then
         SetFieldName(model, label_text);
@@ -261,8 +247,6 @@ package body tb_support_pkg is
   ) is
     variable errors : integer;
   begin
-    -- EndOfTestReports = ReportAlerts + YAML emission (alerts, functional
-    -- coverage, scoreboards) consumed by the OSVVM script flow's HTML reports.
     SetAlertLogReportMode(ALERT_DEFAULT_ID, NONZERO);
     errors := EndOfTestReports;
     if errors = 0 then

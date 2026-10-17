@@ -4,12 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM testbench: a7_prediction_error (combinational).
---
--- ErrorVal = Ix-Px when sign = POS, else Px-Ix. Coverage crosses the sign input
--- with the sign of the resulting error.
+-- tb_a7_osvvm: a7_prediction_error against the T.87 A.7 C code
 --
 -- Guidelines:
 --   G1.Req      T87.A7
@@ -24,7 +19,6 @@
 --   G4 other    N/A: Edge/Run/Coding/Stream not in scope
 --   G5          N/A: combinational
 --   G6.Code     fully covered
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -153,14 +147,13 @@ begin
     add_value_bin(st, 1, "Ix MSB", 2 ** (BITNESS - 1), PX_MAX);
     add_value_bin(st, 2, "Px MSB", 2 ** (BITNESS - 1), PX_MAX);
 
-    -- Directed corners.
+    -- Directed corners
     drive_check(0, 0, CO_SIGN_POS, "zero pos");
     drive_check(PX_MAX, 0, CO_SIGN_POS, "max pos");
     drive_check(0, PX_MAX, CO_SIGN_POS, "min pos");
     drive_check(PX_MAX, 0, CO_SIGN_NEG, "max neg");
     drive_check(0, PX_MAX, CO_SIGN_NEG, "min neg");
 
-    -- Random sweep.
     for pixel in 0 to PX_MAX loop
       drive_check(pixel, pixel, CO_SIGN_POS, "zero positive sign");
       drive_check(pixel, pixel, CO_SIGN_NEG, "zero negative sign");

@@ -5,13 +5,8 @@
 # commercial license. See LICENSE and README for details.
 #
 
-# Smoke test for the packaged OpenJLS IP cores: point a scratch project at
-# <repo>/Sources/Xilinx/ip_repo, create_ip each core with NON-default
-# generics, and run OOC
-# synthesis. This exercises catalog discovery, parameter validation, the
-# expression-based port widths and full RTL elaboration (including the
-# open-logic sources imported into each IP). Run via
-# Scripts/run_package_ip.sh --verify (batch mode, cd'd outside the repo).
+# Smoke test of the packaged IP: create_ip each core from ip_repo with
+# non-default generics and synthesize it OOC. Run via run_package_ip.sh --verify.
 
 set script_dir [file dirname [file normalize [info script]]]
 set repo_dir   [file normalize [file join $script_dir ..]]
@@ -23,8 +18,7 @@ create_project -force ip_smoke [file join [pwd] ip_smoke] -part $part
 set_property ip_repo_paths $ip_repo [current_project]
 update_ip_catalog
 
-# Non-default values on every generic so a silently-flattened width expression
-# or broken default chain fails here.
+# Non-default on every generic, so a broken width expression or default fails
 set common {
     CONFIG.BITNESS          16
     CONFIG.MAX_IMAGE_WIDTH  1920
@@ -43,11 +37,9 @@ foreach {name extra} $cores {
     set vlnv isentropic:openjls:${name}:*
     puts "==== create_ip $vlnv ===="
     create_ip -vlnv $vlnv -module_name smoke_$name
-    # create_ip may return the .xci file object; resolve the IP object so
-    # CONFIG.* properties apply.
+    # create_ip may return the .xci; CONFIG.* needs the IP object
     set inst [get_ips smoke_$name]
     set_property -dict [concat $common $extra] $inst
-    # Assert the configuration actually took (catches broken validation).
     if {[get_property CONFIG.OUT_WIDTH $inst] != 48} {
         error "$name: CONFIG.OUT_WIDTH did not apply"
     }

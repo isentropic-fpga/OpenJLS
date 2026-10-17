@@ -6,18 +6,10 @@
 # commercial license. See LICENSE and README for details.
 #
 
-"""Fetch curated public test-image datasets into a directory as source images.
+"""Download the curated datasets flat into <dest>, prefixed per dataset so
+same-named files don't clash. normalize.py converts them afterwards.
 
-Downloads and extracts each catalogued dataset, writing every image file flat
-into <dest> with a dataset prefix so identically-named files across sets (e.g.
-the 8-bit and 16-bit "artificial.pgm") don't clobber each other. Formats are
-left as-is here; run normalize.py afterwards to turn everything into grayscale
-PGM.
-
-    python3 fetch.py <dest>
-
-Set IMG_CACHE=<dir> to reuse already-downloaded zips (looked up by basename)
-instead of fetching them again.
+Usage: fetch.py <dest>   (IMG_CACHE=<dir> reuses downloaded zips)
 """
 import io
 import os
@@ -29,7 +21,6 @@ import zipfile
 from pathlib import Path
 from urllib.parse import urlparse
 
-# (prefix, url). Prefix tags provenance and guarantees unique flat names.
 CATALOG = [
     ("usc-misc",      "https://sipi.usc.edu/database/misc.zip"),
     ("usc-aerials",   "https://sipi.usc.edu/database/aerials.zip"),
@@ -44,7 +35,7 @@ IMG_EXT = {".tif", ".tiff", ".pgm", ".ppm", ".pnm", ".pbm",
 
 
 def zip_path_for(url: str, cache: str | None) -> tuple[Path, bool]:
-    """Return (path-to-zip, is_temp). Reuse IMG_CACHE hit, else download."""
+    """Return (path-to-zip, is_temp)."""
     name = Path(urlparse(url).path).name
     if cache:
         cached = Path(cache) / name
@@ -72,7 +63,7 @@ def fetch(dest: Path):
                     if info.is_dir():
                         continue
                     if Path(info.filename).suffix.lower() not in IMG_EXT:
-                        continue  # skip readmes and the like
+                        continue
                     out = dest / f"{prefix}_{Path(info.filename).name}"
                     with z.open(info) as src, open(out, "wb") as dst:
                         shutil.copyfileobj(src, dst)

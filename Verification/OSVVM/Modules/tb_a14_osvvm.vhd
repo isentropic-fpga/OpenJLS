@@ -4,16 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM testbench: a14_run_length_determination (combinational, per-pixel).
---
--- The RTL evaluates one iteration of the T.87 A.14 while loop per pixel
--- (NEAR=0 -> the |Ix-RUNval|<=NEAR test is Ix==Ra):
---   runHit  = (Ix == Ra)
---   RUNcnt' = runHit ? RUNcnt+1 : RUNcnt
---   continue = runHit and not EOLine
--- Coverage crosses run-hit with the EOL break.
+-- tb_a14_osvvm: a14_run_length_determination against one T.87 A.14 loop iteration
 --
 -- Guidelines:
 --   G1.Req      T87.A14
@@ -28,7 +19,6 @@
 --   G4 other    N/A: Edge/Coding/Stream not in scope
 --   G5          N/A: combinational
 --   G6.Code     fully covered
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -146,7 +136,6 @@ begin
       end loop;
     end loop;
 
-    -- Directed corners.
     mm := NewID("G2.MinMax node x value");
     add_value_bin(mm, 1, "Ra", 0);
     add_value_bin(mm, 1, "Ra", PX_MAX);
@@ -164,13 +153,13 @@ begin
     drive_check(7, 7, 0, '0', "hit no-eol");
     drive_check(7, 7, 5, '1', "hit eol break");
     drive_check(7, 9, 5, '0', "miss");
-    drive_check(0, 0, RC_MOD - 1, '0', "runCnt wrap");        -- 65535 + 1 -> 0
+    drive_check(0, 0, RC_MOD - 1, '0', "runCnt wrap");
 
     for i in 1 to N_RAND loop
 
       ra := rv.RandInt(0, PX_MAX);
       if (rv.RandInt(0, 1) = 0) then
-        ix := ra;                                              -- force hit
+        ix := ra;
       else
         ix := rv.RandInt(0, PX_MAX);
       end if;

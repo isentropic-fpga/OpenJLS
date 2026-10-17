@@ -6,21 +6,11 @@
 # commercial license. See LICENSE and README for details.
 #
 
-"""Normalization layer for the golden-model conformance suite.
+"""Convert every image in <dir> to a grayscale binary PGM in place, keeping
+the bit depth (Rec.601 luma for color). P5 files are left alone; the original
+is deleted once its .pgm is written.
 
-Turns *any* image into a single-component grayscale binary PGM (P5), the only
-format the golden TB and CharLS consume here. Drop whatever you like into a
-directory and run:
-
-    python3 normalize.py <dir>
-
-Per file:
-  * already a binary PGM (P5)  -> left untouched (idempotent re-runs are cheap)
-  * other format (TIFF/PNG/..) -> re-encoded as PGM
-  * color                      -> converted to grayscale (Rec.601 luma)
-  * bit depth preserved        -> 8-bit => maxval 255, 16-bit => maxval 65535
-The original file is deleted once its .pgm replacement is written, so the
-directory converges to grayscale PGMs only.
+Usage: normalize.py <dir>
 """
 import os
 import sys
@@ -29,8 +19,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-# USC-SIPI / imagecompression.info images far exceed Pillow's decompression-bomb
-# guard; these are trusted inputs, so lift the cap.
+# The datasets trip Pillow's decompression-bomb guard
 Image.MAX_IMAGE_PIXELS = None
 
 SIXTEEN_BIT_MODES = {"I", "I;16", "I;16B", "I;16L", "I;16N"}
@@ -54,9 +43,7 @@ def to_gray_array(im: Image.Image):
     if single:
         return np.asarray(im.convert("L"), dtype=np.uint8), 255
 
-    # Multi-band -> grayscale via Rec.601 luma. 16-bit colour is essentially
-    # nonexistent for these inputs; Pillow collapses it to 8-bit RGB first,
-    # which is an acceptable best-effort fallback.
+    # Pillow drops 16-bit color to 8-bit RGB first; none of the sets have any
     rgb = np.asarray(im.convert("RGB"), dtype=np.float64)
     luma = rgb[..., 0] * 0.299 + rgb[..., 1] * 0.587 + rgb[..., 2] * 0.114
     return np.clip(luma + 0.5, 0, 255).astype(np.uint8), 255
@@ -64,12 +51,12 @@ def to_gray_array(im: Image.Image):
 
 def write_pgm(arr: np.ndarray, maxval: int, out: Path) -> None:
     h, w = arr.shape
-    dtype = ">u2" if maxval > 255 else ">u1"  # PGM stores 16-bit big-endian
+    dtype = ">u2" if maxval > 255 else ">u1"
     tmp = out.with_name(out.name + ".tmp")
     with open(tmp, "wb") as f:
         f.write(f"P5\n{w} {h}\n{maxval}\n".encode("ascii"))
         f.write(arr.astype(dtype).tobytes())
-    os.replace(tmp, out)  # atomic; safe even when out == source
+    os.replace(tmp, out)  # safe when out == source
 
 
 def normalize_dir(root: Path):
@@ -85,12 +72,12 @@ def normalize_dir(root: Path):
                 im.load()
                 arr, maxval = to_gray_array(im)
         except Exception:
-            continue  # not a decodable image (readme, etc.) -> leave it alone
+            continue
         out = p.with_suffix(".pgm")
         write_pgm(arr, maxval, out)
         converted += 1
         if p != out:
-            p.unlink()  # drop the original color / non-PGM source
+            p.unlink()
             removed += 1
     return converted, removed, skipped
 

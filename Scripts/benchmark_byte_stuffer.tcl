@@ -1,17 +1,15 @@
 # Copyright (C) 2026 Vitor Mendes Camilo
 # SPDX-License-Identifier: GPL-3.0-only
 #
-# Non-project, out-of-context timing comparison on the characterization device.
-# Run from a separate output directory for each experiment:
-# vivado -mode batch -source /path/to/Scripts/benchmark_byte_stuffer.tcl \
-#   -tclargs /path/to/byte_stuffer.vhd byte_stuffer 48 2.0
-# Or benchmark the surrounding core (12-bit pixels, 4096 x 4096):
-#   -tclargs /path/to/byte_stuffer.vhd openjls_top 48 3.0
-# Width applies only to byte_stuffer. Overconstrain the clock: nonnegative WNS
-# establishes a frequency floor, not a maximum. Ports have no external delays;
-# this benchmark measures internal register-to-register paths.
-# An optional fifth argument overrides the Sources directory for whole-core
-# experiments, so all RTL can be frozen independently for each version.
+# This file is part of OpenJLS. Available under GPLv3 or a
+# commercial license. See LICENSE and README for details.
+#
+
+# Out-of-context timing of a byte_stuffer variant, alone or inside openjls_top
+# (12-bit, 4096 x 4096). Run each experiment from its own output directory:
+#   vivado -mode batch -source Scripts/benchmark_byte_stuffer.tcl \
+#     -tclargs <byte_stuffer.vhd> byte_stuffer|openjls_top <width> <period_ns> [sources_dir]
+# Overconstrain: nonnegative WNS is only a floor.
 
 set ROOT [file normalize [file join [file dirname [info script]] ..]]
 set STUFFER [file normalize [lindex $argv 0]]

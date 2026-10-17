@@ -4,25 +4,11 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM testbench: a22_errval_mapping (combinational).
+-- tb_a22_osvvm: a22_errval_mapping against the T.87 A.22 C code
 --
--- T.87 Code segment A.22: EMErrval = 2*abs(Errval) - RItype - map. The C model
--- has no clamp; the RTL clamps at 0. That clamp is provably a no-op for any
--- T.87-coherent input, so the reference is the pure (unclamped) C formula and
--- the check covers its full valid domain.
---
--- Proof that EMErrval >= 0 for coherent inputs (so EMErrval<0 is unreachable):
---   EMErrval<0 needs |Errval|=0 AND RItype+map>=1. But
---     (1) a run-interruption sample is the breaking sample, so Ix/=Ra; with
---         RItype=1 (A.17: Ra=Rb) A.18 gives Px=Ra and Errval=Ix-Ra/=0, and A.19
---         ModRange keeps it nonzero -> RItype=1 implies |Errval|>=1; and
---     (2) A.21 forces map=0 whenever Errval=0 (every map=1 clause needs Errval/=0).
---   So |Errval|=0 with RItype+map>=1 cannot occur; EMErrval>=0 always, with =0
---   reachable only at (RItype=0, map=0, Errval=0) -- which is driven and checked.
--- Skipped (EMErrval<0) vectors are asserted to be exactly that forbidden combo.
--- Coverage crosses RItype x map and includes the EMErrval==0 boundary.
+-- The RTL clamps EMErrval at 0; the C code doesn't. EMErrval < 0 needs Errval = 0
+-- with RItype or map set, which T.87 never produces (RItype 1 => Errval /= 0,
+-- Errval = 0 => map = 0), so those vectors only check the clamp.
 --
 -- Guidelines:
 --   G1.Req      T87.A22
@@ -37,7 +23,6 @@
 --   G4 other    N/A: Edge/Coding/Stream not in scope
 --   G5          N/A: combinational
 --   G6.Code     fully covered
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -95,8 +80,8 @@ begin
   stim : process is
 
     variable rv       : RandomPType;
-    variable covCross : CoverageIDType;        -- RItype x map (all 4 reachable)
-    variable covZero  : CoverageIDType;        -- EMErrval == 0 boundary seen
+    variable covCross : CoverageIDType;
+    variable covZero  : CoverageIDType;
     variable req      : AlertLogIDType;
     variable err      : integer;
     variable ri       : integer;
@@ -138,9 +123,7 @@ begin
         ICover(mm, (2, exp));
         ICover(st, (1, ev));
       else
-        -- EMErrval<0 is T.87-unreachable: it requires Errval=0 with RItype or map
-        -- set, but RItype=1 => Errval/=0 and Errval=0 => map=0 (see header).
-        -- Guard against ever skipping a coherent vector by changing the formula.
+        -- Unreachable in T.87 (see header)
         AffirmIfEqual(GetAlertLogID("DefensiveClamp"), checked_integer(sEm), 0, "negative transient clamps to zero");
         AffirmIf(GetAlertLogID("DataChecks"), ev = 0 and (riv = 1 or mpv = 1),
                  "EMErrval<0 only on T.87-non-coherent inputs (Errval=0 with RItype/map set)");
@@ -167,7 +150,6 @@ begin
     AddBins(covZero, "nonzero mapped error", GenBin(0));
     AddBins(covZero, "zero mapped error", GenBin(1));
 
-    -- Directed: EMErrval==0 boundary for each ri/map needing it.
     mm := NewID("G2.MinMax node x value");
     add_value_bin(mm, 1, "Errval", ERR_MIN);
     add_value_bin(mm, 1, "Errval", ERR_MAX);
@@ -175,7 +157,7 @@ begin
     add_value_bin(mm, 2, "EMErrval", 2 * (-ERR_MIN));
     st := NewID("G3.Stim node x value");
     add_value_bin(st, 1, "Errval", ERR_MIN);
-    drive_check(1, 1, 1, "err1 ri1 map1 -> 0");        -- 2-1-1 = 0
+    drive_check(1, 1, 1, "err1 ri1 map1 -> 0");
     drive_check(1, 1, 0, "err1 ri1 map0 -> 1");
     drive_check(1, 0, 1, "err1 ri0 map1 -> 1");
     drive_check(0, 0, 0, "err0 ri0 map0 -> 0");
@@ -192,7 +174,7 @@ begin
 
     for i in 1 to N_RAND loop
 
-      -- Bias |err| small so the EMErrval==0 boundary bins fill.
+      -- Bias |Errval| small to reach EMErrval = 0
       if (rv.RandInt(0, 1) = 0) then
         err := rv.RandInt(-2, 2);
       else

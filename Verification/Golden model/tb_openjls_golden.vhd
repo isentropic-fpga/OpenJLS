@@ -5,25 +5,12 @@
 -- commercial license. See LICENSE and README for details.
 --
 
-----------------------------------------------------------------------------------
-  -- Engineer:    Vitor Mendes Camilo
-  --
-  -- Testbench: tb_openjls_golden
-  --
-  -- Golden-model cross-check. Encodes a single-component PGM with OpenJLS and
-  -- byte-for-byte compares the result against a reference .jls produced by the
-  -- CharLS encoder (built from source — see ThirdParty/fetch_third_party.sh).
-  -- Unlike the T.87 conformance suite (which compares against the ITU-supplied
-  -- vectors), this lets us check arbitrary images — notably the 8-bit planes of
-  -- TEST8, which exercise the BITNESS=8 datapath that TEST16 never touches.
-  --
-  -- One image per run, fully parametrized via generics; build_run.sh loops over
-  -- the image set, passing PGM_PATH/JLS_PATH/OUT_PATH/BITNESS each time.
-  -- Image dimensions and sample width are read from the PGM header at runtime.
-  --
-  -- Behavioral (NVC) or post-synthesis netlist sim via POST_SYNTH_FRIENDLY.
-  ----------------------------------------------------------------------------------
-  use work.openjls_pkg.all;
+-- tb_openjls_golden: openjls_top against a CharLS-minted .jls, one PGM per run
+--
+-- build_run.sh sets the paths and BITNESS per image. The output is never
+-- backpressured, so any input stall is internal.
+
+use work.openjls_pkg.all;
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -33,62 +20,43 @@ library ieee;
 
 entity tb_openjls_golden is
   generic (
-    -- Repo root, with trailing '/'. The launcher injects it (build_run.sh passes
-    -- -gREPO_ROOT); empty default => paths resolve relative to CWD.
+    -- With trailing '/'; the paths below are relative to it
     REPO_ROOT           : string  := "";
-    -- Input PGM, CharLS-minted golden .jls, and the OpenJLS output artifact.
-    -- Relative to REPO_ROOT; build_run.sh injects one image per run.
     PGM_PATH            : string  := "Verification/T87 conformance/Reference Images/TEST8R.PGM";
     JLS_PATH            : string  := "Verification/Golden model/Output/Golden/TEST8R_charls.jls";
     OUT_PATH            : string  := "Verification/Golden model/Output/OpenJLS/TEST8R_OPENJLS.jls";
-    -- Pixel bit depth. Must match the PGM maxval (asserted below) and the DUT
-    -- pixel-port width. 8 for the TEST8 planes, 12 for TEST16.
+    -- Must match the PGM maxval
     BITNESS             : natural := 8;
-    -- true: instantiate the top bare (post-synthesis netlist). false: behavioral
-    -- sim with the explicit generic map below (behavioral flow).
+    -- Instantiate the post-synthesis netlist bare, without a generic map
     POST_SYNTH_FRIENDLY : boolean := false
   );
 end entity tb_openjls_golden;
 
 architecture bench of tb_openjls_golden is
 
-  -------------------------------------------------------------------------------------------------------------
-  -- TB level controls
-  -------------------------------------------------------------------------------------------------------------
-  constant DUMP_VCD              : boolean := false;  -- waveform dump gated; large for 256x256
-  constant MAX_DIFF_LOG          : natural := 16;     -- cap on logged byte mismatches before failure
+  constant DUMP_VCD              : boolean := false;
+  constant MAX_DIFF_LOG          : natural := 16;
 
   constant FULL_PGM_PATH         : string := REPO_ROOT & PGM_PATH;
   constant FULL_JLS_PATH         : string := REPO_ROOT & JLS_PATH;
   constant FULL_OUT_PATH         : string := REPO_ROOT & OUT_PATH;
 
-  -- Test configuration
   constant CLK_PERIOD            : time     := 10 ns;
-  -- DUT architectural maximum (openjls_top caps both at 65535, the T.87
-  -- header field limit). The line buffer is the only memory that scales with
-  -- width and is ~one row, so sizing to the max is cheap; full-image
-  -- pixel/byte buffers are heap-allocated to the actual image (see below).
-  -- This lets the suite run the largest images in the set (and ~100 MB-class
-  -- images) without an artificial width/height cap.
+  -- Only the line buffer scales with MAX, one row, so run at the T.87 cap
   constant MAX_IMAGE_WIDTH       : positive := 65535;
   constant MAX_IMAGE_HEIGHT      : positive := 65535;
-  constant OUT_WIDTH             : natural  := CO_OUT_WIDTH_STD;   -- 64
+  constant OUT_WIDTH             : natural  := CO_OUT_WIDTH_STD;
   constant BYTES_PER_WORD        : natural  := OUT_WIDTH / 8;
 
-  -- Buffers are heap-allocated at runtime to fit the actual image, so there is
-  -- no fixed pixel/byte ceiling: the suite scales to large (e.g. satellite)
-  -- images, bounded only by the DUT's MAX_IMAGE_WIDTH/HEIGHT (asserted in
-  -- load_pgm). Pointers are sized once the PGM header / golden length is known.
+  -- Heap-allocated to the image and golden sizes
   type pixel_array_t is array (natural range <>) of natural;
   type byte_array_t is array (natural range <>) of std_logic_vector(7 downto 0);
   type pixel_ptr_t is access pixel_array_t;
   type byte_ptr_t is access byte_array_t;
 
-  -- Output headroom over the expected 2x reference length, so an encoder that
-  -- overproduces is captured (and flagged) instead of silently truncated.
+  -- Room past the golden length so overproduction is caught, not truncated
   constant COLLECT_MARGIN        : natural := 4096;
 
-  -- DUT ports
   signal iClk                    : std_logic;
   signal iRst                    : std_logic;
   signal iValid                  : std_logic;
@@ -102,18 +70,13 @@ architecture bench of tb_openjls_golden is
   signal oLast                   : std_logic;
   signal iReady                  : std_logic;
 
-  -- Image dimensions, read from the PGM header by stim and held stable so the
-  -- input register latches them during reset.
+  -- From the PGM header, set before reset so the DUT latches them
   signal sImgW                   : natural := 1;
   signal sImgH                   : natural := 1;
 
-  -- Internal-stall probe. A cycle with iValid='1' and oReady='0' is a pixel held
-  -- back by the DUT; the output is never backpressured here (iReady tied high), so
-  -- any such cycle is a purely internal stall (e.g. byte_stuffer >4 B/cycle overrun).
   signal sStallCnt               : natural := 0;
 
-  -- Collection
-  shared variable collected      : byte_ptr_t;  -- allocated by stim before feeding
+  shared variable collected      : byte_ptr_t;
   shared variable collectedCount : natural;
   shared variable lastCount      : natural;
 
@@ -148,13 +111,9 @@ architecture bench of tb_openjls_golden is
 
   end function hex2;
 
-  -------------------------------------------------------------------------------------------------------------
-  -- Binary-byte file I/O (VHDL-2008 file of character)
-  -------------------------------------------------------------------------------------------------------------
+  -- Binary file I/O ---
 
   type char_file_t is file of character;
-
-  -- Read one byte; sets eof when no more data.
 
   procedure read_byte (
     file f : char_file_t;
@@ -191,11 +150,7 @@ architecture bench of tb_openjls_golden is
 
   end procedure write_byte;
 
-  -- Read ASCII unsigned decimal integer from PGM header. Skips leading whitespace
-  -- and comment lines starting with '#'. Stops on first non-digit (which is
-  -- consumed and discarded — the PGM spec says exactly one whitespace separates
-  -- the maxval from the binary body, so callers using this for w/h/maxval read
-  -- their delimiter implicitly).
+  -- Skips whitespace and '#' comments; consumes the one delimiter after the number
 
   procedure read_pgm_int (
     file f : char_file_t;
@@ -227,12 +182,10 @@ architecture bench of tb_openjls_golden is
           acc     := character'pos(c) - character'pos('0');
           started := true;
         end if;
-      -- else: skip whitespace
       else
         if (c >= '0' and c <= '9') then
           acc := acc * 10 + character'pos(c) - character'pos('0');
         else
-          -- delimiter consumed; done
           v := acc;
           return;
         end if;
@@ -254,7 +207,6 @@ begin
 
   end process clk_proc;
 
-  -- Dimensions read from the PGM header (set by stim before reset is released).
   iImageWidth  <= std_logic_vector(to_unsigned(sImgW, iImageWidth'length));
   iImageHeight <= std_logic_vector(to_unsigned(sImgH, iImageHeight'length));
 
@@ -305,7 +257,7 @@ begin
 
   end generate dut;
 
-  -- Output collection: extract bytes per word using oKeep (MSB-first).
+  -- First byte in the MSB lane
   collect : process (iClk) is
   begin
 
@@ -334,12 +286,8 @@ begin
 
   end process collect;
 
-  -- This golden cross-check never backpressures the output: tie iReady high.
   iReady <= '1';
 
-  -- Internal-stall probe: count cycles where the DUT holds a pixel back
-  -- (iValid='1', oReady='0'). With iReady high this can only be an internal
-  -- stall. Reported at end of run (warning if non-zero); see sStallCnt.
   mon_stall : process (iClk) is
   begin
 
@@ -351,7 +299,6 @@ begin
 
   end process mon_stall;
 
-  -- Stimulus
   stim : process is
 
     variable pixels : pixel_ptr_t;
@@ -382,8 +329,7 @@ begin
 
     end procedure do_reset;
 
-    -- Load a binary PGM (P5). Returns width/height/pixel-count; reads 1 byte per
-    -- sample when maxval < 256, else 2 bytes big-endian. Fills `pixels`.
+    -- Binary PGM (P5) into pixels
     procedure load_pgm (
       path : string;
       wo   : out natural;
@@ -407,7 +353,6 @@ begin
 
       file_open(f, path, read_mode);
 
-      -- Magic "P5"
       read_byte(f, magic0, eof);
       read_byte(f, magic1, eof);
       assert magic0 = x"50" and magic1 = x"35"
@@ -430,7 +375,7 @@ begin
         report "PGM maxval does not match BITNESS"
         severity failure;
 
-      -- Body: 1 byte/sample if maxval < 256, else 2 bytes big-endian.
+      -- 2 bytes big-endian per sample above maxval 255
       for i in 0 to np - 1 loop
 
         read_byte(f, bHi, eof);
@@ -473,7 +418,7 @@ begin
 
     begin
 
-      -- Pass 1: count bytes so refbuf can be sized exactly. Pass 2: read them.
+      -- Count first to size refbuf, then read
       file_open(f, path, read_mode);
       n := 0;
 
@@ -555,7 +500,6 @@ begin
 
     end procedure wait_images;
 
-    -- Compare refLen collected bytes starting at `base` against the reference.
     procedure compare_slice (
       base : natural;
       tag  : string
@@ -589,15 +533,11 @@ begin
 
   begin
 
-    -- Initial values for signals (no defaults — set explicitly here).
-    -- iReady is tied high concurrently (output never backpressured).
     iRst   <= '1';
     iValid <= '0';
     iPixel <= (others => '0');
 
-    -- Config guard. The pixel port width is fixed in a post-synth netlist; if it
-    -- disagrees with BITNESS the netlist was built with different generics, so
-    -- fail loudly here instead of producing a confusing byte mismatch later.
+    -- A netlist built with other generics fails here, not as a byte mismatch
     report "DUT config: BITNESS=" & integer'image(BITNESS) &
            " OUT_WIDTH=" & integer'image(OUT_WIDTH) &
            " MAX_IMAGE=" & integer'image(MAX_IMAGE_WIDTH) & "x" & integer'image(MAX_IMAGE_HEIGHT);
@@ -615,16 +555,10 @@ begin
     report "Loading golden JLS: " & FULL_JLS_PATH;
     load_jls(FULL_JLS_PATH);
 
-    -- Size the output buffer to the expected reference length (+margin).
     collected := new byte_array_t(0 to refLen + COLLECT_MARGIN - 1);
 
     do_reset;
 
-    -- =========================================================================
-    -- Feed the image once and byte-compare the encoder output against the golden
-    -- reference. The output is never backpressured (iReady high), so any pixel
-    -- held back (counted by mon_stall) is a purely internal stall.
-    -- =========================================================================
     report "Feeding " & integer'image(nPix) & " pixels";
     feed_image;
 

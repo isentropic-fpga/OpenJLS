@@ -4,20 +4,10 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM testbench: a15_a16_encode_run (stateful Mealy FSM).
+-- tb_a15_a16_osvvm: a15_a16_encode_run against the T.87 A.15/A.16 C code
 --
--- The RTL emits the A.15 unary run-segment bits incrementally (one per rg
--- boundary as the run advances) instead of as an end-of-run burst, and emits the
--- A.16 terminal (break code + RI token, or the EOL residual '1'). This TB is
--- transaction-level: it drives a complete run (M matches + a terminal), collects
--- every emitted bit (oRawSuffixVal, oRawSuffixLen MSB-first) into a bit string,
--- and compares it against the T.87 A.15/A.16 algorithm (Docs/Project.md) computed
--- independently as a burst. RUNindex persistence across runs (reset only at EOI)
--- is validated implicitly: the reference tracks RUNindex with the C model and the
--- next run's bits depend on it. Coverage: terminal type, immediate break,
--- EOI reset, and the start-RUNindex range.
+-- The RTL emits run bits incrementally; the TB collects a whole run and
+-- compares it against the burst the C code writes.
 --
 -- Guidelines:
 --   G1.Req      T87.A15-A16
@@ -32,7 +22,6 @@
 --   G4 other    N/A: Edge/Coding/Stream not in scope
 --   G5          G5.States resetPhase; outputs idle after reset, replay checked
 --   G6.Code     fully covered
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -59,7 +48,6 @@ architecture sim of tb_a15_a16_osvvm is
   constant T_BREAK    : integer := 0;
   constant T_EOL      : integer := 1;
 
-  -- Run-mode pixel literals (Ra==Ix => match; Ix/=Ra => break).
   constant RUNVAL     : integer := 10;
   constant BRKPIX     : integer := 50;
   constant RBVAL      : integer := 20;
@@ -85,7 +73,7 @@ architecture sim of tb_a15_a16_osvvm is
   signal oRiRunIndex  : unsigned(4 downto 0);
   signal oInRunNext   : std_logic;
 
-  -- Append nbits of val (MSB-first) as '0'/'1' chars onto buf.
+  -- Append nbits of val, MSB first
   procedure app (
     buf   : inout string;
     len   : inout natural;
@@ -107,7 +95,7 @@ architecture sim of tb_a15_a16_osvvm is
 
   end procedure app;
 
-  -- T.87 A.15 + A.16 burst reference for one run.
+  -- T.87 A.15/A.16 for one run
   procedure gen_expected (
     r0      : natural;
     m       : natural;
@@ -128,7 +116,7 @@ architecture sim of tb_a15_a16_osvvm is
     ri  := r0;
     cnt := m;
 
-    -- A.15: emit a '1' per completed run segment of length 2^J[RUNindex].
+    -- A.15
     loop
 
       step := 2 ** TB_J_TABLE(ri);
@@ -141,9 +129,9 @@ architecture sim of tb_a15_a16_osvvm is
 
     end loop;
 
-    -- A.16 terminal.
+    -- A.16
     if (term = T_BREAK) then
-      -- '0' marker then residual in J[RUNindex] bits = cnt in (J+1) bits.
+      -- '0' + J-bit residual = cnt in J + 1 bits
       app(buf, len, cnt, TB_J_TABLE(ri) + 1);
       if (ri > 0) then
         ri := ri - 1;
@@ -215,11 +203,10 @@ begin
     variable actLen  : natural;
     variable expBuf  : string(1 to MAXBITS);
     variable expLen  : natural;
-    variable carried : natural;       -- expected RUNindex carried across runs
+    variable carried : natural;       -- RUNindex across runs
     variable newIdx  : natural;
     variable riFires : boolean;
 
-    -- Present one cycle and (when emitting) collect bits into actBuf.
     procedure cycle_collect (
       hit  : std_logic;
       cont : std_logic;
@@ -262,7 +249,6 @@ begin
 
     end procedure cycle_collect;
 
-    -- Drive a whole run; check the collected bitstream against the reference.
     procedure do_run (
       m    : natural;
       term : integer;
@@ -292,10 +278,9 @@ begin
       if (term = T_BREAK) then
         nMatch := m;
       else
-        nMatch := m - 1;                 -- EOL: last pixel is the terminal
+        nMatch := m - 1;                 -- EOL: the last pixel is the terminal
       end if;
 
-      -- Matching pixels (run continues).
       for i in 1 to nMatch loop
 
         cycle_collect('1', '1', i, RUNVAL, RUNVAL, '0');
@@ -303,7 +288,6 @@ begin
 
       end loop;
 
-      -- Terminal cycle.
       if (term = T_BREAK) then
         cycle_collect('0', '0', m, BRKPIX, RUNVAL, eoi);
       else
@@ -321,13 +305,11 @@ begin
 
       iEoi <= '0';
 
-      -- Compare the collected run-segment bitstream.
       AffirmIfEqual(req, actLen, expLen, msg & " bit-length");
       if (actLen = expLen) then
         AffirmIfEqual(req, actBuf(1 to actLen), expBuf(1 to expLen), msg & " bitstream");
       end if;
 
-      -- Coverage and carried-index update.
       ICover(covTerm, term);
       ICover(covImm, boolean'pos(m = 0));
       ICover(covEoi, std_to_int(eoi));
@@ -347,7 +329,6 @@ begin
 
     end procedure do_run;
 
-    -- Idle (not run mode): outputs must be quiet, state must hold.
     procedure idle (
       cycles : natural
     ) is
@@ -369,8 +350,7 @@ begin
 
     end procedure idle;
 
-    -- iRst after n matching pixels (0 = between runs); the FSM must go cold
-    -- and the next run encode from RUNindex=0. Bits emitted before are discarded.
+    -- iRst after n matches (0 = between runs); the next run starts from RUNindex 0
     procedure reset_mid (n : natural) is
     begin
 
@@ -447,32 +427,24 @@ begin
     apply_reset(clk, rst, 4, '1');
     carried := 0;
 
-    --------------------------------------------------------------------------
-    -- Directed regressions (mirror the ad-hoc suite).
-    --------------------------------------------------------------------------
+    -- Directed ---
     do_run(0, T_BREAK, '0', "immediate break");
     do_run(1, T_BREAK, '0', "1-pixel run break");
     do_run(4, T_BREAK, '0', "4-match break");
     do_run(5, T_EOL, '0', "5-match EOL");
     idle(3);
-    do_run(2, T_BREAK, '1', "break on EOI");      -- resets carried to 0
+    do_run(2, T_BREAK, '1', "break on EOI");
 
-    --------------------------------------------------------------------------
-    -- Climb RUNindex with consecutive long EOL runs (no break/EOI).
-    --------------------------------------------------------------------------
+    -- Climb RUNindex with long EOL runs ---
     for n in 1 to 6 loop
 
       do_run(800, T_EOL, '0', "climb EOL");
 
     end loop;
 
-    --------------------------------------------------------------------------
-    -- Saturate RUNindex at 31. The J table tail grows exponentially
-    -- (J[24..31] = 8..15), so 800-pixel runs stall at index 26 (next segment
-    -- 1024); reaching 31 takes one run past the 2^14 segment, and a boundary
-    -- WHILE at 31 (second run, past 2^15) proves the index holds there
-    -- instead of overflowing.
-    --------------------------------------------------------------------------
+    -- Saturate RUNindex ---
+    -- 800-pixel runs stall at index 26; 33100 reaches 31, 40000 then crosses a
+    -- segment boundary at 31
     do_run(33100, T_EOL, '0', "saturate RUNindex to 31");
     do_run(40000, T_EOL, '0', "boundary at saturated RUNindex");
     do_run(3, T_BREAK, '0', "break from saturated RUNindex");
@@ -480,24 +452,16 @@ begin
     AffirmIfEqual(req, checked_integer(oRiRunIndex), 30,
                   "RUNindex decremented from saturation by the break");
 
-    --------------------------------------------------------------------------
-    -- Mid-operation iRst (distinct from the iEoi path): RUNindex is high after
-    -- the climb; assert iRst and confirm the FSM goes cold (no spurious output,
-    -- sInRun cleared) and the next run encodes from RUNindex=0 again -- the
-    -- bitstream check with carried=0 proves the state register was cleared.
-    --------------------------------------------------------------------------
+    -- Mid-op reset ---
     reset_mid(0);
     do_run(800, T_EOL, '0', "climb before mid-run reset");
     reset_mid(40);
 
-    --------------------------------------------------------------------------
-    -- Constrained-random runs.
-    --------------------------------------------------------------------------
+    -- Random ---
     for r in 1 to 400 loop
 
       term := rv.RandInt(0, 1);
 
-      -- Mix of immediate breaks, small runs, and long runs.
       if (term = T_BREAK and rv.DistValInt(((1, 1), (0, 6))) = 1) then
         m := 0;
       elsif (rv.DistValInt(((1, 1), (0, 3))) = 1) then
@@ -507,7 +471,7 @@ begin
       end if;
 
       if (term = T_EOL and m = 0) then
-        m := 1;                          -- EOL needs at least one pixel
+        m := 1;
       end if;
 
       eoi := bool2bit(rv.DistValInt(((1, 1), (0, 9))) = 1);

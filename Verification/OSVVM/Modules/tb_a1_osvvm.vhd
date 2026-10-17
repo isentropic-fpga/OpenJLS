@@ -4,13 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM testbench: a1_gradient_comp (combinational).
---
--- Local gradient computation: D1=D-B, D2=B-C, D3=C-A. Pure subtraction of
--- unsigned pixel neighbours into signed differences. Reference is integer
--- arithmetic; coverage closes the sign octant of (D1,D2,D3).
+-- tb_a1_osvvm: a1_gradient_comp against integer subtraction
 --
 -- Guidelines:
 --   G1.Req      T87.A1
@@ -25,7 +19,6 @@
 --   G4 other    N/A: Edge/Run/Coding/Stream not in scope
 --   G5          N/A: combinational
 --   G6.Code     fully covered
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -153,7 +146,7 @@ begin
     add_value_bin(st, 3, "Rc MSB", 2 ** (BITNESS - 1), PX_MAX);
     add_value_bin(st, 4, "Rd MSB", 2 ** (BITNESS - 1), PX_MAX);
 
-    -- Directed corners.
+    -- Directed corners
     drive_check(0, 0, 0, 0, "all-zero");
     drive_check(PX_MAX, PX_MAX, PX_MAX, PX_MAX, "all-max");
     drive_check(0, PX_MAX, 0, PX_MAX, "alternating");
@@ -163,8 +156,7 @@ begin
     drive_check(PX_MAX, 0, 0, 0, "D3 min");
     drive_check(0, 0, PX_MAX, 0, "D3 max");
 
-    -- Random sweep.
-    -- Walk every input bit independently; all-zero neighbours isolate wiring.
+    -- Walking ones; zero neighbours isolate each bit
     for bit_index in 0 to BITNESS - 1 loop
       drive_check(2 ** bit_index, 0, 0, 0, "walking A");
       drive_check(0, 2 ** bit_index, 0, 0, "walking B");

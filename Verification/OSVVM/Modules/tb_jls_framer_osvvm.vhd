@@ -4,20 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM testbench: jls_framer (stateful AXI-stream framer).
---
--- Wraps the byte-stuffed payload with the JPEG-LS frame: 25-byte header
--- (SOI + SOF55 + SOS, with runtime height/width) before the data
--- and the EOI footer FF D9 after it. The reference is the JPEG-LS frame format
--- (T.87): for each image the expected output byte stream is
---   header(W,H) ++ payload_bytes ++ 0xFF 0xD9
--- pushed to an OSVVM scoreboard in emission order. The monitor pops every output
--- byte (oByteEnable bytes per beat, MSB-first) on the AXI handshake and checks it,
--- and asserts oLast lands exactly on the trailing 0xD9 beat. Upstream oReady and
--- downstream random iReady backpressure are both honoured. Images are serialized
--- (drain before the next) so dimensions stay coherent.
+-- tb_jls_framer_osvvm: jls_framer against an independent T.87 frame model
 --
 -- Guidelines:
 --   G1.Req      OJLS.Framer
@@ -32,7 +19,6 @@
 --   G4 other    N/A: Edge/Run/Coding not in scope
 --   G5          G5.States resetPhase; outputs idle after reset, aborted output discarded, replay checked
 --   G6.Code     defensive arm waived (cover_summary.py)
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -50,9 +36,8 @@ library tb_support;
   use tb_support.tb_support_pkg.all;
 
 entity tb_jls_framer_osvvm is
-  -- Non-default variants are driven from OpenJls.pro via [generic ...].
   generic (
-    OUT_WIDTH : natural  := CO_OUT_WIDTH_STD;                   -- 64
+    OUT_WIDTH : natural  := CO_OUT_WIDTH_STD;
     MAX_W     : positive := 4096;
     MAX_H     : positive := 4096
   );
@@ -61,7 +46,7 @@ end entity tb_jls_framer_osvvm;
 architecture sim of tb_jls_framer_osvvm is
 
   constant BITNESS    : natural := CO_BITNESS_STD;
-  constant IN_WIDTH   : natural := CO_BYTE_STUFFER_OUT_WIDTH;   -- 32
+  constant IN_WIDTH   : natural := CO_BYTE_STUFFER_OUT_WIDTH;
   constant BYTES_IN   : natural := IN_WIDTH / 8;
   constant BYTES_OUT  : natural := OUT_WIDTH / 8;
   constant WDIM       : natural := log2ceil(MAX_W + 1);
@@ -70,8 +55,7 @@ architecture sim of tb_jls_framer_osvvm is
   constant BE_OUT_W   : natural := log2ceil(OUT_WIDTH / 8 + 1);
   constant CLK_PERIOD : time    := CLK_PERIOD_DEFAULT;
   constant N_IMAGES   : natural := 30;
-  -- Scale image length with the beat size so wide OUT_WIDTHs still emit full
-  -- data beats (payload must outrun the 25-byte header's final-beat fill).
+  -- Wide OUT_WIDTHs need payload past the header's last-beat fill
   constant MAX_WORDS  : natural := math_max(24, 2 * BYTES_OUT);
 
   signal clk      : std_logic := '0';
@@ -94,10 +78,10 @@ architecture sim of tb_jls_framer_osvvm is
   signal sImagesSent       : natural;
   signal sImagesDone       : natural;
   signal sDriverDone       : boolean;
-  -- Monitor ignores output during an aborted (reset-interrupted) image.
+  -- Skip output of a reset-aborted image
   signal sIgnore           : boolean := false;
 
-  -- JPEG-LS frame header (T.87), transcribed independently of the RTL ROM.
+  -- T.87 frame header, independent of the RTL ROM
   function header_byte (
     idx : natural;
     w   : natural;
@@ -174,17 +158,13 @@ begin
       iReady       => iReady
     );
 
-  -----------------------------------------------------------------------------
-  -- Driver: per image push header(W,H) ++ payload ++ FF D9 to the scoreboard,
-  -- then stream the payload words (honouring oReady) with iEoi on the last.
-  -----------------------------------------------------------------------------
+  -- Driver ---
   driver : process is
 
     variable rv   : RandomPType;
     variable rs   : CoverageIDType;
     variable sent : natural := 0;
 
-    -- Wait for an oReady cycle, present the word, push it on the edge.
     procedure push_word (
       wd    : std_logic_vector(IN_WIDTH - 1 downto 0);
       nbe   : natural;
@@ -213,8 +193,6 @@ begin
 
     end procedure push_word;
 
-    -- Push one full image: header(w,h) ++ payload ++ FF D9 to the scoreboard
-    -- and stream the matching payload words (iEoi on the last).
     procedure send_image (
       w      : natural;
       h      : natural;
@@ -264,9 +242,7 @@ begin
 
     end procedure send_image;
 
-    -- Start an image of n words (iEoi on the last if eoi='1'), then iRst.
-    -- The aborted output is never scored; after reset the framer must be
-    -- idle and the next image frame correctly.
+    -- n words (iEoi on the last if eoi = '1'), then iRst; the output is unscored
     procedure reset_mid (
       n   : natural;
       eoi : std_logic
@@ -329,27 +305,20 @@ begin
       send_image(rv.RandInt(4, MAX_W), rv.RandInt(1, MAX_H), rv.RandInt(1, MAX_WORDS));
       sent        := sent + 1;
       sImagesSent <= sent;
-      -- Serialize: drain this image before the next (keeps dims coherent).
+      -- Drain before the next image so dims stay coherent
       wait until sImagesDone = sent;
 
     end loop;
 
-    --------------------------------------------------------------------------
-    -- Mid-operation iRst: idle, after the start word, mid-payload, EOI pending.
-    --------------------------------------------------------------------------
+    -- Mid-op reset: after start, idle, mid-payload, EOI pending ---
     reset_mid(1, '0');
     reset_mid(0, '0');
     reset_mid(12, '0');
     reset_mid(6, '1');
 
-    --------------------------------------------------------------------------
-    -- Directed: two back-to-back minimal images (payload = the FF D9 footer
-    -- only, zero stuffed bytes). Both EOIs queue inside the framer while the
-    -- first image's header is still draining — the EOI lands in the final
-    -- partial header beat, the EOI FIFO holds its full EOI_FIFO_DEPTH=2, the
-    -- pop shifts the second entry down, and the FSM takes both terminal arms:
-    -- straight back to header (image B pending) and then to idle.
-    --------------------------------------------------------------------------
+    -- Two back-to-back empty images ---
+    -- Both EOIs queue while A's header drains: fills the EOI FIFO and takes both
+    -- terminal FSM arms
     for img in 1 to 2 loop
 
       for k in 0 to 24 loop
@@ -365,8 +334,8 @@ begin
 
     iWidth  <= to_unsigned(16, WDIM);
     iHeight <= to_unsigned(1, HDIM);
-    push_word(rv.RandSlv(IN_WIDTH), 0, '1', '1');   -- image A: start+EOI, no payload
-    push_word(rv.RandSlv(IN_WIDTH), 0, '1', '1');   -- image B: queued behind A
+    push_word(rv.RandSlv(IN_WIDTH), 0, '1', '1');
+    push_word(rv.RandSlv(IN_WIDTH), 0, '1', '1');
     sent        := sent + 2;
     sImagesSent <= sent;
     wait until sImagesDone = sent;
@@ -377,10 +346,7 @@ begin
 
   end process driver;
 
-  -----------------------------------------------------------------------------
-  -- Monitor: random downstream backpressure; check every output byte and that
-  -- oLast coincides with the trailing 0xD9.
-  -----------------------------------------------------------------------------
+  -- Monitor ---
   monitor : process is
 
     variable rv      : RandomPType;
@@ -395,7 +361,7 @@ begin
 
     iReady <= '1';
     done   := 0;
-    -- Seeded; floor under the smallest variant (default: 1669).
+    -- Floor under the smallest variant
     req := GetReqID("OJLS.Framer", 1600);
     covBeat := NewID("G4.Stream partialBeat");
     SetFieldName(covBeat, "partialBeat");
@@ -406,7 +372,7 @@ begin
 
     loop
 
-      -- ~80% ready.
+      -- ~80% ready
       iReady <= bool2bit(rv.DistValInt(((1, 4), (0, 1))) = 1);
       wait for 1 ns;
 
@@ -446,7 +412,7 @@ begin
 
   end process monitor;
 
-  -- Check the entire pending AXI beat, including metadata, across backpressure.
+  -- The pending beat, metadata included, holds across backpressure
   hold_monitor : process(clk) is
     variable held : boolean := false;
     variable word : std_logic_vector(oWord'range);

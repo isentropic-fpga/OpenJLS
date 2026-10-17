@@ -6,13 +6,7 @@
  * commercial license. See LICENSE and README for details.
  */
 
-/*-----------------------------------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
---
--- File:        ojls_regs.h
--- Description: Register map of the openjls_axis_regs AXI4-Lite wrapper
---              (Sources/Xilinx/openjls_axis_regs.vhd). Byte offsets, 32-bit registers.
------------------------------------------------------------------------------------------------------------*/
+/* ojls_regs.h: openjls_axis_regs register map, byte offsets of 32-bit registers */
 
 #ifndef OJLS_REGS_H
 #define OJLS_REGS_H
@@ -36,7 +30,7 @@
 #define OJLS_MAXDIM_WIDTH(maxdim)  ((maxdim) & 0xFFFFu)
 #define OJLS_MAXDIM_HEIGHT(maxdim) (((maxdim) >> 16) & 0xFFFFu)
 
-/* Core minima (CO_MIN_IMAGE_WIDTH/CO_MIN_IMAGE_HEIGHT in openjls_pkg.vhd). */
+/* CO_MIN_IMAGE_WIDTH/HEIGHT in openjls_pkg.vhd */
 #define OJLS_MIN_WIDTH  4u
 #define OJLS_MIN_HEIGHT 1u
 

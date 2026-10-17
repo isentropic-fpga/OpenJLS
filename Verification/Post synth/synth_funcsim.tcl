@@ -5,29 +5,16 @@
 # commercial license. See LICENSE and README for details.
 #
 
-#-----------------------------------------------------------------------------
-# synth_funcsim.tcl - Synthesize openjls_top and export a VHDL funcsim netlist
-# for gate-level simulation under NVC (driven by build_run_osvvm.sh and
-# build_run_golden.sh).
-#
-# Non-project batch mode. The generics MUST mirror tb_openjls_top_osvvm's
-# defaults (BITNESS is an architecture constant there): the netlist bakes its
-# configuration at synthesis, and the TB's POST_SYNTH component declares the
-# matching fixed port widths.
-#
-# Run standalone:
-#   vivado -mode batch -source synth_funcsim.tcl
-#-----------------------------------------------------------------------------
+# Synthesize openjls_top to a VHDL funcsim netlist for the post-synth flows.
+# The defaults must match tb_openjls_top_osvvm, whose POST_SYNTH component has
+# fixed port widths.
 
 set HERE [file dirname [file normalize [info script]]]
 set ROOT [file normalize [file join $HERE .. ..]]
-# Outputs go to the cwd: Vivado mishandles space-containing paths (this
-# script's directory has one) in shell-outs during synthesis, dropping a
-# stray prefix-truncated file. The build_run_*.sh drivers run this from a
-# space-free scratch dir and collect the artifacts into Output/.
+# Writes to the cwd: Vivado's shell-outs break on this directory's space
 set OUT [pwd]
 
-# Same device as the fmax characterization project.
+# The fmax characterization part
 set PART xczu7eg-fbvb900-1-e
 
 set OL_SRC [file join $ROOT ThirdParty open-logic src base vhdl]
@@ -83,18 +70,14 @@ foreach f {
   read_vhdl -vhdl2008 [file join $SRC $f]
 }
 
-# Config bakes into the netlist at synthesis. Defaults mirror the OSVVM top
-# TB; the golden post-synth flow overrides via env to size an 8-bit netlist
-# that fits the largest real image (e.g. MAX_IMAGE_WIDTH/HEIGHT for the 8-bit
-# corpus). The consuming TB declares matching fixed port widths.
+# build_run_golden.sh overrides these to fit its corpus
 set BITNESS          [expr {[info exists ::env(SYNTH_BITNESS)]     ? $::env(SYNTH_BITNESS)     : 8}]
 set MAX_IMAGE_WIDTH  [expr {[info exists ::env(SYNTH_MAX_WIDTH)]   ? $::env(SYNTH_MAX_WIDTH)   : 4096}]
 set MAX_IMAGE_HEIGHT [expr {[info exists ::env(SYNTH_MAX_HEIGHT)]  ? $::env(SYNTH_MAX_HEIGHT)  : 4096}]
 set OUT_WIDTH        [expr {[info exists ::env(SYNTH_OUT_WIDTH)]   ? $::env(SYNTH_OUT_WIDTH)   : 64}]
 puts "Synthesizing openjls_top: BITNESS=$BITNESS MAX=${MAX_IMAGE_WIDTH}x${MAX_IMAGE_HEIGHT} OUT_WIDTH=$OUT_WIDTH"
 
-# out_of_context: no IO buffer insertion, so the netlist ports stay
-# bit-for-bit those of the RTL entity.
+# No IO buffers, so the ports match the RTL entity
 synth_design -top openjls_top -part $PART -mode out_of_context \
   -generic BITNESS=$BITNESS \
   -generic MAX_IMAGE_WIDTH=$MAX_IMAGE_WIDTH \

@@ -6,12 +6,7 @@
 # commercial license. See LICENSE and README for details.
 #
 
-"""Print "WIDTH HEIGHT MAXVAL BITS" for a binary PGM (P5).
-
-Tolerant of header comments and arbitrary whitespace, so it also works on
-drop-in PGMs not produced by normalize.py. BITS is the JPEG-LS sample
-precision implied by maxval (e.g. 255 -> 8, 4095 -> 12, 65535 -> 16).
-"""
+"""Print "WIDTH HEIGHT MAXVAL BITS" for a binary PGM (P5)."""
 import sys
 
 
@@ -21,7 +16,7 @@ def read_token(f) -> bytes:
         c = f.read(1)
         if not c:
             break
-        if c == b"#":            # comment runs to end of line
+        if c == b"#":
             f.readline()
             continue
         if c.isspace():

@@ -4,12 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM testbench: a18_run_interruption_prediction_error (combinational).
---
--- T.87 Code segment A.18: Px = (RItype==1)? Ra : Rb; Errval = Ix - Px.
--- Coverage crosses RItype with the sign of the resulting error.
+-- tb_a18_osvvm: a18_run_interruption_prediction_error against the T.87 A.18 C code
 --
 -- Guidelines:
 --   G1.Req      T87.A18
@@ -24,7 +19,6 @@
 --   G4 other    N/A: Edge/Coding/Stream not in scope
 --   G5          N/A: combinational
 --   G6.Code     fully covered
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;

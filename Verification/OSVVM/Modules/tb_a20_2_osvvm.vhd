@@ -4,15 +4,9 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM testbench: a20_2_compute_k (combinational).
+-- tb_a20_2_osvvm: a20_2_compute_k against the T.87 A.10 loop on the A.20.2 operand
 --
--- T.87 written requirement A.20.2: in run interruption, k follows A.10 with
--- TEMP in place of A[Q]; in regular mode A.10 runs on A[Q]. The reference is
--- the A.10 loop on the mode-selected operand. Aq and TEMP are always driven
--- with different values so a wrong select cannot pass. Coverage crosses mode
--- with k at zero, interior and maximum.
+-- Aq and TEMP always differ, so a wrong select cannot pass.
 --
 -- Guidelines:
 --   G1.Req      T87.A20.2
@@ -27,7 +21,6 @@
 --   G4 other    N/A: Edge/Run/Stream not in scope
 --   G5          N/A: combinational
 --   G6.Code     fully covered
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -60,7 +53,7 @@ architecture sim of tb_a20_2_osvvm is
   signal sNq   : unsigned(N_WIDTH - 1 downto 0);
   signal sK    : unsigned(K_WIDTH - 1 downto 0);
 
-  -- T.87 A.10 loop. n >= 1 guarantees termination at k <= MAX_K.
+  -- T.87 A.10; n >= 1 ends the loop by MAX_K
   function ref_k (
     n : integer;
     a : integer
@@ -171,7 +164,7 @@ begin
       AddCross(cov, "mode=" & to_string(ri) & " / k=MAX_K", GenBin(ri), GenBin(2));
     end loop;
 
-    -- Directed: the unselected operand sits at the opposite k extreme.
+    -- The unselected operand sits at the opposite k extreme
     mm := NewID("G2.MinMax node x value");
     add_value_bin(mm, 1, "N", 1);
     add_value_bin(mm, 1, "N", N_MAX);
@@ -190,8 +183,7 @@ begin
     drive_check(1, 1, 0, A_MAX, "RI k max, A 0");
     drive_check(1, 1, A_MAX, 0, "RI k=0, A max");
 
-    -- Every N*2^k +-1 threshold on the selected operand; the other side is
-    -- its bitwise complement so the two k values differ.
+    -- Every N * 2^k threshold, +-1; the unselected operand is its complement
     for ri in 0 to 1 loop
       for n in 1 to N_MAX loop
         for k in 0 to MAX_K loop

@@ -6,26 +6,10 @@
 # commercial license. See LICENSE and README for details.
 #
 
-# Rebuild this project's third-party environment, pinned to the versions below.
-# A no-arg run materializes everything the *verification* flows need (network
-# access required); the core IP itself ships with its one synthesis dependency
-# already committed (see open-logic below). This script is also the provenance
-# record: the pins and file lists are the source of truth for what each
-# dependency is and where it came from.
-#
-# Three kinds of dependency live here:
-#   - Vendored HDL (open-logic, osvvm, osvvm-scripts, tcllib): a curated set of
-#     files (sources + license texts) is copied in; the build then reads them
-#     offline. The verification ones are gitignored and (re)fetched by the
-#     default run. open-logic is the exception: the core RTL instantiates its
-#     primitives, so it stays committed in-tree and is NOT in the default run —
-#     fetch it explicitly only to (re)materialize or bump it.
-#   - Built-from-source tools (charls): cloned at a pinned commit and compiled
-#     locally (reproducible from the pin). Also built on demand by the
-#     golden-model flows, which call this.
-#   - System packages (nvc): the VHDL simulator, installed via the OS package
-#     manager. Runs last so the vendored deps land first; needs sudo (Ubuntu)
-#     or an AUR helper (Arch), so a no-arg run may prompt for elevation.
+# Fetch the pinned third-party dependencies; the pins below are their provenance.
+# A no-arg run fetches the verification deps (gitignored), builds CharLS and
+# installs NVC (may prompt for sudo). open-logic is committed, since the RTL
+# uses it, so it is fetched only when named.
 #
 # Usage:  ./fetch_third_party.sh                 verification deps (default)
 #         ./fetch_third_party.sh open-logic      one or more named components
@@ -36,33 +20,34 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
-# --- pins -------------------------------------------------------------------
+# Pins ---
 OL_URL="https://github.com/open-logic/open-logic.git"
 OL_TAG="4.5.0"
 
-OSVVM_URL="https://github.com/OSVVM/OSVVM.git"   # core utility library only
+# The OSVVM tags move in lockstep
+OSVVM_URL="https://github.com/OSVVM/OSVVM.git"
 OSVVM_TAG="2026.01"
 
-OSVVM_SCRIPTS_URL="https://github.com/OSVVM/OSVVM-Scripts.git"   # tcl script flow (reports)
-OSVVM_SCRIPTS_TAG="2026.01"                                      # keep in lockstep with OSVVM_TAG
+OSVVM_SCRIPTS_URL="https://github.com/OSVVM/OSVVM-Scripts.git"
+OSVVM_SCRIPTS_TAG="2026.01"
 
-OSVVM_COMMON_URL="https://github.com/OSVVM/OSVVM-Common.git"   # model-independent transactions (AXI4 VC dependency)
-OSVVM_COMMON_TAG="2026.01"                                     # keep in lockstep with OSVVM_TAG
+OSVVM_COMMON_URL="https://github.com/OSVVM/OSVVM-Common.git"
+OSVVM_COMMON_TAG="2026.01"
 
-OSVVM_AXI4_URL="https://github.com/OSVVM/AXI4.git"   # AxiStream + Axi4Lite verification components
-OSVVM_AXI4_TAG="2026.01"                             # keep in lockstep with OSVVM_TAG
+OSVVM_AXI4_URL="https://github.com/OSVVM/AXI4.git"
+OSVVM_AXI4_TAG="2026.01"
 
-TCLLIB_URL="https://github.com/tcltk/tcllib.git"   # fileutil + yaml, required by OSVVM-Scripts
+TCLLIB_URL="https://github.com/tcltk/tcllib.git"   # fileutil + yaml for OSVVM-Scripts
 TCLLIB_TAG="tcllib-2-0"
 
-CHARLS_URL="https://github.com/team-charls/charls.git"   # JPEG-LS reference encoder
-CHARLS_COMMIT=57ac3c337083bedbdfc93d19ec75a02101b1cd71    # polished cli/ lives on main, not in 2.4.x tags
+CHARLS_URL="https://github.com/team-charls/charls.git"
+CHARLS_COMMIT=57ac3c337083bedbdfc93d19ec75a02101b1cd71    # cli/ is on main, not in the 2.4.x tags
 
-NVC_URL="https://github.com/nickg/nvc"   # GPL-3.0 VHDL simulator (system install, not vendored)
+NVC_URL="https://github.com/nickg/nvc"
 NVC_DOCS="https://www.nickg.me.uk/nvc/"
-NVC_VERSION="1.21.0"                     # the version this project develops and tests against
+NVC_VERSION="1.21.0"
 
-# --- open-logic: base packages + RAM/FIFO primitives the RTL instantiates ---
+# open-logic: base packages + the RAM/FIFO the RTL instantiates ---
 fetch_open_logic() {
   local OL_DST="$HERE/open-logic"
   local OL_FILES=(
@@ -85,8 +70,8 @@ fetch_open_logic() {
   cp "$TMP/ol/License.txt" "$TMP/ol/LGPL2_1.txt" "$OL_DST/"
 }
 
-# --- OSVVM: core packages compiled by Verification/OSVVM/build_osvvm.sh -----
-# Keep this list in sync with that script's FILES (it fixes the compile order).
+# OSVVM ---
+# Keep in sync with FILES in Verification/OSVVM/build_osvvm.sh
 fetch_osvvm() {
   local OSVVM_DST="$HERE/osvvm"
   local OSVVM_FILES=(
@@ -144,8 +129,7 @@ fetch_osvvm() {
   cp "$TMP/osvvm/LICENSE.md" "$OSVVM_DST/"
 }
 
-# --- OSVVM-Scripts: tcl script flow (build/.pro, YAML -> HTML reports) -------
-# All top-level files; doc/ and images/ are documentation only.
+# OSVVM-Scripts: top-level files only ---
 fetch_osvvm_scripts() {
   local SCRIPTS_DST="$HERE/osvvm-scripts"
 
@@ -156,10 +140,8 @@ fetch_osvvm_scripts() {
   find "$TMP/osvvm-scripts" -maxdepth 1 -type f ! -name '.*' -exec cp {} "$SCRIPTS_DST/" \;
 }
 
-# --- OSVVM-Common: model-independent transaction packages (osvvm_common) -----
-# Dependency of the AXI4 VCs, built by the script flow via its own build.pro
-# (Verification/OSVVM/build_reports.sh). Whole src/ tree is vendored: the 2008
-# build path selects the deprecated/*.vhd fallbacks.
+# OSVVM-Common, needed by the AXI4 VCs ---
+# Whole src/: the VHDL-2008 build uses the deprecated/ fallbacks
 fetch_osvvm_common() {
   local DST="$HERE/osvvm-common"
 
@@ -171,10 +153,7 @@ fetch_osvvm_common() {
   cp -r "$TMP/osvvm-common/src" "$DST/"
 }
 
-# --- OSVVM-AXI4: AxiStream + Axi4Lite verification components (osvvm_axi4) ----
-# The wrappers use those two VCs, so only the shared common + AxiStream +
-# Axi4Lite subtrees are vendored (Axi4 Full is skipped). Each keeps its build.pro
-# so the script flow compiles them in the maintained order; requires osvvm_common.
+# OSVVM-AXI4: common, AxiStream and Axi4Lite only ---
 fetch_osvvm_axi4() {
   local DST="$HERE/osvvm-axi4"
 
@@ -190,9 +169,8 @@ fetch_osvvm_axi4() {
   done
 }
 
-# --- tcllib: pure-tcl modules OSVVM-Scripts requires (not packaged on Arch) --
-# fileutil depends on cmdline; yaml bundles its huddle dependency.
-# build_reports.sh points TCLLIBPATH here.
+# tcllib, not packaged on Arch ---
+# fileutil needs cmdline; yaml bundles huddle
 fetch_tcllib() {
   local TCLLIB_DST="$HERE/tcllib"
   local TCLLIB_MODULES=(fileutil cmdline yaml)
@@ -208,11 +186,7 @@ fetch_tcllib() {
   cp "$TMP/tcllib/license.terms" "$TCLLIB_DST/"
 }
 
-# --- CharLS: JPEG-LS reference encoder for the golden-model cross-check -------
-# Built from source (not a shipped binary) so the golden .jls files are
-# verifiably CharLS output and reproducible from the pinned commit. The source
-# tree and the compiled CLI are gitignored; this is idempotent, skipping the
-# build when the CLI is already present.
+# CharLS, built from the pinned commit ---
 fetch_charls() {
   local SRC="$HERE/charls"
   local CLI="$SRC/build/cli/charls-cli"
@@ -230,17 +204,13 @@ fetch_charls() {
     git -C "$SRC" fetch -q --depth 1 origin "$CHARLS_COMMIT"
     git -C "$SRC" checkout -q FETCH_HEAD
   fi
-  # CLI is off by default; argparse is pulled via FetchContent during configure.
+  # CLI is off by default
   cmake -S "$SRC" -B "$SRC/build" -G Ninja -DCMAKE_BUILD_TYPE=Release -DCHARLS_BUILD_CLI=ON
   cmake --build "$SRC/build"
   echo "Built: $CLI"
 }
 
-# --- NVC: the VHDL simulator every flow runs on ------------------------------
-# Not vendored (its GPL covers the simulator, not the IP it runs); installed as
-# a system package. Auto-installs the pinned version on the platforms we can
-# detect, and otherwise points you at the upstream instructions. Idempotent:
-# skips when nvc is already on PATH.
+# NVC, a system package: Ubuntu .deb or AUR, else manual ---
 fetch_nvc() {
   if command -v nvc > /dev/null 2>&1; then
     echo "==> nvc already installed: $(nvc --version | head -n1)"
@@ -260,7 +230,7 @@ fetch_nvc() {
 
   case "$id" in
     ubuntu)
-      # Prebuilt .deb is amd64-only and published per Ubuntu LTS.
+      # The .deb is amd64-only, one per Ubuntu LTS
       [ "$arch" = "x86_64" ] || { manual_nvc; return 1; }
       case "$ver" in
         22.04 | 24.04)
@@ -282,10 +252,8 @@ fetch_nvc() {
   esac
 }
 
-# --- dispatch ---------------------------------------------------------------
+# Dispatch ---
 components=("$@")
-# open-logic is intentionally absent: it is committed in-tree, fetched only when
-# explicitly named (to bump it).
 [ ${#components[@]} -eq 0 ] && components=(osvvm osvvm-scripts osvvm-common osvvm-axi4 tcllib charls nvc)
 for c in "${components[@]}"; do
   case "$c" in

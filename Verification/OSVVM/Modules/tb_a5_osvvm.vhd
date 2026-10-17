@@ -4,12 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM testbench: a5_edge_detecting_predictor (combinational).
---
--- T.87 edge-detecting predictor: Px = min(A,B) if C >= max(A,B);
--- max(A,B) if C <= min(A,B); else A+B-C. Coverage closes the three branches.
+-- tb_a5_osvvm: a5_edge_detecting_predictor against the T.87 A.5 C code
 --
 -- Guidelines:
 --   G1.Req      T87.A5
@@ -24,7 +19,6 @@
 --   G4 other    N/A: Edge/Run/Coding/Stream not in scope
 --   G5          N/A: combinational
 --   G6.Code     fully covered
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -51,7 +45,7 @@ architecture sim of tb_a5_osvvm is
   signal sC  : unsigned(BITNESS - 1 downto 0);
   signal sPx : unsigned(BITNESS - 1 downto 0);
 
-  -- T.87 A.5 reference value.
+  -- T.87 A.5
   function predict (
     a : integer;
     b : integer;
@@ -76,7 +70,7 @@ architecture sim of tb_a5_osvvm is
 
   end function predict;
 
-  -- Branch taken: 0 = C>=max, 1 = C<=min, 2 = interpolate.
+  -- Branch: 0 = C >= max, 1 = C <= min, 2 = interpolate
   function branch_of (
     a : integer;
     b : integer;
@@ -172,7 +166,7 @@ begin
     add_value_bin(st, 2, "Rb MSB", 2 ** (BITNESS - 1), PX_MAX);
     add_value_bin(st, 3, "Rc MSB", 2 ** (BITNESS - 1), PX_MAX);
 
-    -- Directed corners.
+    -- Directed corners
     drive_check(10, 5, 10, "c=max");
     drive_check(10, 5, 5, "c=min");
     drive_check(10, 5, 7, "interp");
@@ -181,8 +175,7 @@ begin
     drive_check(0, PX_MAX, PX_MAX, "interp-edge");
     drive_check(PX_MAX, 0, 0, "c<=min big span");
 
-    -- Random sweep.
-    -- Equality and interpolation near the full-width addition carry boundary.
+    -- Equality and interpolation near the addition carry boundary
     for delta in -1 to 1 loop
       drive_check(PX_MAX, PX_MAX - 2, PX_MAX - 1 + delta, "upper interpolation");
       drive_check(PX_MAX - 2, PX_MAX, PX_MAX - 1 + delta, "swapped interpolation");

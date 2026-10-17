@@ -4,16 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM testbench: a11_2_bit_packer (registered).
---
--- Concatenates this cycle's raw + Golomb fields into one MSB-aligned word per
--- T.87 A.5.3 packing: [raw bits][unary zeros]['1'][suffix]. The reference builds
--- the expected bit string independently (explicit MSB-first placement, no shared
--- arithmetic with the RTL) and checks the registered (oWord,oValidLen,oWordValid)
--- one cycle after each accepted beat. A directed stall sequence confirms the
--- output holds across iStall. Coverage closes the four raw/Golomb-present cases.
+-- tb_a11_2_osvvm: a11_2_bit_packer against an independent MSB-first assembler
 --
 -- Guidelines:
 --   G1.Req      T87.A11.2
@@ -28,7 +19,6 @@
 --   G4 other    N/A: Edge/Run/Coding/Stream not in scope
 --   G5          G5.States resetPhase; outputs idle after reset, replay checked
 --   G6.Code     fully covered
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -72,8 +62,7 @@ architecture sim of tb_a11_2_osvvm is
   signal oWordValid  : std_logic;
   signal oValidLen   : unsigned(LEN_W - 1 downto 0);
 
-  -- Independent MSB-first assembler. Places raw bits (bit rawLen-1 first), then
-  -- the Golomb field: unaryZeros '0's, a '1', then suffixLen bits of suffixVal.
+  -- [raw][unary zeros]['1'][suffix], MSB first
   procedure assemble (
     rawValid : std_logic;
     rawLen   : natural;
@@ -182,7 +171,6 @@ begin
     variable mm      : CoverageIDType;
     variable rs      : CoverageIDType;
 
-    -- Present one beat (iStall='0'), then check the registered output.
     procedure beat (
       rValid : std_logic;
       rLen   : natural;
@@ -209,7 +197,7 @@ begin
       iSuffixLen  <= to_unsigned(slv, SUFFIXLEN_W);
       iSuffixVal  <= sVal;
 
-      wait until rising_edge(clk);                 -- DUT latches
+      wait until rising_edge(clk);
       wait for 1 ns;
 
       assemble(rValid, rLen, rVal, gValid, uzv, slv, sVal, expWord, expLen);
@@ -238,16 +226,13 @@ begin
 
     end procedure beat;
 
-    -- Latch a beat, reset (held by iStall or not), check outputs clear and a
-    -- fresh beat packs correctly.
     procedure reset_mid (stall : std_logic) is
     begin
 
       beat('1', 9, to_unsigned(16#1AA#, SUFFIX_W), '1', 4, 6, to_unsigned(16#33#, SUFFIX_W), "pre-reset beat");
-      -- Go idle so the post-reset latch captures no new beat, then reset.
       iRawValid  <= '0';
       iGolombVal <= '0';
-      iStall     <= stall;  -- '1': reset must override the clock-enable hold
+      iStall     <= stall;  -- reset overrides the stall hold
       ICover(rs, std_to_int(stall));
       apply_reset(clk, rst, 3, '1');
       wait for 1 ns;
@@ -294,33 +279,28 @@ begin
     AddBins(rs, "output running", GenBin(0));
     apply_reset(clk, rst, 4, '1');
 
-    -- Reset must drive the registered outputs to their defined reset values.
     wait for 1 ns;
     AffirmIf(GetAlertLogID("ResetRecovery"), oWordValid = '0', "reset: oWordValid cleared");
     AffirmIfEqual(GetAlertLogID("ResetRecovery"), checked_integer(oValidLen), 0, "reset: oValidLen cleared");
     AffirmIf(GetAlertLogID("ResetRecovery"), oWord = std_logic_vector'(oWord'range => '0'), "reset: oWord cleared");
 
-    -- Directed: each case.
     beat('0', 0, to_unsigned(0, SUFFIX_W), '0', 0, 0, to_unsigned(0, SUFFIX_W), "neither");
     beat('1', 8, to_unsigned(16#A5#, SUFFIX_W), '0', 0, 0, to_unsigned(0, SUFFIX_W), "rawOnly");
     beat('0', 0, to_unsigned(0, SUFFIX_W), '1', 5, 4, to_unsigned(16#B#, SUFFIX_W), "golombOnly");
     beat('1', 6, to_unsigned(16#2D#, SUFFIX_W), '1', 3, 5, to_unsigned(16#15#, SUFFIX_W), "both (RI)");
-    -- Max-width Golomb-only (escape-shaped: long unary + qbpp suffix).
+    -- Escape-shaped: longest unary + qbpp suffix
     beat('0', 0, to_unsigned(0, SUFFIX_W), '1', LIMIT - BITNESS - 1, BITNESS,
          to_unsigned(16#FFF#, SUFFIX_W), "golomb max");
 
-    --------------------------------------------------------------------------
-    -- Stall hold: latch a beat, then hold across several stalled cycles.
-    --------------------------------------------------------------------------
+    -- Stall hold ---
     iStall      <= '0';
     iRawValid   <= '1';
     iRawLen     <= to_unsigned(7, SUFFIXLEN_W);
     iRawVal     <= to_unsigned(16#5B#, SUFFIX_W);
     iGolombVal  <= '0';
-    wait until rising_edge(clk);                    -- latch the 7-bit raw beat
+    wait until rising_edge(clk);
     wait for 1 ns;
 
-    -- Drive different inputs but stall; output must not change.
     iStall      <= '1';
     iRawValid   <= '1';
     iRawLen     <= to_unsigned(3, SUFFIXLEN_W);
@@ -337,7 +317,6 @@ begin
 
     end loop;
 
-    -- Release: now the 3-bit beat latches.
     iStall <= '0';
     wait until rising_edge(clk);
     wait for 1 ns;
@@ -345,17 +324,12 @@ begin
     AffirmIfEqual(GetAlertLogID("FlowControl"), oWord, std_logic_vector(shift_left(to_unsigned(7, OUT_WIDTH), OUT_WIDTH - 3)),
                   "post-stall latch data");
 
-    --------------------------------------------------------------------------
-    -- Mid-operation reset: latch a beat, assert reset, confirm the output is
-    -- cleared, then confirm a fresh beat is packed correctly (recovery).
-    --------------------------------------------------------------------------
+    -- Mid-op reset ---
     reset_mid('1');
     reset_mid('0');
 
-    --------------------------------------------------------------------------
-    -- Constrained-random beats (field sums bounded <= OUT_WIDTH).
-    --------------------------------------------------------------------------
-    -- Sweep all field lengths, including exact-fill and dirty unused suffix bits.
+    -- Field lengths ---
+    -- Every length, exact fill and dirty unused suffix bits
     for rl in 0 to math_min(16, SUFFIX_W) loop
       for suffix in 0 to SUFFIX_W loop
         if rl + 1 + suffix <= LIMIT then

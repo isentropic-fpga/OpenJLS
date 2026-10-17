@@ -8,14 +8,8 @@
 
 """Requantize a binary PGM to a lower bit depth, with an optional centered crop.
 
-Natural-texture probes for intermediate depths: the T.87 constants (LIMIT,
-k range, counter widths) all derive from BITNESS, but no natural dataset
-exists at 9-15 bits, so these are made from the 16-bit set by right-shifting
-(the texture lives in the high bits). The crop keeps multi-megapixel sources under the routine
-MAX_MP cap so the probes run in every regression, not just release sweeps.
-
-Deterministic (no PRNG), so the committed generator is the source of truth
-for Images/ files that are otherwise gitignored.
+Natural 9..15-bit images by right-shifting the 16-bit set; the crop keeps them
+under MAX_MP.
 """
 import argparse
 import array
@@ -28,7 +22,7 @@ def read_token(f) -> bytes:
         c = f.read(1)
         if not c:
             break
-        if c == b"#":            # comment runs to end of line
+        if c == b"#":
             f.readline()
             continue
         if c.isspace():
@@ -68,7 +62,7 @@ def main():
     src = array.array("H" if smx > 255 else "B")
     src.frombytes(body[: sw * sh * src.itemsize])
     if smx > 255 and sys.byteorder == "little":
-        src.byteswap()           # PGM body is big-endian
+        src.byteswap()           # PGM is big-endian
 
     x0, y0 = (sw - w) // 2, (sh - h) // 2
     shift = sbits - a.bits

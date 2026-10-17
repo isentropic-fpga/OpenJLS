@@ -4,12 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM testbench: a17_run_interruption_index (combinational).
---
--- T.87 Code segment A.17 with NEAR=0: RItype = 1 iff abs(Ra-Rb) <= NEAR, i.e.
--- Ra == Rb. Coverage closes both RItype outcomes (equal case biased in).
+-- tb_a17_osvvm: a17_run_interruption_index against the T.87 A.17 C code
 --
 -- Guidelines:
 --   G1.Req      T87.A17
@@ -24,7 +19,6 @@
 --   G4 other    N/A: Edge/Coding/Stream not in scope
 --   G5          N/A: combinational
 --   G6.Code     fully covered
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -131,7 +125,6 @@ begin
     for i in 1 to N_RAND loop
 
       ra := rv.RandInt(0, PX_MAX);
-      -- Half the time force equality.
       if (rv.RandInt(0, 1) = 0) then
         rb := ra;
       else

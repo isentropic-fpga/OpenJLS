@@ -4,13 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM testbench: a4_1_quant_gradient_merging (written requirement A.4.1).
---
--- T.87 A.4.1: if the first non-zero element of (Q1,Q2,Q3) is negative, reverse
--- all three signs and set SIGN = -1, else SIGN = +1. Reference encodes that rule
--- directly; coverage closes which element decided the sign.
+-- tb_a4_1_osvvm: a4_1_quant_gradient_merging against the T.87 A.4.1 rule
 --
 -- Guidelines:
 --   G1.Req      T87.A4.1
@@ -25,7 +19,6 @@
 --   G4 other    N/A: Edge/Run/Coding/Stream not in scope
 --   G5          N/A: combinational
 --   G6.Code     fully covered
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -51,7 +44,7 @@ architecture sim of tb_a4_1_osvvm is
   signal sQ3o  : signed(3 downto 0);
   signal sSign : std_logic;
 
-  -- decider: 0 = Q1, 1 = Q2, 2 = Q3, 3 = all-zero.
+  -- Element that decides the sign; 3 = all zero
   function decider_of (
     q1 : integer;
     q2 : integer;
@@ -71,7 +64,6 @@ architecture sim of tb_a4_1_osvvm is
 
   end function decider_of;
 
-  -- SIGN = -1 (CO_SIGN_NEG) iff the deciding element is negative.
   function neg_sign (
     q1 : integer;
     q2 : integer;
@@ -174,7 +166,7 @@ begin
       add_value_bin(st, lane, "Q" & to_string(lane), -4);
     end loop;
 
-    -- Directed: each decider category, both polarities.
+    -- Each decider, both polarities
     drive_check(0, 0, 0, "all-zero");
     drive_check(-1, 4, -4, "Q1 neg decides");
     drive_check(2, -3, 1, "Q1 pos decides");
@@ -183,7 +175,7 @@ begin
     drive_check(0, 0, -1, "Q3 neg decides");
     drive_check(0, 0, 4, "Q3 pos decides");
 
-    -- Exhaustive over the A.4 output domain [-4,4]^3.
+    -- Exhaustive over [-4, 4]^3
     for q1 in -4 to 4 loop
 
       for q2 in -4 to 4 loop

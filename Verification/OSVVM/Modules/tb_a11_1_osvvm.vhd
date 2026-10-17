@@ -4,18 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM testbench: a11_1_golomb_encoder (combinational).
---
--- Limited-length Golomb LG(k, L) per T.87 A.5.3 (regular) and A.22.1 (run
--- interruption, glimit = LIMIT - J[RUNindex] - 1). The module emits the code as
--- (unaryZeros, suffixLen, suffixVal) for the bit packer rather than a bit string.
--- Reference is the T.87 written rule (Docs/Project.md A.11.1/A.11.2):
---   high = MErrval >> k
---   non-escape (high < L-qbpp-1): unary=high, len=k,    val = low k bits
---   escape:                       unary=L-qbpp-1, len=qbpp, val = (MErrval-1) low qbpp bits
--- with L = LIMIT (regular) or glimit (RI). Coverage crosses RI-mode x escape.
+-- tb_a11_1_osvvm: a11_1_golomb_encoder against the T.87 LG(k, L) written rule
 --
 -- Guidelines:
 --   G1.Req      T87.A11.1, T87.A22.1
@@ -31,7 +20,6 @@
 --   G4 other    N/A: Edge/Stream not in scope
 --   G5          N/A: combinational
 --   G6.Code     fully covered
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -59,7 +47,7 @@ architecture sim of tb_a11_1_osvvm is
   constant SUFFIXLEN_W : natural := math_max(log2ceil(BITNESS + log2ceil(CO_RESET_STD) + 1), 5);
   constant MAPPED_W    : natural := BITNESS + 2;
 
-  -- Valid k domain (encoder assumptions: k <= SUFFIX_W and k <= MAPPED_W).
+  -- Valid k: 0 to SUFFIX_W
   constant K_HI        : integer := SUFFIX_W;
   constant MERR_MAX    : integer := (2 ** MAPPED_W) - 1;
 
@@ -71,7 +59,7 @@ architecture sim of tb_a11_1_osvvm is
   signal sSuffixLen : unsigned(SUFFIXLEN_W - 1 downto 0);
   signal sSuffixVal : unsigned(SUFFIX_W - 1 downto 0);
 
-  -- L - qbpp - 1 escape threshold for the active mode.
+  -- Escape threshold L - qbpp - 1
   function threshold_of (
     riMode : std_logic;
     runIdx : integer
@@ -79,7 +67,7 @@ architecture sim of tb_a11_1_osvvm is
   begin
 
     if (riMode = '1') then
-      -- glimit = LIMIT - J - 1; threshold = glimit - qbpp - 1.
+      -- L = glimit = LIMIT - J - 1
       return LIMIT - TB_J_TABLE(runIdx) - QBPP - 2;
     else
       return LIMIT - QBPP - 1;
@@ -189,7 +177,7 @@ begin
     SetLogEnable(PASSED, FALSE);
     rv.InitSeed(rv'instance_name);
     req   := GetReqID("T87.A11.1", 400);
-    -- Guaranteed by the sweep: 32 RUNindex x 2 suffix cases x 3 fields.
+    -- 32 RUNindex x 2 suffix cases x 3 fields
     reqRi := GetReqID("T87.A22.1", 192);
 
     covK := NewID("G4.Coding Golomb k");
@@ -210,7 +198,6 @@ begin
       end loop;
     end loop;
 
-    -- Directed corners.
     mm := NewID("G2.MinMax node x value");
     add_value_bin(mm, 1, "MErrval", 0);
     add_value_bin(mm, 1, "MErrval", MERR_MAX);
@@ -221,15 +208,14 @@ begin
     st := NewID("G3.Stim node x value");
     add_value_bin(st, 1, "MErrval MSB", 2 ** (MAPPED_W - 1), MERR_MAX);
     add_value_bin(st, 2, "RUNindex MSB", 16, 31);
-    drive_check(0, 0, '0', 0, "reg merr0 k0");           -- non-escape, all minimal
-    drive_check(0, MERR_MAX, '0', 0, "reg escape k0");   -- big merr -> escape
+    drive_check(0, 0, '0', 0, "reg merr0 k0");
+    drive_check(0, MERR_MAX, '0', 0, "reg escape k0");
     drive_check(K_HI, 1, '0', 0, "reg big-k small");
     drive_check(0, MERR_MAX, '1', 0, "RI escape J=0");
     drive_check(0, MERR_MAX, '1', 31, "RI escape J=max");
     drive_check(2, 5, '1', 10, "RI non-escape");
 
-    -- Random sweep.
-    -- Every J entry, both modes, and every supported k at the escape threshold.
+    -- Every J entry, both modes, every k at the escape threshold +-1
     for ri in 0 to 1 loop
       for rix in 0 to 31 loop
         for kv in 0 to SUFFIX_W loop

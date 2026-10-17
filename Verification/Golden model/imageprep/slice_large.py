@@ -8,11 +8,8 @@
 
 """Replace every PGM over the MP cap with full-width strips.
 
-Each over-cap image becomes STRIPS strips (top, middle, bottom) of at most
-ROWS rows, keeping its real line width and bit depth; the original moves to
-the full-size directory (source for the depth tiles, and for HIL). Line width
-is what stresses the RTL, extra rows only repeat texture, so the whole corpus
-runs under the routine cap.
+Top, middle and bottom strips of at most ROWS rows; the original moves to the
+full-size directory. Line width stresses the RTL, extra rows only repeat it.
 
 Usage: slice_large.py <Images dir> <full-size dir> [--max-mp 0.5]
 """

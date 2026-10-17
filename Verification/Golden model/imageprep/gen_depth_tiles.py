@@ -8,11 +8,8 @@
 
 """Natural-texture tiles at every depth 9..16 from the 16-bit photo set.
 
-Each tile is a crop of random size and position from one of the full-range
-16-bit sources, right-shifted to the target depth. Sources rotate so every
-depth sees every photo. Small tiles keep the whole batch under the routine
-MAX_MP cap. Seeded, so the committed script is the source of truth for the
-gitignored Images/ files.
+Random crops right-shifted to the target depth, rotating through the sources.
+Seeded.
 
 Usage: gen_depth_tiles.py <full-size dir> <Images dir> [--per-depth N] [--seed S]
 """

@@ -2,8 +2,11 @@
 # Copyright (C) 2026 Vitor Mendes Camilo
 # SPDX-License-Identifier: GPL-3.0-only
 #
-# Compare current RTL to a saved baseline, cycle for cycle, at 32/48/64 bits.
-# Requires nvc and python3; no OSVVM libraries are needed for this extra check.
+# This file is part of OpenJLS. Available under GPLv3 or a
+# commercial license. See LICENSE and README for details.
+#
+# Compare byte_stuffer to a saved baseline, cycle for cycle, at 32/48/64 bits.
+# Needs nvc and python3, no OSVVM.
 # Usage: ./compare_byte_stuffer.sh /absolute/path/to/baseline/byte_stuffer.vhd
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"

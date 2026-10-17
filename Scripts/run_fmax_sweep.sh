@@ -6,19 +6,11 @@
 # commercial license. See LICENSE and README for details.
 #
 
-# Launch the fmax sweep in Vivado batch mode. `vivado` must be on PATH (if
-# Vivado lives in a container on your machine, point a local shim at it).
+# Run fmax_sweep.tcl in Vivado batch mode; needs vivado on PATH.
 # Usage: ./Scripts/run_fmax_sweep.sh
-#        FMAX_SIZES=12288 FMAX_BITNESS="8 10 12 14 16" ./Scripts/run_fmax_sweep.sh  (bit-depth sweep)
-# Output: $FMAX_OUTDIR (default build/fmax_sweep_<timestamp>): fmax_sweep.csv + per-point
-#         rpt_*.log, vivado.log
-#
-# 6 sizes x 4 strategies = 24 impl + 6 synth, launched as one dependency DAG and
-# scheduled by Vivado (default 3 concurrent runs; see MAX_PARALLEL / THREADS_PER_RUN
-# in the tcl). Each concurrent run is a full ~5-6 GB Vivado process, so RAM — not
-# CPU — is the limit: 3-way ~= 18 GB. Drop FMAX_MAX_PARALLEL if other apps need
-# the RAM (we OOM'd a 30 GB box running it alongside other heavy apps).
-# Watch progress with:  tail -f "$FMAX_OUTDIR"/vivado.log
+#        FMAX_SIZES=12288 FMAX_BITNESS="8 10 12 14 16" ./Scripts/run_fmax_sweep.sh
+# Output in $FMAX_OUTDIR (default build/fmax_sweep_<timestamp>).
+# RAM is the limit at ~6 GB per concurrent run (FMAX_MAX_PARALLEL, default 3).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"

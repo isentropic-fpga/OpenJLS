@@ -4,12 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM testbench: a20_1_run_context_index (combinational).
---
--- T.87 written requirement A.20.1: Q = RItype + 365. Both RItype values are
--- checked, along with the regular/run split (run Q never below 365).
+-- tb_a20_1_osvvm: a20_1_run_context_index against the T.87 A.20.1 rule
 --
 -- Guidelines:
 --   G1.Req      T87.A20.1
@@ -24,7 +19,6 @@
 --   G4 other    N/A: Edge/Coding/Stream not in scope
 --   G5          N/A: combinational
 --   G6.Code     fully covered
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;

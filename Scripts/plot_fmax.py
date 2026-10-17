@@ -30,7 +30,7 @@ out_png = sys.argv[2] if len(sys.argv) > 2 else os.path.expanduser("~/EDA/Logs/f
 
 with open(csv_path) as f:
     rows = [r for r in csv.DictReader(f) if r["status"] == "OK"]
-# Older CSVs predate the bitness column and are all 12-bit.
+# Older CSVs have no bitness column and are all 12-bit
 for r in rows:
     r.setdefault("bitness", "12")
 by_bitness = len({r["size"] for r in rows}) == 1 and len({r["bitness"] for r in rows}) > 1
@@ -45,17 +45,14 @@ for row in rows:
 
 fig = plt.figure(figsize=(8, 5))
 def pretty(strat):
-    # The project default strategy is named "Vivado Implementation Defaults".
     if "Default" in strat:
         return "Standard (default)"
     return strat.replace("_", " ")
 
-# Redundant encoding: every series is separable by dash pattern and marker
-# alone, so the figure survives greyscale printing and colour-vision
-# deficiency. The default strategy carries the accent.
+# Dash and marker keep the series apart in greyscale
 STYLES = list(zip(["-", "--", "-.", ":"], ["o", "s", "^", "D"], SERIES))
 
-# Fixed order so the styles stay bound to the same strategy across re-runs.
+# Fixed order so each strategy keeps its style across re-runs
 for idx, strat in enumerate(sorted(series, key=lambda k: ("Default" not in k, k))):
     pts = series[strat]
     pts.sort()
@@ -65,7 +62,7 @@ for idx, strat in enumerate(sorted(series, key=lambda k: ("Default" not in k, k)
     ls, mk, col = STYLES[idx % len(STYLES)]
     line, = plt.plot(xs, ys, ls=ls, marker=mk, color=col, label=label,
                      lw=1.6, ms=6, mfc="white", mew=1.4)
-    # flag points where the probe was too loose (fmax is only a floor)
+    # Probe too loose: fmax is only a floor
     floor_x = [p[0] for p in pts if p[2]]
     floor_y = [p[1] for p in pts if p[2]]
     if floor_x:
@@ -79,13 +76,12 @@ ax.set_xticks(all_x)
 if by_bitness:
     plt.xlabel("Pixel bit depth  (bits)")
 else:
-    # Label ticks as 4k, 8k, 12k, ... instead of raw pixel counts
     ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{int(round(x / 1024))}k"))
     plt.xlabel("Maximum image width  (px)")
 plt.ylabel("Max. frequency  (MHz)")
-# No in-figure title: the LaTeX float caption supplies it.
+# No title: the LaTeX caption supplies it
 plt.grid(True, which="major", axis="y")
-# Below the axes: the series cross everywhere, so no inside corner is clear.
+# Below the axes: the series cross everywhere
 plt.legend(title="Implementation strategy", alignment="left", ncol=2,
            loc="upper left", bbox_to_anchor=(0, -0.16))
 plt.tight_layout()

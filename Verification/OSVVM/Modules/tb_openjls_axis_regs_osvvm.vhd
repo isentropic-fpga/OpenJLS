@@ -4,30 +4,10 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM AXI4-Stream + AXI4-Lite wrapper testbench: openjls_axis_regs (flavor B).
+-- tb_openjls_axis_regs_osvvm: openjls_axis_regs register map and APPLY against the H.3 golden
 --
--- Exercises the hand-written AXI4-Lite register file and reset controller -- the
--- part of the Xilinx wrappers with no other in-sim coverage (the HIL demo only
--- ever touched the handful of registers it needed). An OSVVM Axi4LiteManager
--- drives the control bus; the AxiStream VCs drive pixels and capture the encoded
--- stream (as in tb_openjls_axis_osvvm).
---
--- Phase 1 -- register map (OJLS.AxiLiteRegMap):
---   * RO identity/config read exact: ID, VERSION, CAPS, MAXDIM
---   * WIDTH/HEIGHT read-write, then out-of-range writes clamp to MAX
---   * partial-WSTRB byte-lane merges (1-byte writes at byte offsets 0 and 1)
---   * RO register write is dropped (responded OKAY), value unchanged
---   * write-only CTRL and unmapped offsets read back zero
--- Phase 2 -- APPLY reconfiguration (OJLS.AxiApplyReconfig):
---   * write WIDTH/HEIGHT = 4, pulse CTRL.APPLY, then stream the H.3 image and
---     check the 57-byte golden -> a register-configured encode is byte-exact.
---
--- Note: the "config write dropped while BUSY" path (openjls_axis_regs.vhd) is
--- unreachable from a real AXI-Lite master -- BUSY is a one-clock APPLY pulse and
--- a bus write cannot land inside it -- so that branch is intentionally not
--- covered here.
+-- The write-dropped-while-BUSY branch is unreachable: BUSY lasts one cycle and
+-- no AXI-Lite write can land inside it.
 --
 -- Guidelines:
 --   G1.Req      OJLS.AxiLiteRegMap, OJLS.AxiApplyReconfig, OJLS.AxiAbortReencode
@@ -42,7 +22,6 @@
 --   G4 other    N/A: Edge/Run/Coding/Stream not in scope
 --   G5          G5.States resetPhase (APPLY idle / mid-image); re-encode after abort checked
 --   G6.Code     fully covered
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -51,7 +30,7 @@ library ieee;
 
 library osvvm;
   context osvvm.OsvvmContext;
-  use osvvm.ScoreboardPkg_slv.all;   -- Push/Pop on the stream BurstFifo
+  use osvvm.ScoreboardPkg_slv.all;
 
 library osvvm_axi4;
   context osvvm_axi4.AxiStreamContext;
@@ -64,7 +43,7 @@ entity tb_openjls_axis_regs_osvvm is
   generic (
     MAX_W     : positive range 4 to 65535 := 4096;
     MAX_H     : positive range 1 to 65535 := 4096;
-    OUT_WIDTH : positive range 48 to 1024 := CO_OUT_WIDTH_STD   -- 64
+    OUT_WIDTH : positive range 48 to 1024 := CO_OUT_WIDTH_STD
   );
 end entity tb_openjls_axis_regs_osvvm;
 
@@ -76,7 +55,7 @@ architecture sim of tb_openjls_axis_regs_osvvm is
   constant ADDR_W : natural := 32;
   constant DATA_W : natural := 32;
 
-  -- Register byte offsets (mirrors openjls_axis_regs.vhd)
+  -- Register offsets, as in openjls_axis_regs.vhd
   constant A_ID      : std_logic_vector(ADDR_W - 1 downto 0) := x"00000000";
   constant A_VERSION : std_logic_vector(ADDR_W - 1 downto 0) := x"00000004";
   constant A_CAPS    : std_logic_vector(ADDR_W - 1 downto 0) := x"00000008";
@@ -87,7 +66,6 @@ architecture sim of tb_openjls_axis_regs_osvvm is
   constant A_STATUS  : std_logic_vector(ADDR_W - 1 downto 0) := x"0000001C";
   constant A_UNMAP   : std_logic_vector(ADDR_W - 1 downto 0) := x"00000020";
 
-  -- Expected RO values
   constant EXP_ID      : std_logic_vector(31 downto 0) := x"4F4A4C53";           -- "OJLS"
   constant EXP_VERSION : std_logic_vector(31 downto 0) := x"00010300";           -- 1.3.0
   constant EXP_CAPS    : std_logic_vector(31 downto 0) :=
@@ -97,7 +75,7 @@ architecture sim of tb_openjls_axis_regs_osvvm is
   constant MAX_W_SLV   : std_logic_vector(15 downto 0) := std_logic_vector(to_unsigned(MAX_W, 16));
   constant MAX_H_SLV   : std_logic_vector(15 downto 0) := std_logic_vector(to_unsigned(MAX_H, 16));
 
-  -- Stream side (identical widths to tb_openjls_axis_osvvm)
+  -- Stream side
   constant PIX_DATA_W : natural := 8;
   constant JLS_DATA_W : natural := OUT_WIDTH;
   constant ID_W   : natural := 8;
@@ -114,7 +92,7 @@ architecture sim of tb_openjls_axis_regs_osvvm is
   signal sApplyObserved : std_logic := '0';
   signal sStreamReset : std_logic;
 
-  -- AXI4-Lite manager <-> DUT control bus (record wired to the DUT's flat ports)
+  -- AXI4-Lite manager <-> DUT control bus
   signal AxiBus : Axi4LiteRecType(
     WriteAddress(Addr(ADDR_W - 1 downto 0)),
     WriteData(Data(DATA_W - 1 downto 0), Strb(DATA_W / 8 - 1 downto 0)),
@@ -168,8 +146,7 @@ begin
 
   stream_contract : monitor_stream(clk, sStreamReset, sJlsTValid, sJlsTReady, sJlsTData, sJlsTKeep, sJlsTLast, '1', false);
 
-  -- APPLY is an explicit stream abort; observe its accepted bus transaction
-  -- so the protocol monitor permits reset to discard a pending output beat.
+  -- APPLY aborts the stream; tell the monitor so a dropped pending beat is legal
   sStreamReset <= not nReset or sApplyObserved;
   observe_apply : process(clk) is
   begin
@@ -187,10 +164,7 @@ begin
   clk    <= not clk after CLK_PERIOD / 2;
   nReset <= '0', '1' after 8 * CLK_PERIOD;
 
-  ------------------------------------------------------------------------------
-  -- DUT: flat AXI-Lite ports wired to the manager's AxiBus record subfields
-  -- (manager drives address/data/valid; DUT drives ready/response/rdata).
-  ------------------------------------------------------------------------------
+  -- DUT and VCs ---
   u_dut : entity work.openjls_axis_regs(rtl)
     generic map (
       BITNESS          => H3_BITNESS,
@@ -275,9 +249,7 @@ begin
       TransRec => StreamRxRec
     );
 
-  ------------------------------------------------------------------------------
-  -- Stimulus
-  ------------------------------------------------------------------------------
+  -- Stimulus ---
   p_stim : process is
 
     variable rdata    : std_logic_vector(DATA_W - 1 downto 0);
@@ -330,10 +302,7 @@ begin
     end loop;
     WaitForClock(ManagerRec, 2);
 
-    ----------------------------------------------------------------------------
-    -- Phase 1: register map
-    ----------------------------------------------------------------------------
-    -- Read-only identity / configuration
+    -- Register map ---
     Read(ManagerRec, A_ID, rdata);
     AffirmIfEqual(reqReg, rdata, EXP_ID, "REG_ID");
     Read(ManagerRec, A_VERSION, rdata);
@@ -344,15 +313,13 @@ begin
     AffirmIfEqual(reqReg, rdata, EXP_MAXDIM, "REG_MAXDIM");
     ICover(ra, 0);
 
-    -- Power-on defaults: WIDTH/HEIGHT come out of reset at the MAX generics
-    -- (must be read before the first write touches them)
+    -- WIDTH/HEIGHT reset to the MAX generics; read before any write
     Read(ManagerRec, A_WIDTH, rdata);
     AffirmIfEqual(reqReg, rdata(15 downto 0), MAX_W_SLV, "WIDTH reset default");
     Read(ManagerRec, A_HEIGHT, rdata);
     AffirmIfEqual(reqReg, rdata(15 downto 0), MAX_H_SLV, "HEIGHT reset default");
     ICover(ra, 1);
 
-    -- WIDTH / HEIGHT read-write
     Write(ManagerRec, A_WIDTH, x"00000004");
     Read(ManagerRec, A_WIDTH, rdata);
     AffirmIfEqual(reqReg, rdata(15 downto 0), x"0004", "WIDTH read-write");
@@ -361,7 +328,7 @@ begin
     AffirmIfEqual(reqReg, rdata(15 downto 0), x"0004", "HEIGHT read-write");
     ICover(ra, 2);
 
-    -- Out-of-range writes clamp to MAX (above the range, then below the floor)
+    -- Out-of-range writes clamp to MAX
     Write(ManagerRec, A_WIDTH, x"0000FFFF");
     Read(ManagerRec, A_WIDTH, rdata);
     AffirmIfEqual(reqReg, rdata(15 downto 0), MAX_W_SLV, "WIDTH clamp (over max)");
@@ -371,17 +338,17 @@ begin
     AffirmIfEqual(reqReg, rdata(15 downto 0), MAX_W_SLV, "WIDTH clamp (under min)");
     ICover(ra, 4);
 
-    -- Partial-WSTRB byte-lane merge: 1-byte writes at byte offsets 0 then 1
-    Write(ManagerRec, A_WIDTH, x"00000100");           -- seed 0x0100
-    Write(ManagerRec, x"00000010", x"04");             -- byte0 -> WSTRB 0001
+    -- Partial-WSTRB byte-lane merge
+    Write(ManagerRec, A_WIDTH, x"00000100");
+    Write(ManagerRec, x"00000010", x"04");             -- WSTRB 0001
     Read(ManagerRec, A_WIDTH, rdata);
     AffirmIfEqual(reqReg, rdata(15 downto 0), x"0104", "WIDTH WSTRB byte0 merge");
-    Write(ManagerRec, x"00000011", x"02");             -- byte1 -> WSTRB 0010
+    Write(ManagerRec, x"00000011", x"02");             -- WSTRB 0010
     Read(ManagerRec, A_WIDTH, rdata);
     AffirmIfEqual(reqReg, rdata(15 downto 0), x"0204", "WIDTH WSTRB byte1 merge");
     ICover(ra, 5);
 
-    -- Address and data may arrive independently; delay B/R acceptance too.
+    -- Skewed AW/W, delayed B/R ready
     SetAxi4Options(ManagerRec, WRITE_RESPONSE_READY_BEFORE_VALID, false);
     SetAxi4Options(ManagerRec, WRITE_RESPONSE_READY_DELAY_CYCLES, 5);
     SetAxi4Options(ManagerRec, READ_DATA_READY_BEFORE_VALID, false);
@@ -396,7 +363,7 @@ begin
     end loop;
     SetAxi4Options(ManagerRec, WRITE_ADDRESS_VALID_DELAY_CYCLES, 0);
     SetAxi4Options(ManagerRec, WRITE_DATA_VALID_DELAY_CYCLES, 0);
-    -- Upper byte strobes must neither change dimensions nor trigger APPLY.
+    -- Upper byte lanes must neither change dimensions nor trigger APPLY
     Write(ManagerRec, x"00000016", x"FF");
     Write(ManagerRec, x"00000017", x"FF");
     Read(ManagerRec, A_HEIGHT, rdata);
@@ -412,25 +379,22 @@ begin
     ICover(ra, 3);
     Write(ManagerRec, A_UNMAP, x"DEADBEEF");
 
-    -- RO write is dropped (OKAY response), value unchanged
+    -- RO write is dropped with OKAY
     Write(ManagerRec, A_ID, x"DEADBEEF");
     Read(ManagerRec, A_ID, rdata);
     AffirmIfEqual(reqReg, rdata, EXP_ID, "REG_ID read-only");
     ICover(ra, 8);
 
-    -- Write-only CTRL and unmapped offset read back zero
     Read(ManagerRec, A_CTRL, rdata);
     AffirmIfEqual(reqReg, rdata, x"00000000", "REG_CTRL reads zero");
     Read(ManagerRec, A_UNMAP, rdata);
     AffirmIfEqual(reqReg, rdata, x"00000000", "unmapped reads zero");
     ICover(ra, 9);
 
-    ----------------------------------------------------------------------------
-    -- Phase 2: APPLY reconfiguration + register-configured encode
-    ----------------------------------------------------------------------------
+    -- APPLY and encode ---
     Write(ManagerRec, A_WIDTH, x"00000004");
     Write(ManagerRec, A_HEIGHT, x"00000004");
-    Write(ManagerRec, A_CTRL, x"00000001");            -- APPLY: pulse core reset
+    Write(ManagerRec, A_CTRL, x"00000001");            -- APPLY
     ICover(rs, 0);
     WaitForClock(ManagerRec, 4);
     Read(ManagerRec, A_STATUS, rdata);
@@ -440,7 +404,7 @@ begin
 
     SetBurstMode(StreamTxRec, STREAM_BURST_BYTE_MODE);
     SetBurstMode(StreamRxRec, STREAM_BURST_BYTE_MODE);
-    SetAxiStreamOptions(StreamRxRec, RECEIVE_READY_DELAY_CYCLES, 2);   -- light backpressure
+    SetAxiStreamOptions(StreamRxRec, RECEIVE_READY_DELAY_CYCLES, 2);
 
     PushBurst(StreamTxRec.BurstFifo, H3_PIXELS);
     SendBurstAsync(StreamTxRec, H3_PIXELS'length);
@@ -452,18 +416,14 @@ begin
                     "APPLY encode byte " & to_string(i));
     end loop;
 
-    ----------------------------------------------------------------------------
-    -- Phase 3: APPLY mid-image aborts the encode; the next image is clean
-    ----------------------------------------------------------------------------
-    -- Feed half an image and let the core consume it, then APPLY. The aborted
-    -- encode has emitted only whole OUT_WIDTH beats (never TLAST), so the
-    -- receiver holds that residue until the post-abort image's TLAST closes
-    -- the burst. The fresh golden stream must sit byte-exact at the tail.
+    -- APPLY mid-image ---
+    -- The aborted encode emits whole beats but no TLAST, so its residue joins the
+    -- next burst; the golden must sit byte-exact at the tail
     PushBurst(StreamTxRec.BurstFifo, H3_PIXELS(0 to H3_PIXELS'length / 2 - 1));
     SendBurstAsync(StreamTxRec, H3_PIXELS'length / 2);
-    WaitForTransaction(StreamTxRec);                  -- all half-image pixels accepted
+    WaitForTransaction(StreamTxRec);
     WaitForClock(ManagerRec, 50);                      -- drain the core pipeline
-    Write(ManagerRec, A_CTRL, x"00000001");            -- APPLY: abort + re-arm
+    Write(ManagerRec, A_CTRL, x"00000001");            -- APPLY
     ICover(rs, 1);
     WaitForClock(ManagerRec, 4);
 

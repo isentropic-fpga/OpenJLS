@@ -5,27 +5,12 @@
 -- commercial license. See LICENSE and README for details.
 --
 
-----------------------------------------------------------------------------------
-  -- Engineer:    Vitor Mendes Camilo
-  --
-  -- Testbench: tb_postsynth_golden
-  --
-  -- Post-synthesis GOLDEN cross-check on the gate-level funcsim netlist. Elaborates
-  -- the synthesized openjls_top ONCE and streams a whole manifest of 8-bit images
-  -- through it back-to-back, resetting the core (with the new image dimensions)
-  -- between images and byte-for-byte comparing each output against the CharLS
-  -- reference .jls. Loading the netlist costs ~30 s, so the manifest loop amortizes
-  -- it over the entire corpus instead of paying it per image.
-  --
-  -- Self-contained: it does NOT share the behavioral golden TB (tb_openjls_golden),
-  -- so changes here never touch the working RTL flow. The DUT is the netlist's
-  -- own entity/architecture (work.openjls_top(STRUCTURE)); the fixed port widths
-  -- are mirrored here from the synthesis generics passed via the TB generics.
-  --
-  -- Driven by build_run_golden.sh, which synthesizes the netlist, mints the CharLS
-  -- goldens, writes the manifest, and runs this TB once.
-  ----------------------------------------------------------------------------------
-  use work.openjls_pkg.all;
+-- tb_postsynth_golden: the funcsim netlist against CharLS-minted .jls files
+--
+-- Loops a manifest of images, resetting with the new dimensions between them,
+-- so the ~30 s netlist load is paid once. Driven by build_run_golden.sh.
+
+use work.openjls_pkg.all;
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -35,15 +20,14 @@ library ieee;
 
 entity tb_postsynth_golden is
   generic (
-    -- Repo root, with trailing '/'. build_run_golden.sh injects it.
+    -- With trailing '/'; the paths below are relative to it
     REPO_ROOT    : string  := "";
-    -- Newline-separated list of image stems (no extension), relative paths
-    -- resolved against IMAGES_DIR / GOLDEN_DIR / OUT_DIR below.
+    -- One image stem per line
     MANIFEST     : string  := "Verification/Post synth/Output/manifest.txt";
     IMAGES_DIR   : string  := "Verification/Golden model/Images/";
     GOLDEN_DIR   : string  := "Verification/Golden model/Output/Golden/";
     OUT_DIR      : string  := "Verification/Golden model/Output/OpenJLS/";
-    -- Must match the netlist's baked generics (asserted against the port widths).
+    -- Must match the netlist's synthesis generics
     BITNESS          : natural := 8;
     MAX_IMAGE_WIDTH  : positive := 7216;
     MAX_IMAGE_HEIGHT : positive := 5412;
@@ -53,7 +37,7 @@ end entity tb_postsynth_golden;
 
 architecture bench of tb_postsynth_golden is
 
-  constant MAX_DIFF_LOG   : natural := 8;   -- per-image cap on logged mismatches
+  constant MAX_DIFF_LOG   : natural := 8;   -- per image
   constant CLK_PERIOD     : time    := 10 ns;
   constant BYTES_PER_WORD : natural := OUT_WIDTH / 8;
   constant COLLECT_MARGIN : natural := 4096;
@@ -63,7 +47,6 @@ architecture bench of tb_postsynth_golden is
   type pixel_ptr_t is access pixel_array_t;
   type byte_ptr_t is access byte_array_t;
 
-  -- DUT ports (widths from the synthesis generics; checked against the netlist).
   signal iClk         : std_logic;
   signal iRst         : std_logic;
   signal iValid       : std_logic;
@@ -84,7 +67,7 @@ architecture bench of tb_postsynth_golden is
   shared variable collected      : byte_ptr_t;
   shared variable collectedCount : natural;
   shared variable lastCount      : natural;
-  shared variable errCount       : natural;   -- cumulative; snapshotted per image
+  shared variable errCount       : natural;   -- cumulative
 
   procedure check (
     cond : boolean;
@@ -152,8 +135,7 @@ architecture bench of tb_postsynth_golden is
 
   end procedure write_byte;
 
-  -- Read ASCII unsigned decimal from a PGM header; skips whitespace and '#'
-  -- comment lines, consumes the single delimiter after the number.
+  -- Skips whitespace and '#' comments; consumes the one delimiter after the number
   procedure read_pgm_int (
     file f : char_file_t;
     v      : out natural
@@ -197,7 +179,7 @@ architecture bench of tb_postsynth_golden is
 
   end procedure read_pgm_int;
 
-  -- Trim trailing CR/LF/space so a CRLF manifest line still resolves a path.
+  -- Trailing CR/LF/space, so CRLF manifests work
   function rtrim (
     s : string
   ) return string is
@@ -231,8 +213,7 @@ begin
   iImageWidth  <= std_logic_vector(to_unsigned(sImgW, iImageWidth'length));
   iImageHeight <= std_logic_vector(to_unsigned(sImgH, iImageHeight'length));
 
-  -- Bind the netlist's own entity/architecture directly. write_vhdl -mode funcsim
-  -- emits architecture STRUCTURE; there is no generic to map (baked at synthesis).
+  -- write_vhdl -mode funcsim names the architecture STRUCTURE
   dut : entity work.openjls_top(STRUCTURE)
     port map (
       iClk         => iClk,
@@ -249,8 +230,7 @@ begin
       iReady       => iReady
     );
 
-  -- Output collection: extract bytes per word using oKeep (MSB-first). Reset
-  -- between images by the iRst pulse in do_reset.
+  -- First byte in the MSB lane
   collect : process (iClk) is
   begin
 
@@ -513,8 +493,7 @@ begin
 
     end procedure compare_slice;
 
-    -- Encode one image stem through the netlist and byte-compare. Sets ok=true
-    -- on a byte-exact match. Buffers are deallocated and reallocated per image.
+    -- ok on a byte-exact match; buffers are reallocated per image
     procedure run_one (
       stem : string;
       ok   : out boolean
@@ -575,8 +554,6 @@ begin
     iValid <= '0';
     iPixel <= (others => '0');
 
-    -- Config guard: a post-synth netlist has fixed port widths. If the pixel
-    -- port disagrees with BITNESS the netlist was built with other generics.
     assert iPixel'length = BITNESS
       report "iPixel width (" & integer'image(iPixel'length) &
              ") /= BITNESS (" & integer'image(BITNESS) &

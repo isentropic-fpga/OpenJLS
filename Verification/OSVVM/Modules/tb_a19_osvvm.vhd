@@ -4,15 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM testbench: a19_run_interruption_error (combinational).
---
--- T.87 Code segment A.19 with NEAR=0 (Quantize is identity, Rx=Ix):
---   if (RItype==0 && Ra>Rb) { Errval = -Errval; SIGN = -1; } else SIGN = +1;
---   Errval = ModRange(Errval, RANGE);     -- A.9 inline
--- Reference applies the sign flip then the A.9 modulo reduction. Coverage
--- crosses the sign-flip condition with the upper-half subtract of ModRange.
+-- tb_a19_osvvm: a19_run_interruption_error against the T.87 A.19 C code
 --
 -- Guidelines:
 --   G1.Req      T87.A19
@@ -27,7 +19,6 @@
 --   G4 other    N/A: Edge/Run/Coding/Stream not in scope
 --   G5          N/A: combinational
 --   G6.Code     fully covered
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -97,7 +88,7 @@ begin
       variable result : integer;
       variable eSign  : std_logic;
       variable gh     : integer;
-      variable wn     : integer;   -- wrapNeg modulo branch (adj < 0 -> +RANGE)
+      variable wn     : integer;   -- ModRange adj < 0 branch
 
     begin
 
@@ -158,7 +149,6 @@ begin
       end loop;
     end loop;
 
-    -- Directed corners.
     mm := NewID("G2.MinMax node x value");
     add_value_bin(mm, 1, "Errval in", ERR_LO);
     add_value_bin(mm, 1, "Errval in", ERR_HI);
@@ -169,12 +159,12 @@ begin
     add_value_bin(st, 2, "Ra MSB", 2 ** (BITNESS - 1), PX_MAX);
     add_value_bin(st, 3, "Rb MSB", 2 ** (BITNESS - 1), PX_MAX);
     drive_check(ERR_LO, '0', PX_MAX, PX_MAX, "most negative err, max Ra/Rb");
-    drive_check(0, '0', 5, 1, "flip err0");           -- flip, e=0
-    drive_check(ERR_HI, '0', 5, 1, "flip max");       -- flip large
+    drive_check(0, '0', 5, 1, "flip err0");
+    drive_check(ERR_HI, '0', 5, 1, "flip max");
     drive_check(ERR_LO, '1', 5, 1, "no flip (ri1)");
     drive_check(ERR_HI, '0', 1, 5, "no flip (ra<rb)");
 
-    -- Equality of Ra/Rb must not flip; both sides of each modulo threshold.
+    -- Ra = Rb must not flip; both sides of each modulo threshold
     for ri in 0 to 1 loop
       for relation in -1 to 1 loop
         for delta in -1 to 1 loop
@@ -187,7 +177,7 @@ begin
 
     for i in 1 to N_RAND loop
 
-      -- Bias the flip condition (ri=0, Ra>Rb) so both sign bins fill.
+      -- Bias toward the flip condition (RItype 0, Ra > Rb)
       if (rv.RandInt(0, 1) = 0) then
         drive_check(rv.RandInt(ERR_LO, ERR_HI), '0', 100, 50, "rand flip");
       else

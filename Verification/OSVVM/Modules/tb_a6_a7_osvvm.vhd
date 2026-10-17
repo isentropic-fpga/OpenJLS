@@ -1,12 +1,10 @@
 -- Copyright (C) 2026 Vitor Mendes Camilo
 -- SPDX-License-Identifier: GPL-3.0-only
 --
--- Check the combined datapath against sequential integer A.6 then A.7.
--- Sweep every bias and both signs around both clipping thresholds, and
--- exhaust every uncorrected 8-bit prediction. Larger widths add random cases.
-
---------------------------------------------------------------------------------
--- OSVVM testbench: a6_a7_prediction_error (combinational).
+-- This file is part of OpenJLS. Available under GPLv3 or a
+-- commercial license. See LICENSE and README for details.
+--
+-- tb_a6_a7_osvvm: a6_a7_prediction_error against the T.87 A.6 + A.7 C code
 --
 -- Guidelines:
 --   G1.Req      T87.A6-A7
@@ -21,7 +19,6 @@
 --   G4 other    N/A: Edge/Run/Coding/Stream not in scope
 --   G5          N/A: combinational
 --   G6.Code     fully covered
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -66,8 +63,7 @@ begin
       if px < 0 or px > PIXEL_MAX or ix < 0 or ix > PIXEL_MAX then
         return;
       end if;
-      -- Reference follows the original algorithm's order, not the fused
-      -- difference-minus-bias expression used by the new hardware.
+      -- C order, not the RTL's fused difference-minus-bias
       if sign_bit = CO_SIGN_POS then
         corrected := px + cq;
         sign_index := 0;

@@ -5,50 +5,29 @@
 # commercial license. See LICENSE and README for details.
 #
 
-#  OpenJLS OSVVM regression — script-flow entry point.
-#
-#  Run via ./build_reports.sh (or interactively:
-#    tclsh> source ../../ThirdParty/osvvm-scripts/StartNVC.tcl
-#    tclsh> build ../../ThirdParty/osvvm/osvvm.pro
-#    tclsh> build OpenJls.pro
-#  ). Outputs land in this directory: VHDL_LIBS/ (compiled libraries) and the
-#  build report tree OSVVM_OpenJls/ (per-test YAML + HTML, logs, requirements),
-#  indexed by index.html.
-#
-#  This is the single source of the file list; build_run.sh and
-#  build_reports.sh drive this flow rather than re-listing the sources.
+# OpenJLS OSVVM regression, the single source of the file list. Run via
+# ./build_reports.sh or ./build_run.sh.
 
-# NVC options: --relaxed permits the shared variables of
-# non-protected types in open-logic and the TBs; --stderr=error keeps warnings
-# on stdout (tcl's exec treats any stderr output as failure, so analysis must
-# be warning-clean); --psl activates the "-- psl" contract assertions in
-# Sources/ (negative-tested: with --exit-severity=error a violated contract
-# fails the test; without it the violation prints but the sim exits 0).
+# --relaxed: unprotected shared variables in open-logic and the TBs.
+# --stderr=error: tcl exec fails on any stderr, so analysis must be warning-clean.
+# --psl needs --exit-severity=error, or a violated contract still exits 0.
 set ::osvvm::ExtendedGlobalOptions {--stderr=error}
 SetExtendedAnalyzeOptions {--relaxed --psl}
 SetExtendedRunOptions     {--ieee-warnings=off --exit-severity=error}
 
-# Statement+branch code coverage: ./build_run.sh sets CODE_COVERAGE=1.
-# NVC's --cover-file must be unique per test, so the Test wrapper below
-# refreshes the option before every RunTest; the .covdb files are merged and
-# rendered to HTML by build_run.sh.
+# CODE_COVERAGE=1 (build_run.sh): one --cover-file per test, set by Test below
 set ::OpenJlsCodeCoverage [info exists ::env(CODE_COVERAGE)]
 if {$::OpenJlsCodeCoverage} {
   SetCoverageSimulateEnable true
   file mkdir NVC_CodeCoverage
-  # DUT-only coverage spec: enable everything, then keep only our Sources/
-  # entities so the report excludes the OSVVM testbenches and the open-logic
-  # primitives. Regenerated from Sources/ each run so it stays in sync.
+  # Instrument only the Sources/ entities
   set specfd [open NVC_CodeCoverage/dut_only.spec w]
   puts $specfd "-hierarchy *"
   foreach src [concat [lsort [glob ../../Sources/*.vhd]] [lsort [glob ../../Sources/Xilinx/*.vhd]]] {
     set ent [file rootname [file tail $src]]
     if {$ent ne "openjls_pkg"} { puts $specfd "+block $ent" }
-    # NVC applies +block rules per scope, and a labelled generate is its own
-    # scope named after the label (exact match only — globs like gen_* do not
-    # match). Without these lines "-hierarchy *" silently excludes every
-    # statement inside a generate (e.g. gen_keep in openjls_top, gen_byte_swap
-    # in openjls_axis), so emit one +block per generate label in Sources/.
+    # A generate is its own scope and +block takes no globs, so list every
+    # generate label or its statements go uninstrumented
     set fd [open $src r]
     set body [read $fd]
     close $fd
@@ -60,16 +39,14 @@ if {$::OpenJlsCodeCoverage} {
 }
 proc Test {TestFile args} {
   if {$::OpenJlsCodeCoverage} {
-    # GenericNames suffix keeps [generic ...] variants of one TB from
-    # overwriting each other's .covdb.
+    # Keeps [generic ...] variants from sharing a .covdb
     set tn [file rootname [file tail $TestFile]]$::osvvm::GenericNames
     SetCoverageSimulateOptions [list --cover=statement,branch --cover-spec=NVC_CodeCoverage/dut_only.spec --cover-file=NVC_CodeCoverage/$tn.covdb]
   }
   RunTest $TestFile {*}$args
 }
 
-# open-logic base: packages + RAM/FIFO primitives the RTL instantiates. Shares
-# the openjls design library (the RTL references them as work.*).
+# open-logic, in the openjls library since the RTL uses work.olo_*
 library openjls
 analyze ../../ThirdParty/open-logic/src/base/vhdl/olo_base_pkg_array.vhd
 analyze ../../ThirdParty/open-logic/src/base/vhdl/olo_base_pkg_math.vhd
@@ -79,12 +56,9 @@ analyze ../../ThirdParty/open-logic/src/base/vhdl/olo_base_pkg_attribute.vhd
 analyze ../../ThirdParty/open-logic/src/base/vhdl/olo_base_ram_sdp.vhd
 analyze ../../ThirdParty/open-logic/src/base/vhdl/olo_base_fifo_sync.vhd
 
-# Shared TB skeleton (clk_tick, apply_reset, end_of_test).
 library tb_support
 analyze Support/tb_support_pkg.vhd
 
-# Project RTL. TBs are analyzed into this same library by RunTest, so their
-# `entity work.<dut>` references resolve here.
 library openjls
 analyze ../../Sources/openjls_pkg.vhd
 analyze ../../Sources/A1_gradient_comp.vhd
@@ -120,12 +94,9 @@ analyze ../../Sources/context_ram.vhd
 analyze ../../Sources/byte_stuffer.vhd
 analyze ../../Sources/jls_framer.vhd
 analyze ../../Sources/openjls_top.vhd
-# Xilinx AXI4-Stream / AXI4-Lite wrappers (verified by the Xilinx suite below).
 analyze ../../Sources/Xilinx/openjls_axis.vhd
 analyze ../../Sources/Xilinx/openjls_axis_regs.vhd
 
-# Per-module testbenches. RunTest = analyze + simulate + register the test;
-# the test name is the file root name.
 TestSuite Modules
 Test Modules/tb_a1_osvvm.vhd
 Test Modules/tb_a3_osvvm.vhd
@@ -141,11 +112,11 @@ Test Modules/tb_a6_a7_osvvm.vhd [generic BITNESS 16]
 Test Modules/tb_a6_a7_osvvm.vhd [generic BITNESS 8] [generic MAX_VAL 200]
 Test Modules/tb_a8_1_osvvm.vhd
 Test Modules/tb_a9_osvvm.vhd
-# Exhaust the binary-range wiring shortcut at every supported pixel width.
+# Binary-range shortcut at every width
 foreach bitness {8 9 10 11 13 14 15 16} {
   Test Modules/tb_a9_osvvm.vhd [generic BITNESS $bitness]
 }
-# Odd ranges on either side of a power of two exercise the arithmetic fallback.
+# Ranges either side of a power of two take the arithmetic fallback
 Test Modules/tb_a9_osvvm.vhd [generic BITNESS 8] [generic RANGE_P 255]
 Test Modules/tb_a9_osvvm.vhd [generic BITNESS 8] [generic RANGE_P 257]
 Test Modules/tb_a9_osvvm.vhd [generic BITNESS 12] [generic RANGE_P 4095]
@@ -170,30 +141,23 @@ Test Modules/tb_a23_osvvm.vhd
 Test Modules/tb_line_buffer_osvvm.vhd
 Test Modules/tb_context_ram_osvvm.vhd
 Test Modules/tb_byte_stuffer_osvvm.vhd
-# IN_WIDTH tracks LIMIT (default CO_LIMIT_STD = 48, the 12-bit config); 32 and
-# 64 are the 8-/16-bit LIMITs.
+# IN_WIDTH = LIMIT at BITNESS 8 and 16
 Test Modules/tb_byte_stuffer_osvvm.vhd [generic IN_WIDTH 32]
 Test Modules/tb_byte_stuffer_osvvm.vhd [generic IN_WIDTH 64]
 Test Modules/tb_jls_framer_osvvm.vhd
-# Non-default OUT_WIDTH sweep around the 64 default (range 48..1024): 48 =
-# range floor; 56 = another final-header-beat split; 200 = the 25-byte header
-# ends exactly on a beat boundary (25 % BYTES_OUT = 0); 1024 = top of the
-# range (pins the BUFFER_BYTES_NOMINAL sizing).
+# 48 floor, 56 another header split, 200 header ends on a beat, 1024 ceiling
 Test Modules/tb_jls_framer_osvvm.vhd [generic OUT_WIDTH 48]
 Test Modules/tb_jls_framer_osvvm.vhd [generic OUT_WIDTH 56]
 Test Modules/tb_jls_framer_osvvm.vhd [generic OUT_WIDTH 200]
 Test Modules/tb_jls_framer_osvvm.vhd [generic OUT_WIDTH 1024]
 
-# Arithmetic and memory width endpoints; the default runs above remain 12-bit.
+# BITNESS endpoints; the runs above are 12-bit
 foreach bitness {8 16} {
   foreach module {a1 a3 a4 a5 a6 a7 a8_1 a10 a11 a11_1 a11_2 a12 a13 a14 a15_a16 a17 a18 a19 a20 a20_2 a21 a22 a23 line_buffer context_ram} {
     Test Modules/tb_${module}_osvvm.vhd [generic BITNESS $bitness]
   }
 }
 
-# Top-level control-plane stress: the 64-bit default OUT_WIDTH, then
-# non-power-of-2 MAX dims, MAX dims equal to the 48x48 image, then the OUT_WIDTH
-# range floor and ceiling.
 TestSuite Top
 Test Top/tb_openjls_top_osvvm.vhd
 Test Top/tb_openjls_top_osvvm.vhd [generic MAX_W 320] [generic MAX_H 200]
@@ -201,12 +165,6 @@ Test Top/tb_openjls_top_osvvm.vhd [generic MAX_W 48] [generic MAX_H 48]
 Test Top/tb_openjls_top_osvvm.vhd [generic OUT_WIDTH 48]
 Test Top/tb_openjls_top_osvvm.vhd [generic OUT_WIDTH 1024]
 
-# Xilinx AXI wrappers, driven by the OSVVM AXI4 verification components:
-# stream-adapter transparency (openjls_axis) and the AXI4-Lite register file /
-# control plane (openjls_axis_regs). Variants cover a non-default OUT_WIDTH
-# (also moves CAPS output-bytes-per-beat), BITNESS 12/16 (two-byte pixel lane,
-# CharLS-minted goldens, garbage on the unused TDATA bits at 12) and
-# non-default/non-square MAX dims (MAXDIM readback + the clamp target).
 TestSuite Xilinx
 Test Modules/tb_openjls_axis_osvvm.vhd
 Test Modules/tb_openjls_axis_osvvm.vhd [generic OUT_WIDTH 48]

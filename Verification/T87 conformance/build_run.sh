@@ -6,12 +6,7 @@
 # commercial license. See LICENSE and README for details.
 #
 
-# ITU-T T.87 conformance test — vendor-agnostic NVC build + run.
-# Compiles OpenLogic base, the project sources and the conformance TB into a
-# local library tree, then elaborates and runs it. REPO_ROOT is derived from
-# this script's location so it works on any machine.
-#
-# Usage:  ./build_run.sh
+# T.87 conformance: TEST16.PGM against the official T16E0.JLS under NVC
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -22,12 +17,9 @@ TB="tb_openjls_t87_conformance"
 
 mkdir -p "$LIBS" "$HERE/Output"
 
-# --relaxed: OpenLogic uses shared variables of non-protected types.
-# --psl activates the "-- psl" contract assertions embedded in Sources/.
 NVC=(nvc --std=2008 --ieee-warnings=off -L "$LIBS")
 A_FLAGS=(--relaxed --psl)
 
-# 1. OpenLogic base (compile order matters — dependency chain)
 OL_SRC="$ROOT/ThirdParty/open-logic/src/base/vhdl"
 OL_FILES=(
   olo_base_pkg_array.vhd
@@ -41,7 +33,6 @@ OL_FILES=(
 "${NVC[@]}" --work=work:"$LIBS/work.08" -a "${A_FLAGS[@]}" \
   "${OL_FILES[@]/#/$OL_SRC/}"
 
-# 2. Project sources (openjls_pkg first, openjls_top last)
 SRC="$ROOT/Sources"
 SRC_FILES=(
   openjls_pkg.vhd
@@ -82,12 +73,9 @@ SRC_FILES=(
 "${NVC[@]}" --work=work:"$LIBS/work.08" -a "${A_FLAGS[@]}" \
   "${SRC_FILES[@]/#/$SRC/}"
 
-# 3. Conformance TB
 "${NVC[@]}" --work=work:"$LIBS/work.08" -a "${A_FLAGS[@]}" "$HERE/tb_openjls_conformance.vhd"
 
-# 4. Elaborate + run in one shot (REPO_ROOT points the TB at the in-repo test
-#    images). --exit-severity=error makes a violated assertion/PSL contract
-#    fail the run (default: it prints and the sim exits 0).
+# Without --exit-severity=error a failed PSL contract still exits 0
 "${NVC[@]}" --work=work:"$LIBS/work.08" \
   -e --jit --no-save -g REPO_ROOT="$ROOT/" "$TB" \
   -r --exit-severity=error "$TB"

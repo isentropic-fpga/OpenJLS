@@ -5,22 +5,10 @@
 -- commercial license. See LICENSE and README for details.
 --
 
-----------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
+-- tb_openjls_t87_conformance: openjls_top against the ITU T16E0.JLS from TEST16.PGM
 --
--- Testbench: tb_openjls_t87_conformance
---
--- T.87 conformance test. Loads a single-component PGM image, drives the
--- encoder, collects the produced JLS stream, writes it to disk under
--- Verification/T87 conformance/Output/, then byte-for-byte compares against
--- a golden reference .jls file.
---
--- Run from the repo root (or pass REPO_ROOT) so the relative paths resolve.
---
--- Test image: Verification/T87 conformance/Reference Images/TEST16.PGM (256x256, 12-bit)
--- Golden JLS: Verification/T87 conformance/Reference Images/T16E0.JLS  (NEAR=0)
--- Output    : Verification/T87 conformance/Output/T16E0_OPENJLS.JLS
-----------------------------------------------------------------------------------
+-- Encodes the image twice back to back, the second time under output
+-- backpressure; both must match. Only the first is saved to Output/.
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -37,37 +25,30 @@ end entity tb_openjls_t87_conformance;
 
 architecture bench of tb_openjls_t87_conformance is
 
-  -------------------------------------------------------------------------------------------------------------
-  -- TB level controls
-  -------------------------------------------------------------------------------------------------------------
-  constant DUMP_VCD              : boolean := false;  -- waveform dump gated; large for 256x256
-  constant MAX_DIFF_LOG          : natural := 16;     -- cap on logged byte mismatches before failure
+  constant DUMP_VCD              : boolean := false;
+  constant MAX_DIFF_LOG          : natural := 16;
 
   constant PGM_PATH              : string := REPO_ROOT & "Verification/T87 conformance/Reference Images/TEST16.PGM";
   constant JLS_PATH              : string := REPO_ROOT & "Verification/T87 conformance/Reference Images/T16E0.JLS";
   constant OUT_PATH              : string := REPO_ROOT & "Verification/T87 conformance/Output/T16E0_OPENJLS.JLS";
 
-  -- Test configuration
   constant CLK_PERIOD            : time     := 10 ns;
   constant BITNESS               : natural  := 12;
   constant MAX_IMAGE_WIDTH       : positive := 4096;
   constant MAX_IMAGE_HEIGHT      : positive := 4096;
-  constant OUT_WIDTH             : natural  := CO_OUT_WIDTH_STD;   -- 64
+  constant OUT_WIDTH             : natural  := CO_OUT_WIDTH_STD;
   constant BYTES_PER_WORD        : natural  := OUT_WIDTH / 8;
 
   constant IMG_W                 : natural := 256;
   constant IMG_H                 : natural := 256;
   constant N_PIX                 : natural := IMG_W * IMG_H;
 
-  -- Buffers
-
   type pixel_array_t is array (natural range <>) of natural;
 
   type byte_array_t is array (natural range <>) of std_logic_vector(7 downto 0);
 
-  constant COLLECT_CAP           : natural := 262144; -- 256 KB cap, plenty for 256x256 12b
+  constant COLLECT_CAP           : natural := 262144;
 
-  -- DUT ports
   signal iClk                    : std_logic;
   signal iRst                    : std_logic;
   signal iValid                  : std_logic;
@@ -81,10 +62,9 @@ architecture bench of tb_openjls_t87_conformance is
   signal oLast                   : std_logic;
   signal iReady                  : std_logic;
 
-  -- Stim -> output-ready controller: pulse high to arm one backpressure episode.
+  -- Arms one backpressure episode in bp_ctrl
   signal sBpReq                  : std_logic;
 
-  -- Collection
   shared variable collected      : byte_array_t(0 to COLLECT_CAP - 1);
   shared variable collectedCount : natural;
   shared variable lastCount      : natural;
@@ -120,13 +100,9 @@ architecture bench of tb_openjls_t87_conformance is
 
   end function hex2;
 
-  -------------------------------------------------------------------------------------------------------------
-  -- Binary-byte file I/O (VHDL-2008 file of character)
-  -------------------------------------------------------------------------------------------------------------
+  -- Binary file I/O ---
 
   type char_file_t is file of character;
-
-  -- Read one byte; sets eof when no more data.
 
   procedure read_byte (
     file f : char_file_t;
@@ -163,11 +139,7 @@ architecture bench of tb_openjls_t87_conformance is
 
   end procedure write_byte;
 
-  -- Read ASCII unsigned decimal integer from PGM header. Skips leading whitespace
-  -- and comment lines starting with '#'. Stops on first non-digit (which is
-  -- consumed and discarded — the PGM spec says exactly one whitespace separates
-  -- the maxval from the binary body, so callers using this for w/h/maxval read
-  -- their delimiter implicitly).
+  -- Skips whitespace and '#' comments; consumes the one delimiter after the number
 
   procedure read_pgm_int (
     file f : char_file_t;
@@ -199,12 +171,10 @@ architecture bench of tb_openjls_t87_conformance is
           acc     := character'pos(c) - character'pos('0');
           started := true;
         end if;
-      -- else: skip whitespace
       else
         if (c >= '0' and c <= '9') then
           acc := acc * 10 + character'pos(c) - character'pos('0');
         else
-          -- delimiter consumed; done
           v := acc;
           return;
         end if;
@@ -226,7 +196,6 @@ begin
 
   end process clk_proc;
 
-  -- Image dimensions held stable so the input register latches them during reset.
   iImageWidth  <= std_logic_vector(to_unsigned(IMG_W, iImageWidth'length));
   iImageHeight <= std_logic_vector(to_unsigned(IMG_H, iImageHeight'length));
 
@@ -252,7 +221,7 @@ begin
       iReady           => iReady
     );
 
-  -- Output collection: extract bytes per word using oKeep (MSB-first).
+  -- First byte in the MSB lane
   collect : process (iClk) is
   begin
 
@@ -281,14 +250,11 @@ begin
 
   end process collect;
 
-  -- Output-ready control. Sole driver of iReady: normally high, but when stim
-  -- asserts sBpReq it runs one backpressure episode — hold iReady low until the
-  -- stall propagates upstream (oReady=0), keep it low a few more cycles, then
-  -- release. Re-arms once sBpReq returns low.
+  -- Per sBpReq: hold iReady low until oReady drops, BP_EXTRA cycles more, release
   bp_ctrl : process is
 
-    constant BP_TIMEOUT : natural := 100000; -- safety cap waiting for oReady low
-    constant BP_EXTRA   : natural := 8;      -- extra fully-stalled cycles after the stall lands
+    constant BP_TIMEOUT : natural := 100000;
+    constant BP_EXTRA   : natural := 8;
 
   begin
 
@@ -319,7 +285,6 @@ begin
 
   end process bp_ctrl;
 
-  -- Stimulus
   stim : process is
 
     variable pixels : pixel_array_t(0 to N_PIX - 1);
@@ -368,7 +333,6 @@ begin
 
       file_open(f, path, read_mode);
 
-      -- Magic "P5"
       read_byte(f, magic0, eof);
       read_byte(f, magic1, eof);
       assert magic0 = x"50" and magic1 = x"35"
@@ -389,7 +353,7 @@ begin
         report "PGM maxval does not match BITNESS"
         severity failure;
 
-      -- Body: 2 bytes per pixel, big-endian (maxval > 255)
+      -- 2 bytes per pixel, big-endian
       for i in 0 to N_PIX - 1 loop
 
         read_byte(f, bHi, eof);
@@ -494,8 +458,6 @@ begin
 
     end procedure wait_images;
 
-    -- Compare refLen collected bytes starting at `base` against the reference.
-
     procedure compare_slice (
       base : natural;
       tag  : string
@@ -526,8 +488,6 @@ begin
 
   begin
 
-    -- Initial values for signals (no defaults — set explicitly here).
-    -- iReady is driven solely by the bp_ctrl process.
     iRst   <= '1';
     iValid <= '0';
     iPixel <= (others => '0');
@@ -548,25 +508,17 @@ begin
 
     do_reset;
 
-    -- =========================================================================
-    -- Image 1 (conformance), immediately followed by image 2 (back-to-back, no
-    -- input stall, same pixels). During image 2 the output AXI is backpressured:
-    -- bp_ctrl holds iReady low until the stall propagates upstream (oReady=0),
-    -- keeps it low a few more cycles, then releases. One flow exercises
-    -- conformance, back-to-back framing, and stall propagation/recovery; both
-    -- images must reproduce the reference stream.
-    -- =========================================================================
     report "Image 1: feeding " & integer'image(N_PIX) & " pixels (conformance)";
     feed_image;
 
-    sBpReq <= '1';                                                                                 -- arm one output-backpressure episode for image 2
+    sBpReq <= '1';
     report "Image 2: back-to-back, with output backpressure";
     feed_image;
     sBpReq <= '0';
 
     wait_images(2);
     report "Encoder produced " & integer'image(collectedCount) & " bytes";
-    save_collected(OUT_PATH, refLen);                                                              -- conformance artifact = image 1 only
+    save_collected(OUT_PATH, refLen);
 
     check(collectedCount = 2 * refLen,
           "Byte count mismatch: got " & integer'image(collectedCount) &

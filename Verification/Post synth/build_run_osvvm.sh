@@ -6,14 +6,9 @@
 # commercial license. See LICENSE and README for details.
 #
 
-# Post-synthesis netlist verification (vendor tool for synthesis ONLY).
-# Synthesizes openjls_top at the OSVVM top TB's default config (BITNESS=8,
-# 4096x4096, OUT_WIDTH=64), then runs the full OSVVM control-plane stress TB
-# against the funcsim netlist under NVC.
-#
-# Needs `vivado` on PATH (if Vivado lives in a container on your machine,
-# point a local shim at it) and, for the one-time vendor-library compile,
-# XILINX_VIVADO set to the Vivado install directory.
+# tb_openjls_top_osvvm against the funcsim netlist of its default config.
+# Vivado synthesizes only. Needs vivado on PATH and XILINX_VIVADO for the
+# one-time nvc --install vivado.
 #
 # Usage:  ./build_run_osvvm.sh          synthesize + simulate
 #         ./build_run_osvvm.sh --sim    skip synthesis, reuse Output/ netlist
@@ -27,9 +22,7 @@ NETLIST="$HERE/Output/openjls_top_funcsim.vhd"
 
 TB="tb_openjls_top_osvvm"
 
-# 1. Synthesis. Runs in a space-free scratch dir (Vivado mishandles spaced
-#    paths in shell-outs during synthesis — see synth_funcsim.tcl); the
-#    artifacts are collected into Output/ afterward.
+# Synthesis, in a space-free scratch dir (see synth_funcsim.tcl)
 if [[ "${1:-}" != "--sim" ]]; then
   mkdir -p "$HERE/Output"
   SCRATCH="$(mktemp -d)"
@@ -44,23 +37,18 @@ if [[ ! -f "$NETLIST" ]]; then
   exit 1
 fi
 
-# Without lsb_release on the synthesis host, Vivado dumps raw os-release
-# lines (VERSION_ID=...) into the netlist header comment block, unprefixed —
-# unparseable. Fix: install lsb-release where Vivado runs.
+# Without lsb_release Vivado writes raw os-release lines into the netlist header
 if grep -qm1 '^[A-Z_]\+=' "$NETLIST"; then
   echo "netlist header corrupt — install lsb-release on the synthesis host" >&2
   exit 1
 fi
 
-# 2. Vendor simulation libraries for NVC (one-time; ~/.nvc/lib). Run from
-#    /tmp: the install scripts mishandle a cwd containing a space (this
-#    directory) and also drop a stray ./work stub in the cwd.
+# From /tmp: the install breaks on a cwd with a space and leaves a ./work stub
 if ! compgen -G "$HOME/.nvc/lib/unisim*" > /dev/null; then
   : "${XILINX_VIVADO:?set XILINX_VIVADO to the Vivado install directory for nvc --install vivado}"
   (cd /tmp && env XILINX_VIVADO="$XILINX_VIVADO" nvc --install vivado)
 fi
 
-# 3. OSVVM library (source-built once by Verification/OSVVM/build_osvvm.sh)
 if [[ ! -d "$OSVVM_DIR/nvc-libs/osvvm.08" ]]; then
   echo "OSVVM library missing — run Verification/OSVVM/build_osvvm.sh first" >&2
   exit 1
@@ -69,8 +57,7 @@ fi
 mkdir -p "$LIBS"
 NVC=(nvc --std=2008 --ieee-warnings=off -L "$LIBS" -L "$OSVVM_DIR/nvc-libs")
 
-# 4. Packages the TB needs (the netlist itself is self-contained + unisim):
-#    olo math for log2ceil, openjls_pkg for CO_OUT_WIDTH_STD.
+# The TB needs olo math and openjls_pkg; the netlist only unisim
 OL_SRC="$ROOT/ThirdParty/open-logic/src/base/vhdl"
 "${NVC[@]}" --work=work:"$LIBS/work.08" -a --relaxed \
   "$OL_SRC/olo_base_pkg_array.vhd" \
@@ -80,28 +67,24 @@ OL_SRC="$ROOT/ThirdParty/open-logic/src/base/vhdl"
   "$OL_SRC/olo_base_pkg_attribute.vhd"
 "${NVC[@]}" --work=work:"$LIBS/work.08" -a --relaxed "$ROOT/Sources/openjls_pkg.vhd"
 
-# 5. The netlist takes the RTL's place: work.openjls_top is the funcsim
-#    netlist, and the TB's POST_SYNTH component default-binds to it.
+# The netlist becomes work.openjls_top, which POST_SYNTH binds to
 "${NVC[@]}" --work=work:"$LIBS/work.08" -a --relaxed "$NETLIST"
 
-# 6. TB support package + TB
 "${NVC[@]}" --work=tb_support:"$LIBS/tb_support.08" -a --relaxed \
   "$OSVVM_DIR/Support/tb_support_pkg.vhd"
 "${NVC[@]}" --work=work:"$LIBS/work.08" -a --relaxed \
   "$OSVVM_DIR/Top/tb_openjls_top_osvvm.vhd"
 
-# 7. Elaborate + run from a scratch dir (contains the OSVVM YAML droppings)
+# Run in sim-out/, which collects the OSVVM YAML
 mkdir -p "$HERE/sim-out"
 cd "$HERE/sim-out"
-# tee the run to a log so publish_reports.sh can render it as this suite's
-# report (it has no per-image table or OSVVM HTML — it is a single TB run via
-# plain NVC). pipefail makes ps_rc reflect nvc's status, not tee's.
+# publish_reports.sh renders this log; pipefail keeps nvc's status
 PSLOG="$HERE/Output/postsynth_osvvm.log"
 if "${NVC[@]}" --work=work:"$LIBS/work.08" \
     -e --jit --no-save -g POST_SYNTH=true "$TB" \
     -r --exit-severity=error "$TB" 2>&1 | tee "$PSLOG"; then ps_rc=0; else ps_rc=1; fi
 
-# Status line for the published report (Verification/OSVVM/publish_reports.sh).
+# Status for publish_reports.sh
 ps_aff=$(awk '/DONE/ && /Affirmations Checked:/ {
   for (i = 1; i <= NF; i++) if ($i == "Checked:") a = $(i+1) } END { print a + 0 }' "$PSLOG")
 {

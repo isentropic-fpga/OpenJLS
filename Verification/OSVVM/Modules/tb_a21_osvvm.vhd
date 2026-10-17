@@ -4,13 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM testbench: a21_compute_map (combinational).
---
--- T.87 Code segment A.21 map computation, transcribed verbatim. Coverage closes
--- which clause fired (the two positive paths, the k!=0 negative path, and the
--- else), biasing k, Errval sign and the 2*Nn vs Nq relation to reach all four.
+-- tb_a21_osvvm: a21_compute_map against the T.87 A.21 C code
 --
 -- Guidelines:
 --   G1.Req      T87.A21
@@ -25,7 +19,6 @@
 --   G4 other    N/A: Edge/Coding/Stream not in scope
 --   G5          N/A: combinational
 --   G6.Code     fully covered
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -59,7 +52,7 @@ architecture sim of tb_a21_osvvm is
   signal sNq     : unsigned(N_WIDTH - 1 downto 0);
   signal sMap    : std_logic;
 
-  -- clause: 0 = first, 1 = second, 2 = third, 3 = else (per A.21 order).
+  -- A.21 clause that fired: 0 to 2 in order, 3 = else
   function clause_of (
     k   : integer;
     err : integer;
@@ -166,7 +159,6 @@ begin
     AddBins(cov, "negative nonzero k", GenBin(2));
     AddBins(cov, "unmapped", GenBin(3));
 
-    -- Directed: one per clause.
     mm := NewID("G2.MinMax node x value");
     add_value_bin(mm, 1, "k", 0);
     add_value_bin(mm, 1, "k", K_MAX);
@@ -188,7 +180,7 @@ begin
     drive_check(0, 5, 10, 5, "else pos");
     drive_check(3, 0, 4, 4, "else zero");
 
-    -- Random sweep with small-k and signed-Errval bias.
+    -- Every coherent Nn < N, every k, Errval -1 to 1
     for nq in 1 to CO_RESET_STD loop
       for nn in 0 to nq - 1 loop
         for kval in 0 to K_MAX loop
@@ -202,7 +194,7 @@ begin
     for i in 1 to N_RAND loop
 
       if (rv.RandInt(0, 1) = 0) then
-        k := rv.RandInt(0, 2);            -- bias small k
+        k := rv.RandInt(0, 2);
       else
         k := rv.RandInt(0, K_MAX);
       end if;

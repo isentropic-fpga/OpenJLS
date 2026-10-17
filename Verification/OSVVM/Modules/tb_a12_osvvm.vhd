@@ -4,17 +4,9 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM testbench: a12_variables_update (combinational).
+-- tb_a12_osvvm: a12_variables_update against the T.87 A.12 C code
 --
--- T.87 Code segment A.12 with NEAR=0 (2*NEAR+1 = 1):
---   B += Errval; A += abs(Errval);
---   if (N == RESET) { A>>=1; B = (B>=0)? B>>1 : -((1-B)>>1); N>>=1; }
---   N += 1;
--- Reference follows that order verbatim; the negative-B halving uses the C
--- -((1-B)>>1) form (not the RTL arithmetic shift) so the two stay independent.
--- Coverage crosses the RESET rescale with the post-add sign of B.
+-- Negative B halves with the C form -((1-B)>>1), not the RTL shift.
 --
 -- Guidelines:
 --   G1.Req      T87.A12
@@ -29,7 +21,6 @@
 --   G4 other    N/A: Edge/Run/Stream not in scope
 --   G5          N/A: combinational
 --   G6.Code     fully covered
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -55,7 +46,7 @@ architecture sim of tb_a12_osvvm is
   constant N_WIDTH     : natural := CO_NQ_WIDTH_STD;
   constant RESET       : natural := CO_RESET_STD;
 
-  -- Non-overflowing operating ranges (post-A.9 error, T.87 variable bounds).
+  -- T.87 operating ranges, post-A.9 Errval
   constant ERR_LO : integer := -(2 ** BITNESS / 2);
   constant ERR_HI : integer := 2 ** BITNESS / 2;
   constant A_HI   : integer := (RESET - 1) * 2 ** BITNESS / 2;
@@ -179,7 +170,6 @@ begin
       end loop;
     end loop;
 
-    -- Directed corners.
     mm := NewID("G2.MinMax node x value");
     add_value_bin(mm, 1, "Errval", ERR_LO);
     add_value_bin(mm, 1, "Errval", ERR_HI);
@@ -203,8 +193,7 @@ begin
     drive_check(ERR_LO, A_HI, -B_LIM, RESET, "rescale neg B");
     drive_check(-1, 5, -1, RESET, "rescale neg even B");
 
-    -- Random sweep (N biased to RESET for the rescale path).
-    -- Negative odd sums require floor division, not integer truncation.
+    -- RESET boundary; negative odd sums need floor division
     for n in RESET - 1 to RESET loop
       for err in -3 to 3 loop
         for b in -3 to 3 loop

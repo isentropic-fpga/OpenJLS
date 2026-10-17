@@ -1,10 +1,13 @@
 -- Copyright (C) 2026 Vitor Mendes Camilo
 -- SPDX-License-Identifier: GPL-3.0-only
 --
--- Cycle-by-cycle comparison against a supplied pre-change byte_stuffer.
--- Run with compare_byte_stuffer.sh. The regular OSVVM test supplies the
--- independent bit-stream oracle; this test additionally locks throughput,
--- latency, backpressure, flush timing, and reset behavior to the baseline.
+-- This file is part of OpenJLS. Available under GPLv3 or a
+-- commercial license. See LICENSE and README for details.
+--
+-- tb_byte_stuffer_equivalence: byte_stuffer cycle by cycle against a pre-change baseline
+--
+-- Run with compare_byte_stuffer.sh. Locks throughput, latency, backpressure,
+-- flush timing and reset to the baseline.
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -156,8 +159,7 @@ begin
           random_step(rng);
           word_value(bit_index) := rng(0);
         end loop;
-        -- Sustained maximum-width streams exercise refill and four-byte
-        -- emission, both with no stuffing and with maximal stuffing.
+        -- Full-width streams with no stuffing and with maximal stuffing
         if image_index mod 4 = 0 then
           word_value := (others => '0');
           length := IN_WIDTH;
@@ -178,14 +180,13 @@ begin
         exit when last_new = '1';
       end loop;
       if image_index mod 127 = 0 then
-        -- Abort an unfinished image with data in flight, then recover.
         for beat in 1 to 4 loop
           send_word(IN_WIDTH, '0');
         end loop;
         reset_dut;
       end if;
     end loop;
-    -- Keep the clock running for the monitor's final sample/report.
+    -- Let the monitor take its last sample
     done <= true;
     wait for 11 ns;
     report "Cycle equivalence passed, IN_WIDTH=" & integer'image(IN_WIDTH) &

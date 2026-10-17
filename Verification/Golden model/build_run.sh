@@ -6,22 +6,9 @@
 # commercial license. See LICENSE and README for details.
 #
 
-# Golden-model cross-check — vendor-agnostic NVC build + run.
-#
-# For each test image: mint a reference .jls with the CharLS encoder, then have
-# OpenJLS encode the same image and byte-compare against it. Covers the 8-bit
-# TEST8 planes, which exercise the BITNESS=8 datapath the T.87 suite (TEST16,
-# 12-bit) never touches. Raw PGM inputs are shared with the T.87 suite under
-# "Verification/T87 conformance/Reference Images"; only the results live here.
-#
-# Before trusting CharLS, a gate re-verifies it reproduces the official ITU
-# T16E0.JLS byte-for-byte; if not, the golden generator is suspect and we abort.
-#
-# Usage:  ./build_run.sh
-#
-# Incremental: images that already PASSed against the same RTL (hash of
-# Sources/ + TB in the results table) and are older than the table are not
-# re-run. RERUN=1 forces every image.
+# Encode every image in Images/ with CharLS and OpenJLS and byte-compare.
+# Images that already passed on the same RTL hash are skipped; RERUN=1 runs all.
+# Knobs: MAX_MP (default 0.5), NUMBER_OF_THREADS (default 1), NVC_HEAP.
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -36,11 +23,9 @@ TB="tb_openjls_golden"
 
 mkdir -p "$LIBS" "$GOLDEN" "$OUTPUT"
 
-# 0. Reference encoder (built from source under ThirdParty/ on first use).
 [ -x "$CLI" ] || "$ROOT/ThirdParty/fetch_third_party.sh" charls
 
-# 0a. Toolchain gate: CharLS must reproduce the official T16E0.JLS byte-exact,
-#     otherwise the goldens it mints are not trustworthy.
+# CharLS is only trusted if it reproduces the official T16E0.JLS
 "$CLI" encode "$REF_DIR/TEST16.PGM" "$GOLDEN/TEST16_charls.jls" >/dev/null
 if ! cmp -s "$GOLDEN/TEST16_charls.jls" "$REF_DIR/T16E0.JLS"; then
   echo "FATAL: CharLS does not reproduce the official T16E0.JLS byte-for-byte." >&2
@@ -49,16 +34,11 @@ if ! cmp -s "$GOLDEN/TEST16_charls.jls" "$REF_DIR/T16E0.JLS"; then
 fi
 echo "CharLS gate: reproduces official T16E0.JLS byte-exact OK"
 
-# --relaxed: OpenLogic uses shared variables of non-protected types.
-# --psl activates the "-- psl" contract assertions embedded in Sources/.
-# -H: raise the sim heap ceiling; the TB loads whole images into memory and the
-#     16 MB default OOMs on multi-MP inputs. Keep it modest — NVC grows the heap
-#     toward this ceiling before collecting, so a high value × NUMBER_OF_THREADS
-#     can exhaust RAM. 1g covers the largest (~39 MP) image (override NVC_HEAP).
+# The TB holds whole images in memory. NVC fills the heap up to -H before
+# collecting, so -H x NUMBER_OF_THREADS must fit in RAM; 1g covers ~39 MP.
 NVC=(nvc --std=2008 --ieee-warnings=off -H "${NVC_HEAP:-1g}" -L "$LIBS")
 A_FLAGS=(--relaxed --psl)
 
-# 1. OpenLogic base (compile order matters — dependency chain)
 OL_SRC="$ROOT/ThirdParty/open-logic/src/base/vhdl"
 OL_FILES=(
   olo_base_pkg_array.vhd
@@ -72,7 +52,6 @@ OL_FILES=(
 "${NVC[@]}" --work=work:"$LIBS/work.08" -a "${A_FLAGS[@]}" \
   "${OL_FILES[@]/#/$OL_SRC/}"
 
-# 2. Project sources (openjls_pkg first, openjls_top last)
 SRC="$ROOT/Sources"
 SRC_FILES=(
   openjls_pkg.vhd
@@ -113,22 +92,10 @@ SRC_FILES=(
 "${NVC[@]}" --work=work:"$LIBS/work.08" -a "${A_FLAGS[@]}" \
   "${SRC_FILES[@]/#/$SRC/}"
 
-# 3. Golden-model TB
 "${NVC[@]}" --work=work:"$LIBS/work.08" -a "${A_FLAGS[@]}" "$HERE/$TB.vhd"
 
-# 4. Per-image: discover normalized PGMs in Images/, mint the golden with
-#    CharLS, run OpenJLS, byte-compare (in-TB). BITNESS is derived from each
-#    image's maxval (255 => 8, 65535 => 16). Images above MAX_MP megapixels are
-#    skipped to keep sim time bounded — override e.g. MAX_MP=4 ./build_run.sh
-#    Populate Images/ with ./prepare_images.sh (fetch curated sets and/or drop
-#    in your own images, any format/color — normalize.py folds them in).
-#
-#    NVC fixes generics at elaboration, so each image is one
-#    "-e --jit --no-save ... -r" invocation; --no-save keeps the library
-#    read-only, so runs are independent and are fanned out across
-#    NUMBER_OF_THREADS processes (default 1). Eligible images are sharded by
-#    file size (LPT greedy) so each worker gets a similar byte budget — e.g.
-#    100 MB of images over 4 threads ≈ 25 MB each.
+# Generics are fixed at elaboration, so each image is its own -e --no-save -r;
+# the library stays read-only and images run in parallel.
 PREP="$HERE/imageprep"
 IMAGES_DIR="$HERE/Images"
 MAX_MP="${MAX_MP:-0.5}"
@@ -154,10 +121,9 @@ if [ "${RERUN:-0}" != 1 ] && [ -f "$TSV" ]; then
   done < <(tail -n +2 "$TSV")
 fi
 
-# Eligible images (under the MP cap, not cached), tagged with file size for balancing.
 skip=0; cached=0
-ELIG=()      # entries: "<size_bytes>\t<pgm_path>\t<bits>"
-SKIPPED=()   # processed-image report rows for over-cap skips: "stem\tWxH\tmp\tbits\tSKIP"
+ELIG=()      # "<size_bytes>\t<pgm_path>\t<bits>"
+SKIPPED=()
 for pgm in "${PGMS[@]}"; do
   stem="$(basename "${pgm%.pgm}")"
   if [ -n "${CACHED[$stem]:-}" ] && [ ! "$pgm" -nt "$TSV" ]; then
@@ -175,7 +141,6 @@ for pgm in "${PGMS[@]}"; do
 done
 NELIG="${#ELIG[@]}"
 
-# Clamp worker count to [1, NELIG].
 NT="$NUMBER_OF_THREADS"
 [ "$NT" -lt 1 ] && NT=1
 [ "$NELIG" -gt 0 ] && [ "$NT" -gt "$NELIG" ] && NT="$NELIG"
@@ -183,7 +148,6 @@ NT="$NUMBER_OF_THREADS"
 TMPD="$(mktemp -d)"
 trap 'rm -rf "$TMPD"' EXIT
 
-# One image: mint golden, run the DUT, byte-compare (log to $LOGD/<stem>.log).
 run_image() {
   local w="$1" pgm="$2" bits="$3" stem rc st result W H MX mp
   local ref out rsz osz diffb minsz matched bytes
@@ -200,15 +164,12 @@ run_image() {
       -g OUT_PATH="Verification/Golden model/Output/OpenJLS/${stem}_OPENJLS.jls" \
       -g BITNESS="$bits" "$TB" \
       -r --exit-severity=error "$TB" >>"$LOGD/$stem.log" 2>&1; then rc=0; result=PASS; else rc=1; result=FAIL; fi
-  # Surface the TB's internal-stall warning regardless of pass/fail.
   st="$(grep -m1 -ao 'Pipeline stalled.*' "$LOGD/$stem.log" 2>/dev/null || true)"
   if [ -n "$st" ]; then
     echo "[t$w] STALL $stem: $st"
     printf '%s\t%s\n' "$stem" "$st" >>"$TMPD/stalls"
   fi
-  # Byte match/mismatch vs the CharLS golden (matched / reference total). cmp -l
-  # lists differing bytes over the common prefix; a length difference counts the
-  # missing/extra bytes as unmatched via minsz.
+  # Matched bytes over the golden size; a length mismatch counts as unmatched
   ref="$GOLDEN/${stem}_charls.jls"; out="$OUTPUT/${stem}_OPENJLS.jls"
   rsz=$(stat -c%s "$ref" 2>/dev/null || echo 0)
   osz=$(stat -c%s "$out" 2>/dev/null || echo 0)
@@ -220,13 +181,11 @@ run_image() {
   else
     bytes="0/$rsz"
   fi
-  # Per-image report row (assembled into golden_image_results.* at the end).
   printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$stem" "${W}x${H}" "$mp" "$bits" "$bytes" "$result" >>"$TMPD/results"
   if [ "$rc" -eq 0 ]; then echo "[t$w] PASS $stem"; return 0; fi
   echo "[t$w] FAIL $stem"; echo "$stem" >>"$TMPD/failures"; return 1
 }
 
-# A worker drains its assigned shard, tallying pass/fail to $TMPD/wN.res.
 run_worker() {
   local w="$1" wpass=0 wfail=0 pgm bits
   while IFS=$'\t' read -r pgm bits; do
@@ -238,7 +197,7 @@ run_worker() {
 
 pass=0; fail=0
 if [ "$NELIG" -gt 0 ]; then
-  # LPT greedy balance: assign largest images first to the least-loaded worker.
+  # Largest image first to the least-loaded worker
   declare -a LOAD
   for ((w = 0; w < NT; w++)); do LOAD[w]=0; : > "$TMPD/w$w.list"; done
   while IFS=$'\t' read -r sz pgm bits; do
@@ -270,10 +229,8 @@ fi
 echo "=============================================================="
 echo "Golden-model suite: PASS=$pass FAIL=$fail SKIP=$skip CACHED=$cached (cap ${MAX_MP} MP, ${NT} thread(s), RTL $RTL_HASH)"
 
-# Per-image results table (rendered to HTML by publish_reports.sh), merged into
-# the previous one: images run now replace their row, images skipped now keep
-# their last result, images gone from Images/ drop out. Run = date of the row,
-# RTL = fingerprint it ran against.
+# Merge into the previous table: new rows replace, skipped images keep their
+# last result, images gone from Images/ drop out
 today="$(date +%F)"
 {
   printf 'Image\tDims\tMP\tBits\tBytes (match/total)\tResult\tRun\tRTL\n'
@@ -281,7 +238,7 @@ today="$(date +%F)"
     [ -f "$TSV" ] && tail -n +2 "$TSV" | awk -F'\t' -v OFS='\t' '{ for (i = NF + 1; i <= 8; i++) $i = "—"; print "old", $0 }'
     [ -f "$TMPD/results" ] && awk -v d="$today" -v h="$RTL_HASH" '{ print "new\t" $0 "\t" d "\t" h }' "$TMPD/results"
     [ "${#SKIPPED[@]}" -gt 0 ] && printf 'skip\t%s\t—\t—\n' "${SKIPPED[@]}"
-    :   # keep the producer's exit 0 (empty SKIPPED + pipefail would else abort)
+    :   # empty SKIPPED would otherwise fail the pipe
   } | awk -F'\t' -v OFS='\t' -v imgs="$IMAGES_DIR" '
       BEGIN { while (("ls \"" imgs "\"" | getline f) > 0) if (f ~ /\.pgm$/) live[substr(f, 1, length(f) - 4)] = 1 }
       { k = $2; src = $1; sub(/^[^\t]*\t/, "")
@@ -290,8 +247,8 @@ today="$(date +%F)"
       END { for (k in row) print row[k] }' | sort
 } > "$TSV.tmp" && mv "$TSV.tmp" "$TSV" || true
 
-# Status line for the published report (Verification/OSVVM/publish_reports.sh),
-# over the merged table so a capped run does not hide earlier full-sweep results.
+# Status for publish_reports.sh, over the merged table so a capped run keeps
+# earlier full-sweep results
 read -r tpass tfail tskip < <(awk -F'\t' 'NR > 1 { c[$6]++ } END { print c["PASS"] + 0, c["FAIL"] + c["FAIL (charls)"] + 0, c["SKIP"] + 0 }' "$TSV")
 gpct=$(awk -v p="$tpass" -v t="$((tpass + tfail))" 'BEGIN{ if (t > 0) printf "%.0f%%", 100 * p / t }')
 {

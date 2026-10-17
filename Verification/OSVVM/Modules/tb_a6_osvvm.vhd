@@ -4,12 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM testbench: a6_prediction_correction (combinational).
---
--- T.87 Code segment A.6: Px += C[Q] when SIGN==+1 else Px -= C[Q]; then clamp to
--- [0, MAXVAL]. Coverage crosses the sign with the saturation region (low/in/high).
+-- tb_a6_osvvm: a6_prediction_correction against the T.87 A.6 C code
 --
 -- Guidelines:
 --   G1.Req      T87.A6
@@ -24,7 +19,6 @@
 --   G4 other    N/A: Edge/Run/Coding/Stream not in scope
 --   G5          N/A: combinational
 --   G6.Code     fully covered
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -53,7 +47,7 @@ architecture sim of tb_a6_osvvm is
   signal sCq    : signed(CO_CQ_WIDTH - 1 downto 0);
   signal sPxOut : unsigned(BITNESS - 1 downto 0);
 
-  -- T.87 A.6 reference. region returned for coverage (0 low / 1 in / 2 high).
+  -- T.87 A.6; region 0 low, 1 in range, 2 high
   function corrected (
     px   : integer;
     sign : std_logic;
@@ -171,7 +165,6 @@ begin
       end loop;
     end loop;
 
-    -- Directed corners.
     mm := NewID("G2.MinMax node x value");
     add_value_bin(mm, 1, "Px+C", CQ_MIN);
     add_value_bin(mm, 1, "Px+C", MAX_VAL + CQ_MAX);
@@ -190,8 +183,7 @@ begin
     drive_check(0, CO_SIGN_NEG, CQ_MAX, "low sat neg");
     drive_check(MAX_VAL / 2, CO_SIGN_POS, 0, "mid cq0");
 
-    -- Random sweep.
-    -- Every bias at both clipping thresholds, both signs, including equality.
+    -- Every C[Q] at both clip thresholds, both signs, +-1
     for cq in CQ_MIN to CQ_MAX loop
       for delta in -1 to 1 loop
         for edge in 0 to 1 loop

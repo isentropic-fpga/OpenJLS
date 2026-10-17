@@ -4,15 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM testbench: a13_update_bias (combinational).
---
--- T.87 Code segment A.13, transcribed verbatim (note the inner re-test of B
--- against -N after the adjust):
---   if (B <= -N) { B += N; if (C>MIN_C) C--; if (B <= -N) B = -N+1; }
---   else if (B > 0) { B -= N; if (C<MAX_C) C++; if (B > 0) B = 0; }
--- Coverage closes the three branches and both inner-clamp outcomes.
+-- tb_a13_osvvm: a13_update_bias against the T.87 A.13 C code
 --
 -- Guidelines:
 --   G1.Req      T87.A13
@@ -27,7 +19,6 @@
 --   G4 other    N/A: Edge/Run/Stream not in scope
 --   G5          N/A: combinational
 --   G6.Code     fully covered
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -82,14 +73,13 @@ begin
 
     variable rv      : RandomPType;
     variable cov     : CoverageIDType;
-    variable covC    : CoverageIDType;   -- C-register update: held / moved / clamp-min / clamp-max
+    variable covC    : CoverageIDType;
     variable req     : AlertLogIDType;
     constant N_RAND  : natural := 8000;
     constant B_TMIN  : integer := -(2 ** (B_WIDTH - 1));
     constant B_TMAX  : integer := 2 ** (B_WIDTH - 1) - 1;
     variable mm, st  : CoverageIDType;
 
-    -- event: 0 neg-noclamp, 1 neg-clamp, 2 pos-noclamp, 3 pos-clamp, 4 none.
     procedure drive_check (
       b   : integer;
       n   : integer;
@@ -100,7 +90,7 @@ begin
       variable bNew : integer;
       variable cNew : integer;
       variable ev   : integer;
-      variable cev  : integer;   -- 0 held (none), 1 moved, 2 clamp@MIN, 3 clamp@MAX
+      variable cev  : integer;
 
     begin
 
@@ -120,7 +110,7 @@ begin
           cNew := c - 1;
           cev  := 1;
         else
-          cev := 2;          -- C already at MIN_C: decrement clamped
+          cev := 2;
         end if;
         if (bNew <= -n) then
           bNew := -n + 1;
@@ -134,7 +124,7 @@ begin
           cNew := c + 1;
           cev  := 1;
         else
-          cev := 3;          -- C already at MAX_C: increment clamped
+          cev := 3;
         end if;
         if (bNew > 0) then
           bNew := 0;
@@ -172,9 +162,6 @@ begin
     AddBins(cov, "positive clamp", GenBin(3));
     AddBins(cov, "unchanged", GenBin(4));
 
-    -- C-register saturation: the event bins above don't distinguish a clamped
-    -- C from a moved C, so bin the C update separately (held in the none branch,
-    -- moved within range, or clamped at MIN_C/MAX_C).
     covC := NewID("G4.Coding cUpdate");
     SetFieldName(covC, "cUpdate");
     AddBins(covC, "held",     GenBin(0, 0));
@@ -182,7 +169,6 @@ begin
     AddBins(covC, "clampMin", GenBin(2, 2));
     AddBins(covC, "clampMax", GenBin(3, 3));
 
-    -- Directed: one per event.
     mm := NewID("G2.MinMax node x value");
     add_value_bin(mm, 1, "B", B_TMIN);
     add_value_bin(mm, 1, "B", B_TMAX);
@@ -196,15 +182,15 @@ begin
     add_value_bin(st, 3, "N MSB", 2 ** (N_WIDTH - 1), RESET);
     drive_check(B_TMIN, RESET, MIN_C, "most negative B, C at MIN");
     drive_check(B_TMAX, RESET, MAX_C, "max B, C at MAX");
-    drive_check(-100, 10, 0, "neg branch, big B (clamp)");   -- B=-100<=-10; B+N=-90<=-10 -> clamp
-    drive_check(-12, 10, 0, "neg branch no clamp");          -- B=-12<=-10; B+N=-2 >-10 -> no clamp
-    drive_check(50, 10, 0, "pos branch clamp");              -- B=50>0; B-N=40>0 -> clamp 0
-    drive_check(5, 10, 0, "pos branch no clamp");            -- B=5>0; B-N=-5 <=0 -> no clamp
-    drive_check(0, 10, 0, "none branch");                    -- B=0, not <=-10, not >0
-    drive_check(-100, 10, MIN_C, "neg branch C at MIN");     -- C not decremented
-    drive_check(50, 10, MAX_C, "pos branch C at MAX");       -- C not incremented
+    drive_check(-100, 10, 0, "neg branch, big B (clamp)");
+    drive_check(-12, 10, 0, "neg branch no clamp");
+    drive_check(50, 10, 0, "pos branch clamp");
+    drive_check(5, 10, 0, "pos branch no clamp");
+    drive_check(0, 10, 0, "none branch");
+    drive_check(-100, 10, MIN_C, "neg branch C at MIN");
+    drive_check(50, 10, MAX_C, "pos branch C at MAX");
 
-    -- Random sweep (N in [1,RESET]; B biased to the two active branches).
+    -- Branch and reclamp boundaries, +-1
     for n in 1 to RESET loop
       for delta in -1 to 1 loop
         for c in MIN_C to MAX_C loop

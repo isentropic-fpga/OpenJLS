@@ -4,12 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM testbench: a8_1_reconstructed_value (combinational).
---
--- T.87 written requirement A.8.1: with NEAR=0 the reconstructed value Rx is Ix.
--- Exhaustive over every pixel value; coverage closes the 0 and MAXVAL ends.
+-- tb_a8_1_osvvm: a8_1_reconstructed_value against the T.87 A.8.1 rule (Rx = Ix)
 --
 -- Guidelines:
 --   G1.Req      T87.A8.1
@@ -24,7 +19,6 @@
 --   G4 other    N/A: Edge/Run/Coding/Stream not in scope
 --   G5          N/A: combinational
 --   G6.Code     fully covered
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;

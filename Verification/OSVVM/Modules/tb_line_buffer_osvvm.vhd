@@ -4,21 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM testbench: line_buffer (stateful, causal-context windowing).
---
--- Streams full images and checks the four causal neighbours (a,b,c,d) emitted
--- for every pixel against an independent T.87 A.2.1 border model held over a 2-D
--- reference image:
---   first row  : b = c = d = 0
---   col 0,r>0  : a = b = I(r-1,0);  c = I(r-2,0) (else 0)
---   col W-1    : d = b = I(r-1,W-1)
---   otherwise  : a=I(r,c-1) b=I(r-1,c) c=I(r-1,c-1) d=I(r-1,c+1)
--- Outputs are combinational and aligned with the presented pixel; random iValid
--- gaps exercise the stall (model index only advances on valid cycles). EOI
--- auto-resets the window, so several images run back to back without iRst.
--- Coverage: row x col position, width x height extremes, reset phase.
+-- tb_line_buffer_osvvm: line_buffer against the T.87 A.2.1 border rules
 --
 -- Guidelines:
 --   G1.Req      OJLS.LineBuffer
@@ -33,7 +19,6 @@
 --   G4 other    N/A: Run/Coding/Stream not in scope
 --   G5          G5.States resetPhase; outputs idle after reset, aborted output discarded, replay checked
 --   G6.Code     fully covered
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -121,7 +106,7 @@ begin
     variable img : image_t;
     variable req : AlertLogIDType;
 
-    -- T.87 A.2.1 reference neighbour (0 outside the image).
+    -- 0 outside the image
     impure function px (
       r : integer;
       c : integer
@@ -147,7 +132,6 @@ begin
     ) is
     begin
 
-      -- a (left)
       if (c = 0) then
         ea := px(r - 1, 0);            -- = b at col 0
       else
@@ -161,12 +145,12 @@ begin
       else
         eb := px(r - 1, c);
         if (c = 0) then
-          ec := px(r - 2, 0);          -- Ra from start of previous row
+          ec := px(r - 2, 0);          -- Ra at the start of the previous row
         else
           ec := px(r - 1, c - 1);
         end if;
         if (c = w - 1) then
-          ed := px(r - 1, c);          -- replicate last pixel of previous row
+          ed := px(r - 1, c);          -- replicate the previous row's last pixel
         else
           ed := px(r - 1, c + 1);
         end if;
@@ -174,7 +158,7 @@ begin
 
     end procedure ref_nbr;
 
-    -- Stream one W x H image; gaps inserts random iValid stalls.
+    -- gaps adds iValid stalls
     procedure run_image (
       w    : integer;
       h    : integer;
@@ -190,7 +174,6 @@ begin
 
     begin
 
-      -- Random image content.
       for r in 0 to h - 1 loop
 
         for c in 0 to w - 1 loop
@@ -208,8 +191,7 @@ begin
 
         for c in 0 to w - 1 loop
 
-          -- Force gaps at row start/end, including EOI; random gaps alone
-          -- do not guarantee these counter and preload boundaries are paused.
+          -- Forced gaps at row start/end; random gaps alone may miss them
           if gaps and (c = 0 or c = w - 1) then
             iValid <= '0';
             iPixel <= to_unsigned(PX_MAX, BITNESS);
@@ -219,7 +201,6 @@ begin
               wait until rising_edge(clk);
             end loop;
           end if;
-          -- Optional stall cycles before presenting the pixel.
           if (gaps) then
             while (rv.DistValInt(((1, 1), (0, 4))) = 1) loop
 
@@ -270,8 +251,7 @@ begin
 
     end procedure run_image;
 
-    -- Drive n pixels of a w x h image, then iRst; the next image must be
-    -- correct from scratch. Phase: 0 idle, 1 first row, 2 middle row, 3 last row.
+    -- n pixels, then iRst; phase 0 idle, 1 first row, 2 middle row, 3 last row
     procedure reset_after (
       w : integer;
       h : integer;
@@ -313,7 +293,7 @@ begin
     SetAlertLogName("tb_line_buffer_osvvm");
     SetLogEnable(PASSED, FALSE);
     rv.InitSeed(rv'instance_name);
-    -- 2477 pixels in the fixed image list x 4 neighbours.
+    -- 2477 pixels x 4 neighbours
     req := GetReqID("OJLS.LineBuffer", 9908);
     cov := NewID("G4.Edge rowPos x colPos");
     SetFieldName(cov, "rowPos", "colPos");
@@ -338,25 +318,20 @@ begin
 
     apply_reset(clk, rst, 4, '1');
 
-    -- A spread of sizes (back to back; EOI auto-resets the window).
-    run_image(4, 3, false);     -- min width, exercises col0 c = I(r-2,0)
+    -- Back to back; EOI auto-resets the window
+    run_image(4, 3, false);
     run_image(5, 4, false);
-    run_image(8, 1, false);     -- single row (all border zeros for b/c/d)
-    run_image(6, 5, true);      -- with random iValid stalls
-    run_image(16, 6, false);    -- max width, last-col replication
+    run_image(8, 1, false);
+    run_image(6, 5, true);
+    run_image(16, 6, false);
     run_image(7, 3, true);
     for width in 4 to MAX_W loop
       run_image(width, 1, true);
       run_image(width, MAX_H, true);
     end loop;
 
-    --------------------------------------------------------------------------
-    -- Mid-image iRst: drive ~1.5 rows (so the FSM is past preload and the
-    -- context window holds real pixels), assert iRst, then a fresh image must
-    -- produce correct T.87 border neighbours from scratch. Stale counters or a
-    -- stale window would corrupt row 0/1 of the next image.
-    --------------------------------------------------------------------------
-    reset_after(6, 6, 9);       -- ~1.5 rows
+    -- Mid-image reset ---
+    reset_after(6, 6, 9);       -- ~1.5 rows, past preload
     reset_after(6, 6, 0);
     reset_after(6, 6, 3);
     reset_after(6, 6, 33);

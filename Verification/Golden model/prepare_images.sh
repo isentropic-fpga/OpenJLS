@@ -6,24 +6,9 @@
 # commercial license. See LICENSE and README for details.
 #
 
-# Image ingestion + normalization for the golden-model conformance suite.
-#
-# Converges "Images/" to single-component grayscale binary PGMs, ready for the
-# golden TB and CharLS. Two stages:
-#   1. fetch     download + extract the curated public datasets (USC-SIPI +
-#                imagecompression.info grayscale sets) into Images/
-#   2. normalize convert every image in Images/ to grayscale PGM, in place,
-#                deleting the original color / non-PGM sources
-#
-# Drop-in friendly: put your own images (any format, color or gray) into
-# Images/ and run with --no-fetch to fold them into the suite.
-#
-# Usage:
-#   ./prepare_images.sh             # fetch curated datasets, then normalize
-#   ./prepare_images.sh --no-fetch  # normalize whatever is already in Images/
-#
-# Env:
-#   IMG_CACHE=<dir>   reuse already-downloaded dataset zips (by basename)
+# Fill Images/ with grayscale PGMs: the USC-SIPI and imagecompression.info sets
+# plus generated probes. Own images (any format) dropped into Images/ are
+# converted in place; --no-fetch skips the download, IMG_CACHE=<dir> reuses zips.
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -44,17 +29,12 @@ fi
 echo "== normalize =="
 python3 "$PREP/normalize.py" "$IMAGES"
 
-# Images over the routine 0.5 MP cap become 3 full-width strips (top/middle/
-# bottom, <= 64 rows); originals move to Images_full/ (depth-tile source, HIL).
+# Over 0.5 MP: three <= 64-row strips; originals move to Images_full/
 echo "== slice large images =="
 python3 "$PREP/slice_large.py" "$IMAGES" "$FULL"
 
-# 16-bit byte_stuffer stall probes: random noise (several seeds) + adversarial
-# patterns (checkerboard/stripes/spikes). Built to try to overrun the byte_stuffer
-# 4 B/cycle cap; the pipeline does NOT stall on any of them (k-adaptation +
-# buffering hold the sustained rate under the cap), so they serve as a robustness
-# probe and as incompressible/structured inputs. Generated after normalize
-# (already in target form; must not be down-converted). See imageprep/gen_stress.py.
+# Attempts to overrun the byte_stuffer 4 B/cycle cap. Generated after normalize
+# so they are not down-converted.
 echo "== random 16-bit probes =="
 i=1
 for seed in 0x0FF5 0x1234 0xBEEF; do
@@ -66,11 +46,7 @@ for pat in checker vstripe hstripe spikes; do
   python3 "$PREP/gen_stress.py" "$IMAGES/synth-$pat-16.pgm" --pattern "$pat"
 done
 
-# Boundary-dimension probes — natural images never hit these shapes. Minimal
-# legal image (width >= 4, height >= 1 is the design floor; 1x1 unsupported),
-# min-width-tall (an EOL every 4 px), odd just-above-min dims, and max-width
-# lines (65535 = T.87 SOF55 2-byte dimension field cap). random exercises
-# regular mode; flat is all-zero => pure run mode, every run cut by EOL.
+# Dimension floor (4x1), max width (65535) and odd sizes; flat is all run mode
 echo "== boundary-dimension probes =="
 gen_bound() {
   python3 "$PREP/gen_stress.py" "$IMAGES/synth-bound-${1}x${2}-$3.pgm" \
@@ -85,16 +61,11 @@ gen_bound 7 1 random
 gen_bound 65535 1 random
 gen_bound 65535 2 random
 
-# Tiny-random-image fuzz batch — small images make the last pixel's context
-# first-use often, the shape that exposed the context_ram EOI bug (b513990).
+# Tiny images often hit a first-use context on the last pixel (b513990)
 echo "== tiny-image fuzz batch =="
 python3 "$PREP/gen_stress.py" "$IMAGES" --fuzz-batch 16 --seed 0xB513
 
-# Intermediate-depth probes (9-15 bits): the T.87 constants (LIMIT, k range,
-# counter widths) all derive from BITNESS, but the natural sets are 8/16-bit
-# only and the T.87 vector covers just 12. Random + checker per depth, plus
-# natural texture requantized from the 16-bit set (cropped under the routine
-# 0.5 MP cap).
+# 9 to 15 bits; the natural sets are 8/16-bit only
 echo "== intermediate-depth probes =="
 for b in 9 10 11 12 13 14 15; do
   mx=$(( (1 << b) - 1 ))
@@ -104,13 +75,11 @@ done
 python3 "$PREP/requantize.py" "$FULL/ic-gray16_cathedral.pgm" "$IMAGES/requant10-cathedral.pgm" --bits 10 --crop 700 700
 python3 "$PREP/requantize.py" "$FULL/ic-gray16_deer.pgm" "$IMAGES/requant14-deer.pgm" --bits 14 --crop 700 700
 
-# Bulk natural coverage per depth: ~300 random crops of the 16-bit photos at
-# each of 9..16 bits (the probes above are a handful per depth).
+# ~300 crops of the 16-bit photos per depth, 9..16 bits
 echo "== depth tiles =="
 python3 "$PREP/gen_depth_tiles.py" "$FULL" "$IMAGES"
 
-# Bulk synthetic coverage per depth: ~300 white + 1/f^beta noise probes at
-# each of 8..16 bits, random sizes and value windows.
+# ~300 white and 1/f noise images per depth, 8..16 bits
 echo "== noise probes =="
 python3 "$PREP/gen_noise_probes.py" "$IMAGES"
 

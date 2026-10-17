@@ -4,48 +4,12 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM top-level control-plane stress testbench: openjls_top.
+-- tb_openjls_top_osvvm: openjls_top control plane under stress against the H.3 golden
 --
--- Per the verification plan, the golden suite owns payload correctness; OSVVM
--- here proves the *envelope* survives stress. Two phases:
---
--- Phase A — T.87 Annex H.3 image (4x4, 8-bit, NEAR=0), known 57-byte output
--- as the invariance oracle:
---   * downstream backpressure (random iReady de-assertion) -> byte-identical
---   * upstream input stalls (random iValid gaps)           -> byte-identical
---   * mid-image reset injection                            -> next image still
---                                                             encodes correctly
---   * back-to-back images (next image fed while the previous one is still
---     draining) -> N x golden bytes; exercises the image-parity machinery
---     (ctx straggler refusal, framer start queue, EOI FIFO)
---
--- Phase B — 48x48 random-noise image (incompressible, ~2.3 kB coded output,
--- far beyond the framer FIFO + byte_stuffer buffer). A clean run captures the
--- reference; every stressed run must reproduce it byte-identically:
---   * long iReady hold -> oReady must DROP (stall propagates upstream through
---     framer FIFO -> byte_stuffer almost-full -> pipeline freeze); affirmed
---     non-vacuously via a stall monitor. The H.3 image is too small to ever
---     trigger this path.
---   * reset while the output is draining (input done, oLast pending)
---   * random backpressure + input stalls, also back-to-back
---
--- Coverage closes on conjunctions: (backpressure x input-stall) cross,
--- upstream stall propagation, back-to-back (clean / stressed), reset
--- (mid-feed / mid-feed-under-stress / mid-drain).
---
--- Requirements tracked (see Docs/verification_requirements.md):
---   T87.H3               output byte-identical to the Annex H.3 golden stream
---   OJLS.BackToBack      next image accepted while the previous one drains
---   OJLS.RIForward       run-interruption context forwarding (sFwdRiHit) emits
---                        the CharLS golden byte-for-byte (Phase A3)
---   OJLS.NoStallCompress oReady never drops during a clean feed (byte_stuffer
---                        buffer must not fill while compressing)
---   OJLS.NoStallEOL      ... including across line / image boundaries
---
--- Restores the output-backpressure / stall-recovery coverage the golden TB
--- dropped (project-backpressure-coverage-gap).
+-- Payload correctness belongs to the golden suite; this TB checks the output
+-- stays byte-identical under backpressure, input stalls, resets and
+-- back-to-back images. Phase B's 48x48 noise image is big enough for a held
+-- iReady to stall oReady.
 --
 -- Guidelines:
 --   G1.Req      T87.H3, OJLS.BackToBack, OJLS.RIForward, OJLS.NoStallCompress, OJLS.NoStallEOL
@@ -61,7 +25,6 @@
 --   G4 other    N/A: Run/Coding owned by module TBs + golden suite
 --   G5          G5.States reset midFeed/midFeedStress/midDrain; replay checked
 --   G6.Code     DEBUG_MODE trace lines waived (cover_summary.py)
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -75,14 +38,11 @@ library tb_support;
   use tb_support.tb_support_pkg.all;
 
 entity tb_openjls_top_osvvm is
-  -- Non-default variants are driven from OpenJls.pro via [generic ...].
   generic (
     MAX_W      : positive := 4096;
     MAX_H      : positive := 4096;
-    OUT_WIDTH  : natural  := CO_OUT_WIDTH_STD;   -- 64
-    -- Bind the DUT to a Vivado funcsim netlist analyzed into work in place of
-    -- the RTL (see Verification/Post synth). Defaults-only: the netlist bakes
-    -- this TB's default config at synthesis.
+    OUT_WIDTH  : natural  := CO_OUT_WIDTH_STD;
+    -- Bind to the funcsim netlist (Verification/Post synth); defaults only
     POST_SYNTH : boolean  := false
   );
 end entity tb_openjls_top_osvvm;
@@ -96,13 +56,10 @@ architecture sim of tb_openjls_top_osvvm is
   constant IMG_W : natural := 4;
   constant IMG_H : natural := 4;
 
-  -- Phase B stress image: random noise is incompressible, so its coded output
-  -- (~1 byte/pixel) dwarfs the framer FIFO + byte_stuffer buffer and a held
-  -- iReady must propagate a stall all the way to oReady.
+  -- Noise is incompressible, so its output outgrows the framer and byte_stuffer buffers
   constant BIG_W : natural := 48;
   constant BIG_H : natural := 48;
 
-  -- Cycles iReady is held low in the stall-propagation run (mode 2).
   constant HOLD_CYCLES : natural := 1200;
 
   type pixel_array_t is array (natural range <>) of natural;
@@ -112,7 +69,7 @@ architecture sim of tb_openjls_top_osvvm is
 
   type byte_array_t is array (natural range <>) of std_logic_vector(7 downto 0);
 
-  -- T.87 Annex H.3 golden output: 25-byte header + 30-byte payload + FF D9.
+  -- T.87 H.3 golden
   constant EXPECTED : byte_array_t(0 to 56) :=
     (x"FF", x"D8", x"FF", x"F7", x"00", x"0B", x"08", x"00", x"04", x"00", x"04",
      x"01", x"01", x"11", x"00", x"FF", x"DA", x"00", x"08", x"01", x"01", x"00",
@@ -123,12 +80,8 @@ architecture sim of tb_openjls_top_osvvm is
      x"FF", x"D9");
   constant EXP_BYTES : natural := EXPECTED'length;
 
-  -- Run-interruption forwarding image (6x6, 8-bit, 3 grey levels). The flat
-  -- regions enter run mode and interrupt on consecutive samples, so two
-  -- run-interruption updates land on the same context one pipeline stage apart
-  -- and exercise the sFwdRiHit data-forwarding path (the RI twin of the regular
-  -- Q3==Q4 forward the H.3 image already covers). RI_EXPECTED is the CharLS
-  -- golden for this image; the byte stream is independent of OUT_WIDTH.
+  -- Two run interruptions hit the same context one stage apart (sFwdRiHit).
+  -- RI_EXPECTED is the CharLS golden.
   constant RI_W      : natural := 6;
   constant RI_H      : natural := 6;
 
@@ -156,24 +109,20 @@ architecture sim of tb_openjls_top_osvvm is
   signal oLast   : std_logic;
   signal iReady  : std_logic;
 
-  -- Image dimensions are latched by the DUT during reset; stim switches these
-  -- before re-resetting for Phase B.
+  -- Latched by the DUT during reset
   signal sImgW : natural;
   signal sImgH : natural;
 
-  -- Downstream backpressure mode: 0 always ready, 1 random (~33% ready),
-  -- 2 one-shot hold (iReady low for HOLD_CYCLES, then high until mode change).
+  -- 0 always ready, 1 random (~33%), 2 hold low for HOLD_CYCLES once
   signal sBpMode : natural range 0 to 2;
 
-  -- Arms the no-stall requirements monitor. Only clean feeds (no downstream
-  -- backpressure, no input gaps) may arm it: stalls are legal under stress.
+  -- Arms the no-stall monitor; only clean feeds may set it
   signal sNoStall : boolean := false;
 
   shared variable collected      : byte_array_t(0 to 32767);
   shared variable collectedCount : natural;
   shared variable lastCount      : natural;
-  -- Cycles where the DUT refused an offered pixel (iValid=1, oReady=0):
-  -- evidence that downstream backpressure propagated upstream.
+  -- Offered pixels refused by the DUT
   shared variable feedStallCnt   : natural;
 
 begin
@@ -193,15 +142,11 @@ begin
   iWidth  <= std_logic_vector(to_unsigned(sImgW, iWidth'length));
   iHeight <= std_logic_vector(to_unsigned(sImgH, iHeight'length));
 
-  -- Each branch declares its own component and lets default binding pick up
-  -- whatever openjls_top the build analyzed into work: the funcsim netlist is
-  -- genericless (config baked at synthesis) and its architecture is STRUCTURE,
-  -- so a direct entity work.openjls_top(rtl) instantiation cannot analyze
-  -- against it.
+  -- Component + default binding: the funcsim netlist has no generics and its
+  -- architecture is STRUCTURE, so entity work.openjls_top(rtl) can't bind to it
   dut : if POST_SYNTH generate
 
-    -- Ports fixed at this TB's defaults; a netlist baked with anything else
-    -- fails elaboration here on the width mismatch.
+    -- Ports at this TB's defaults; any other netlist fails elaboration
     component openjls_top is
       port (
         iClk         : in    std_logic;
@@ -288,9 +233,7 @@ begin
 
   end generate dut;
 
-  -----------------------------------------------------------------------------
-  -- Output collector (oKeep bytes, MSB-first, on the AXI handshake).
-  -----------------------------------------------------------------------------
+  -- Output collector ---
   collect_proc : process (clk) is
   begin
 
@@ -319,9 +262,7 @@ begin
 
   end process collect_proc;
 
-  -----------------------------------------------------------------------------
-  -- Upstream stall monitor.
-  -----------------------------------------------------------------------------
+  -- Upstream stall monitor ---
   stall_mon : process (clk) is
   begin
 
@@ -333,13 +274,9 @@ begin
 
   end process stall_mon;
 
-  -----------------------------------------------------------------------------
-  -- No-stall requirements monitor. While armed, every offered pixel must be
-  -- accepted immediately (OJLS.NoStallCompress: the byte_stuffer buffer never
-  -- fills while compressing), including the first pixel after a line or image
-  -- boundary (OJLS.NoStallEOL). Goals are conservative lower bounds of the
-  -- guaranteed armed check counts, so a vacuous run fails the requirement.
-  -----------------------------------------------------------------------------
+  -- No-stall monitor ---
+  -- While armed, every offered pixel is accepted at once, line and image
+  -- boundaries included. Goals are lower bounds, so a vacuous run fails.
   nostall_mon : process (clk) is
 
     variable reqCompress : AlertLogIDType := ALERTLOG_ID_NOT_ASSIGNED;
@@ -376,9 +313,7 @@ begin
 
   end process nostall_mon;
 
-  -----------------------------------------------------------------------------
-  -- Downstream backpressure driver.
-  -----------------------------------------------------------------------------
+  -- Downstream backpressure ---
   ready_proc : process is
 
     variable rv      : RandomPType;
@@ -403,7 +338,7 @@ begin
 
         when 1 =>
 
-          -- ~33% ready, with occasional ready bursts to guarantee drain.
+          -- ~33% ready
           iReady  <= bool2bit(rv.DistValInt(((1, 1), (0, 2))) = 1);
           holdCnt := 0;
 
@@ -422,9 +357,7 @@ begin
 
   end process ready_proc;
 
-  -----------------------------------------------------------------------------
-  -- Stimulus.
-  -----------------------------------------------------------------------------
+  -- Stimulus ---
   stim : process is
 
     variable rv         : RandomPType;
@@ -453,8 +386,7 @@ begin
       iPixel <= (others => '0');
       clk_tick(clk, 4);
 
-      -- Reset must clear the output stream (matters when injected mid-image:
-      -- any in-flight beats must be dropped, not emitted after recovery).
+      -- In-flight beats of an aborted image must be dropped
       wait for 1 ns;
       AffirmIf(GetAlertLogID("ResetRecovery"), oValid = '0', "reset: output stream idle");
       AffirmIf(GetAlertLogID("ResetRecovery"), oLast = '0', "reset: oLast cleared");
@@ -470,8 +402,7 @@ begin
 
     end procedure do_reset;
 
-    -- Feed pixels from img; stall inserts random iValid gaps; count = how many
-    -- pixels to feed (full image unless truncated for reset injection).
+    -- stall inserts random iValid gaps; count truncates the image for reset injection
     procedure feed (
       img   : pixel_array_t;
       stall : boolean;
@@ -515,8 +446,7 @@ begin
       AffirmIfEqual(GetAlertLogID("ImageCompletion"), lastCount - baseL, n, "expected image boundaries before timeout");
     end procedure wait_images;
 
-    -- Encode `images` H.3 images back-to-back (no inter-image gap) and assert
-    -- the output equals `images` copies of the golden bytes.
+    -- `images` H.3 images back-to-back, checked against as many golden copies
     procedure run_check (
       bp     : natural range 0 to 1;
       stall  : boolean;
@@ -532,8 +462,7 @@ begin
       for k in 1 to images loop
 
         feed(PIXELS, stall, PIXELS'length);
-        -- Image k's last pixel entered one cycle ago, so its oLast cannot
-        -- have fired: image k+1 is fed while image k is still draining.
+        -- Image 1's oLast can't have fired yet, so image 2 overlaps its drain
         if (k = 1 and images > 1) then
           AffirmIf(reqB2B, lastCount = baseL, msg & ": b2b overlap");
         end if;
@@ -554,7 +483,6 @@ begin
 
     end procedure run_check;
 
-    -- Compare the bytes collected since `base` against the Phase B reference.
     procedure check_against_ref (
       msg : string
     ) is
@@ -608,47 +536,37 @@ begin
     AddBins(covRst, "reset during stressed input", GenBin(1));
     AddBins(covRst, "reset during output", GenBin(2));
 
-    -- Max dims are reached by the 48x48 image only in the MAX 48x48 variant.
+    -- MAX is only reached in the MAX 48x48 variant
     covCfg := NewID("G4.Config width x height");
     AddBins(covCfg, "width=4 / height=1", GenBin(0));
     if (MAX_W = BIG_W and MAX_H = BIG_H) then
       AddBins(covCfg, "width=MAX / height=MAX", GenBin(1));
     end if;
 
-    -- Requirement goals: H.3 = at least one full golden image; BackToBack = the
-    -- three directed b2b runs (b2b x3, B5 stressed, C minimal).
+    -- BackToBack: b2b x3, B5 and C
     reqH3  := GetReqID("T87.H3", EXP_BYTES);
     reqB2B := GetReqID("OJLS.BackToBack", 3);
     reqRI  := GetReqID("OJLS.RIForward", RI_EXP_BYTES);
 
     do_reset;
 
-    --------------------------------------------------------------------------
-    -- Phase A directed: each stress axis, clean baseline first.
-    --------------------------------------------------------------------------
+    -- Phase A: H.3 under each stress axis ---
     run_check(0, false, 1, "baseline");
     run_check(1, false, 1, "downstream backpressure");
     run_check(0, true, 1, "input stall");
     run_check(1, true, 1, "backpressure + stall");
 
-    --------------------------------------------------------------------------
-    -- Back-to-back: three images streamed with no inter-image gap. Exercises
-    -- the image-parity machinery (ctx straggler refusal, forwarding guards),
-    -- the framer start queue and the in-flight EOI FIFO.
-    --------------------------------------------------------------------------
+    -- Back-to-back ---
     run_check(0, false, 3, "b2b x3");
     ICover(covB2B, 0);
 
-    --------------------------------------------------------------------------
-    -- Mid-image reset injection, then a clean image must still be correct.
-    --------------------------------------------------------------------------
+    -- Mid-image reset ---
     sBpMode <= 0;
-    feed(PIXELS, false, 8);         -- partial image (8 of 16 pixels)
-    do_reset;                       -- abort mid-image
+    feed(PIXELS, false, 8);
+    do_reset;
     run_check(0, false, 1, "post-reset recovery");
     ICover(covRst, 0);
 
-    -- Reset injection while under backpressure, then recover.
     sBpMode  <= 1;
     sNoStall <= false;
     feed(PIXELS, true, 6);
@@ -656,13 +574,8 @@ begin
     run_check(1, true, 1, "post-reset recovery under stress");
     ICover(covRst, 1);
 
-    --------------------------------------------------------------------------
-    -- Phase A Intelligent Coverage sweep: bp x inputStall x prelude, where
-    -- prelude 0 = none, 1 = aborted partial image (mid-feed reset), 2 = the
-    -- checked image is a back-to-back pair. RandCovPoint picks a random
-    -- *uncovered* bin each pass (WeightMode REMAIN), so the 12-bin cross
-    -- closes in exactly 12 passes instead of a coupon-collector tail.
-    --------------------------------------------------------------------------
+    -- Intelligent Coverage sweep ---
+    -- prelude: 0 none, 1 aborted partial image, 2 back-to-back pair
     for r in 1 to 60 loop
 
       exit when IsCovered(covSweep);
@@ -687,12 +600,8 @@ begin
 
     end loop;
 
-    --------------------------------------------------------------------------
-    -- Phase A3: run-interruption context forwarding. The 6x6 RI image drives
-    -- two run-interruption updates to the same context one pipeline stage
-    -- apart (sFwdRiHit). Byte-compared against the CharLS golden — the H.3
-    -- image never takes this path, so it is the only directed cover for it.
-    --------------------------------------------------------------------------
+    -- RI context forwarding ---
+    -- The only image that takes sFwdRiHit
     sImgW    <= RI_W;
     sImgH    <= RI_H;
     do_reset;
@@ -713,11 +622,7 @@ begin
 
     end loop;
 
-    --------------------------------------------------------------------------
-    -- Phase B: 48x48 random-noise image. Dimensions latch during reset.
-    -- The clean run's output is the invariance reference for every stressed
-    -- run (payload correctness itself is the golden suite's job).
-    --------------------------------------------------------------------------
+    -- Phase B: 48x48 noise, clean run as the reference ---
     sImgW <= BIG_W;
     sImgH <= BIG_H;
     do_reset;
@@ -728,7 +633,7 @@ begin
 
     end loop;
 
-    -- B1: clean reference run.
+    -- B1: clean reference
     base     := collectedCount;
     baseL    := lastCount;
     sBpMode  <= 0;
@@ -738,8 +643,7 @@ begin
     refLen := collectedCount - base;
     AffirmIfEqual(GetAlertLogID("DataChecks"), lastCount - baseL, 1, "B1: reference image completed");
     ICover(covCfg, 1);
-    -- Must dwarf the framer FIFO + byte_stuffer buffer, or the hold run below
-    -- could never propagate a stall and the coverage would be vacuous.
+    -- Smaller than the buffers, B3 could never stall
     AffirmIf(GetAlertLogID("DataChecks"), refLen > 1000, "B1: stress image defeats internal buffering" &
                             " (refLen=" & integer'image(refLen) & ")");
     for i in 0 to refLen - 1 loop
@@ -748,8 +652,7 @@ begin
 
     end loop;
 
-    -- B2: reset while the output is draining (input done, oLast pending),
-    -- then a clean re-run must reproduce the reference.
+    -- B2: reset while the output drains
     base  := collectedCount;
     baseL := lastCount;
     feed(bigImg, false, bigImg'length);
@@ -769,8 +672,7 @@ begin
     wait_images(1);
     check_against_ref("B2 post-mid-drain-reset");
 
-    -- B3: long iReady hold -> the stall must propagate upstream (oReady drops
-    -- while pixels are being offered), then release and drain byte-identical.
+    -- B3: a long iReady hold must drop oReady
     vStallSnap := feedStallCnt;
     base       := collectedCount;
     baseL      := lastCount;
@@ -784,7 +686,7 @@ begin
     ICover(covUp, 1);
     check_against_ref("B3 stall propagation");
 
-    -- B4: random backpressure + input stalls.
+    -- B4: random backpressure and input stalls
     base    := collectedCount;
     baseL   := lastCount;
     sBpMode <= 1;
@@ -792,7 +694,7 @@ begin
     wait_images(1);
     check_against_ref("B4 random stress");
 
-    -- B5: back-to-back under backpressure + input stalls.
+    -- B5: B4, back-to-back
     base    := collectedCount;
     baseL   := lastCount;
     sBpMode <= 1;
@@ -814,17 +716,13 @@ begin
 
     ICover(covB2B, 1);
 
-    --------------------------------------------------------------------------
-    -- Phase C: minimal legal image (4x1) back-to-back. The whole image feeds
-    -- in fewer cycles than the pipeline's flush latency, so image 2 is fed
-    -- entirely while image 1 is still in flight end-to-end — the tightest
-    -- squeeze on the start/EOI bookkeeping.
-    --------------------------------------------------------------------------
+    -- Phase C: 4x1 back-to-back ---
+    -- Each image feeds faster than the pipeline flushes, the tightest case for
+    -- start/EOI bookkeeping
     sImgW <= 4;
     sImgH <= 1;
     do_reset;
 
-    -- Clean single run captures the 4x1 reference (header + payload + FF D9).
     base     := collectedCount;
     baseL    := lastCount;
     sBpMode  <= 0;
@@ -840,7 +738,6 @@ begin
 
     end loop;
 
-    -- Back-to-back x3, continuous.
     base  := collectedCount;
     baseL := lastCount;
     feed(PIXELS, false, 4);
@@ -861,26 +758,20 @@ begin
 
     ICover(covB2B, 2);
 
-    --------------------------------------------------------------------------
-    -- Phase D: below-minimum dimensions fall back to MAX_IMAGE_WIDTH/HEIGHT
-    -- (latched during reset, with a warning). Encoding a full 4096x4096 image
-    -- is golden-suite territory; the observable contract checked here is the
-    -- frame header's Y/X fields, which emit before any payload is needed.
-    -- The image is then aborted with the (already verified) mid-image reset.
-    --------------------------------------------------------------------------
+    -- Phase D: below-minimum dims fall back to MAX ---
+    -- Only the header's Y/X fields are checked; the image is then aborted
     sImgW    <= 0;
     sImgH    <= 0;
-    sNoStall <= false;   -- pxIdx line math is meaningless under the fallback dims
+    sNoStall <= false;   -- pxIdx line math assumes sImgW
     do_reset;
     base    := collectedCount;
     sBpMode <= 0;
-    -- Noise feed: at OUT_WIDTH > 200 the header no longer fills a whole beat,
-    -- so the first beat (and the Y/X fields in it) waits for payload bytes.
+    -- Above OUT_WIDTH 200 the first beat waits for payload bytes
     feed(bigImg, false, bigImg'length);
 
     for i in 0 to 199999 loop
 
-      exit when collectedCount - base >= 14;   -- header bytes 0..13 collected
+      exit when collectedCount - base >= 14;
       wait until rising_edge(clk);
 
     end loop;
@@ -898,14 +789,8 @@ begin
                   std_logic_vector(to_unsigned(MAX_W mod 256, 8)),
                   "D: header X lo = MAX_IMAGE_WIDTH");
 
-    --------------------------------------------------------------------------
-    -- Phase D2: above-maximum dimensions clamp to MAX_IMAGE_WIDTH/HEIGHT too
-    -- (the mirror of Phase D's below-minimum fallback). Same observable
-    -- contract: the header Y/X fields read back the clamped maxima. Reachable
-    -- only when MAX+1 fits the port width (e.g. 4096 -> 13-bit port, so 4097
-    -- is representable); a power-of-two-minus-one MAX leaves the port saturated
-    -- at MAX with no representable over-max value (see README), so guard on it.
-    --------------------------------------------------------------------------
+    -- Phase D2: above-maximum dims clamp to MAX ---
+    -- Needs MAX + 1 to fit the 16-bit port
     if (MAX_W < 2 ** iWidth'length - 1 and MAX_H < 2 ** iHeight'length - 1) then
 
       sImgW    <= MAX_W + 1;
@@ -940,7 +825,7 @@ begin
 
     sImgW <= IMG_W;
     sImgH <= IMG_H;
-    do_reset;                                  -- abort the fallback image
+    do_reset;
 
     WriteBin(covSweep);
     WriteBin(covUp);

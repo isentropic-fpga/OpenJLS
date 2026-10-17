@@ -6,11 +6,8 @@
 # commercial license. See LICENSE and README for details.
 #
 
-"""Plot resource usage vs maximum image width, or vs pixel bit depth for a
-single-size bit-depth sweep (default strategy only), from fmax_sweep.csv.
-
-LUTs/FFs (counts) and Block-RAM tiles (~1-11) are on very different scales, so
-LUT/FF go on the left y-axis and BRAM on a right y-axis.
+"""Plot LUT/FF (left axis) and BRAM (right axis) vs maximum image width, or vs
+bit depth for a single-size sweep, from fmax_sweep.csv.
 
 Usage:
     python3 Scripts/plot_util.py [csv_path] [out_png]
@@ -30,10 +27,10 @@ from plot_style import SERIES
 csv_path = sys.argv[1] if len(sys.argv) > 1 else os.path.expanduser("~/EDA/Logs/fmax_sweep.csv")
 out_png = sys.argv[2] if len(sys.argv) > 2 else os.path.expanduser("~/EDA/Logs/util_vs_size.png")
 
-# Default strategy only; utilization is set by synthesis and is ~strategy-independent.
+# Default strategy only: utilization is ~strategy-independent
 with open(csv_path) as f:
     raw = [r for r in csv.DictReader(f) if r["status"] == "OK" and "Default" in r["strategy"]]
-# Older CSVs predate the bitness column and are all 12-bit.
+# Older CSVs have no bitness column and are all 12-bit
 for r in raw:
     r.setdefault("bitness", "12")
 by_bitness = len({r["size"] for r in raw}) == 1 and len({r["bitness"] for r in raw}) > 1
@@ -48,15 +45,13 @@ bram  = [r[3] for r in rows]
 fig, ax1 = plt.subplots(figsize=(8, 5))
 ax2 = ax1.twinx()
 
-# Redundant encoding: dash pattern and marker separate the series without
-# colour, so the figure survives greyscale printing and colour-vision
-# deficiency. LUTs carry the accent.
+# Dash and marker keep the series apart in greyscale
 kw = dict(lw=1.6, ms=6, mfc="white", mew=1.4)
 l_lut,  = ax1.plot(xs, lut,  ls="-",  marker="o", color=SERIES[0], label="LUTs", **kw)
 l_ff,   = ax1.plot(xs, ff,   ls="--", marker="s", color=SERIES[1], label="Flip-flops", **kw)
 l_bram, = ax2.plot(xs, bram, ls="-.", marker="^", color=SERIES[2], label="Block RAM", **kw)
 
-# X axis: linear spacing so the BRAM line (~proportional to width) reads straight.
+# Linear x so the BRAM line (~proportional to width) reads straight
 ax1.set_xticks(xs)
 if by_bitness:
     ax1.set_xlabel("Pixel bit depth  (bits)")
@@ -68,11 +63,10 @@ ax2.set_ylabel("Block RAM (tiles)")
 ax1.set_ylim(bottom=0)
 ax2.set_ylim(bottom=0)
 
-# No in-figure title: the LaTeX float caption supplies it.
+# No title: the LaTeX caption supplies it
 ax1.grid(True, which="major", axis="y")
 ax2.spines["right"].set_visible(True)
-# Centre-left covers the low BRAM points of the bit-depth sweep; the upper-left
-# corner is clear there because LUTs start well below the top of the axis.
+# Center left would cover the low BRAM points of the bit-depth sweep
 ax1.legend(handles=[l_lut, l_ff, l_bram], title="Resource",
            loc="upper left" if by_bitness else "center left", alignment="left")
 

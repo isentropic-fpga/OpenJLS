@@ -6,6 +6,7 @@
 # commercial license. See LICENSE and README for details.
 #
 
+# Download the ITU T.87 test images into Reference Images/
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

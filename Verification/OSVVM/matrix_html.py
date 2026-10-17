@@ -6,9 +6,8 @@
 # commercial license. See LICENSE and README for details.
 #
 
-"""Render the verification matrix of Docs/verification_requirements.md as an
-HTML table for the report landing page. Repo-relative links become GitHub
-links, since the published report tree does not carry the sources.
+"""Render the verification matrix of Docs/verification_requirements.md as HTML
+for the report landing page, with repo links pointed at GitHub.
 
 Usage: matrix_html.py <verification_requirements.md>
 """
@@ -28,7 +27,7 @@ def cell(text, base):
         return f'<a href="{html.escape(url)}">{m.group(1)}</a>'
 
     text = html.escape(text, quote=False)
-    # <wbr> at _ . - and camelCase humps so long names wrap in narrow columns.
+    # <wbr> so long names wrap in narrow columns
     text = re.sub(r"`([^`]*)`",
                   lambda m: "<code>" + re.sub(r"([_.-]|[a-z](?=[A-Z]))", r"\1<wbr>", m.group(1)) + "</code>", text)
     text = re.sub(r"\*\*([^*]*)\*\*", r"\1", text)
@@ -42,7 +41,6 @@ def main():
     md = sys.argv[1]
     lines = open(md, encoding="utf-8").read().splitlines()
     base = os.path.dirname(os.path.relpath(md, ROOT))
-    # First table after "## Matrix": header row, alignment row, data rows.
     start = next(i for i in range(lines.index("## Matrix"), len(lines)) if lines[i].startswith("|"))
     end = start
     while end < len(lines) and lines[end].startswith("|"):

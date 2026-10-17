@@ -4,13 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM testbench: a3_mode_selection (combinational).
---
--- oModeRun = '1' iff D1 = D2 = D3 = 0 (the bitwise OR of the three signed
--- gradients reduces to all-zero). The run-mode trigger is rare under uniform
--- random, so the all-zero case is biased in to close coverage.
+-- tb_a3_osvvm: a3_mode_selection against D1 = D2 = D3 = 0
 --
 -- Guidelines:
 --   G1.Req      T87.A3
@@ -25,7 +19,6 @@
 --   G4 other    N/A: Edge/Run/Coding/Stream not in scope
 --   G5          N/A: combinational
 --   G6.Code     fully covered
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -122,7 +115,6 @@ begin
     AddBins(cov, "regular", GenBin(0));
     AddBins(cov, "run", GenBin(1));
 
-    -- Directed corners.
     mm := NewID("G2.MinMax node x value");
     for node in 1 to 3 loop
       add_value_bin(mm, node, "D" & to_string(node), D_MIN);
@@ -139,8 +131,7 @@ begin
     drive_check(0, 0, -1, "regular d3");
     drive_check(D_MIN, D_MAX, D_MIN, "regular extremes");
 
-    -- Random sweep, with the all-zero (run) case biased in.
-    -- A lone bit in any gradient must prevent run mode, including the sign bit.
+    -- A lone bit in any gradient, sign bit included, must prevent run mode
     for bit_index in 0 to BITNESS loop
       if bit_index = BITNESS then
         d1 := D_MIN;

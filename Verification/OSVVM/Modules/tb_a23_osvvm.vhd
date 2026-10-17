@@ -4,31 +4,13 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM testbench: a23_run_interruption_update (combinational).
+-- tb_a23_osvvm: a23_run_interruption_update against the T.87 A.23 C code
 --
--- T.87 Code segment A.23 (standard form), transcribed verbatim:
---   if (Errval < 0) Nn += 1;
---   A += (EMErrval + 1 - RItype) >> 1;          -- floor shift
---   if (N == RESET) { A>>=1; N>>=1; Nn>>=1; }
---   N += 1;
--- where EMErrval = 2*abs(Errval) - RItype - map (A.22). The RTL drops map via the
--- Mert Fig.9 equivalence (A += abs(Errval) - RItype). The reference deliberately
--- keeps the *standard* map-dependent form and drives map as a free random input
--- not fed to the DUT, so a passing check also proves the equivalence holds for
--- both map values.
---
--- Every result is representable for T.87-coherent inputs:
---   A_new = A + |Errval| - RItype >= 0: RItype=0 => A+|Errval|>=0; RItype=1 =>
---     |Errval|>=1 (a run-interruption sample has Ix/=Ra, see tb_a22) => A_new>=A>=0.
---   Nn_new <= RESET-1: the invariant N-Nn>=1 holds from init (N=1,Nn=0) and is
---     preserved by the update (N+1, Nn+<=1) and the rescale (floor halving), so
---     input Nn<=N-1 and Nn_new = Nn+1 <= N <= RESET-1 (N=RESET takes the halving).
---   N_new <= RESET+1 < 2^N_WIDTH.
--- Directed and random stimulus obey these invariants. Invalid inputs or
--- unrepresentable reference results fail under the ReferenceDomain alert ID.
--- Coverage crosses RESET x Errval-sign x RItype.
+-- The RTL uses A += |Errval| - RItype (Mert Fig. 9). The reference keeps the
+-- map-dependent C form and drives map without feeding it to the DUT, so a pass
+-- also proves the equivalence for both map values.
+-- Stimulus is T.87-coherent (Nn < N, RItype 1 => Errval /= 0); anything else
+-- fails under ReferenceDomain.
 --
 -- Guidelines:
 --   G1.Req      T87.A23
@@ -43,7 +25,6 @@
 --   G4 other    N/A: Edge/Coding/Stream not in scope
 --   G5          N/A: combinational
 --   G6.Code     fully covered
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -83,7 +64,7 @@ architecture sim of tb_a23_osvvm is
   signal sNqO  : unsigned(N_WIDTH - 1 downto 0);
   signal sNnO  : unsigned(NN_WIDTH - 1 downto 0);
 
-  -- Floor division by 2 (arithmetic >>1), matching the C semantics.
+  -- C >> 1 on a signed value (floor)
   function fdiv2 (
     x : integer
   ) return integer is
@@ -132,7 +113,6 @@ begin
     constant N_RAND  : natural := 12000;
     variable mm, st, cl : CoverageIDType;
 
-    -- Reject invalid stimulus instead of silently skipping a comparison.
     procedure drive_check (
       errv : integer;
       riv  : integer;
@@ -157,7 +137,6 @@ begin
       AffirmIf(GetAlertLogID("ReferenceDomain"),
         (riv = 0 or errv /= 0) and nv >= 1 and nv <= RESET and nnv >= 0 and nnv < nv,
         msg & " coherent T.87 input");
-      -- Compute the standard reference first.
       nnNew := nnv;
       if (errv < 0) then
         nnNew := nnNew + 1;
@@ -233,7 +212,6 @@ begin
       end loop;
     end loop;
 
-    -- Directed corners (both map values on the same vector to exercise equivalence).
     mm := NewID("G2.MinMax node x value");
     add_value_bin(mm, 1, "Errval", ERR_LO);
     add_value_bin(mm, 1, "Errval", ERR_HI);
@@ -252,13 +230,14 @@ begin
     add_value_bin(cl, 2, "Nn at N=RESET", RESET - 1);
     drive_check(ERR_LO, 0, A_HI, RESET, RESET - 1, 0, "most negative err, max A/N/Nn");
     drive_check(ERR_HI, 1, 0, 1, 0, 0, "max err, min A/N/Nn");
+    -- Both map values on the same vector
     drive_check(-5, 0, 100, RESET, 10, 0, "rescale errneg ri0 m0");
     drive_check(-5, 0, 100, RESET, 10, 1, "rescale errneg ri0 m1");
     drive_check(5, 1, 100, 10, 4, 0, "errpos ri1 m0");
     drive_check(5, 1, 100, 10, 4, 1, "errpos ri1 m1");
     drive_check(0, 0, 50, 5, 0, 0, "err0 ri0");
 
-    -- Nn increments before halving; cover every coherent count and parity.
+    -- Nn increments before halving; every coherent count and parity
     for nv in 1 to RESET loop
       for nnv in 0 to nv - 1 loop
         for riv in 0 to 1 loop
@@ -282,7 +261,7 @@ begin
       end if;
       mp  := rv.RandInt(0, 1);
       if (rv.RandInt(0, 2) = 0) then
-        n := RESET;                                  -- bias the rescale path
+        n := RESET;
       else
         n := rv.RandInt(1, RESET);
       end if;

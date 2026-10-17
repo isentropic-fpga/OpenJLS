@@ -4,32 +4,10 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM testbench: byte_stuffer
+-- tb_byte_stuffer_osvvm: byte_stuffer against a T.87 FF-stuffing bit-stream model
 --
--- First stateful-module OSVVM TB and the template for the rest. It settles the
--- stateful pattern the combinational tb_a11 template can't show:
---
---   * reference-as-process: an independent bit-stream FF-stuffer model that
---     turns the accepted input bits into the expected output byte stream
---     (T.87: a '0' bit is stuffed after every 0xFF byte; the final sub-byte
---     residue is zero-padded *after* stuffing, matching the DUT contract);
---   * osvvm.ScoreboardPkg_slv as the order-checking oracle (expected bytes
---     pushed by the driver, popped/checked by the output monitor);
---   * randomized handshake on BOTH sides — iReady (downstream backpressure)
---     and iStall (upstream stall) — which is exactly the coverage the golden
---     suite stopped exercising (see project-backpressure-coverage-gap);
---   * directed corners seeded from already-fixed bugs (multi-word flush,
---     post-stuffing residue pad, skid latch) plus the EOI terminal variants.
---
--- iStall is forced high whenever oAlmostFull is high (the real top-level stall
--- contract) and additionally asserted at random — stalling more is always safe,
--- stalling less would overrun the FIFO and trip the DUT's own write-drop assert.
---
--- IN_WIDTH is a generic (= byte_stuffer LIMIT). Defaults to CO_LIMIT_STD (48,
--- the 12-bit config); OpenJls.pro re-runs it at 32 and 64 (the 8-/16-bit
--- LIMITs) via [generic IN_WIDTH ...].
+-- The residue is zero-padded after stuffing. iStall follows oAlmostFull plus
+-- random stalls; stalling less would overrun the FIFO.
 --
 -- Guidelines:
 --   G1.Req      OJLS.ByteStuffer
@@ -45,7 +23,6 @@
 --   G4 other    N/A: Edge/Run/Coding not in scope
 --   G5          G5.States resetPhase; outputs idle after reset, aborted output discarded, replay checked
 --   G6.Code     fully covered
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -70,19 +47,16 @@ end entity tb_byte_stuffer_osvvm;
 
 architecture sim of tb_byte_stuffer_osvvm is
 
-  -- DUT config -----------------------------------------------------------------
   constant OUT_BYTES       : natural := 4;
   constant OUT_WIDTH       : natural := OUT_BYTES * 8;
   constant BURST_DEPTH     : natural := 16;
   constant VLEN_W          : natural := log2ceil(IN_WIDTH + 1);
   constant OBYTES_W        : natural := log2ceil(OUT_BYTES + 1);
 
-  -- Stimulus sizing
   constant CLK_PERIOD      : time    := CLK_PERIOD_DEFAULT;
-  constant N_RANDOM        : natural := 60; -- random images
-  constant MAX_BEATS       : natural := 40; -- beats per random image
+  constant N_RANDOM        : natural := 60;
+  constant MAX_BEATS       : natural := 40;
 
-  -- DUT interface --------------------------------------------------------------
   signal clk               : std_logic;
   signal rst               : std_logic;
   signal iStall            : std_logic;
@@ -97,47 +71,35 @@ architecture sim of tb_byte_stuffer_osvvm is
   signal oAlmostFull       : std_logic;
   signal oFlushDone        : std_logic;
 
-  -- TB plumbing ----------------------------------------------------------------
-  -- Expected output bytes, pushed in emission order by the driver model.
   constant SB_ID : ScoreboardIDType := NewID("byte_stuffer SB");
-  -- Coverage.
-  shared variable covEmit  : CoverageIDType;      -- bytes emitted per accepted beat (0..4)
-  shared variable covFlush : CoverageIDType;      -- flush terminal type (0..3)
-  shared variable covCross : CoverageIDType;      -- (emitBytes>0) x (oAlmostFull)
-  shared variable covStuff : CoverageIDType;      -- stuff event per emitted byte (none/first/run)
-  shared variable covRst   : CoverageIDType;      -- reset phase (idle/mid-image/flush draining)
+  shared variable covEmit  : CoverageIDType;
+  shared variable covFlush : CoverageIDType;
+  shared variable covCross : CoverageIDType;
+  shared variable covStuff : CoverageIDType;
+  shared variable covRst   : CoverageIDType;
 
-  -- Stuff-event codes (the module's headline behaviour: a '0' is stuffed after
-  -- every 0xFF payload byte). (this-byte-FF x prev-byte-FF) would have an
-  -- unreachable cell -- the byte after a stuff carries the stuff bit as its MSB
-  -- so it can never itself be 0xFF -- so the reachable axis is per-image run
-  -- count: an image with no stuff, its first stuff, and a subsequent (run) stuff.
-  constant SE_NONE         : integer := 0;  -- emitted byte != 0xFF, no stuff
-  constant SE_FIRST        : integer := 1;  -- first 0xFF (stuff) of the image
-  constant SE_RUN          : integer := 2;  -- a later 0xFF (stuff) in the same image
+  -- Stuff events per image. FF x prev-FF can't be crossed: the byte after a
+  -- stuff has a '0' MSB.
+  constant SE_NONE         : integer := 0;
+  constant SE_FIRST        : integer := 1;
+  constant SE_RUN          : integer := 2;
 
-  -- Driver -> monitor image handshake.
-  signal sImagesSent       : natural;       -- flushes presented by the driver
-  signal sFlushDone        : natural;       -- oFlushDone beats seen by the monitor
+  signal sImagesSent       : natural;
+  signal sFlushDone        : natural;
   signal sDriverDone       : boolean;
 
-  -- Random upstream-stall enable (ORed with oAlmostFull, driven by stall proc).
   signal sRandStall        : std_logic;
 
-  -- Monitor ignores output during a reset-aborted (mid-image) sequence.
+  -- Skip output of a reset-aborted image
   signal sIgnore           : boolean := false;
 
-  -- Flush-type codes (coverage + sanity).
-  constant FT_EMPTY        : integer := 0;  -- flush with no payload bits
-  constant FT_CLEAN        : integer := 1;  -- byte-aligned, no residue
-  constant FT_RESIDUE      : integer := 2;  -- sub-byte real residue padded
+  constant FT_EMPTY        : integer := 0;
+  constant FT_CLEAN        : integer := 1;
+  constant FT_RESIDUE      : integer := 2;
   constant FT_DANGLING     : integer := 3;  -- trailing 0xFF -> stuffed 0x00 byte
 
 begin
 
-  -----------------------------------------------------------------------------
-  -- Clock
-  -----------------------------------------------------------------------------
   clk_proc : process is
   begin
 
@@ -148,9 +110,6 @@ begin
 
   end process clk_proc;
 
-  -----------------------------------------------------------------------------
-  -- DUT
-  -----------------------------------------------------------------------------
   dut : entity work.byte_stuffer(behavioral)
     generic map (
       IN_WIDTH            => IN_WIDTH,
@@ -174,11 +133,8 @@ begin
       oFlushDone          => oFlushDone
     );
 
-  -----------------------------------------------------------------------------
-  -- Upstream stall: ALWAYS stall when the FIFO is almost full (the real
-  -- top-level contract), plus extra random stalls for coverage. Registered,
-  -- which the AlmFull cushion is sized to tolerate.
-  -----------------------------------------------------------------------------
+  -- Upstream stall ---
+  -- Registered; the almost-full cushion absorbs the extra cycle
   stall_proc : process (clk) is
   begin
 
@@ -205,7 +161,7 @@ begin
     loop
 
       wait until rising_edge(clk);
-      -- ~20% extra upstream stall.
+      -- ~20% extra stall
       if (rv.DistValInt(((1, 20), (0, 80))) = 1) then
         sRandStall <= '1';
       else
@@ -221,10 +177,7 @@ begin
 
   end process rand_stall_proc;
 
-  -----------------------------------------------------------------------------
-  -- Downstream backpressure: weighted-random iReady, with occasional long
-  -- not-ready bursts to fill the FIFO and exercise oAlmostFull / iStall.
-  -----------------------------------------------------------------------------
+  -- Downstream backpressure ---
   ready_proc : process is
 
     variable rv    : RandomPType;
@@ -239,7 +192,7 @@ begin
     loop
 
       wait until rising_edge(clk);
-      -- 1-in-12 cycles, hold not-ready for a multi-cycle burst.
+      -- 1 in 12: long not-ready burst to fill the FIFO
       if (rv.DistValInt(((1, 1), (0, 11))) = 1) then
         iReady <= '0';
         burst  := rv.RandInt(2, 2 * BURST_DEPTH);
@@ -253,7 +206,7 @@ begin
 
         iReady <= '1';
       elsif (rv.DistValInt(((1, 3), (0, 1))) = 1) then
-        -- ~75% ready otherwise.
+        -- ~75% ready
         iReady <= '1';
       else
         iReady <= '0';
@@ -268,12 +221,8 @@ begin
 
   end process ready_proc;
 
-  -----------------------------------------------------------------------------
-  -- Output monitor: every cycle a beat is presented (oWordValid='1') the bytes
-  -- have already been granted by a prior iReady, so they are checked
-  -- unconditionally and in order against the scoreboard. oFlushDone marks the
-  -- end of an image.
-  -----------------------------------------------------------------------------
+  -- Monitor ---
+  -- A presented beat was already granted by an earlier iReady, so it is checked unconditionally
   monitor_proc : process is
 
     variable nb      : natural;
@@ -285,7 +234,7 @@ begin
 
   begin
 
-    -- Seeded; floor under the smallest variant (IN_WIDTH 32: 2951).
+    -- Floor under the smallest variant
     req := GetReqID("OJLS.ByteStuffer", 2900);
     cnt := 0;
     wait until rst = '0';
@@ -332,26 +281,21 @@ begin
 
   end process monitor_proc;
 
-  -----------------------------------------------------------------------------
-  -- Driver + reference model.
-  -----------------------------------------------------------------------------
+  -- Driver and reference model ---
   stim_proc : process is
 
     variable rv : RandomPType;
 
     constant ZERO_W : std_logic_vector(IN_WIDTH - 1 downto 0) := (others => '0');
 
-    -- Reference FF-stuffer state (one image).
     variable curByte    : std_logic_vector(7 downto 0);
     variable bitsInByte : natural range 0 to 8;
     variable anyBits    : boolean;
     variable lastEmitFF : boolean;
     variable realSince  : boolean;       -- real bit since last emit
-    variable stuffSeen  : boolean;       -- a stuff already emitted in this image
+    variable stuffSeen  : boolean;
 
-    -- Append one payload bit (MSB-first) and emit expected bytes, stuffing a
-    -- '0' after every completed 0xFF byte (the stuff bit becomes the next
-    -- byte's MSB, so a stuffed byte can never itself be 0xFF).
+    -- A '0' is stuffed after every completed 0xFF byte
 
     procedure push_bit (
       b : std_logic
@@ -374,7 +318,7 @@ begin
           stuffSeen  := true;
           lastEmitFF := true;
           realSince  := false;
-          curByte    := (others => '0'); -- stuff '0' at MSB
+          curByte    := (others => '0');
           bitsInByte := 1;
         else
           ICover(covStuff, SE_NONE);
@@ -385,9 +329,6 @@ begin
       end if;
 
     end procedure push_bit;
-
-    -- Append the top `len` bits of a word (MSB-first), matching the DUT which
-    -- takes the top valid bits of iWord.
 
     procedure push_word (
       w   : std_logic_vector;
@@ -402,9 +343,6 @@ begin
       end loop;
 
     end procedure push_word;
-
-    -- Finalize the image at flush: push the padded final byte (if any), record
-    -- the terminal type for coverage, and reset for the next image.
 
     procedure finish_image is
 
@@ -423,7 +361,7 @@ begin
       end if;
 
       if (bitsInByte > 0) then
-        Push(SB_ID, curByte);                -- unfilled low bits are already '0' (post-stuffing pad)
+        Push(SB_ID, curByte);                -- low bits already '0'
       end if;
 
       ICover(covFlush, ft);
@@ -437,8 +375,7 @@ begin
 
     end procedure finish_image;
 
-    -- Present one beat and advance only when iStall='0' on a rising edge
-    -- (== one DUT latch/consume; bit_packer holds its output across a stall).
+    -- Hold the beat until an edge with iStall = '0'
 
     procedure send_beat (
       w     : std_logic_vector;
@@ -460,7 +397,7 @@ begin
 
       end loop;
 
-      -- consumed on this edge; update reference model in DUT order (append then flush)
+      -- Append before flush, as the DUT does
       if (valid = '1') then
         push_word(w, len);
       end if;
@@ -474,9 +411,7 @@ begin
 
     end procedure send_beat;
 
-    -- One image: random beats; flush rides the LAST valid word (the DUT
-    -- contract -- iFlush pulses on the cycle the final word is presented, never
-    -- on an empty beat). Then wait for full drain before the next image.
+    -- iFlush rides the last valid word, never an empty beat
 
     procedure send_image (
       beats : natural
@@ -489,7 +424,7 @@ begin
 
       for n in 1 to beats loop
 
-        -- ~30% all-ones words to manufacture 0xFF output bytes and stuff runs.
+        -- ~30% all-ones words for stuff runs
         if (rv.DistValInt(((1, 3), (0, 7))) = 1) then
           w := (others => '1');
         else
@@ -510,7 +445,7 @@ begin
         len := rv.RandInt(1, IN_WIDTH);
 
         if (n = beats) then
-          send_beat(w, len, '1', '1');   -- flush rides the final word
+          send_beat(w, len, '1', '1');
         else
           send_beat(w, len, '1', '0');
         end if;
@@ -518,12 +453,9 @@ begin
       end loop;
 
       sImagesSent <= sImagesSent + 1;
-      -- serialize images: wait for full drain before the next one
       wait until sFlushDone = sImagesSent;
 
     end procedure send_image;
-
-    -- Directed beat helper: a single word of `len` valid bits.
 
     procedure directed (
       w   : std_logic_vector(IN_WIDTH - 1 downto 0);
@@ -537,10 +469,7 @@ begin
 
     end procedure directed;
 
-    -- Drive n full beats (flush on the last if flush='1'), then iRst. The
-    -- aborted output is never scored (sIgnore); after reset the module must be
-    -- idle and a fresh image byte-exact. The reference state is clean here
-    -- (last image was flushed) and is re-initialised to mirror the reset.
+    -- n full beats (flush on the last if flush = '1'), then iRst; the output is unscored
     procedure reset_mid (
       n     : natural;
       flush : std_logic
@@ -600,13 +529,11 @@ begin
 
   begin
 
-    -- Stim-driven inputs (no signal defaults; assign before reset).
     iWord         <= ZERO_W;
     iWordValid    <= '0';
     iWordValidLen <= (others => '0');
     iFlush        <= '0';
 
-    -- Reference FF-stuffer state.
     curByte    := (others => '0');
     bitsInByte := 0;
     anyBits    := false;
@@ -623,24 +550,19 @@ begin
     for count in 0 to OUT_BYTES loop
       AddBins(covEmit, "emitted bytes=" & to_string(count), GenBin(count));
     end loop;
-    -- FT_EMPTY is unreachable (see directed-corner note) and excluded.
+    -- FT_EMPTY is unreachable (see below)
     covFlush := NewID("G4.Stream flushType");
     SetFieldName(covFlush, "flushType");
     AddBins(covFlush, "byte aligned", GenBin(1));
     AddBins(covFlush, "padded residue", GenBin(2));
     AddBins(covFlush, "dangling FF", GenBin(3));
-    -- Require seeing data output BOTH with and without almost-full backpressure.
-    -- (The 0-byte terminal beat only fires after the FIFO has drained, so
-    -- 0-byte x almostFull is unreachable and deliberately not a bin.)
+    -- No 0-byte bin: the terminal beat only fires once the FIFO has drained
     covCross := NewID("G4.Stream data x almostFull");
     SetFieldName(covCross, "data", "almostFull");
     for almost_full in 0 to 1 loop
       AddCross(covCross, "data beat / almostFull=" & to_string(almost_full),
                GenBin(1), GenBin(almost_full));
     end loop;
-    -- Stuff event per emitted byte: at least one image with no stuff, one with
-    -- its first stuff, and one with a subsequent (run) stuff. Makes the FF->'0'
-    -- stuffing -- the module's whole purpose -- visible in its own coverage.
     covStuff := NewID("G4.Branch stuffEvent");
     SetFieldName(covStuff, "stuffEvent");
     AddBins(covStuff, "noStuff",    GenBin(SE_NONE, SE_NONE));
@@ -655,26 +577,17 @@ begin
     apply_reset(clk, rst, 6, '1');
     ones := (others => '1');
 
-    --------------------------------------------------------------------------
-    -- Directed corners (regression locks).
-    --------------------------------------------------------------------------
-    -- NOTE: a truly-empty flush (zero payload bits) is intentionally NOT tested
-    -- -- it is unreachable. Every valid word into byte_stuffer carries >=1 bit
-    -- (regular/RI: the Golomb unary stop bit in the bit_packer; token_raw:
-    -- A15_A16 guarantees raw suffix len >=1), and flush rides the last valid
-    -- word, so the accumulator is never empty at flush.
-
-    -- Single non-FF byte, byte-aligned clean end.
+    -- Directed ---
+    -- No empty flush: every word carries >= 1 bit (Golomb stop bit, raw suffix
+    -- len >= 1) and the flush rides the last word
     wtmp                                   := (others => '0');
     wtmp(IN_WIDTH - 1 downto IN_WIDTH - 8) := x"5A";
     directed(wtmp, 8);
 
-    -- Single 0xFF byte -> trailing stuffed 0x00 (dangling-FF terminal).
     wtmp                                   := (others => '0');
     wtmp(IN_WIDTH - 1 downto IN_WIDTH - 8) := x"FF";
     directed(wtmp, 8);
 
-    -- Sub-byte residue (5 real bits) padded post-stuffing.
     wtmp                                   := (others => '0');
     wtmp(IN_WIDTH - 1 downto IN_WIDTH - 5) := "10101";
     directed(wtmp, 5);
@@ -683,22 +596,20 @@ begin
       directed(ones, len);
       directed(ZERO_W, len);
     end loop;
-    send_beat(ones, IN_WIDTH, '0', '0'); -- inactive garbage must not enter stream
+    send_beat(ones, IN_WIDTH, '0', '0'); -- invalid beat must not enter the stream
     directed(ZERO_W, 8);
 
-    -- Long 0xFF run in one beat: forces consecutive stuffs across the 4-slot
-    -- chain (full-width all-ones).
+    -- Consecutive stuffs across the 4-slot chain
     directed(ones, IN_WIDTH);
 
-    -- Multi-word flush with residue: > FIFO width of all-ones, flushed on a
-    -- final partial beat (regression for the multi-word valid-bits overflow).
+    -- Multi-word flush on a partial beat (valid-bits overflow regression)
     send_beat(ones, IN_WIDTH, '1', '0');
     send_beat(ones, IN_WIDTH, '1', '0');
     wtmp                                    := (others => '0');
     wtmp(IN_WIDTH - 1 downto IN_WIDTH - 12) := x"FF" & "0101";
     directed(wtmp, 12);
 
-    -- Back-to-back tiny images (context reset between flushes).
+    -- Back-to-back tiny images
     for n in 1 to 4 loop
 
       wtmp                                   := (others => '0');
@@ -707,26 +618,18 @@ begin
 
     end loop;
 
-    --------------------------------------------------------------------------
-    -- Constrained-random images.
-    --------------------------------------------------------------------------
+    -- Random ---
     for img in 1 to N_RANDOM loop
 
       send_image(rv.RandInt(1, MAX_BEATS));
 
     end loop;
 
-    --------------------------------------------------------------------------
-    -- Mid-operation iRst: mid-image, idle, and while a flush drains.
-    --------------------------------------------------------------------------
+    -- Mid-op reset: mid-image, idle, flush draining ---
     reset_mid(4, '0');
     reset_mid(0, '0');
     reset_mid(4, '1');
 
-    --------------------------------------------------------------------------
-    -- Done: every image already drained (each send_image/directed waits for its
-    -- own oFlushDone), so just let the monitor settle, then report.
-    --------------------------------------------------------------------------
     sDriverDone <= true;
     wait for 10 * CLK_PERIOD;
 
@@ -741,16 +644,12 @@ begin
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covFlush), "flushType coverage closed");
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covCross), "data x almostFull coverage closed");
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covStuff), "stuff-event coverage closed");
+    affirm_covered(covRst, "reset phase coverage closed");
 
     end_of_test("tb_byte_stuffer_osvvm");
     wait;
 
-    affirm_covered(covRst, "reset phase coverage closed");
   end process stim_proc;
-
-  -----------------------------------------------------------------------------
-  -- Watchdog.
-  -----------------------------------------------------------------------------
   watchdog_proc : process is
   begin
 

@@ -4,14 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM testbench: a20_compute_temp (combinational).
---
--- T.87 Code segment A.20 (with Q = RItype+365 supplying Aq/Nq from one read):
---   RItype==0 -> TEMP = A[365] = Aq
---   RItype==1 -> TEMP = A[366] + (N[366] >> 1) = Aq + (Nq >> 1)
--- Coverage closes both RItype paths.
+-- tb_a20_osvvm: a20_compute_temp against the T.87 A.20 C code
 --
 -- Guidelines:
 --   G1.Req      T87.A20
@@ -26,7 +19,6 @@
 --   G4 other    N/A: Edge/Coding/Stream not in scope
 --   G5          N/A: combinational
 --   G6.Code     fully covered
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -143,7 +135,7 @@ begin
 
     for i in 1 to N_RAND loop
 
-      -- Keep Aq + Nq/2 within A_WIDTH for the ri1 path.
+      -- Keep Aq + Nq/2 within A_WIDTH
       if (rv.RandInt(0, 1) = 0) then
         drive_check('0', rv.RandInt(0, A_MAX), rv.RandInt(0, N_MAX), "rand ri0");
       else

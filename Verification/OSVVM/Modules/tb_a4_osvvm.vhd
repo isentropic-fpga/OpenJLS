@@ -4,14 +4,9 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
---------------------------------------------------------------------------------
--- OSVVM testbench: a4_quantization_gradients (combinational).
+-- tb_a4_osvvm: a4_quantization_gradients against the T.87 A.4 C code
 --
--- Reference is the T.87 Code segment A.4 quantiser with NEAR = 0 (Docs/Project.md),
--- using the T.87 default threshold derivation (T1/T2/T3 from FACTOR). The RTL
--- realises this with the absolute-value optimisation; the reference stays on the
--- verbatim signed-branch form so the two are independent.
+-- The reference keeps the signed branches; the RTL works on absolute values.
 --
 -- Guidelines:
 --   G1.Req      T87.A4
@@ -26,7 +21,6 @@
 --   G4 other    N/A: Edge/Run/Coding/Stream not in scope
 --   G5          N/A: combinational
 --   G6.Code     A4 defensive arm waived (cover_summary.py)
---------------------------------------------------------------------------------
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -50,7 +44,7 @@ architecture sim of tb_a4_osvvm is
   constant D_MIN   : integer := -(2 ** BITNESS);
   constant D_MAX   : integer := (2 ** BITNESS) - 1;
 
-  -- T.87 default threshold derivation (NEAR = 0).
+  -- T.87 default thresholds, NEAR = 0
   function clamp (
     i   : integer;
     lo  : integer;
@@ -71,7 +65,7 @@ architecture sim of tb_a4_osvvm is
   constant T2     : integer := clamp(FACTOR * (7 - 3) + 3, T1, MAX_VAL);
   constant T3     : integer := clamp(FACTOR * (21 - 4) + 4, T2, MAX_VAL);
 
-  -- T.87 A.4 quantiser, verbatim signed branches with NEAR = 0.
+  -- T.87 A.4, NEAR = 0
   function quantize (
     di : integer
   ) return integer is
@@ -170,14 +164,13 @@ begin
       end loop;
     end loop;
 
-    -- Q min/max: the +-4 levels of G4.Branch Qi.
     st := NewID("G3.Stim node x value");
     for lane in 1 to 3 loop
       add_value_bin(st, lane, "D" & to_string(lane), D_MIN);
       add_value_bin(st, lane, "D" & to_string(lane) & " MSB", D_MIN, -1);
     end loop;
 
-    -- Directed threshold boundaries (both signs).
+    -- Threshold boundaries, both signs
     drive_check(0, 1, -1, "near-zero");
     drive_check(T1 - 1, T1, T2 - 1, "T1 boundary");
     drive_check(T2, T3 - 1, T3, "T2/T3 boundary");
@@ -186,8 +179,7 @@ begin
     drive_check(D_MAX, D_MIN, 0, "extremes");
     drive_check(D_MIN, D_MIN, D_MIN, "most negative");
 
-    -- Random sweep.
-    -- Each lane sees every gradient; other lanes differ to detect cross-wiring.
+    -- Every gradient per lane; other lanes differ to catch cross-wiring
     for d in -MAX_VAL to MAX_VAL loop
       drive_check(d, -d, 0, "gradient sweep");
       drive_check(0, d, -d, "gradient sweep rotated");

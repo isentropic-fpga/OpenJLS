@@ -6,7 +6,7 @@
 # commercial license. See LICENSE and README for details.
 #
 
-# Compile OSVVM into ./nvc-libs/osvvm.08 so NVC can use it via -L./nvc-libs
+# Compile OSVVM into ./nvc-libs for the post-synth flow
 set -euo pipefail
 
 command -v nvc >/dev/null || {
@@ -16,13 +16,12 @@ command -v nvc >/dev/null || {
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$HERE/../.." && pwd)"
-SRC="$ROOT/ThirdParty/osvvm"   # vendored by ThirdParty/fetch_third_party.sh
+SRC="$ROOT/ThirdParty/osvvm"
 LIBS="$HERE/nvc-libs"
 
 mkdir -p "$LIBS"
 
-# Order taken from osvvm.pro. Vendor api uses _default; the deprecated/*_c.vhd
-# files are the VHDL-2008 fallbacks (the 2019 originals are not vendored).
+# Order from osvvm.pro; deprecated/*_c.vhd are the VHDL-2008 fallbacks
 FILES=(
   IfElsePkg.vhd
   OsvvmTypesPkg.vhd

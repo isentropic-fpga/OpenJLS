@@ -6,17 +6,10 @@
 # commercial license. See LICENSE and README for details.
 #
 
-"""Prune non-DUT rows from an NVC --per-file coverage report.
+"""Drop the all-N.A. rows (uninstrumented TBs and primitives) and their pages
+from an NVC --per-file coverage report.
 
-The dut_only.spec coverage spec stops the OSVVM testbenches and the open-logic
-primitives from being instrumented, but NVC's --per-file report still LISTS
-every elaborated source file — the uninstrumented ones just show "N.A." in
-every column. This removes those all-N.A. file rows (and their orphaned hier/
-and source/ pages) so the published report shows only the DUT source files.
-
-A DUT row always has at least one real coverage cell (class="percentNN" with a
-digit, e.g. percent100/percent0); an uninstrumented row is class="percentna"
-throughout. Usage: cover_prune.py <report-html-dir>
+Usage: cover_prune.py <report-html-dir>
 """
 import os
 import re
@@ -33,8 +26,8 @@ def main():
     def keep(row):
         m = re.search(r'hier/([^"]+\.vhd\.html)', row)
         if not m:
-            return True  # header / non-file row
-        # real coverage cells are class="percent<digit>"; N.A. is "percentna"
+            return True
+        # N.A. cells are class="percentna"
         if re.search(r'class="percent\d', row):
             return True
         pruned.append(m.group(1))
@@ -44,7 +37,6 @@ def main():
     out = "".join(p for p in parts if not p.startswith("<tr>") or keep(p))
     open(index, "w").write(out)
 
-    # drop the now-orphaned per-file pages
     for page in pruned:
         for sub in ("hier", "source"):
             p = os.path.join(html_dir, sub, page)

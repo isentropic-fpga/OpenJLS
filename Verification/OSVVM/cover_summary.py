@@ -6,20 +6,12 @@
 # commercial license. See LICENSE and README for details.
 #
 
-"""Per-Sources-file statement-coverage summary from the merged NVC coverage
-database.
+"""Per-Sources-file statement coverage from <covdb-dir>/merged.covdb, unioned
+across instances.
 
-Exports <covdb-dir>/merged.covdb to cobertura XML (nvc --cover-export) and
-unions statement hits per design unit across every instance. Two NVC export
-quirks are handled here:
-  - instantiated units are attributed to the root TB's filename, but the
-    class name carries the entity (e.g. A1_GRADIENT_COMP(BEHAVIORAL)), so
-    units are mapped back to their Sources/*.vhd by entity name;
-  - `elsif`/`when` arms are exported as branch records (branch="true") whose
-    hits attribute is always 0 — they are decision data, not statements, and
-    counting them as statements understates coverage (the 90.4% -> 97.5%
-    discrepancy of 2026-06-12). Only statement records are counted; branch
-    detail lives in the HTML report.
+The cobertura export files every unit under the root TB, so units map back by
+entity name. Branch records always carry hits="0" and are skipped; branch
+coverage lives in the HTML report.
 
 Usage: cover_summary.py <covdb-dir> <sources-dir>
 """
@@ -35,24 +27,20 @@ import xml.etree.ElementTree as ET
 
 def main():
     covdir, srcdir = sys.argv[1], sys.argv[2]
-    # Sources/ plus the Sources/Xilinx/ wrappers — map by entity name, display
-    # as path relative to srcdir (e.g. "Xilinx/openjls_axis.vhd").
     entity2file = {os.path.basename(f)[:-4].upper(): os.path.relpath(f, srcdir)
                    for f in glob.glob(os.path.join(srcdir, "*.vhd"))
                    + glob.glob(os.path.join(srcdir, "Xilinx", "*.vhd"))}
-    # A labelled generate is exported as its own class named after the LABEL
-    # (e.g. GEN_KEEP((null)) for openjls_top.vhd's gen_keep, with line numbers
-    # of the defining file), so map generate labels back to their files too.
+    # A generate exports as a class named after its label
     gen_re = re.compile(r"^\s*(\w+)\s*:\s*(?:for|if)\b.*\bgenerate\b", re.M)
     for ent, f in sorted(entity2file.items()):
         with open(os.path.join(srcdir, f)) as fd:
             for lbl in gen_re.findall(fd.read()):
                 entity2file.setdefault(lbl.upper(), f)
 
-    hits = collections.defaultdict(dict)  # file -> {line: hit}
+    hits = collections.defaultdict(dict)
     with tempfile.TemporaryDirectory() as td:
         xml = os.path.join(td, "merged.xml")
-        # --work: keep nvc's default ./work library stub in the temp dir.
+        # Keep nvc's work library stub out of the cwd
         subprocess.run(["nvc", "--work=work:" + os.path.join(td, "work"),
                         "--cover-export", "--format=cobertura", "-o", xml,
                         os.path.join(covdir, "merged.covdb")],

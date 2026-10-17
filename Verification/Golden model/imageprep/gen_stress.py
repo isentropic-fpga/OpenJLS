@@ -6,45 +6,18 @@
 # commercial license. See LICENSE and README for details.
 #
 
-"""Deterministic 16-bit byte_stuffer stall probes (random + adversarial).
-
-The byte_stuffer drains at OUT_BYTES_PER_CYCLE = 4 B/cycle, while a single
-bit_packer beat can be up to LIMIT = 2*(BPP + max(8,BPP)) bits wide: 4 B at
-8-bit (== the cap, harmless) but 8 B at 16-bit. These images were built to
-overrun that cap and force byte_stuffer to back-pressure upstream.
-
-None of them do: measured Image-1 internal stalls are 0 for the random and for
-all four adversarial patterns (and for natural 16-bit images too). Input is 1
-pixel/cycle and k-adaptation pins the sustained code length well under 32
-bits/pixel, so the 4 B/cycle cap is never sustained-overrun; transient LIMIT
-beats are absorbed by buffering. They stay as a robustness probe (the attempt
-that proved the cap safe) and as incompressible/structured inputs in the set.
+"""Seeded stress and boundary PGMs.
 
 Patterns (full-scale = --maxval, default 65535):
-  random   uniform noise in [0, maxval] (incompressible; --seed controls it)
-  checker  1px checkerboard 0/max        -- MED predictor wrong full-scale every px
-  vstripe  alternating columns 0/max     -- vertical 1px stripes
-  hstripe  alternating rows 0/max        -- horizontal 1px stripes
-  spikes   max spikes on a flat field    -- sparse max where x%3==0 and y%3==0
-  flat     all zeros                     -- pure run mode; every run ends at EOL
+  random   uniform noise (--seed)
+  checker  1px checkerboard 0/max
+  vstripe  alternating columns 0/max
+  hstripe  alternating rows 0/max
+  spikes   max where x%3==0 and y%3==0, else 0
+  flat     all zeros, pure run mode
 
---maxval sets the sample precision (must be 2^N - 1, N in 8..16; the golden TB
-asserts maxval = 2^BITNESS - 1). The T.87 constants (LIMIT, k range, counter
-widths) all derive from BITNESS, and no natural dataset exists at 9-15 bits --
-these probes are the only coverage of those derivations.
-
---width/--height override --size for non-square boundary images (minimal
-4x1, min-width-tall, max-width single line). OpenJLS requires width >= 4 and
-height >= 1 by design; 1x1 is not supported, and the generator refuses it.
-
---fuzz-batch N treats OUT as a directory and emits N tiny random images with
-master-seeded dimensions in [4..16] x [1..8]. Small random images make the
-LAST pixel's context first-use 20-60% of the time -- the shape that exposed
-the context_ram EOI init-lookup bug (b513990) which 163 natural images never
-reached. Tiny, so the whole batch adds negligible sim time.
-
-Seeded => byte-reproducible across runs/hosts, so the committed generator is the
-source of truth for Images/ files that are otherwise gitignored.
+--maxval must be 2^N - 1, N in 8..16. --width/--height override --size;
+width >= 4. --fuzz-batch N writes N images of [4..16] x [1..8] into OUT.
 """
 import argparse
 import os
@@ -113,7 +86,7 @@ def main():
     fmt = ">H" if mx > 255 else "B"
     if a.pattern == "random":
         if mx == 65535:
-            payload = random.Random(a.seed).randbytes(w * h * 2)  # big-endian-agnostic
+            payload = random.Random(a.seed).randbytes(w * h * 2)
         else:
             rng = random.Random(a.seed)
             payload = b"".join(struct.pack(fmt, rng.randint(0, mx))
