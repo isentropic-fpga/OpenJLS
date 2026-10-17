@@ -102,7 +102,10 @@ footer a:hover{color:var(--color-accent-700);}
 
 h2.section{font-size:clamp(22px,2.6vw,28px);margin:56px 0 0;}
 h2.section + .notes{margin:10px 0 18px;}
-table.matrix{font-size:13.5px;}
-table.matrix td{padding:9px 10px;}
-table.matrix code{font-size:12.5px;white-space:nowrap;}
-table.matrix td.r-ok,table.matrix td.r-na,table.matrix td.r-bad,table.matrix th:nth-child(n+7){text-align:center;}
+table.matrix{font-size:13px;}
+table.matrix td{padding:8px 6px;}
+table.matrix th{padding:10px 6px 8px;}
+table.matrix td.suite{white-space:normal;}
+table.matrix code{font-size:12px;}
+table.matrix td:nth-child(2){min-width:16ch;}
+table.matrix td.r-ok,table.matrix td.r-na,table.matrix td.r-bad,table.matrix th:nth-child(n+7){text-align:center;padding-left:3px;padding-right:3px;}

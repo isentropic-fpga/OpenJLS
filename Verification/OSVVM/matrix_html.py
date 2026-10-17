@@ -28,7 +28,9 @@ def cell(text, base):
         return f'<a href="{html.escape(url)}">{m.group(1)}</a>'
 
     text = html.escape(text, quote=False)
-    text = re.sub(r"`([^`]*)`", r"<code>\1</code>", text)
+    # <wbr> at _ . - and camelCase humps so long names wrap in narrow columns.
+    text = re.sub(r"`([^`]*)`",
+                  lambda m: "<code>" + re.sub(r"([_.-]|[a-z](?=[A-Z]))", r"\1<wbr>", m.group(1)) + "</code>", text)
     text = re.sub(r"\*\*([^*]*)\*\*", r"\1", text)
     return re.sub(r"\[([^\]]*)\]\(([^)]*)\)", link, text)
 
