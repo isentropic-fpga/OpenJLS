@@ -2,4 +2,4 @@
   TestCases: 
   - TestName: "tb_openjls_axis_osvvm"
     Status: PASSED
-    Results: {Goal: 285, Passed: 290, Errors: 0, Checked: 290, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+    Results: {Goal: 456, Passed: 464, Errors: 0, Checked: 464, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}

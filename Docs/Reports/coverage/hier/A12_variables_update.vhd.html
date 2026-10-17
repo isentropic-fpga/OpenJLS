@@ -257,13 +257,13 @@ table, th, td {
   <tr>
     <td style="background-color:var(--table-row-color)">
 <a href="A12_variables_update.vhd.html">A12_variables_update.vhd</a></td>
-    <td class="percent100">100.0 % (19/19)</td>
+    <td class="percent100">100.0 % (21/21)</td>
     <td class="percent100">100.0 % (8/8)</td>
     <td class="percentna">N.A.</td>
     <td class="percentna">N.A.</td>
     <td class="percentna">N.A.</td>
     <td class="percentna">N.A.</td>
-    <td class="percent100">100.0 % (27/27)</td>
+    <td class="percent100">100.0 % (29/29)</td>
   </tr>
 </table>
 
@@ -298,25 +298,27 @@ table, th, td {
   <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
  <h2 style="margin-top: 0px; margin-bottom: 0px">Covered statements:</h2>
   <div style="padding:0px 10px;">
-<h3>If statement on lines 57 to 58:</h3><code>57:&nbsp;&nbsp;sDoRescale&nbsp;&lt;=&nbsp;'1'&nbsp;when&nbsp;(iNq&nbsp;=&nbsp;to_unsigned(RESET,&nbsp;iNq'length))&nbsp;else&nbsp;<br>58:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0';&nbsp;</code><br><b>Count:</b> 90384<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 57:</h3><code>57:&nbsp;&nbsp;sDoRescale&nbsp;&lt;=&nbsp;<code class="cbg">'1'</code>&nbsp;when&nbsp;(iNq&nbsp;=&nbsp;to_unsigned(RESET,&nbsp;iNq'length))&nbsp;else&nbsp;</code><br><b>Count:</b> 1782<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 58:</h3><code>58:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">'0'</code>;&nbsp;</code><br><b>Count:</b> 88602<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 60:</h3><code>60:&nbsp;&nbsp;sErrorAbsExtend&nbsp;&lt;=&nbsp;<code class="cbg">resize(unsigned(abs(iErrorVal)),&nbsp;A_WIDTH)</code>;&nbsp;</code><br><b>Count:</b> 92919<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 62:</h3><code>62:&nbsp;&nbsp;sAqNew&nbsp;&lt;=&nbsp;<code class="cbg">iAq&nbsp;+&nbsp;sErrorAbsExtend</code>;&nbsp;</code><br><b>Count:</b> 184307<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 63:</h3><code>63:&nbsp;&nbsp;sBqNew&nbsp;&lt;=&nbsp;<code class="cbg">iBq&nbsp;+&nbsp;resize(iErrorVal,&nbsp;B_WIDTH)</code>;&nbsp;</code><br><b>Count:</b> 93624<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 64:</h3><code>64:&nbsp;&nbsp;sNqNew&nbsp;&lt;=&nbsp;<code class="cbg">iNq&nbsp;+&nbsp;1</code>;&nbsp;</code><br><b>Count:</b> 90384<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 67:</h3><code>67:&nbsp;&nbsp;sARescale&nbsp;&lt;=&nbsp;<code class="cbg">shift_right(sAqNew,&nbsp;1)</code>;&nbsp;</code><br><b>Count:</b> 184297<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 68:</h3><code>68:&nbsp;&nbsp;sBRescale&nbsp;&lt;=&nbsp;<code class="cbg">shift_right(sBqNew,&nbsp;1)</code>;&nbsp;--&nbsp;arithmetic&nbsp;&gt;&gt;&nbsp;1&nbsp;=&gt;&nbsp;floor&nbsp;for&nbsp;negatives&nbsp;</code><br><b>Count:</b> 93368<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 69:</h3><code>69:&nbsp;&nbsp;sNRescale&nbsp;&lt;=&nbsp;<code class="cbg">shift_right(iNq,&nbsp;1)&nbsp;+&nbsp;1</code>;&nbsp;</code><br><b>Count:</b> 90384<br><b>Threshold:</b> 1<hr/>
-<h3>If statement on lines 71 to 72:</h3><code>71:&nbsp;&nbsp;oAq&nbsp;&lt;=&nbsp;sARescale&nbsp;when&nbsp;sDoRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;<br>72:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sAqNew;&nbsp;</code><br><b>Count:</b> 276916<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 71:</h3><code>71:&nbsp;&nbsp;oAq&nbsp;&lt;=&nbsp;<code class="cbg">sARescale</code>&nbsp;when&nbsp;sDoRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;</code><br><b>Count:</b> 5632<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 72:</h3><code>72:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">sAqNew</code>;&nbsp;</code><br><b>Count:</b> 271284<br><b>Threshold:</b> 1<hr/>
-<h3>If statement on lines 73 to 74:</h3><code>73:&nbsp;&nbsp;oBq&nbsp;&lt;=&nbsp;sBRescale&nbsp;when&nbsp;sDoRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;<br>74:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sBqNew;&nbsp;</code><br><b>Count:</b> 186209<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 73:</h3><code>73:&nbsp;&nbsp;oBq&nbsp;&lt;=&nbsp;<code class="cbg">sBRescale</code>&nbsp;when&nbsp;sDoRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;</code><br><b>Count:</b> 3946<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 74:</h3><code>74:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">sBqNew</code>;&nbsp;</code><br><b>Count:</b> 182263<br><b>Threshold:</b> 1<hr/>
-<h3>If statement on lines 75 to 76:</h3><code>75:&nbsp;&nbsp;oNq&nbsp;&lt;=&nbsp;sNRescale&nbsp;when&nbsp;sDoRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;<br>76:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sNqNew;&nbsp;</code><br><b>Count:</b> 90397<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 75:</h3><code>75:&nbsp;&nbsp;oNq&nbsp;&lt;=&nbsp;<code class="cbg">sNRescale</code>&nbsp;when&nbsp;sDoRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;</code><br><b>Count:</b> 1782<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 76:</h3><code>76:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">sNqNew</code>;&nbsp;</code><br><b>Count:</b> 88615<br><b>Threshold:</b> 1  </div>
+<h3>If statement on lines 57 to 58:</h3><code>57:&nbsp;&nbsp;sDoRescale&nbsp;&lt;=&nbsp;'1'&nbsp;when&nbsp;(iNq&nbsp;=&nbsp;to_unsigned(RESET,&nbsp;iNq'length))&nbsp;else&nbsp;<br>58:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0';&nbsp;</code><br><b>Count:</b> 113111<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 57:</h3><code>57:&nbsp;&nbsp;sDoRescale&nbsp;&lt;=&nbsp;<code class="cbg">'1'</code>&nbsp;when&nbsp;(iNq&nbsp;=&nbsp;to_unsigned(RESET,&nbsp;iNq'length))&nbsp;else&nbsp;</code><br><b>Count:</b> 2054<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 58:</h3><code>58:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">'0'</code>;&nbsp;</code><br><b>Count:</b> 111057<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 60:</h3><code>60:&nbsp;&nbsp;sErrorAbsExtend&nbsp;&lt;=&nbsp;<code class="cbg">resize(unsigned(abs(iErrorVal)),&nbsp;A_WIDTH)</code>;&nbsp;</code><br><b>Count:</b> 115895<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 62:</h3><code>62:&nbsp;&nbsp;sAqNew&nbsp;&lt;=&nbsp;<code class="cbg">iAq&nbsp;+&nbsp;sErrorAbsExtend</code>;&nbsp;</code><br><b>Count:</b> 229864<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 63:</h3><code>63:&nbsp;&nbsp;sBqNew&nbsp;&lt;=&nbsp;<code class="cbg">iBq&nbsp;+&nbsp;resize(iErrorVal,&nbsp;B_WIDTH)</code>;&nbsp;</code><br><b>Count:</b> 116851<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 64:</h3><code>64:&nbsp;&nbsp;sNqNew&nbsp;&lt;=&nbsp;<code class="cbg">iNq&nbsp;+&nbsp;1</code>;&nbsp;</code><br><b>Count:</b> 113111<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 67:</h3><code>67:&nbsp;&nbsp;sARescale&nbsp;&lt;=&nbsp;<code class="cbg">shift_right(sAqNew,&nbsp;1)</code>;&nbsp;</code><br><b>Count:</b> 229852<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 68:</h3><code>68:&nbsp;&nbsp;sBRescale&nbsp;&lt;=&nbsp;<code class="cbg">shift_right(sBqNew,&nbsp;1)</code>;&nbsp;--&nbsp;arithmetic&nbsp;&gt;&gt;&nbsp;1&nbsp;=&gt;&nbsp;floor&nbsp;for&nbsp;negatives&nbsp;</code><br><b>Count:</b> 116383<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 69:</h3><code>69:&nbsp;&nbsp;sNRescale&nbsp;&lt;=&nbsp;<code class="cbg">shift_right(iNq,&nbsp;1)&nbsp;+&nbsp;1</code>;&nbsp;</code><br><b>Count:</b> 113111<br><b>Threshold:</b> 1<hr/>
+<h3>If statement on lines 71 to 72:</h3><code>71:&nbsp;&nbsp;oAq&nbsp;&lt;=&nbsp;sARescale&nbsp;when&nbsp;sDoRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;<br>72:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sAqNew;&nbsp;</code><br><b>Count:</b> 345590<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 71:</h3><code>71:&nbsp;&nbsp;oAq&nbsp;&lt;=&nbsp;<code class="cbg">sARescale</code>&nbsp;when&nbsp;sDoRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;</code><br><b>Count:</b> 6519<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 72:</h3><code>72:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">sAqNew</code>;&nbsp;</code><br><b>Count:</b> 339071<br><b>Threshold:</b> 1<hr/>
+<h3>If statement on lines 73 to 74:</h3><code>73:&nbsp;&nbsp;oBq&nbsp;&lt;=&nbsp;sBRescale&nbsp;when&nbsp;sDoRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;<br>74:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sBqNew;&nbsp;</code><br><b>Count:</b> 232087<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 73:</h3><code>73:&nbsp;&nbsp;oBq&nbsp;&lt;=&nbsp;<code class="cbg">sBRescale</code>&nbsp;when&nbsp;sDoRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;</code><br><b>Count:</b> 4582<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 74:</h3><code>74:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">sBqNew</code>;&nbsp;</code><br><b>Count:</b> 227505<br><b>Threshold:</b> 1<hr/>
+<h3>If statement on lines 75 to 76:</h3><code>75:&nbsp;&nbsp;oNq&nbsp;&lt;=&nbsp;sNRescale&nbsp;when&nbsp;sDoRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;<br>76:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sNqNew;&nbsp;</code><br><b>Count:</b> 113126<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 75:</h3><code>75:&nbsp;&nbsp;oNq&nbsp;&lt;=&nbsp;<code class="cbg">sNRescale</code>&nbsp;when&nbsp;sDoRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;</code><br><b>Count:</b> 2054<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 76:</h3><code>76:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">sNqNew</code>;&nbsp;</code><br><b>Count:</b> 111072<br><b>Threshold:</b> 1<hr/>
+<h3>Assertion statement on line 79:</h3><code>79:&nbsp;&nbsp;<code class="cbg">postponed&nbsp;assert&nbsp;is_x(sAqNew)&nbsp;or&nbsp;sAqNew&nbsp;&gt;=&nbsp;iAq&nbsp;report&nbsp;"a12:&nbsp;A&nbsp;wrapped"&nbsp;severity&nbsp;error;</code>&nbsp;</code><br><b>Count:</b> 116703<br><b>Threshold:</b> 1<hr/>
+<h3>Assertion statement on line 80:</h3><code>80:&nbsp;&nbsp;<code class="cbg">postponed&nbsp;assert&nbsp;is_x(oNq)&nbsp;or&nbsp;iNq&nbsp;&gt;&nbsp;RESET&nbsp;or&nbsp;(oNq&nbsp;&gt;=&nbsp;1&nbsp;and&nbsp;oNq&nbsp;&lt;=&nbsp;RESET)&nbsp;report&nbsp;"a12:&nbsp;N&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;</code>&nbsp;</code><br><b>Count:</b> 113123<br><b>Threshold:</b> 1  </div>
   </section>
 
 </div>
@@ -336,14 +338,14 @@ table, th, td {
   <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
  <h2 style="margin-top: 0px; margin-bottom: 0px">Covered branches:</h2>
   <div style="padding:0px 10px;">
-<h3>"if" / "when" / "else" condition on line 57:</h3><code>57:&nbsp;&nbsp;sDoRescale&nbsp;&lt;=&nbsp;'1'&nbsp;when&nbsp;(<code class="cbg">iNq&nbsp;=&nbsp;to_unsigned(RESET,&nbsp;iNq'length)</code>)&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>1782</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 57:</h3><code>57:&nbsp;&nbsp;sDoRescale&nbsp;&lt;=&nbsp;'1'&nbsp;when&nbsp;(<code class="cbg">iNq&nbsp;=&nbsp;to_unsigned(RESET,&nbsp;iNq'length)</code>)&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>597</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 71:</h3><code>71:&nbsp;&nbsp;oAq&nbsp;&lt;=&nbsp;sARescale&nbsp;when&nbsp;<code class="cbg">sDoRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>5632</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 71:</h3><code>71:&nbsp;&nbsp;oAq&nbsp;&lt;=&nbsp;sARescale&nbsp;when&nbsp;<code class="cbg">sDoRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>1812</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 73:</h3><code>73:&nbsp;&nbsp;oBq&nbsp;&lt;=&nbsp;sBRescale&nbsp;when&nbsp;<code class="cbg">sDoRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>3946</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 73:</h3><code>73:&nbsp;&nbsp;oBq&nbsp;&lt;=&nbsp;sBRescale&nbsp;when&nbsp;<code class="cbg">sDoRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>1417</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 75:</h3><code>75:&nbsp;&nbsp;oNq&nbsp;&lt;=&nbsp;sNRescale&nbsp;when&nbsp;<code class="cbg">sDoRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>1782</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 75:</h3><code>75:&nbsp;&nbsp;oNq&nbsp;&lt;=&nbsp;sNRescale&nbsp;when&nbsp;<code class="cbg">sDoRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>600</td><td>1</td></tr></table>  </div>
+<h3>"if" / "when" / "else" condition on line 57:</h3><code>57:&nbsp;&nbsp;sDoRescale&nbsp;&lt;=&nbsp;'1'&nbsp;when&nbsp;(<code class="cbg">iNq&nbsp;=&nbsp;to_unsigned(RESET,&nbsp;iNq'length)</code>)&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>2054</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 57:</h3><code>57:&nbsp;&nbsp;sDoRescale&nbsp;&lt;=&nbsp;'1'&nbsp;when&nbsp;(<code class="cbg">iNq&nbsp;=&nbsp;to_unsigned(RESET,&nbsp;iNq'length)</code>)&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>600</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 71:</h3><code>71:&nbsp;&nbsp;oAq&nbsp;&lt;=&nbsp;sARescale&nbsp;when&nbsp;<code class="cbg">sDoRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>6519</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 71:</h3><code>71:&nbsp;&nbsp;oAq&nbsp;&lt;=&nbsp;sARescale&nbsp;when&nbsp;<code class="cbg">sDoRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>1827</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 73:</h3><code>73:&nbsp;&nbsp;oBq&nbsp;&lt;=&nbsp;sBRescale&nbsp;when&nbsp;<code class="cbg">sDoRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>4582</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 73:</h3><code>73:&nbsp;&nbsp;oBq&nbsp;&lt;=&nbsp;sBRescale&nbsp;when&nbsp;<code class="cbg">sDoRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>1429</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 75:</h3><code>75:&nbsp;&nbsp;oNq&nbsp;&lt;=&nbsp;sNRescale&nbsp;when&nbsp;<code class="cbg">sDoRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>2054</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 75:</h3><code>75:&nbsp;&nbsp;oNq&nbsp;&lt;=&nbsp;sNRescale&nbsp;when&nbsp;<code class="cbg">sDoRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>603</td><td>1</td></tr></table>  </div>
   </section>
 
 </div>
@@ -470,7 +472,7 @@ table, th, td {
    document.getElementById("defaultOpen").click();
 </script>
 <footer>   <p> NVC version: 1.23.0 </p>
-   <p> Generated on: Fri Oct 16 16:34:39 2026
+   <p> Generated on: Sat Oct 17 11:48:27 2026
  </p>
 </footer>
 </body>

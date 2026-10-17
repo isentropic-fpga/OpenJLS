@@ -3,7 +3,7 @@ Coverage: 100.00
 Settings: 
   WritePassFail: 0
 Models: 
-  - Name: "sign x clipping region"
+  - Name: "G4.Branch sign x clipping region"
     TestCases: 
       - "tb_a6_a7_osvvm"
     Coverage: 100.00
@@ -11,7 +11,7 @@ Models:
       CovWeight: 1
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [499436715, 378101220]
+      Seeds: [1044093505, 409481309]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
@@ -74,4 +74,92 @@ Models:
         Count: 67312
         AtLeast: 1
         PercentCov: 6731200.0000
+
+  - Name: "G2.MinMax node x value"
+    TestCases: 
+      - "tb_a6_a7_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1168425035, 132857010]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 2
+      TotalCovGoal: 2
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "Bin1"
+        - "Bin2"
+      NumBins: 2
+    Bins: 
+      - Name: "Errval=-255"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: -255, Max: -255}
+        Count: 16520
+        AtLeast: 1
+        PercentCov: 1652000.0000
+      - Name: "Errval=255"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 255, Max: 255}
+        Count: 16779
+        AtLeast: 1
+        PercentCov: 1677900.0000
+
+  - Name: "G3.Stim node x value"
+    TestCases: 
+      - "tb_a6_a7_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [101216275, 2036723784]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 3
+      TotalCovGoal: 3
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "Bin1"
+        - "Bin2"
+      NumBins: 3
+    Bins: 
+      - Name: "Ix MSB=128..255"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 128, Max: 255}
+        Count: 517627
+        AtLeast: 1
+        PercentCov: 51762700.0000
+      - Name: "Px MSB=128..255"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: 128, Max: 255}
+        Count: 583123
+        AtLeast: 1
+        PercentCov: 58312300.0000
+      - Name: "C=-128"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+          - {Min: -128, Max: -128}
+        Count: 4432
+        AtLeast: 1
+        PercentCov: 443200.0000
 

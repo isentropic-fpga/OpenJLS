@@ -17,9 +17,9 @@
   TestCases: 
   - TestName: "tb_openjls_top_osvvm"
     Status: PASSED
-    Results: {Goal: 5000, Passed: 7087, Errors: 0, Checked: 7087, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+    Results: {Goal: 5000, Passed: 7086, Errors: 0, Checked: 7086, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
 - Requirement: "OJLS.NoStallEOL"
   TestCases: 
   - TestName: "tb_openjls_top_osvvm"
     Status: PASSED
-    Results: {Goal: 100, Passed: 178, Errors: 0, Checked: 178, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+    Results: {Goal: 100, Passed: 179, Errors: 0, Checked: 179, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}

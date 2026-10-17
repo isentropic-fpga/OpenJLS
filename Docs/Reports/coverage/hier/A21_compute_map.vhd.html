@@ -298,14 +298,14 @@ table, th, td {
   <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
  <h2 style="margin-top: 0px; margin-bottom: 0px">Covered statements:</h2>
   <div style="padding:0px 10px;">
-<h3>Signal assignment statement on line 45:</h3><code>45:&nbsp;&nbsp;sNnExt&nbsp;&lt;=&nbsp;<code class="cbg">resize(iNn,&nbsp;sNnExt'length)</code>;&nbsp;</code><br><b>Count:</b> 8075<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 46:</h3><code>46:&nbsp;&nbsp;sNqExt&nbsp;&lt;=&nbsp;<code class="cbg">resize(iNq,&nbsp;sNqExt'length)</code>;&nbsp;</code><br><b>Count:</b> 90924<br><b>Threshold:</b> 1<hr/>
-<h3>If statement on lines 54 to 62:</h3><code>54:&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;((iK&nbsp;=&nbsp;0)&nbsp;and&nbsp;(iErrval&nbsp;&gt;&nbsp;0)&nbsp;and&nbsp;(shift_left(sNnExt,&nbsp;1)&nbsp;&lt;&nbsp;sNqExt))&nbsp;then&nbsp;<br>55:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vMap&nbsp;:=&nbsp;'1';&nbsp;<br>...<br>61:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vMap&nbsp;:=&nbsp;'0';&nbsp;<br>62:&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;</code><br><b>Count:</b> 690352<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 45:</h3><code>45:&nbsp;&nbsp;sNnExt&nbsp;&lt;=&nbsp;<code class="cbg">resize(iNn,&nbsp;sNnExt'length)</code>;&nbsp;</code><br><b>Count:</b> 8237<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 46:</h3><code>46:&nbsp;&nbsp;sNqExt&nbsp;&lt;=&nbsp;<code class="cbg">resize(iNq,&nbsp;sNqExt'length)</code>;&nbsp;</code><br><b>Count:</b> 113649<br><b>Threshold:</b> 1<hr/>
+<h3>If statement on lines 54 to 62:</h3><code>54:&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;((iK&nbsp;=&nbsp;0)&nbsp;and&nbsp;(iErrval&nbsp;&gt;&nbsp;0)&nbsp;and&nbsp;(shift_left(sNnExt,&nbsp;1)&nbsp;&lt;&nbsp;sNqExt))&nbsp;then&nbsp;<br>55:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vMap&nbsp;:=&nbsp;'1';&nbsp;<br>...<br>61:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vMap&nbsp;:=&nbsp;'0';&nbsp;<br>62:&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;</code><br><b>Count:</b> 736460<br><b>Threshold:</b> 1<hr/>
 <h3>Variable assignment statement on line 55:</h3><code>55:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vMap&nbsp;:=&nbsp;'1';</code>&nbsp;</code><br><b>Count:</b> 3223<br><b>Threshold:</b> 1<hr/>
-<h3>Variable assignment statement on line 57:</h3><code>57:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vMap&nbsp;:=&nbsp;'1';</code>&nbsp;</code><br><b>Count:</b> 89875<br><b>Threshold:</b> 1<hr/>
-<h3>Variable assignment statement on line 59:</h3><code>59:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vMap&nbsp;:=&nbsp;'1';</code>&nbsp;</code><br><b>Count:</b> 162413<br><b>Threshold:</b> 1<hr/>
-<h3>Variable assignment statement on line 61:</h3><code>61:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vMap&nbsp;:=&nbsp;'0';</code>&nbsp;</code><br><b>Count:</b> 434841<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 64:</h3><code>64:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">oMap&nbsp;&lt;=&nbsp;vMap;</code>&nbsp;</code><br><b>Count:</b> 690352<br><b>Threshold:</b> 1  </div>
+<h3>Variable assignment statement on line 57:</h3><code>57:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vMap&nbsp;:=&nbsp;'1';</code>&nbsp;</code><br><b>Count:</b> 90853<br><b>Threshold:</b> 1<hr/>
+<h3>Variable assignment statement on line 59:</h3><code>59:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vMap&nbsp;:=&nbsp;'1';</code>&nbsp;</code><br><b>Count:</b> 182738<br><b>Threshold:</b> 1<hr/>
+<h3>Variable assignment statement on line 61:</h3><code>61:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vMap&nbsp;:=&nbsp;'0';</code>&nbsp;</code><br><b>Count:</b> 459646<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 64:</h3><code>64:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">oMap&nbsp;&lt;=&nbsp;vMap;</code>&nbsp;</code><br><b>Count:</b> 736460<br><b>Threshold:</b> 1  </div>
   </section>
 
 </div>
@@ -326,11 +326,11 @@ table, th, td {
  <h2 style="margin-top: 0px; margin-bottom: 0px">Covered branches:</h2>
   <div style="padding:0px 10px;">
 <h3>"if" / "when" / "else" condition on line 54:</h3><code>54:&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(<code class="cbg">(iK&nbsp;=&nbsp;0)&nbsp;and&nbsp;(iErrval&nbsp;&gt;&nbsp;0)&nbsp;and&nbsp;(shift_left(sNnExt,&nbsp;1)&nbsp;&lt;&nbsp;sNqExt)</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>3223</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 54:</h3><code>54:&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(<code class="cbg">(iK&nbsp;=&nbsp;0)&nbsp;and&nbsp;(iErrval&nbsp;&gt;&nbsp;0)&nbsp;and&nbsp;(shift_left(sNnExt,&nbsp;1)&nbsp;&lt;&nbsp;sNqExt)</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>504653</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 56:</h3><code>56:&nbsp;&nbsp;&nbsp;&nbsp;elsif&nbsp;(<code class="cbg">(iErrval&nbsp;&lt;&nbsp;0)&nbsp;and&nbsp;(shift_left(sNnExt,&nbsp;1)&nbsp;&gt;=&nbsp;sNqExt)</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>89875</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 56:</h3><code>56:&nbsp;&nbsp;&nbsp;&nbsp;elsif&nbsp;(<code class="cbg">(iErrval&nbsp;&lt;&nbsp;0)&nbsp;and&nbsp;(shift_left(sNnExt,&nbsp;1)&nbsp;&gt;=&nbsp;sNqExt)</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>418626</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 58:</h3><code>58:&nbsp;&nbsp;&nbsp;&nbsp;elsif&nbsp;(<code class="cbg">(iErrval&nbsp;&lt;&nbsp;0)&nbsp;and&nbsp;(iK&nbsp;/=&nbsp;0)</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>162413</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 58:</h3><code>58:&nbsp;&nbsp;&nbsp;&nbsp;elsif&nbsp;(<code class="cbg">(iErrval&nbsp;&lt;&nbsp;0)&nbsp;and&nbsp;(iK&nbsp;/=&nbsp;0)</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>337047</td><td>1</td></tr></table>  </div>
+<h3>"if" / "when" / "else" condition on line 54:</h3><code>54:&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(<code class="cbg">(iK&nbsp;=&nbsp;0)&nbsp;and&nbsp;(iErrval&nbsp;&gt;&nbsp;0)&nbsp;and&nbsp;(shift_left(sNnExt,&nbsp;1)&nbsp;&lt;&nbsp;sNqExt)</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>504665</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 56:</h3><code>56:&nbsp;&nbsp;&nbsp;&nbsp;elsif&nbsp;(<code class="cbg">(iErrval&nbsp;&lt;&nbsp;0)&nbsp;and&nbsp;(shift_left(sNnExt,&nbsp;1)&nbsp;&gt;=&nbsp;sNqExt)</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>90853</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 56:</h3><code>56:&nbsp;&nbsp;&nbsp;&nbsp;elsif&nbsp;(<code class="cbg">(iErrval&nbsp;&lt;&nbsp;0)&nbsp;and&nbsp;(shift_left(sNnExt,&nbsp;1)&nbsp;&gt;=&nbsp;sNqExt)</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>418635</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 58:</h3><code>58:&nbsp;&nbsp;&nbsp;&nbsp;elsif&nbsp;(<code class="cbg">(iErrval&nbsp;&lt;&nbsp;0)&nbsp;and&nbsp;(iK&nbsp;/=&nbsp;0)</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>182738</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 58:</h3><code>58:&nbsp;&nbsp;&nbsp;&nbsp;elsif&nbsp;(<code class="cbg">(iErrval&nbsp;&lt;&nbsp;0)&nbsp;and&nbsp;(iK&nbsp;/=&nbsp;0)</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>337053</td><td>1</td></tr></table>  </div>
   </section>
 
 </div>
@@ -457,7 +457,7 @@ table, th, td {
    document.getElementById("defaultOpen").click();
 </script>
 <footer>   <p> NVC version: 1.23.0 </p>
-   <p> Generated on: Fri Oct 16 16:34:39 2026
+   <p> Generated on: Sat Oct 17 11:48:27 2026
  </p>
 </footer>
 </body>

@@ -6,7 +6,7 @@ BuildName: "OSVVM_OpenJls"
 Generics:
   IN_WIDTH: "32"
 ReportsTestSuiteDirectory:  "reports/Modules"
-RequirementsYamlFile: ""
+RequirementsYamlFile:  "reports/Modules/tb_byte_stuffer_osvvm_IN_WIDTH_32_req.yml"
 AlertYamlFile:  "reports/Modules/tb_byte_stuffer_osvvm_IN_WIDTH_32_alerts.yml"
 CovYamlFile:  "reports/Modules/tb_byte_stuffer_osvvm_IN_WIDTH_32_cov.yml"
 ScoreboardDict:

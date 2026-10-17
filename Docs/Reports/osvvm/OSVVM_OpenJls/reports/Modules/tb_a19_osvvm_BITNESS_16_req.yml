@@ -2,4 +2,4 @@
   TestCases: 
   - TestName: "tb_a19_osvvm"
     Status: PASSED
-    Results: {Goal: 300, Passed: 718, Errors: 0, Checked: 718, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+    Results: {Goal: 300, Passed: 720, Errors: 0, Checked: 720, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}

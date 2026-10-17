@@ -1,0 +1,25 @@
+Version: "0.1"
+TestCaseName: "tb_openjls_top_osvvm"
+TestCaseFile:  "../../../Top/tb_openjls_top_osvvm.vhd"
+TestSuiteName: "Top"
+BuildName: "OSVVM_OpenJls"
+Generics:
+  MAX_W: "48"
+  MAX_H: "48"
+ReportsTestSuiteDirectory:  "reports/Top"
+RequirementsYamlFile:  "reports/Top/tb_openjls_top_osvvm_MAX_W_48_MAX_H_48_req.yml"
+AlertYamlFile:  "reports/Top/tb_openjls_top_osvvm_MAX_W_48_MAX_H_48_alerts.yml"
+CovYamlFile:  "reports/Top/tb_openjls_top_osvvm_MAX_W_48_MAX_H_48_cov.yml"
+ScoreboardDict:           null
+TranscriptFiles: ""
+TestCaseFileName: "tb_openjls_top_osvvm_MAX_W_48_MAX_H_48"
+GenericNames: "_MAX_W_48_MAX_H_48"
+OsvvmSettingsInfo:
+  ReportsSubdirectory:  "reports"
+  SimulationLogFile: "logs/OSVVM_OpenJls.log"
+  SimulationHtmlLogFile: "logs/OSVVM_OpenJls_log.html"
+  RequirementsSubdirectory: ""
+  CoverageSubdirectory:    "CodeCoverage/OSVVM_OpenJls_code_cov.html"
+  Report2CssFiles:
+    - "reports/CssOsvvmStyle.css"
+  Report2PngFile:  "reports/OsvvmLogo.png"

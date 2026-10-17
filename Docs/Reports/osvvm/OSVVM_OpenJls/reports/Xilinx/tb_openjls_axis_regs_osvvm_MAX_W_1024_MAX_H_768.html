@@ -122,8 +122,8 @@
             <tr>
               <td>tb_openjls_axis_regs_osvvm</td>
               <td class="passed">PASSED</td>
-              <td class="passed">1087</td>
-              <td class="passed">1087</td>
+              <td class="passed">1089</td>
+              <td class="passed">1089</td>
               <td class="passed">0</td>
               <td >3</td>
               <td >3</td>
@@ -151,6 +151,36 @@
             </tr>
             <tr>
               <td>&emsp; OSVVM</td>
+              <td class="passed">PASSED</td>
+              <td class="passed">0</td>
+              <td class="passed">0</td>
+              <td class="passed">0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+            </tr>
+            <tr>
+              <td>&emsp; &emsp; G4.Branch register access</td>
+              <td class="passed">PASSED</td>
+              <td class="passed">0</td>
+              <td class="passed">0</td>
+              <td class="passed">0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+            </tr>
+            <tr>
+              <td>&emsp; &emsp; G5.States resetPhase</td>
               <td class="passed">PASSED</td>
               <td class="passed">0</td>
               <td class="passed">0</td>
@@ -464,6 +494,21 @@
               <td >0</td>
               <td >0</td>
             </tr>
+            <tr>
+              <td>&emsp; CoverageClosure</td>
+              <td class="passed">PASSED</td>
+              <td class="passed">2</td>
+              <td class="passed">2</td>
+              <td class="passed">0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+            </tr>
           <tbody>
         </table>
       </details>
@@ -473,6 +518,206 @@
   <div class="FunctionalCoverage">
     <h2 id="FunctionalCoverage">tb_openjls_axis_regs_osvvm Coverage Report</h2>
     <p>Total Coverage: 100.00</p>
+    <details open><summary class="subtitle">G4.Branch register access Coverage Model &emsp; &emsp; Coverage: 100.0</summary>
+      <div class="CoverageSettings">
+        <details><summary class="subindented">G4.Branch register access Coverage Settings</summary>
+          <table class="CoverageSettings">
+            <thead>
+              <tr>
+                  <th>Settings</th>
+                  <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>CovWeight</td><td>1</td></tr>
+              <tr><td>Goal</td><td>100.0</td></tr>
+              <tr><td>WeightMode</td><td>REMAIN</td></tr>
+              <tr><td>Seeds</td><td>1728078243, &nbsp;1168026133</td></tr>
+              <tr><td>CountMode</td><td>COUNT_FIRST</td></tr>
+              <tr><td>IllegalMode</td><td>ILLEGAL_ON</td></tr>
+              <tr><td>Threshold</td><td>45.0</td></tr>
+              <tr><td>ThresholdEnable</td><td>FALSE</td></tr>
+              <tr><td>IsRequirement</td><td>FALSE</td></tr>
+              <tr><td>TotalCovCount</td><td>11</td></tr>
+              <tr><td>TotalCovGoal</td><td>11</td></tr>
+            </tbody>
+          </table>
+        </details>
+      </div>
+      <div class="CoverageTable">
+        <details open><summary class="subindented">G4.Branch register access Coverage Bins</summary>
+          <table class="CoverageTable">
+            <thead>
+              <tr>
+                <th rowspan="2">Name</th>
+                <th rowspan="2">Type</th>
+                <th rowspan="2">Bin1</th>
+                <th rowspan="2">Count</th>
+                <th rowspan="2">AtLeast</th>
+                <th rowspan="2">Percent<br>Coverage</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>RO identity read</td>
+                <td>COUNT</td>
+                <td>0</td>
+                <td>1</td>
+                <td>1</td>
+                <td>100.0</td>
+              </tr>
+              <tr>
+                <td>reset default</td>
+                <td>COUNT</td>
+                <td>1</td>
+                <td>1</td>
+                <td>1</td>
+                <td>100.0</td>
+              </tr>
+              <tr>
+                <td>RW write/read</td>
+                <td>COUNT</td>
+                <td>2</td>
+                <td>1</td>
+                <td>1</td>
+                <td>100.0</td>
+              </tr>
+              <tr>
+                <td>clamp over max</td>
+                <td>COUNT</td>
+                <td>3</td>
+                <td>2</td>
+                <td>1</td>
+                <td>200.0</td>
+              </tr>
+              <tr>
+                <td>clamp under min / zero</td>
+                <td>COUNT</td>
+                <td>4</td>
+                <td>2</td>
+                <td>1</td>
+                <td>200.0</td>
+              </tr>
+              <tr>
+                <td>partial WSTRB merge</td>
+                <td>COUNT</td>
+                <td>5</td>
+                <td>1</td>
+                <td>1</td>
+                <td>100.0</td>
+              </tr>
+              <tr>
+                <td>skewed AW/W</td>
+                <td>COUNT</td>
+                <td>6</td>
+                <td>2</td>
+                <td>1</td>
+                <td>200.0</td>
+              </tr>
+              <tr>
+                <td>upper lanes ignored</td>
+                <td>COUNT</td>
+                <td>7</td>
+                <td>1</td>
+                <td>1</td>
+                <td>100.0</td>
+              </tr>
+              <tr>
+                <td>RO write dropped</td>
+                <td>COUNT</td>
+                <td>8</td>
+                <td>1</td>
+                <td>1</td>
+                <td>100.0</td>
+              </tr>
+              <tr>
+                <td>WO/unmapped read zero</td>
+                <td>COUNT</td>
+                <td>9</td>
+                <td>1</td>
+                <td>1</td>
+                <td>100.0</td>
+              </tr>
+              <tr>
+                <td>STATUS read</td>
+                <td>COUNT</td>
+                <td>10</td>
+                <td>1</td>
+                <td>1</td>
+                <td>100.0</td>
+              </tr>
+              <tr>
+                <td style="text-align: left" colspan="6"><strong>Total Percent Coverage:</strong> &emsp; 100.0</td>
+              </tr>
+            </tbody>
+          </table>
+        </details>
+      </div>
+    </details>
+    <details open><summary class="subtitle">G5.States resetPhase Coverage Model &emsp; &emsp; Coverage: 100.0</summary>
+      <div class="CoverageSettings">
+        <details><summary class="subindented">G5.States resetPhase Coverage Settings</summary>
+          <table class="CoverageSettings">
+            <thead>
+              <tr>
+                  <th>Settings</th>
+                  <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>CovWeight</td><td>1</td></tr>
+              <tr><td>Goal</td><td>100.0</td></tr>
+              <tr><td>WeightMode</td><td>REMAIN</td></tr>
+              <tr><td>Seeds</td><td>1133384431, &nbsp;2139824688</td></tr>
+              <tr><td>CountMode</td><td>COUNT_FIRST</td></tr>
+              <tr><td>IllegalMode</td><td>ILLEGAL_ON</td></tr>
+              <tr><td>Threshold</td><td>45.0</td></tr>
+              <tr><td>ThresholdEnable</td><td>FALSE</td></tr>
+              <tr><td>IsRequirement</td><td>FALSE</td></tr>
+              <tr><td>TotalCovCount</td><td>2</td></tr>
+              <tr><td>TotalCovGoal</td><td>2</td></tr>
+            </tbody>
+          </table>
+        </details>
+      </div>
+      <div class="CoverageTable">
+        <details open><summary class="subindented">G5.States resetPhase Coverage Bins</summary>
+          <table class="CoverageTable">
+            <thead>
+              <tr>
+                <th rowspan="2">Name</th>
+                <th rowspan="2">Type</th>
+                <th rowspan="2">Bin1</th>
+                <th rowspan="2">Count</th>
+                <th rowspan="2">AtLeast</th>
+                <th rowspan="2">Percent<br>Coverage</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>APPLY idle</td>
+                <td>COUNT</td>
+                <td>0</td>
+                <td>1</td>
+                <td>1</td>
+                <td>100.0</td>
+              </tr>
+              <tr>
+                <td>APPLY mid-image</td>
+                <td>COUNT</td>
+                <td>1</td>
+                <td>1</td>
+                <td>1</td>
+                <td>100.0</td>
+              </tr>
+              <tr>
+                <td style="text-align: left" colspan="6"><strong>Total Percent Coverage:</strong> &emsp; 100.0</td>
+              </tr>
+            </tbody>
+          </table>
+        </details>
+      </div>
+    </details>
     <details><summary class="subtitle">Coverage Models with CovWeight = 0.  Ignored in GetCov calculations.  Used for OSVVM DelayCoverage. </summary>
     <details open><summary class="subtitle">AXI-Lite channel 1 burst length Coverage Model &emsp; &emsp; Coverage: 100.0</summary>
       <div class="CoverageSettings">
@@ -1893,7 +2138,7 @@
 </main>
 <footer>
   <hr />
-  <p class="generated-by-osvvm">Generated by OSVVM-Scripts 2026.01 on 2026-10-16 - 16:34:37 (-03).</p>
+  <p class="generated-by-osvvm">Generated by OSVVM-Scripts 2026.01 on 2026-10-17 - 11:48:25 (-03).</p>
 </footer>
 </body>
 </html>

@@ -219,5 +219,9 @@ table, th, td {
     59: &nbsp; &nbsp;&nbsp;oErrorVal&nbsp;&lt;=&nbsp;sAtZero&nbsp;when&nbsp;sCorrectedPx&nbsp;&lt;&nbsp;0&nbsp;else&nbsp;
     60: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sAtMax&nbsp;when&nbsp;sCorrectedPx&nbsp;&gt;&nbsp;MAX_S&nbsp;else&nbsp;
     61: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sRawError;&nbsp;
-    62: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
+    62: &nbsp; &nbsp;
+    63: &nbsp; &nbsp;&nbsp;--&nbsp;Errval&nbsp;in&nbsp;[-MAX_VAL,&nbsp;MAX_VAL]&nbsp;for&nbsp;Ix,&nbsp;Px&nbsp;&lt;=&nbsp;MAX_VAL;&nbsp;sRawError&nbsp;may&nbsp;wrap&nbsp;when&nbsp;clipped&nbsp;
+    64: &nbsp; &nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(oErrorVal)&nbsp;or&nbsp;iIx&nbsp;&gt;&nbsp;MAX_VAL&nbsp;or&nbsp;iPx&nbsp;&gt;&nbsp;MAX_VAL&nbsp;or&nbsp;abs(to_integer(oErrorVal))&nbsp;&lt;=&nbsp;MAX_VAL&nbsp;
+    65: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"a6_a7:&nbsp;Errval&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;&nbsp;
+    66: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
 </code></pre>

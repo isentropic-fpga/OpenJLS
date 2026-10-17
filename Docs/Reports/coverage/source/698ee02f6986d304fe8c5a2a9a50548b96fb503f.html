@@ -263,5 +263,10 @@ table, th, td {
    103: &nbsp; &nbsp;&nbsp;oQ2&nbsp;&lt;=&nbsp;quantizate(iD2,&nbsp;T1,&nbsp;T2,&nbsp;T3);&nbsp;
    104: &nbsp; &nbsp;&nbsp;oQ3&nbsp;&lt;=&nbsp;quantizate(iD3,&nbsp;T1,&nbsp;T2,&nbsp;T3);&nbsp;
    105: &nbsp; &nbsp;
-   106: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
+   106: &nbsp; &nbsp;&nbsp;--&nbsp;Q1..Q3&nbsp;in&nbsp;[-4,&nbsp;4]&nbsp;
+   107: &nbsp; &nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(oQ1)&nbsp;or&nbsp;abs(to_integer(oQ1))&nbsp;&lt;=&nbsp;4&nbsp;report&nbsp;"a4:&nbsp;Q1&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;&nbsp;
+   108: &nbsp; &nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(oQ2)&nbsp;or&nbsp;abs(to_integer(oQ2))&nbsp;&lt;=&nbsp;4&nbsp;report&nbsp;"a4:&nbsp;Q2&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;&nbsp;
+   109: &nbsp; &nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(oQ3)&nbsp;or&nbsp;abs(to_integer(oQ3))&nbsp;&lt;=&nbsp;4&nbsp;report&nbsp;"a4:&nbsp;Q3&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;&nbsp;
+   110: &nbsp; &nbsp;
+   111: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
 </code></pre>

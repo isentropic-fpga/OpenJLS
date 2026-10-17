@@ -230,11 +230,16 @@ table, th, td {
     70: &nbsp; &nbsp;
     71: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;vNq&nbsp;:=&nbsp;vNq&nbsp;+&nbsp;1;&nbsp;
     72: &nbsp; &nbsp;
-    73: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;oAq&nbsp;&lt;=&nbsp;to_unsigned(vAq,&nbsp;oAq'length);&nbsp;
-    74: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;oNq&nbsp;&lt;=&nbsp;to_unsigned(vNq,&nbsp;oNq'length);&nbsp;
-    75: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;oNn&nbsp;&lt;=&nbsp;to_unsigned(vNn,&nbsp;oNn'length);&nbsp;
-    76: &nbsp; &nbsp;
-    77: &nbsp; &nbsp;&nbsp;end&nbsp;process&nbsp;p_ri_update;&nbsp;
-    78: &nbsp; &nbsp;
-    79: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
+    73: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;--&nbsp;A&nbsp;in&nbsp;[0,&nbsp;2^A_WIDTH&nbsp;-&nbsp;1];&nbsp;N&nbsp;in&nbsp;[1,&nbsp;RESET];&nbsp;Nn&nbsp;in&nbsp;[0,&nbsp;2^NN_WIDTH&nbsp;-&nbsp;1]&nbsp;
+    74: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;assert&nbsp;vAq&nbsp;&lt;&nbsp;2&nbsp;**&nbsp;A_WIDTH&nbsp;report&nbsp;"a23:&nbsp;A&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;&nbsp;
+    75: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;assert&nbsp;iNq&nbsp;&gt;&nbsp;RESET&nbsp;or&nbsp;vNq&nbsp;&lt;=&nbsp;integer(RESET)&nbsp;report&nbsp;"a23:&nbsp;N&nbsp;above&nbsp;RESET"&nbsp;severity&nbsp;error;&nbsp;
+    76: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;assert&nbsp;vNn&nbsp;&lt;&nbsp;2&nbsp;**&nbsp;NN_WIDTH&nbsp;report&nbsp;"a23:&nbsp;Nn&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;&nbsp;
+    77: &nbsp; &nbsp;
+    78: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;oAq&nbsp;&lt;=&nbsp;to_unsigned(vAq,&nbsp;oAq'length);&nbsp;
+    79: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;oNq&nbsp;&lt;=&nbsp;to_unsigned(vNq,&nbsp;oNq'length);&nbsp;
+    80: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;oNn&nbsp;&lt;=&nbsp;to_unsigned(vNn,&nbsp;oNn'length);&nbsp;
+    81: &nbsp; &nbsp;
+    82: &nbsp; &nbsp;&nbsp;end&nbsp;process&nbsp;p_ri_update;&nbsp;
+    83: &nbsp; &nbsp;
+    84: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
 </code></pre>

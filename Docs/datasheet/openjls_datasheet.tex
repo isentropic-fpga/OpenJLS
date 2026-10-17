@@ -569,7 +569,7 @@ both RTL and post-synthesis (gate-level) stages:
   \item \textbf{OSVVM} --- Per-module tests against independent T.87-derived
         reference models, top-level control-plane stress (reset injection,
         backpressure, back-to-back images, dimension fallback), and AXI wrapper
-        tests (byte-exact AXI4-Stream pass-through at 8- and 12-bit, AXI4-Lite
+        tests (byte-exact AXI4-Stream pass-through at 8-, 12- and 16-bit, AXI4-Lite
         register map, live reconfiguration, mid-image abort), all with
         requirements tracking.
   \item \textbf{Coverage} --- OSVVM functional coverage with NVC structural code coverage.
@@ -619,7 +619,7 @@ simulation; their 84 full-size originals are part of the corpus but run on hardw
   \hd{Suite} & \hd{Status} & \hd{Test/Cov} & \hd{Summary} \\
   \midrule
   NVC code coverage       & info & 99.8\% & Statement coverage\footnotemark[9] \\
-  OSVVM suite             & PASS & 100\%  & 113 tests\footnotemark[10] \\
+  OSVVM suite             & PASS & 100\%  & 115 tests\footnotemark[10] \\
   Golden model            & PASS & 100\%  & 5555/5555 images\footnotemark[11] \\
   Post-synth OSVVM        & PASS & 100\%  & Control-plane stress\footnotemark[12] \\
   Post-synth golden model & PASS & 100\%  & 167/167 images\footnotemark[13] \\
@@ -628,7 +628,7 @@ simulation; their 84 full-size originals are part of the corpus but run on hardw
 \end{tabular}
 \end{table}
 \footnotetext[9]{Per-DUT-file breakdown.}
-\footnotetext[10]{7\,404\,577 affirmations (module + top + AXI wrappers).}
+\footnotetext[10]{7\,550\,766 affirmations (module + top + AXI wrappers).}
 \footnotetext[11]{Byte-exact vs CharLS.}
 \footnotetext[12]{On the gate-level netlist.}
 \footnotetext[13]{8-bit images up to 0.05\,MP, byte-exact vs CharLS.}

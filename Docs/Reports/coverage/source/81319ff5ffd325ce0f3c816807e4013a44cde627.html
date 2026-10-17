@@ -210,7 +210,7 @@ table, th, td {
     50: &nbsp; &nbsp;
     51: &nbsp; begin&nbsp;
     52: &nbsp; &nbsp;
-    53: &nbsp; &nbsp;&nbsp;sNqSig&nbsp;&lt;=&nbsp;signed(resize(iNq,&nbsp;B_WIDTH));&nbsp;
+    53: &nbsp; &nbsp;&nbsp;sNqSig&nbsp;&lt;=&nbsp;resize(signed('0'&nbsp;&amp;&nbsp;iNq),&nbsp;B_WIDTH);&nbsp;
     54: &nbsp; &nbsp;
     55: &nbsp; &nbsp;&nbsp;sIsBNegBranch&nbsp;&lt;=&nbsp;'1'&nbsp;when&nbsp;iBq&nbsp;&lt;=&nbsp;-&nbsp;sNqSig&nbsp;else&nbsp;
     56: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0';&nbsp;
@@ -240,5 +240,9 @@ table, th, td {
     80: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sCInc&nbsp;when&nbsp;sIsBPosBranch&nbsp;=&nbsp;'1'&nbsp;else&nbsp;
     81: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iCq;&nbsp;
     82: &nbsp; &nbsp;
-    83: &nbsp; end&nbsp;architecture&nbsp;rtl;&nbsp;
+    83: &nbsp; &nbsp;&nbsp;--&nbsp;C&nbsp;in&nbsp;[MIN_C,&nbsp;MAX_C]&nbsp;
+    84: &nbsp; &nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(oCq)&nbsp;or&nbsp;iCq&nbsp;&lt;&nbsp;MIN_C&nbsp;or&nbsp;iCq&nbsp;&gt;&nbsp;MAX_C&nbsp;or&nbsp;(oCq&nbsp;&gt;=&nbsp;MIN_C&nbsp;and&nbsp;oCq&nbsp;&lt;=&nbsp;MAX_C)&nbsp;
+    85: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"a13:&nbsp;C&nbsp;outside&nbsp;[MIN_C,&nbsp;MAX_C]"&nbsp;severity&nbsp;error;&nbsp;
+    86: &nbsp; &nbsp;
+    87: &nbsp; end&nbsp;architecture&nbsp;rtl;&nbsp;
 </code></pre>

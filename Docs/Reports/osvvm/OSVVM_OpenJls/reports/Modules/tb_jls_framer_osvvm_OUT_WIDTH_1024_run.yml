@@ -6,7 +6,7 @@ BuildName: "OSVVM_OpenJls"
 Generics:
   OUT_WIDTH: "1024"
 ReportsTestSuiteDirectory:  "reports/Modules"
-RequirementsYamlFile: ""
+RequirementsYamlFile:  "reports/Modules/tb_jls_framer_osvvm_OUT_WIDTH_1024_req.yml"
 AlertYamlFile:  "reports/Modules/tb_jls_framer_osvvm_OUT_WIDTH_1024_alerts.yml"
 CovYamlFile:  "reports/Modules/tb_jls_framer_osvvm_OUT_WIDTH_1024_cov.yml"
 ScoreboardDict:

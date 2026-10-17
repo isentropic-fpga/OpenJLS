@@ -198,5 +198,9 @@ table, th, td {
     38: &nbsp; &nbsp;&nbsp;oErrorVal&nbsp;&lt;=&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;iPx)&nbsp;when&nbsp;iSign&nbsp;=&nbsp;CO_SIGN_POS&nbsp;else&nbsp;
     39: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;signed('0'&nbsp;&amp;&nbsp;iPx)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx);&nbsp;
     40: &nbsp; &nbsp;
-    41: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
+    41: &nbsp; &nbsp;&nbsp;--&nbsp;Errval&nbsp;in&nbsp;[-(2^B&nbsp;-&nbsp;1),&nbsp;2^B&nbsp;-&nbsp;1]&nbsp;
+    42: &nbsp; &nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(oErrorVal)&nbsp;or&nbsp;abs(to_integer(oErrorVal))&nbsp;&lt;&nbsp;2&nbsp;**&nbsp;BITNESS&nbsp;
+    43: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"a7:&nbsp;Errval&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;&nbsp;
+    44: &nbsp; &nbsp;
+    45: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
 </code></pre>

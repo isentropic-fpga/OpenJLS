@@ -3,7 +3,7 @@ Coverage: 100.00
 Settings: 
   WritePassFail: 0
 Models: 
-  - Name: "emitBytes"
+  - Name: "G4.Stream emitBytes"
     TestCases: 
       - "tb_byte_stuffer_osvvm"
     Coverage: 100.00
@@ -11,7 +11,7 @@ Models:
       CovWeight: 1
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [1095182443, 1897467773]
+      Seeds: [2023960103, 1518020475]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
@@ -36,9 +36,9 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 188
+        Count: 191
         AtLeast: 1
-        PercentCov: 18800.0000
+        PercentCov: 19100.0000
       - Name: "emitted bytes=2"
         Type: "COUNT"
         Range: 
@@ -50,18 +50,18 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
-        Count: 35
+        Count: 37
         AtLeast: 1
-        PercentCov: 3500.0000
+        PercentCov: 3700.0000
       - Name: "emitted bytes=4"
         Type: "COUNT"
         Range: 
           - {Min: 4, Max: 4}
-        Count: 649
+        Count: 671
         AtLeast: 1
-        PercentCov: 64900.0000
+        PercentCov: 67100.0000
 
-  - Name: "flushType"
+  - Name: "G4.Stream flushType"
     TestCases: 
       - "tb_byte_stuffer_osvvm"
     Coverage: 100.00
@@ -69,7 +69,7 @@ Models:
       CovWeight: 1
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [1077136129, 594905498]
+      Seeds: [708180897, 1530833436]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
@@ -94,9 +94,9 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
-        Count: 114
+        Count: 116
         AtLeast: 1
-        PercentCov: 11400.0000
+        PercentCov: 11600.0000
       - Name: "dangling FF"
         Type: "COUNT"
         Range: 
@@ -105,7 +105,7 @@ Models:
         AtLeast: 1
         PercentCov: 500.0000
 
-  - Name: "data x almostFull"
+  - Name: "G4.Stream data x almostFull"
     TestCases: 
       - "tb_byte_stuffer_osvvm"
     Coverage: 100.00
@@ -113,7 +113,7 @@ Models:
       CovWeight: 1
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [1053031852, 108084214]
+      Seeds: [294851019, 555158051]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
@@ -133,19 +133,19 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 875
+        Count: 901
         AtLeast: 1
-        PercentCov: 87500.0000
+        PercentCov: 90100.0000
       - Name: "data beat / almostFull=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 28
+        Count: 29
         AtLeast: 1
-        PercentCov: 2800.0000
+        PercentCov: 2900.0000
 
-  - Name: "stuffEvent"
+  - Name: "G4.Branch stuffEvent"
     TestCases: 
       - "tb_byte_stuffer_osvvm"
     Coverage: 100.00
@@ -153,7 +153,7 @@ Models:
       CovWeight: 1
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [1096863031, 1704241158]
+      Seeds: [621878939, 42792700]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
@@ -171,21 +171,65 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 2251
+        Count: 2326
         AtLeast: 1
-        PercentCov: 225100.0000
+        PercentCov: 232600.0000
       - Name: "firstStuff"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 85
+        Count: 87
         AtLeast: 1
-        PercentCov: 8500.0000
+        PercentCov: 8700.0000
       - Name: "runStuff"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
-        Count: 496
+        Count: 514
         AtLeast: 1
-        PercentCov: 49600.0000
+        PercentCov: 51400.0000
+
+  - Name: "G5.States resetPhase"
+    TestCases: 
+      - "tb_byte_stuffer_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1133384431, 2139824688]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 3
+      TotalCovGoal: 3
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "Bin1"
+      NumBins: 3
+    Bins: 
+      - Name: "idle"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "mid-image"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "flush draining"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
 

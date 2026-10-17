@@ -257,13 +257,13 @@ table, th, td {
   <tr>
     <td style="background-color:var(--table-row-color)">
 <a href="A7_prediction_error.vhd.html">A7_prediction_error.vhd</a></td>
-    <td class="percent100">100.0 % (3/3)</td>
+    <td class="percent100">100.0 % (4/4)</td>
     <td class="percent100">100.0 % (2/2)</td>
     <td class="percentna">N.A.</td>
     <td class="percentna">N.A.</td>
     <td class="percentna">N.A.</td>
     <td class="percentna">N.A.</td>
-    <td class="percent100">100.0 % (5/5)</td>
+    <td class="percent100">100.0 % (6/6)</td>
   </tr>
 </table>
 
@@ -300,7 +300,8 @@ table, th, td {
   <div style="padding:0px 10px;">
 <h3>If statement on lines 39 to 40:</h3><code>39:&nbsp;&nbsp;oErrorVal&nbsp;&lt;=&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;iPx)&nbsp;when&nbsp;iSign&nbsp;=&nbsp;CO_SIGN_POS&nbsp;else&nbsp;<br>40:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;signed('0'&nbsp;&amp;&nbsp;iPx)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx);&nbsp;</code><br><b>Count:</b> 140397<br><b>Threshold:</b> 1<hr/>
 <h3>Signal assignment statement on line 39:</h3><code>39:&nbsp;&nbsp;oErrorVal&nbsp;&lt;=&nbsp;<code class="cbg">signed('0'&nbsp;&amp;&nbsp;iIx)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;iPx)</code>&nbsp;when&nbsp;iSign&nbsp;=&nbsp;CO_SIGN_POS&nbsp;else&nbsp;</code><br><b>Count:</b> 70251<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 40:</h3><code>40:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">signed('0'&nbsp;&amp;&nbsp;iPx)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx)</code>;&nbsp;</code><br><b>Count:</b> 70146<br><b>Threshold:</b> 1  </div>
+<h3>Signal assignment statement on line 40:</h3><code>40:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">signed('0'&nbsp;&amp;&nbsp;iPx)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx)</code>;&nbsp;</code><br><b>Count:</b> 70146<br><b>Threshold:</b> 1<hr/>
+<h3>Assertion statement on lines 43 to 44:</h3><code>43:&nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(oErrorVal)&nbsp;or&nbsp;abs(to_integer(oErrorVal))&nbsp;&lt;&nbsp;2&nbsp;**&nbsp;BITNESS&nbsp;<br>44:&nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"a7:&nbsp;Errval&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;&nbsp;</code><br><b>Count:</b> 620<br><b>Threshold:</b> 1  </div>
   </section>
 
 </div>
@@ -448,7 +449,7 @@ table, th, td {
    document.getElementById("defaultOpen").click();
 </script>
 <footer>   <p> NVC version: 1.23.0 </p>
-   <p> Generated on: Fri Oct 16 16:34:39 2026
+   <p> Generated on: Sat Oct 17 11:48:27 2026
  </p>
 </footer>
 </body>

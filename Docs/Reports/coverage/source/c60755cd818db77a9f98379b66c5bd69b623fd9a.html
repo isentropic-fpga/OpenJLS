@@ -223,5 +223,8 @@ table, th, td {
     63: &nbsp; &nbsp;&nbsp;oPx&nbsp;&lt;=&nbsp;sAddSat&nbsp;when&nbsp;iSign&nbsp;=&nbsp;CO_SIGN_POS&nbsp;else&nbsp;
     64: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sSubSat;&nbsp;
     65: &nbsp; &nbsp;
-    66: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
+    66: &nbsp; &nbsp;&nbsp;--&nbsp;Px&nbsp;+-&nbsp;C&nbsp;in&nbsp;[-128,&nbsp;2^B&nbsp;+&nbsp;127]&nbsp;before&nbsp;clipping;&nbsp;Px&nbsp;in&nbsp;[0,&nbsp;MAX_VAL]&nbsp;
+    67: &nbsp; &nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(oPx)&nbsp;or&nbsp;oPx&nbsp;&lt;=&nbsp;MAX_VAL&nbsp;report&nbsp;"a6:&nbsp;Px&nbsp;above&nbsp;MAX_VAL"&nbsp;severity&nbsp;error;&nbsp;
+    68: &nbsp; &nbsp;
+    69: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
 </code></pre>

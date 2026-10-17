@@ -1,0 +1,374 @@
+Version: "0.1"
+Coverage: 100.00
+Settings: 
+  WritePassFail: 0
+Models: 
+  - Name: "G4.Stream handshake profile"
+    TestCases: 
+      - "tb_openjls_axis_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1726062996, 1124185465]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 5
+      TotalCovGoal: 5
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "Bin1"
+      NumBins: 5
+    Bins: 
+      - Name: "clean"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "output backpressure"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "input stall"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "backpressure + stall"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "TLAST mid-image"
+        Type: "COUNT"
+        Range: 
+          - {Min: 4, Max: 4}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+
+  - Name: "G5.States resetPhase"
+    TestCases: 
+      - "tb_openjls_axis_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1133384431, 2139824688]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 3
+      TotalCovGoal: 3
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "Bin1"
+      NumBins: 3
+    Bins: 
+      - Name: "idle"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "mid-image"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "pixels in, output draining"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+
+  - Name: "Pixel input burst length"
+    TestCases: 
+      - "tb_openjls_axis_osvvm"
+    Coverage: 0.00
+    Settings: 
+      CovWeight: 0
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1436086199, 62562446]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 0
+      TotalCovGoal: 100
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "burst length"
+      NumBins: 2
+    Bins: 
+      - Name: "Pixel input burst length 3..11"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 11}
+        Count: 0
+        AtLeast: 80
+        PercentCov: 0.0000
+      - Name: "Pixel input burst length 109..131"
+        Type: "COUNT"
+        Range: 
+          - {Min: 109, Max: 131}
+        Count: 0
+        AtLeast: 20
+        PercentCov: 0.0000
+
+  - Name: "Pixel input burst delay"
+    TestCases: 
+      - "tb_openjls_axis_osvvm"
+    Coverage: 0.00
+    Settings: 
+      CovWeight: 0
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1868600281, 1628463643]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 0
+      TotalCovGoal: 100
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "burst delay"
+      NumBins: 2
+    Bins: 
+      - Name: "Pixel input burst delay 2..8"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 8}
+        Count: 0
+        AtLeast: 80
+        PercentCov: 0.0000
+      - Name: "Pixel input burst delay 108..156"
+        Type: "COUNT"
+        Range: 
+          - {Min: 108, Max: 156}
+        Count: 0
+        AtLeast: 20
+        PercentCov: 0.0000
+
+  - Name: "Pixel input beat delay"
+    TestCases: 
+      - "tb_openjls_axis_osvvm"
+    Coverage: 0.00
+    Settings: 
+      CovWeight: 0
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1868600281, 962823823]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 0
+      TotalCovGoal: 100
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "beat delay"
+      NumBins: 3
+    Bins: 
+      - Name: "Pixel input beat delay 0..0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+        Count: 0
+        AtLeast: 85
+        PercentCov: 0.0000
+      - Name: "Pixel input beat delay 1..1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 0
+        AtLeast: 10
+        PercentCov: 0.0000
+      - Name: "Pixel input beat delay 2..2"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+        Count: 0
+        AtLeast: 5
+        PercentCov: 0.0000
+
+  - Name: "Encoded output burst length"
+    TestCases: 
+      - "tb_openjls_axis_osvvm"
+    Coverage: 0.00
+    Settings: 
+      CovWeight: 0
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [37053181, 162863842]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 0
+      TotalCovGoal: 100
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "burst length"
+      NumBins: 2
+    Bins: 
+      - Name: "Encoded output burst length 3..11"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 11}
+        Count: 0
+        AtLeast: 80
+        PercentCov: 0.0000
+      - Name: "Encoded output burst length 109..131"
+        Type: "COUNT"
+        Range: 
+          - {Min: 109, Max: 131}
+        Count: 0
+        AtLeast: 20
+        PercentCov: 0.0000
+
+  - Name: "Encoded output burst delay"
+    TestCases: 
+      - "tb_openjls_axis_osvvm"
+    Coverage: 0.00
+    Settings: 
+      CovWeight: 0
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [752943655, 1567041904]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 0
+      TotalCovGoal: 100
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "ready after valid (0/1)"
+        - "delay cycles"
+      NumBins: 4
+    Bins: 
+      - Name: "Encoded output burst delay readyAfterValid=0 cycles=2..8"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 2, Max: 8}
+        Count: 0
+        AtLeast: 65
+        PercentCov: 0.0000
+      - Name: "Encoded output burst delay readyAfterValid=0 cycles=108..156"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 108, Max: 156}
+        Count: 0
+        AtLeast: 10
+        PercentCov: 0.0000
+      - Name: "Encoded output burst delay readyAfterValid=1 cycles=2..8"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 2, Max: 8}
+        Count: 0
+        AtLeast: 15
+        PercentCov: 0.0000
+      - Name: "Encoded output burst delay readyAfterValid=1 cycles=108..156"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 108, Max: 156}
+        Count: 0
+        AtLeast: 10
+        PercentCov: 0.0000
+
+  - Name: "Encoded output beat delay"
+    TestCases: 
+      - "tb_openjls_axis_osvvm"
+    Coverage: 0.00
+    Settings: 
+      CovWeight: 0
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [2105660688, 765429755]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 0
+      TotalCovGoal: 100
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "ready after valid (0/1)"
+        - "delay cycles"
+      NumBins: 4
+    Bins: 
+      - Name: "Encoded output beat delay readyAfterValid=0 cycles=0..0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 0, Max: 0}
+        Count: 0
+        AtLeast: 85
+        PercentCov: 0.0000
+      - Name: "Encoded output beat delay readyAfterValid=0 cycles=1..1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 1, Max: 1}
+        Count: 0
+        AtLeast: 5
+        PercentCov: 0.0000
+      - Name: "Encoded output beat delay readyAfterValid=1 cycles=0..0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 0, Max: 0}
+        Count: 0
+        AtLeast: 5
+        PercentCov: 0.0000
+      - Name: "Encoded output beat delay readyAfterValid=1 cycles=1..1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 1, Max: 1}
+        Count: 0
+        AtLeast: 5
+        PercentCov: 0.0000
+

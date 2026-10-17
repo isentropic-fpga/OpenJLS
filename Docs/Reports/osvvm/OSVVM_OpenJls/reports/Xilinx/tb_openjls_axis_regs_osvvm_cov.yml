@@ -3,6 +3,143 @@ Coverage: 100.00
 Settings: 
   WritePassFail: 0
 Models: 
+  - Name: "G4.Branch register access"
+    TestCases: 
+      - "tb_openjls_axis_regs_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1728078243, 1168026133]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 11
+      TotalCovGoal: 11
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "Bin1"
+      NumBins: 11
+    Bins: 
+      - Name: "RO identity read"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "reset default"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "RW write/read"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "clamp over max"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+        Count: 2
+        AtLeast: 1
+        PercentCov: 200.0000
+      - Name: "clamp under min / zero"
+        Type: "COUNT"
+        Range: 
+          - {Min: 4, Max: 4}
+        Count: 2
+        AtLeast: 1
+        PercentCov: 200.0000
+      - Name: "partial WSTRB merge"
+        Type: "COUNT"
+        Range: 
+          - {Min: 5, Max: 5}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "skewed AW/W"
+        Type: "COUNT"
+        Range: 
+          - {Min: 6, Max: 6}
+        Count: 2
+        AtLeast: 1
+        PercentCov: 200.0000
+      - Name: "upper lanes ignored"
+        Type: "COUNT"
+        Range: 
+          - {Min: 7, Max: 7}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "RO write dropped"
+        Type: "COUNT"
+        Range: 
+          - {Min: 8, Max: 8}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "WO/unmapped read zero"
+        Type: "COUNT"
+        Range: 
+          - {Min: 9, Max: 9}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "STATUS read"
+        Type: "COUNT"
+        Range: 
+          - {Min: 10, Max: 10}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+
+  - Name: "G5.States resetPhase"
+    TestCases: 
+      - "tb_openjls_axis_regs_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1133384431, 2139824688]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 2
+      TotalCovGoal: 2
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "Bin1"
+      NumBins: 2
+    Bins: 
+      - Name: "APPLY idle"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "APPLY mid-image"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+
   - Name: "AXI-Lite channel 1 burst length"
     TestCases: 
       - "tb_openjls_axis_regs_osvvm"

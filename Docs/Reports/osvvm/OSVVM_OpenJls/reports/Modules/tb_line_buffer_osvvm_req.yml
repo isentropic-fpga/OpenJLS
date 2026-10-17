@@ -1,0 +1,5 @@
+- Requirement: "OJLS.LineBuffer"
+  TestCases: 
+  - TestName: "tb_line_buffer_osvvm"
+    Status: PASSED
+    Results: {Goal: 9908, Passed: 9908, Errors: 0, Checked: 9908, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}

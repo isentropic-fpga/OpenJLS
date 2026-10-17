@@ -3,7 +3,7 @@ Coverage: 100.00
 Settings: 
   WritePassFail: 0
 Models: 
-  - Name: "rescale x bSumSign"
+  - Name: "G4.Coding rescale x bSumSign"
     TestCases: 
       - "tb_a12_osvvm"
     Coverage: 100.00
@@ -11,7 +11,7 @@ Models:
       CovWeight: 1
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [1386591542, 88086090]
+      Seeds: [876499732, 85215836]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
@@ -31,17 +31,17 @@ Models:
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
-        Count: 127
+        Count: 128
         AtLeast: 1
-        PercentCov: 12700.0000
+        PercentCov: 12800.0000
       - Name: "rescale=0 / bSumSign=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
-        Count: 119
+        Count: 120
         AtLeast: 1
-        PercentCov: 11900.0000
+        PercentCov: 12000.0000
       - Name: "rescale=1 / bSumSign=0"
         Type: "COUNT"
         Range: 
@@ -58,4 +58,180 @@ Models:
         Count: 80
         AtLeast: 1
         PercentCov: 8000.0000
+
+  - Name: "G2.MinMax node x value"
+    TestCases: 
+      - "tb_a12_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1168425035, 132857010]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 8
+      TotalCovGoal: 8
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "Bin1"
+        - "Bin2"
+      NumBins: 8
+    Bins: 
+      - Name: "Errval=-128"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: -128, Max: -128}
+        Count: 3
+        AtLeast: 1
+        PercentCov: 300.0000
+      - Name: "Errval=128"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 128, Max: 128}
+        Count: 5
+        AtLeast: 1
+        PercentCov: 500.0000
+      - Name: "A=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: 0, Max: 0}
+        Count: 2
+        AtLeast: 1
+        PercentCov: 200.0000
+      - Name: "A=8064"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: 8064, Max: 8064}
+        Count: 3
+        AtLeast: 1
+        PercentCov: 300.0000
+      - Name: "B=-63"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+          - {Min: -63, Max: -63}
+        Count: 6
+        AtLeast: 1
+        PercentCov: 600.0000
+      - Name: "B=63"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+          - {Min: 63, Max: 63}
+        Count: 4
+        AtLeast: 1
+        PercentCov: 400.0000
+      - Name: "N=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 4, Max: 4}
+          - {Min: 1, Max: 1}
+        Count: 3
+        AtLeast: 1
+        PercentCov: 300.0000
+      - Name: "N=64"
+        Type: "COUNT"
+        Range: 
+          - {Min: 4, Max: 4}
+          - {Min: 64, Max: 64}
+        Count: 157
+        AtLeast: 1
+        PercentCov: 15700.0000
+
+  - Name: "G3.Stim node x value"
+    TestCases: 
+      - "tb_a12_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [101216275, 2036723784]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 3
+      TotalCovGoal: 3
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "Bin1"
+        - "Bin2"
+      NumBins: 3
+    Bins: 
+      - Name: "Errval=-128"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: -128, Max: -128}
+        Count: 3
+        AtLeast: 1
+        PercentCov: 300.0000
+      - Name: "B=-63"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: -63, Max: -63}
+        Count: 6
+        AtLeast: 1
+        PercentCov: 600.0000
+      - Name: "N MSB=64..64"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+          - {Min: 64, Max: 64}
+        Count: 157
+        AtLeast: 1
+        PercentCov: 15700.0000
+
+  - Name: "G2.Clamp node x value"
+    TestCases: 
+      - "tb_a12_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1168425035, 1874710428]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 2
+      TotalCovGoal: 2
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "Bin1"
+        - "Bin2"
+      NumBins: 2
+    Bins: 
+      - Name: "N=63"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 63, Max: 63}
+        Count: 55
+        AtLeast: 1
+        PercentCov: 5500.0000
+      - Name: "N=64"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 64, Max: 64}
+        Count: 157
+        AtLeast: 1
+        PercentCov: 15700.0000
 

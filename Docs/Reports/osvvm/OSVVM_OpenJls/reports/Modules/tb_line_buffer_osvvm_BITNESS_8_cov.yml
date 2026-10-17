@@ -3,7 +3,7 @@ Coverage: 100.00
 Settings: 
   WritePassFail: 0
 Models: 
-  - Name: "rowPos x colPos"
+  - Name: "G4.Edge rowPos x colPos"
     TestCases: 
       - "tb_line_buffer_osvvm"
     Coverage: 100.00
@@ -11,7 +11,7 @@ Models:
       CovWeight: 1
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [2033362149, 925304603]
+      Seeds: [1609476652, 559189179]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
@@ -31,47 +31,154 @@ Models:
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
-        Count: 33
+        Count: 36
         AtLeast: 1
-        PercentCov: 3300.0000
+        PercentCov: 3600.0000
       - Name: "rowPos=0 / colPos=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
-        Count: 245
+        Count: 254
         AtLeast: 1
-        PercentCov: 24500.0000
+        PercentCov: 25400.0000
       - Name: "rowPos=0 / colPos=2"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 2, Max: 2}
-        Count: 33
+        Count: 36
         AtLeast: 1
-        PercentCov: 3300.0000
+        PercentCov: 3600.0000
       - Name: "rowPos=1 / colPos=0"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 214
+        Count: 223
         AtLeast: 1
-        PercentCov: 21400.0000
+        PercentCov: 22300.0000
       - Name: "rowPos=1 / colPos=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 1678
+        Count: 1705
         AtLeast: 1
-        PercentCov: 167800.0000
+        PercentCov: 170500.0000
       - Name: "rowPos=1 / colPos=2"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 2, Max: 2}
-        Count: 214
+        Count: 223
         AtLeast: 1
-        PercentCov: 21400.0000
+        PercentCov: 22300.0000
+
+  - Name: "G4.Config width x height"
+    TestCases: 
+      - "tb_line_buffer_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [191197023, 311993291]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 4
+      TotalCovGoal: 4
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "Bin1"
+        - "Bin2"
+      NumBins: 4
+    Bins: 
+      - Name: "width=4 / height=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 4, Max: 4}
+          - {Min: 1, Max: 1}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "width=4 / height=16"
+        Type: "COUNT"
+        Range: 
+          - {Min: 4, Max: 4}
+          - {Min: 16, Max: 16}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "width=16 / height=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 16, Max: 16}
+          - {Min: 1, Max: 1}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "width=16 / height=16"
+        Type: "COUNT"
+        Range: 
+          - {Min: 16, Max: 16}
+          - {Min: 16, Max: 16}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+
+  - Name: "G5.States resetPhase"
+    TestCases: 
+      - "tb_line_buffer_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1133384431, 2139824688]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 4
+      TotalCovGoal: 4
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "Bin1"
+      NumBins: 4
+    Bins: 
+      - Name: "idle"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "first row"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "middle row"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "last row"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
 

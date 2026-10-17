@@ -3,7 +3,7 @@ Coverage: 100.00
 Settings: 
   WritePassFail: 0
 Models: 
-  - Name: "readOutcome"
+  - Name: "G4.Stream readOutcome"
     TestCases: 
       - "tb_context_ram_osvvm"
     Coverage: 100.00
@@ -11,7 +11,7 @@ Models:
       CovWeight: 1
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [1136918162, 592566722]
+      Seeds: [1388365917, 779344457]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
@@ -29,25 +29,25 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 578
+        Count: 579
         AtLeast: 1
-        PercentCov: 57800.0000
+        PercentCov: 57900.0000
       - Name: "stored value"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 740
+        Count: 742
         AtLeast: 1
-        PercentCov: 74000.0000
+        PercentCov: 74200.0000
       - Name: "forwarded write"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
-        Count: 4
+        Count: 5
         AtLeast: 1
-        PercentCov: 400.0000
+        PercentCov: 500.0000
 
-  - Name: "readOnEoiCycle"
+  - Name: "G4.Stream readOnEoiCycle"
     TestCases: 
       - "tb_context_ram_osvvm"
     Coverage: 100.00
@@ -55,7 +55,7 @@ Models:
       CovWeight: 1
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [910583614, 1690910151]
+      Seeds: [1996692709, 1974327784]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
@@ -90,4 +90,129 @@ Models:
         Count: 1
         AtLeast: 1
         PercentCov: 100.0000
+
+  - Name: "G5.States resetPhase"
+    TestCases: 
+      - "tb_context_ram_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1133384431, 2139824688]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 2
+      TotalCovGoal: 2
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "Bin1"
+      NumBins: 2
+    Bins: 
+      - Name: "idle"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+        Count: 6
+        AtLeast: 1
+        PercentCov: 600.0000
+      - Name: "read+write in flight"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+
+  - Name: "G2.MinMax field x value"
+    TestCases: 
+      - "tb_context_ram_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [2008890919, 191903161]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 8
+      TotalCovGoal: 8
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "Bin1"
+        - "Bin2"
+      NumBins: 8
+    Bins: 
+      - Name: "A=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 0, Max: 0}
+        Count: 376
+        AtLeast: 1
+        PercentCov: 37600.0000
+      - Name: "A=262143"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 262143, Max: 262143}
+        Count: 2
+        AtLeast: 1
+        PercentCov: 200.0000
+      - Name: "B=-4096"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: -4096, Max: -4096}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "B=4095"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 4095, Max: 4095}
+        Count: 2
+        AtLeast: 1
+        PercentCov: 200.0000
+      - Name: "C=-128"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: -128, Max: -128}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "C=127"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: 127, Max: 127}
+        Count: 3
+        AtLeast: 1
+        PercentCov: 300.0000
+      - Name: "N=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+          - {Min: 0, Max: 0}
+        Count: 7
+        AtLeast: 1
+        PercentCov: 700.0000
+      - Name: "N=127"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+          - {Min: 127, Max: 127}
+        Count: 8
+        AtLeast: 1
+        PercentCov: 800.0000
 

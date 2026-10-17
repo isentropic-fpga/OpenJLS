@@ -435,5 +435,11 @@ table, th, td {
    275: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Empty&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;sFifoEmpty&nbsp;
    276: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;);&nbsp;
    277: &nbsp; &nbsp;
-   278: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
+   278: &nbsp; &nbsp;&nbsp;--&nbsp;Col&nbsp;in&nbsp;[0,&nbsp;width&nbsp;-&nbsp;1],&nbsp;row&nbsp;in&nbsp;[0,&nbsp;height&nbsp;-&nbsp;1]&nbsp;
+   279: &nbsp; &nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(iImageWidth)&nbsp;or&nbsp;is_x(sColCounter)&nbsp;or&nbsp;sColCounter&nbsp;&lt;&nbsp;iImageWidth&nbsp;
+   280: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"line_buffer:&nbsp;column&nbsp;counter&nbsp;past&nbsp;width"&nbsp;severity&nbsp;error;&nbsp;
+   281: &nbsp; &nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(iImageHeight)&nbsp;or&nbsp;is_x(sRowCounter)&nbsp;or&nbsp;sRowCounter&nbsp;&lt;&nbsp;iImageHeight&nbsp;
+   282: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"line_buffer:&nbsp;row&nbsp;counter&nbsp;past&nbsp;height"&nbsp;severity&nbsp;error;&nbsp;
+   283: &nbsp; &nbsp;
+   284: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
 </code></pre>

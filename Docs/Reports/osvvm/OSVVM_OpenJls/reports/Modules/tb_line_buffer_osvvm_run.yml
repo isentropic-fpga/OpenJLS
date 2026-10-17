@@ -5,7 +5,7 @@ TestSuiteName: "Modules"
 BuildName: "OSVVM_OpenJls"
 Generics:           null
 ReportsTestSuiteDirectory:  "reports/Modules"
-RequirementsYamlFile: ""
+RequirementsYamlFile:  "reports/Modules/tb_line_buffer_osvvm_req.yml"
 AlertYamlFile:  "reports/Modules/tb_line_buffer_osvvm_alerts.yml"
 CovYamlFile:  "reports/Modules/tb_line_buffer_osvvm_cov.yml"
 ScoreboardDict:           null

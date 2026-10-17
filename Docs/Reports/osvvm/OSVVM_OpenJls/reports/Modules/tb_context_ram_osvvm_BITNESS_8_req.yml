@@ -1,0 +1,5 @@
+- Requirement: "OJLS.CtxRam"
+  TestCases: 
+  - TestName: "tb_context_ram_osvvm"
+    Status: PASSED
+    Results: {Goal: 1322, Passed: 1326, Errors: 0, Checked: 1326, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}

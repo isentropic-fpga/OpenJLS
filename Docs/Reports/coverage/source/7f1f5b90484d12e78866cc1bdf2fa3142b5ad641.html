@@ -226,5 +226,10 @@ table, th, td {
     66: &nbsp; &nbsp;
     67: &nbsp; &nbsp;&nbsp;end&nbsp;generate&nbsp;gen_general_range;&nbsp;
     68: &nbsp; &nbsp;
-    69: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
+    69: &nbsp; &nbsp;&nbsp;--&nbsp;Errval&nbsp;in&nbsp;[(RANGE&nbsp;+&nbsp;1)&nbsp;/&nbsp;2&nbsp;-&nbsp;RANGE,&nbsp;(RANGE&nbsp;+&nbsp;1)&nbsp;/&nbsp;2&nbsp;-&nbsp;1]&nbsp;for&nbsp;|input|&nbsp;&lt;&nbsp;RANGE&nbsp;
+    70: &nbsp; &nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(oErrorVal)&nbsp;or&nbsp;abs(to_integer(iErrorVal))&nbsp;&gt;=&nbsp;RANGE_P&nbsp;
+    71: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or&nbsp;(to_integer(oErrorVal)&nbsp;&gt;=&nbsp;(RANGE_P&nbsp;+&nbsp;1)&nbsp;/&nbsp;2&nbsp;-&nbsp;RANGE_P&nbsp;and&nbsp;to_integer(oErrorVal)&nbsp;&lt;&nbsp;(RANGE_P&nbsp;+&nbsp;1)&nbsp;/&nbsp;2)&nbsp;
+    72: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"a9:&nbsp;Errval&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;&nbsp;
+    73: &nbsp; &nbsp;
+    74: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
 </code></pre>

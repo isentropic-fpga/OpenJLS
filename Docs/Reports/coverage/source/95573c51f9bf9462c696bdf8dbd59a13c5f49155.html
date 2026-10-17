@@ -217,9 +217,12 @@ table, th, td {
     57: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vEmErrval&nbsp;:=&nbsp;0;&nbsp;
     58: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;
     59: &nbsp; &nbsp;
-    60: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;oEmErrVal&nbsp;&lt;=&nbsp;to_unsigned(vEmErrval,&nbsp;oEmErrVal'length);&nbsp;
-    61: &nbsp; &nbsp;
-    62: &nbsp; &nbsp;&nbsp;end&nbsp;process&nbsp;p_errval_map;&nbsp;
-    63: &nbsp; &nbsp;
-    64: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
+    60: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;--&nbsp;EMErrval&nbsp;in&nbsp;[0,&nbsp;2^(B&nbsp;+&nbsp;1)]&nbsp;
+    61: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;assert&nbsp;vEmErrval&nbsp;&lt;&nbsp;2&nbsp;**&nbsp;MAPPED_ERRVAL_WIDTH&nbsp;report&nbsp;"a22:&nbsp;EMErrval&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;&nbsp;
+    62: &nbsp; &nbsp;
+    63: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;oEmErrVal&nbsp;&lt;=&nbsp;to_unsigned(vEmErrval,&nbsp;oEmErrVal'length);&nbsp;
+    64: &nbsp; &nbsp;
+    65: &nbsp; &nbsp;&nbsp;end&nbsp;process&nbsp;p_errval_map;&nbsp;
+    66: &nbsp; &nbsp;
+    67: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
 </code></pre>

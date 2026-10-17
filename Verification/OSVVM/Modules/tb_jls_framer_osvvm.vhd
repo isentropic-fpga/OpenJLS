@@ -22,7 +22,7 @@
 -- Guidelines:
 --   G1.Req      OJLS.Framer
 --   G1.Ojls     marker/header byte model
---   G2.Range    RTL jls_framer.vhd: PSL contract + FIFO count asserts, no range comments yet
+--   G2.Range    RTL jls_framer.vhd (range comments + postponed asserts)
 --   G2.MinMax   N/A: byte framing, no arithmetic node
 --   G2.Clamp    N/A: no accumulator
 --   G2.Checked  checked_* on all outputs

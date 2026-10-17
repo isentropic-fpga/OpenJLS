@@ -257,13 +257,13 @@ table, th, td {
   <tr>
     <td style="background-color:var(--table-row-color)">
 <a href="A6_prediction_correction.vhd.html">A6_prediction_correction.vhd</a></td>
-    <td class="percent100">100.0 % (13/13)</td>
+    <td class="percent100">100.0 % (14/14)</td>
     <td class="percent100">100.0 % (10/10)</td>
     <td class="percentna">N.A.</td>
     <td class="percentna">N.A.</td>
     <td class="percentna">N.A.</td>
     <td class="percentna">N.A.</td>
-    <td class="percent100">100.0 % (23/23)</td>
+    <td class="percent100">100.0 % (24/24)</td>
   </tr>
 </table>
 
@@ -310,7 +310,8 @@ table, th, td {
 <h3>Signal assignment statement on line 61:</h3><code>61:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">unsigned(sPxMinusCq(BITNESS&nbsp;-&nbsp;1&nbsp;downto&nbsp;0))</code>;&nbsp;</code><br><b>Count:</b> 4664<br><b>Threshold:</b> 1<hr/>
 <h3>If statement on lines 64 to 65:</h3><code>64:&nbsp;&nbsp;oPx&nbsp;&lt;=&nbsp;sAddSat&nbsp;when&nbsp;iSign&nbsp;=&nbsp;CO_SIGN_POS&nbsp;else&nbsp;<br>65:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sSubSat;&nbsp;</code><br><b>Count:</b> 10609<br><b>Threshold:</b> 1<hr/>
 <h3>Signal assignment statement on line 64:</h3><code>64:&nbsp;&nbsp;oPx&nbsp;&lt;=&nbsp;<code class="cbg">sAddSat</code>&nbsp;when&nbsp;iSign&nbsp;=&nbsp;CO_SIGN_POS&nbsp;else&nbsp;</code><br><b>Count:</b> 5287<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 65:</h3><code>65:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">sSubSat</code>;&nbsp;</code><br><b>Count:</b> 5322<br><b>Threshold:</b> 1  </div>
+<h3>Signal assignment statement on line 65:</h3><code>65:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">sSubSat</code>;&nbsp;</code><br><b>Count:</b> 5322<br><b>Threshold:</b> 1<hr/>
+<h3>Assertion statement on line 68:</h3><code>68:&nbsp;&nbsp;<code class="cbg">postponed&nbsp;assert&nbsp;is_x(oPx)&nbsp;or&nbsp;oPx&nbsp;&lt;=&nbsp;MAX_VAL&nbsp;report&nbsp;"a6:&nbsp;Px&nbsp;above&nbsp;MAX_VAL"&nbsp;severity&nbsp;error;</code>&nbsp;</code><br><b>Count:</b> 5530<br><b>Threshold:</b> 1  </div>
   </section>
 
 </div>
@@ -466,7 +467,7 @@ table, th, td {
    document.getElementById("defaultOpen").click();
 </script>
 <footer>   <p> NVC version: 1.23.0 </p>
-   <p> Generated on: Fri Oct 16 16:34:39 2026
+   <p> Generated on: Sat Oct 17 11:48:27 2026
  </p>
 </footer>
 </body>

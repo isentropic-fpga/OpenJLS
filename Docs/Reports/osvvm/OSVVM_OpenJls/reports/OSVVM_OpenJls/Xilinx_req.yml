@@ -35,10 +35,13 @@
   TestCases:
   - TestName: tb_openjls_axis_osvvm
     Status: PASSED
-    Results: { Goal: 285, Passed: 290, Errors: 0, Checked: 290, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
+    Results: { Goal: 456, Passed: 464, Errors: 0, Checked: 464, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
   - TestName: tb_openjls_axis_osvvm
     Status: PASSED
-    Results: { Goal: 285, Passed: 290, Errors: 0, Checked: 290, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
+    Results: { Goal: 520, Passed: 528, Errors: 0, Checked: 528, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
   - TestName: tb_openjls_axis_osvvm
     Status: PASSED
-    Results: { Goal: 315, Passed: 320, Errors: 0, Checked: 320, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
+    Results: { Goal: 456, Passed: 464, Errors: 0, Checked: 464, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
+  - TestName: tb_openjls_axis_osvvm
+    Status: PASSED
+    Results: { Goal: 504, Passed: 512, Errors: 0, Checked: 512, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}

@@ -217,7 +217,7 @@ OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level
 | Suite | Status | Test/Cov | Summary |
 |---|---|---|---|
 | NVC code coverage | info | 99.8% | Statement coverage<sup>1</sup> |
-| OSVVM suite | PASS | 100% | 113 tests<sup>2</sup> |
+| OSVVM suite | PASS | 100% | 115 tests<sup>2</sup> |
 | Golden model | PASS | 100% | 5555/5555 images<sup>3</sup> |
 | Post-synth OSVVM | PASS | 100% | Control-plane stress<sup>4</sup> |
 | Post-synth golden model | PASS | 100% | 167/167 images<sup>5</sup> |
@@ -225,14 +225,14 @@ OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level
 
 <sub>
 <sup>1</sup> Per-DUT-file breakdown.<br>
-<sup>2</sup> 7,404,577 affirmations (module + top + AXI wrappers).<br>
+<sup>2</sup> 7,550,766 affirmations (module + top + AXI wrappers).<br>
 <sup>3</sup> Byte-exact vs CharLS.<br>
 <sup>4</sup> On the gate-level netlist.<br>
 <sup>5</sup> 8-bit images up to 0.05 MP, byte-exact vs CharLS.<br>
 <sup>6</sup> Byte-exact vs CharLS on PYNQ-Z2 silicon.
 </sub>
 
-- **OSVVM** — 29 module testbenches against independent T.87 reference models, a top-level control-plane stress test, and AXI wrapper tests, all with requirements tracking.
+- **OSVVM** — 32 module testbenches against independent T.87 reference models, a top-level control-plane stress test, and AXI wrapper tests, all with requirements tracking.
 - **Coverage** — OSVVM functional coverage plus NVC statement coverage.
 - **Golden model** — byte-exact against [CharLS](https://github.com/team-charls/charls) and the official ISO/IEC 14495-1 reference vectors.
 - **Design contracts** — PSL assertions on the handshakes, checked every run.

@@ -228,9 +228,13 @@ table, th, td {
     68: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vErrAdj&nbsp;:=&nbsp;vErrAdj&nbsp;-&nbsp;RANGE_P;&nbsp;
     69: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;
     70: &nbsp; &nbsp;
-    71: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;oErrval&nbsp;&lt;=&nbsp;to_signed(vErrAdj,&nbsp;oErrval'length);&nbsp;
-    72: &nbsp; &nbsp;
-    73: &nbsp; &nbsp;&nbsp;end&nbsp;process&nbsp;p_ri_error;&nbsp;
+    71: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;--&nbsp;Errval&nbsp;in&nbsp;[(RANGE&nbsp;+&nbsp;1)&nbsp;/&nbsp;2&nbsp;-&nbsp;RANGE,&nbsp;(RANGE&nbsp;+&nbsp;1)&nbsp;/&nbsp;2&nbsp;-&nbsp;1]&nbsp;for&nbsp;|Errval|&nbsp;&lt;&nbsp;RANGE&nbsp;
+    72: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;assert&nbsp;abs(vErr)&nbsp;&gt;=&nbsp;RANGE_P&nbsp;or&nbsp;(vErrAdj&nbsp;&gt;=&nbsp;(RANGE_P&nbsp;+&nbsp;1)&nbsp;/&nbsp;2&nbsp;-&nbsp;RANGE_P&nbsp;and&nbsp;vErrAdj&nbsp;&lt;&nbsp;(RANGE_P&nbsp;+&nbsp;1)&nbsp;/&nbsp;2)&nbsp;
+    73: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"a19:&nbsp;Errval&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;&nbsp;
     74: &nbsp; &nbsp;
-    75: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
+    75: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;oErrval&nbsp;&lt;=&nbsp;to_signed(vErrAdj,&nbsp;oErrval'length);&nbsp;
+    76: &nbsp; &nbsp;
+    77: &nbsp; &nbsp;&nbsp;end&nbsp;process&nbsp;p_ri_error;&nbsp;
+    78: &nbsp; &nbsp;
+    79: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
 </code></pre>

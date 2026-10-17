@@ -213,5 +213,10 @@ table, th, td {
     53: &nbsp; &nbsp;
     54: &nbsp; &nbsp;&nbsp;oSign&nbsp;&lt;=&nbsp;sSign;&nbsp;
     55: &nbsp; &nbsp;
-    56: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
+    56: &nbsp; &nbsp;&nbsp;--&nbsp;Q1&nbsp;in&nbsp;[0,&nbsp;4]&nbsp;(first&nbsp;non-zero&nbsp;made&nbsp;positive),&nbsp;Q2,&nbsp;Q3&nbsp;in&nbsp;[-4,&nbsp;4]&nbsp;
+    57: &nbsp; &nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(oQ1)&nbsp;or&nbsp;(oQ1&nbsp;&gt;=&nbsp;0&nbsp;and&nbsp;oQ1&nbsp;&lt;=&nbsp;4)&nbsp;report&nbsp;"a4_1:&nbsp;Q1&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;&nbsp;
+    58: &nbsp; &nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(oQ2)&nbsp;or&nbsp;abs(to_integer(oQ2))&nbsp;&lt;=&nbsp;4&nbsp;report&nbsp;"a4_1:&nbsp;Q2&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;&nbsp;
+    59: &nbsp; &nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(oQ3)&nbsp;or&nbsp;abs(to_integer(oQ3))&nbsp;&lt;=&nbsp;4&nbsp;report&nbsp;"a4_1:&nbsp;Q3&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;&nbsp;
+    60: &nbsp; &nbsp;
+    61: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
 </code></pre>

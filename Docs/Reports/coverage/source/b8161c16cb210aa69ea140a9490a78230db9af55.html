@@ -205,5 +205,8 @@ table, th, td {
     45: &nbsp; &nbsp;&nbsp;oTemp&nbsp;&lt;=&nbsp;iAq&nbsp;when&nbsp;iRItype&nbsp;=&nbsp;'0'&nbsp;else&nbsp;
     46: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iAq&nbsp;+&nbsp;resize(shift_right(iNq,&nbsp;1),&nbsp;A_WIDTH);&nbsp;
     47: &nbsp; &nbsp;
-    48: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
+    48: &nbsp; &nbsp;&nbsp;--&nbsp;TEMP&nbsp;=&nbsp;A&nbsp;+&nbsp;N&nbsp;/&nbsp;2&nbsp;in&nbsp;[0,&nbsp;2^A_WIDTH&nbsp;-&nbsp;1]&nbsp;(no&nbsp;wrap)&nbsp;
+    49: &nbsp; &nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(oTemp)&nbsp;or&nbsp;oTemp&nbsp;&gt;=&nbsp;iAq&nbsp;report&nbsp;"a20:&nbsp;TEMP&nbsp;wrapped"&nbsp;severity&nbsp;error;&nbsp;
+    50: &nbsp; &nbsp;
+    51: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
 </code></pre>

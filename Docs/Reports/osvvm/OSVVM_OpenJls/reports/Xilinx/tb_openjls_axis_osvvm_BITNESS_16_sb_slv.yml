@@ -1,0 +1,35 @@
+Version: "0.1"
+TestCase: "tb_openjls_axis_osvvm"
+Scoreboards: 
+  - Name:         "TransmitFifo"
+    ParentName:   "PixelInput"
+    ItemCount:    152
+    ErrorCount:   0
+    ItemsChecked: 0
+    ItemsPopped:  152
+    ItemsDropped: 0
+    FifoCount:    0
+  - Name:         "ReceiveFifo"
+    ParentName:   "EncodedOutput"
+    ItemCount:    72
+    ErrorCount:   0
+    ItemsChecked: 0
+    ItemsPopped:  72
+    ItemsDropped: 0
+    FifoCount:    0
+  - Name:         "TxBurstFifo"
+    ParentName:   "PixelInput"
+    ItemCount:    152
+    ErrorCount:   0
+    ItemsChecked: 0
+    ItemsPopped:  152
+    ItemsDropped: 0
+    FifoCount:    0
+  - Name:         "RxBurstFifo"
+    ParentName:   "EncodedOutput"
+    ItemCount:    520
+    ErrorCount:   0
+    ItemsChecked: 0
+    ItemsPopped:  520
+    ItemsDropped: 0
+    FifoCount:    0

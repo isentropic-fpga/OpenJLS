@@ -34,7 +34,7 @@
 -- Guidelines:
 --   G1.Req      OJLS.ByteStuffer
 --   G1.Ojls     T.87 FF-stuffing bit-string model
---   G2.Range    RTL byte_stuffer.vhd: PSL contract + FIFO overflow asserts, no range comments yet
+--   G2.Range    RTL byte_stuffer.vhd (range comments + postponed asserts)
 --   G2.MinMax   N/A: bit packing, no arithmetic node
 --   G2.Clamp    N/A: no accumulator
 --   G2.Checked  checked_* on all outputs

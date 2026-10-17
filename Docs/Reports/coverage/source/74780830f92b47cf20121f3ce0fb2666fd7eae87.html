@@ -234,5 +234,9 @@ table, th, td {
     74: &nbsp; &nbsp;&nbsp;oNq&nbsp;&lt;=&nbsp;sNRescale&nbsp;when&nbsp;sDoRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;
     75: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sNqNew;&nbsp;
     76: &nbsp; &nbsp;
-    77: &nbsp; end&nbsp;architecture&nbsp;rtl;&nbsp;
+    77: &nbsp; &nbsp;&nbsp;--&nbsp;A&nbsp;+&nbsp;|Errval|&nbsp;in&nbsp;[0,&nbsp;2^A_WIDTH&nbsp;-&nbsp;1]&nbsp;(no&nbsp;wrap);&nbsp;N&nbsp;in&nbsp;[1,&nbsp;RESET]&nbsp;
+    78: &nbsp; &nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(sAqNew)&nbsp;or&nbsp;sAqNew&nbsp;&gt;=&nbsp;iAq&nbsp;report&nbsp;"a12:&nbsp;A&nbsp;wrapped"&nbsp;severity&nbsp;error;&nbsp;
+    79: &nbsp; &nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(oNq)&nbsp;or&nbsp;iNq&nbsp;&gt;&nbsp;RESET&nbsp;or&nbsp;(oNq&nbsp;&gt;=&nbsp;1&nbsp;and&nbsp;oNq&nbsp;&lt;=&nbsp;RESET)&nbsp;report&nbsp;"a12:&nbsp;N&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;&nbsp;
+    80: &nbsp; &nbsp;
+    81: &nbsp; end&nbsp;architecture&nbsp;rtl;&nbsp;
 </code></pre>

@@ -295,5 +295,11 @@ table, th, td {
    135: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sWrDataReg&nbsp;when&nbsp;sFwdSameReg&nbsp;=&nbsp;'1'&nbsp;else&nbsp;
    136: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sBramRdData;&nbsp;
    137: &nbsp; &nbsp;
-   138: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
+   138: &nbsp; &nbsp;&nbsp;--&nbsp;Enabled&nbsp;addresses&nbsp;in&nbsp;[0,&nbsp;RAM_DEPTH&nbsp;-&nbsp;1]&nbsp;
+   139: &nbsp; &nbsp;&nbsp;postponed&nbsp;assert&nbsp;iRdEn&nbsp;/=&nbsp;'1'&nbsp;or&nbsp;is_x(iRdAddr)&nbsp;or&nbsp;unsigned(iRdAddr)&nbsp;&lt;&nbsp;RAM_DEPTH&nbsp;
+   140: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"context_ram:&nbsp;read&nbsp;address&nbsp;past&nbsp;depth"&nbsp;severity&nbsp;error;&nbsp;
+   141: &nbsp; &nbsp;&nbsp;postponed&nbsp;assert&nbsp;iWrEn&nbsp;/=&nbsp;'1'&nbsp;or&nbsp;is_x(iWrAddr)&nbsp;or&nbsp;unsigned(iWrAddr)&nbsp;&lt;&nbsp;RAM_DEPTH&nbsp;
+   142: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"context_ram:&nbsp;write&nbsp;address&nbsp;past&nbsp;depth"&nbsp;severity&nbsp;error;&nbsp;
+   143: &nbsp; &nbsp;
+   144: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
 </code></pre>

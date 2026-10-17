@@ -3,9 +3,9 @@ TestCase: "tb_byte_stuffer_osvvm"
 Scoreboards: 
   - Name:         "byte_stuffer SB"
     ParentName:   "OSVVM"
-    ItemCount:    4251
+    ItemCount:    4328
     ErrorCount:   0
-    ItemsChecked: 4251
-    ItemsPopped:  4251
+    ItemsChecked: 0
+    ItemsPopped:  4328
     ItemsDropped: 0
     FifoCount:    0

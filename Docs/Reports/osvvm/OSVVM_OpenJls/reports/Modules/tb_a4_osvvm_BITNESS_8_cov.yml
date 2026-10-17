@@ -3,7 +3,7 @@ Coverage: 100.00
 Settings: 
   WritePassFail: 0
 Models: 
-  - Name: "Qi"
+  - Name: "G4.Branch Qi"
     TestCases: 
       - "tb_a4_osvvm"
     Coverage: 100.00
@@ -11,7 +11,7 @@ Models:
       CovWeight: 1
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [1728691784, 249832986]
+      Seeds: [1271085104, 455332626]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
@@ -31,9 +31,9 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: -4, Max: -4}
-        Count: 324
+        Count: 325
         AtLeast: 1
-        PercentCov: 32400.0000
+        PercentCov: 32500.0000
       - Name: "lane=1 / level=-3"
         Type: "COUNT"
         Range: 
@@ -103,9 +103,9 @@ Models:
         Range: 
           - {Min: 2, Max: 2}
           - {Min: -4, Max: -4}
-        Count: 559
+        Count: 560
         AtLeast: 1
-        PercentCov: 55900.0000
+        PercentCov: 56000.0000
       - Name: "lane=2 / level=-3"
         Type: "COUNT"
         Range: 
@@ -175,9 +175,9 @@ Models:
         Range: 
           - {Min: 3, Max: 3}
           - {Min: -4, Max: -4}
-        Count: 321
+        Count: 322
         AtLeast: 1
-        PercentCov: 32100.0000
+        PercentCov: 32200.0000
       - Name: "lane=3 / level=-3"
         Type: "COUNT"
         Range: 
@@ -242,4 +242,76 @@ Models:
         Count: 330
         AtLeast: 1
         PercentCov: 33000.0000
+
+  - Name: "G3.Stim node x value"
+    TestCases: 
+      - "tb_a4_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [101216275, 2036723784]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 6
+      TotalCovGoal: 6
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "Bin1"
+        - "Bin2"
+      NumBins: 6
+    Bins: 
+      - Name: "D1=-256"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: -256, Max: -256}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "D1 MSB=-256..-1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: -256, Max: -1}
+        Count: 353
+        AtLeast: 1
+        PercentCov: 35300.0000
+      - Name: "D2=-256"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: -256, Max: -256}
+        Count: 2
+        AtLeast: 1
+        PercentCov: 200.0000
+      - Name: "D2 MSB=-256..-1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: -256, Max: -1}
+        Count: 604
+        AtLeast: 1
+        PercentCov: 60400.0000
+      - Name: "D3=-256"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+          - {Min: -256, Max: -256}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "D3 MSB=-256..-1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+          - {Min: -256, Max: -1}
+        Count: 355
+        AtLeast: 1
+        PercentCov: 35500.0000
 

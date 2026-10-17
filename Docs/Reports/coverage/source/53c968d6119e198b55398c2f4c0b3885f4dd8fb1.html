@@ -199,5 +199,9 @@ table, th, td {
     39: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;math_max(iA,&nbsp;iB)&nbsp;when&nbsp;iC&nbsp;&lt;=&nbsp;math_min(iA,&nbsp;iB)&nbsp;else&nbsp;
     40: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iA&nbsp;+&nbsp;iB&nbsp;-&nbsp;iC;&nbsp;
     41: &nbsp; &nbsp;
-    42: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
+    42: &nbsp; &nbsp;&nbsp;--&nbsp;Px&nbsp;in&nbsp;[min(Ra,&nbsp;Rb),&nbsp;max(Ra,&nbsp;Rb)];&nbsp;Ra&nbsp;+&nbsp;Rb&nbsp;-&nbsp;Rc&nbsp;may&nbsp;wrap&nbsp;mid-expression,&nbsp;the&nbsp;result&nbsp;does&nbsp;not&nbsp;
+    43: &nbsp; &nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(oPx)&nbsp;or&nbsp;(oPx&nbsp;&gt;=&nbsp;math_min(iA,&nbsp;iB)&nbsp;and&nbsp;oPx&nbsp;&lt;=&nbsp;math_max(iA,&nbsp;iB))&nbsp;
+    44: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"a5:&nbsp;Px&nbsp;outside&nbsp;[min(Ra,&nbsp;Rb),&nbsp;max(Ra,&nbsp;Rb)]"&nbsp;severity&nbsp;error;&nbsp;
+    45: &nbsp; &nbsp;
+    46: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
 </code></pre>

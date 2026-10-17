@@ -203,5 +203,8 @@ table, th, td {
     43: &nbsp; &nbsp;
     44: &nbsp; &nbsp;&nbsp;oErrval&nbsp;&lt;=&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;sPx);&nbsp;
     45: &nbsp; &nbsp;
-    46: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
+    46: &nbsp; &nbsp;&nbsp;--&nbsp;Errval&nbsp;in&nbsp;[-(2^B&nbsp;-&nbsp;1),&nbsp;2^B&nbsp;-&nbsp;1]&nbsp;
+    47: &nbsp; &nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(oErrval)&nbsp;or&nbsp;abs(to_integer(oErrval))&nbsp;&lt;&nbsp;2&nbsp;**&nbsp;BITNESS&nbsp;report&nbsp;"a18:&nbsp;Errval&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;&nbsp;
+    48: &nbsp; &nbsp;
+    49: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
 </code></pre>

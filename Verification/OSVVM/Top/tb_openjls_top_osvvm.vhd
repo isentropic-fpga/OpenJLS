@@ -50,11 +50,10 @@
 -- Guidelines:
 --   G1.Req      T87.H3, OJLS.BackToBack, OJLS.RIForward, OJLS.NoStallCompress, OJLS.NoStallEOL
 --   G1.Ojls     Annex H.3 golden + clean-run self reference (payload owned by the golden suite)
---   G2.Range    RTL openjls_top.vhd: PSL contract asserts, no range comments yet
+--   G2.Range    RTL openjls_top.vhd (range comments + postponed asserts on writeback narrowing, C delta, run count)
 --   G2.MinMax   N/A: owned by module TBs
 --   G2.Clamp    N/A: owned by module TBs
 --   G2.Checked  N/A: slv byte compare, X never matches
---   G3.Signed   gap: openjls_top.vhd:927 B decode not in signed('0' & x) form (safe by range)
 --   G3.Stim     N/A: owned by module TBs
 --   G4.Edge     G4.Config width x height (1-line image)
 --   G4.Stream   G4.Stream bp x inputStall x prelude, backToBack, upstreamStallPropagated

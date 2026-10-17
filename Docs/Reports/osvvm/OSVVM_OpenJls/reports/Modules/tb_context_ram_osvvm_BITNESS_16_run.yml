@@ -6,7 +6,7 @@ BuildName: "OSVVM_OpenJls"
 Generics:
   BITNESS: "16"
 ReportsTestSuiteDirectory:  "reports/Modules"
-RequirementsYamlFile: ""
+RequirementsYamlFile:  "reports/Modules/tb_context_ram_osvvm_BITNESS_16_req.yml"
 AlertYamlFile:  "reports/Modules/tb_context_ram_osvvm_BITNESS_16_alerts.yml"
 CovYamlFile:  "reports/Modules/tb_context_ram_osvvm_BITNESS_16_cov.yml"
 ScoreboardDict:           null

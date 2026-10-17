@@ -296,28 +296,28 @@ architecture rtl of openjls_top is
   signal sCtxOwnerPar                       : std_logic;                                              -- sticky: parity owning the ctx RAM (held thru bubbles)
   signal sCtxRdPar                          : std_logic;                                              -- effective owner this cycle (combinational)
   signal sReg1ModeRun                       : std_logic;
-  signal sReg1D1                            : signed(BITNESS downto 0);
-  signal sReg1D2                            : signed(BITNESS downto 0);
-  signal sReg1D3                            : signed(BITNESS downto 0);
+  signal sReg1D1                            : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
+  signal sReg1D2                            : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
+  signal sReg1D3                            : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
 
   -- Input stage
-  signal sPixel                             : unsigned(BITNESS - 1 downto 0);
-  signal sRx                                : unsigned(BITNESS - 1 downto 0);
-  signal sImageWidth                        : unsigned(log2ceil(MAX_IMAGE_WIDTH + 1) - 1 downto 0);
-  signal sImageHeight                       : unsigned(log2ceil(MAX_IMAGE_HEIGHT + 1) - 1 downto 0);
+  signal sPixel                             : unsigned(BITNESS - 1 downto 0);                         -- [0, MAX_VAL]
+  signal sRx                                : unsigned(BITNESS - 1 downto 0);                         -- [0, MAX_VAL]
+  signal sImageWidth                        : unsigned(log2ceil(MAX_IMAGE_WIDTH + 1) - 1 downto 0);   -- [4, MAX_IMAGE_WIDTH]
+  signal sImageHeight                       : unsigned(log2ceil(MAX_IMAGE_HEIGHT + 1) - 1 downto 0);  -- [1, MAX_IMAGE_HEIGHT]
   signal sValid                             : std_logic;                                              -- iValid & sReady
-  signal sLbRa                              : unsigned(BITNESS - 1 downto 0);
-  signal sLbRb                              : unsigned(BITNESS - 1 downto 0);
-  signal sLbRc                              : unsigned(BITNESS - 1 downto 0);
-  signal sLbRd                              : unsigned(BITNESS - 1 downto 0);
+  signal sLbRa                              : unsigned(BITNESS - 1 downto 0);                         -- [0, MAX_VAL]
+  signal sLbRb                              : unsigned(BITNESS - 1 downto 0);                         -- [0, MAX_VAL]
+  signal sLbRc                              : unsigned(BITNESS - 1 downto 0);                         -- [0, MAX_VAL]
+  signal sLbRd                              : unsigned(BITNESS - 1 downto 0);                         -- [0, MAX_VAL]
   signal sLbValid                           : std_logic;
   signal sLbEol                             : std_logic;
   signal sLbEoi                             : std_logic;
 
   -- Stage 1 combinational
-  signal sS1D1                              : signed(BITNESS downto 0);
-  signal sS1D2                              : signed(BITNESS downto 0);
-  signal sS1D3                              : signed(BITNESS downto 0);
+  signal sS1D1                              : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
+  signal sS1D2                              : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
+  signal sS1D3                              : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
   signal sS1ModeRun                         : std_logic;
   -- Sticky run flag: A15_16's next-state sInRun, fed back to stage 1 so the
   -- pixel currently in stage 1 inherits "still in run" from the prior pixel
@@ -325,38 +325,38 @@ architecture rtl of openjls_top is
   signal sS1InRunNext                       : std_logic;
 
   -- Stage 2 — regular
-  signal sS2Q1                              : signed(3 downto 0);
-  signal sS2Q2                              : signed(3 downto 0);
-  signal sS2Q3                              : signed(3 downto 0);
-  signal sS2MQ1                             : signed(3 downto 0);
-  signal sS2MQ2                             : signed(3 downto 0);
-  signal sS2MQ3                             : signed(3 downto 0);
+  signal sS2Q1                              : signed(3 downto 0);                                     -- [-4, 4]
+  signal sS2Q2                              : signed(3 downto 0);                                     -- [-4, 4]
+  signal sS2Q3                              : signed(3 downto 0);                                     -- [-4, 4]
+  signal sS2MQ1                             : signed(3 downto 0);                                     -- [0, 4]
+  signal sS2MQ2                             : signed(3 downto 0);                                     -- [-4, 4]
+  signal sS2MQ3                             : signed(3 downto 0);                                     -- [-4, 4]
   signal sS2MSign                           : std_logic;
-  signal sS2QReg                            : unsigned(8 downto 0);
-  signal sS2RunQ                            : unsigned(8 downto 0);
+  signal sS2QReg                            : unsigned(8 downto 0);                                   -- [0, 364]
+  signal sS2RunQ                            : unsigned(8 downto 0);                                   -- [365, 366]
 
   -- Stage 2 — run
-  signal sRunCntReg                         : unsigned(RUN_CNT_WIDTH - 1 downto 0);
-  signal sS2RunCnt                          : unsigned(RUN_CNT_WIDTH - 1 downto 0);
+  signal sRunCntReg                         : unsigned(RUN_CNT_WIDTH - 1 downto 0);                   -- [0, MAX_IMAGE_WIDTH]
+  signal sS2RunCnt                          : unsigned(RUN_CNT_WIDTH - 1 downto 0);                   -- [0, MAX_IMAGE_WIDTH]
   signal sS2RunHit                          : std_logic;
   signal sS2RunContinue                     : std_logic;
   signal sS2RItype                          : std_logic;
   signal sS2RawValid                        : std_logic;
-  signal sS2RawLen                          : unsigned(4 downto 0);
-  signal sS2RawVal                          : unsigned(RUN_CNT_WIDTH - 1 downto 0);
+  signal sS2RawLen                          : unsigned(4 downto 0);                                   -- [0, J_MAX_BITS + 1]
+  signal sS2RawVal                          : unsigned(RUN_CNT_WIDTH - 1 downto 0);                   -- [0, 2^J[RUNindex] - 1]
   signal sS2RiValid                         : std_logic;
-  signal sS2RiIx                            : unsigned(BITNESS - 1 downto 0);
-  signal sS2RiRa                            : unsigned(BITNESS - 1 downto 0);
-  signal sS2RiRb                            : unsigned(BITNESS - 1 downto 0);
-  signal sS2RiRunIndex                      : unsigned(4 downto 0);
-  signal sS2RiErr18                         : signed(BITNESS downto 0);
+  signal sS2RiIx                            : unsigned(BITNESS - 1 downto 0);                         -- [0, MAX_VAL]
+  signal sS2RiRa                            : unsigned(BITNESS - 1 downto 0);                         -- [0, MAX_VAL]
+  signal sS2RiRb                            : unsigned(BITNESS - 1 downto 0);                         -- [0, MAX_VAL]
+  signal sS2RiRunIndex                      : unsigned(4 downto 0);                                   -- [0, 31]
+  signal sS2RiErr18                         : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
 
   -- Stage 2 — muxed
-  signal sS2Q                               : unsigned(8 downto 0);
+  signal sS2Q                               : unsigned(8 downto 0);                                   -- [0, 366]
   signal sS2TokenMode                       : t_token_mode;
 
-  signal sS2Px                              : unsigned(BITNESS - 1 downto 0);
-  signal sReg2Px                            : unsigned(BITNESS - 1 downto 0);
+  signal sS2Px                              : unsigned(BITNESS - 1 downto 0);                         -- [0, MAX_VAL]
+  signal sReg2Px                            : unsigned(BITNESS - 1 downto 0);                         -- [0, MAX_VAL]
 
   -- context_ram packed I/O
   signal sCtxRdData                         : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
@@ -364,24 +364,24 @@ architecture rtl of openjls_top is
   signal sCtxWrEn                           : std_logic;
 
   -- Stage 3 context (mux between BRAM regular read and RI cluster read)
-  signal sS3Aq                              : unsigned(A_WIDTH - 1 downto 0);
-  signal sS3Bq                              : signed(B_WIDTH - 1 downto 0);
-  signal sS3Cq                              : signed(C_WIDTH - 1 downto 0);
-  signal sS3Nq                              : unsigned(N_WIDTH - 1 downto 0);
-  signal sS3Nn                              : unsigned(NN_WIDTH - 1 downto 0);
+  signal sS3Aq                              : unsigned(A_WIDTH - 1 downto 0);                         -- [0, 2^A_STORED - 1]
+  signal sS3Bq                              : signed(B_WIDTH - 1 downto 0);                           -- [-(RESET - 1), 0]
+  signal sS3Cq                              : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
+  signal sS3Nq                              : unsigned(N_WIDTH - 1 downto 0);                         -- [1, RESET]
+  signal sS3Nn                              : unsigned(NN_WIDTH - 1 downto 0);                        -- [0, RESET - 1]
 
   -- Stage 3 — regular prediction (speculative 3-chain)
-  signal sS3Px                              : unsigned(BITNESS - 1 downto 0);
-  signal sS3CqBase                          : signed(C_WIDTH - 1 downto 0);
-  signal sS3CqP1                            : signed(C_WIDTH - 1 downto 0);
-  signal sS3CqM1                            : signed(C_WIDTH - 1 downto 0);
-  signal sS3Err7C                           : signed(BITNESS downto 0);
-  signal sS3Err7P                           : signed(BITNESS downto 0);
-  signal sS3Err7M                           : signed(BITNESS downto 0);
-  signal sS3Err9C                           : signed(BITNESS downto 0);
-  signal sS3Err9P                           : signed(BITNESS downto 0);
-  signal sS3Err9M                           : signed(BITNESS downto 0);
-  signal sS3Err9Sel                         : signed(BITNESS downto 0);
+  signal sS3Px                              : unsigned(BITNESS - 1 downto 0);                         -- [0, MAX_VAL]
+  signal sS3CqBase                          : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
+  signal sS3CqP1                            : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
+  signal sS3CqM1                            : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
+  signal sS3Err7C                           : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
+  signal sS3Err7P                           : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
+  signal sS3Err7M                           : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
+  signal sS3Err9C                           : signed(BITNESS downto 0);                               -- [-RANGE_P / 2, RANGE_P / 2 - 1]
+  signal sS3Err9P                           : signed(BITNESS downto 0);                               -- [-RANGE_P / 2, RANGE_P / 2 - 1]
+  signal sS3Err9M                           : signed(BITNESS downto 0);                               -- [-RANGE_P / 2, RANGE_P / 2 - 1]
+  signal sS3Err9Sel                         : signed(BITNESS downto 0);                               -- [-RANGE_P / 2, RANGE_P / 2 - 1]
 
   -- Q3==Q4 forwarding: one flag per mode. Q ranges are disjoint (regular
   -- 0..364, RI 365,366), so a Q match + the Stage-4 mode uniquely identifies
@@ -390,58 +390,58 @@ architecture rtl of openjls_top is
   signal sFwdRiHit                          : std_logic;
 
   -- Speculation control (Cq only)
-  signal sDeltaCq                           : signed(C_WIDTH - 1 downto 0);
+  signal sDeltaCq                           : signed(C_WIDTH - 1 downto 0);                           -- [-1, 1] on sFwdRegHit, unused otherwise
   signal sSpecUseM                          : std_logic;
   signal sSpecUseP                          : std_logic;
 
   -- Stage 3 — RI path
   signal sS3RiSign                          : std_logic;
-  signal sS3RiErr19                         : signed(BITNESS downto 0);
-  signal sS3RiTemp                          : unsigned(A_WIDTH - 1 downto 0);
+  signal sS3RiErr19                         : signed(BITNESS downto 0);                               -- [-RANGE_P / 2, RANGE_P / 2 - 1]
+  signal sS3RiTemp                          : unsigned(A_WIDTH - 1 downto 0);                         -- [0, 2^A_WIDTH - 1]
 
   -- Stage 4
-  signal sS4K                               : unsigned(K_WIDTH - 1 downto 0);
+  signal sS4K                               : unsigned(K_WIDTH - 1 downto 0);                         -- [0, MAX_K]
   signal sS4RiMode                          : std_logic;
-  signal sS4AqNew                           : unsigned(A_WIDTH - 1 downto 0);
-  signal sS4BqMid                           : signed(B_WIDTH - 1 downto 0);
-  signal sS4NqNew                           : unsigned(N_WIDTH - 1 downto 0);
-  signal sS4BqNew                           : signed(B_WIDTH - 1 downto 0);
-  signal sS4CqNew                           : signed(C_WIDTH - 1 downto 0);
-  signal sS4RiAqNew                         : unsigned(A_WIDTH - 1 downto 0);
-  signal sS4RiNqNew                         : unsigned(N_WIDTH - 1 downto 0);
-  signal sS4RiNnNew                         : unsigned(NN_WIDTH - 1 downto 0);
+  signal sS4AqNew                           : unsigned(A_WIDTH - 1 downto 0);                         -- [0, 2^A_STORED - 1]
+  signal sS4BqMid                           : signed(B_WIDTH - 1 downto 0);                           -- [-(RESET - 1) - RANGE_P / 2, RANGE_P / 2 - 1] (A.12, before A.13)
+  signal sS4NqNew                           : unsigned(N_WIDTH - 1 downto 0);                         -- [1, RESET]
+  signal sS4BqNew                           : signed(B_WIDTH - 1 downto 0);                           -- [-(RESET - 1), 0]
+  signal sS4CqNew                           : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
+  signal sS4RiAqNew                         : unsigned(A_WIDTH - 1 downto 0);                         -- [0, 2^A_STORED - 1]
+  signal sS4RiNqNew                         : unsigned(N_WIDTH - 1 downto 0);                         -- [1, RESET]
+  signal sS4RiNnNew                         : unsigned(NN_WIDTH - 1 downto 0);                        -- [0, RESET - 1]
   -- BRAM-side encode helpers for the N 0↔RESET trick.
-  signal sNqEncReg                          : unsigned(N_STORED - 1 downto 0);
-  signal sNqEncRi                           : unsigned(N_STORED - 1 downto 0);
+  signal sNqEncReg                          : unsigned(N_STORED - 1 downto 0);                        -- [0, RESET - 1] (RESET stored as 0)
+  signal sNqEncRi                           : unsigned(N_STORED - 1 downto 0);                        -- [0, RESET - 1] (RESET stored as 0)
 
   -- Stage 5
-  signal sS5MErrval                         : unsigned(MAPPED_ERROR_VAL_WIDTH - 1 downto 0);
+  signal sS5MErrval                         : unsigned(MAPPED_ERROR_VAL_WIDTH - 1 downto 0);          -- [0, MAX_VAL]
   signal sS5RiMap                           : std_logic;
-  signal sS5RiEmErrval                      : unsigned(MAPPED_ERROR_VAL_WIDTH - 1 downto 0);
-  signal sS5GolMErr                         : unsigned(MAPPED_ERROR_VAL_WIDTH - 1 downto 0);
+  signal sS5RiEmErrval                      : unsigned(MAPPED_ERROR_VAL_WIDTH - 1 downto 0);          -- [0, RANGE_P]
+  signal sS5GolMErr                         : unsigned(MAPPED_ERROR_VAL_WIDTH - 1 downto 0);          -- [0, RANGE_P]
 
-  signal sS5Unary                           : unsigned(UNARY_WIDTH - 1 downto 0);
-  signal sS5SufLen                          : unsigned(SUFFIXLEN_WIDTH - 1 downto 0);
+  signal sS5Unary                           : unsigned(UNARY_WIDTH - 1 downto 0);                     -- [0, LIMIT - QBPP - 1]
+  signal sS5SufLen                          : unsigned(SUFFIXLEN_WIDTH - 1 downto 0);                 -- [0, MAX_K]
   signal sS5SufVal                          : unsigned(SUFFIX_WIDTH - 1 downto 0);
 
   -- Stage 5 inter-stage registers: Reg5 in front of A.11_1, Reg6 after.
   signal sReg5,    sReg6                    : t_pipeline_token;
   signal sReg5V,   sReg6V                   : std_logic;
   signal sReg5Eoi, sReg6Eoi                 : std_logic;
-  signal sReg5GolMErr                       : unsigned(MAPPED_ERROR_VAL_WIDTH - 1 downto 0);
-  signal sReg6Unary                         : unsigned(UNARY_WIDTH - 1 downto 0);
-  signal sReg6SufLen                        : unsigned(SUFFIXLEN_WIDTH - 1 downto 0);
+  signal sReg5GolMErr                       : unsigned(MAPPED_ERROR_VAL_WIDTH - 1 downto 0);          -- [0, RANGE_P]
+  signal sReg6Unary                         : unsigned(UNARY_WIDTH - 1 downto 0);                     -- [0, LIMIT - QBPP - 1]
+  signal sReg6SufLen                        : unsigned(SUFFIXLEN_WIDTH - 1 downto 0);                 -- [0, MAX_K]
   signal sReg6SufVal                        : unsigned(SUFFIX_WIDTH - 1 downto 0);
 
   -- Output
   signal sBpRawV,  sBpGolV                  : std_logic;
   signal sBpWord                            : std_logic_vector(LIMIT - 1 downto 0);
   signal sBpWordV                           : std_logic;
-  signal sBpValidLen                        : unsigned(log2ceil(LIMIT + 1) - 1 downto 0);
+  signal sBpValidLen                        : unsigned(log2ceil(LIMIT + 1) - 1 downto 0);             -- [0, LIMIT]
   signal sBsWord                            : std_logic_vector(BYTE_STUFFER_OUT_WIDTH - 1 downto 0);
   signal sBsWordV                           : std_logic;
-  signal sBsValidB                          : unsigned(log2ceil(BYTE_STUFFER_OUT_WIDTH / 8 + 1) - 1 downto 0);
-  signal sFramerVBytes                      : unsigned(log2ceil(OUT_WIDTH / 8 + 1) - 1 downto 0);
+  signal sBsValidB                          : unsigned(log2ceil(BYTE_STUFFER_OUT_WIDTH / 8 + 1) - 1 downto 0);-- [0, BYTE_STUFFER_OUT_BYTES_PER_CYCLE]
+  signal sFramerVBytes                      : unsigned(log2ceil(OUT_WIDTH / 8 + 1) - 1 downto 0);     -- [0, OUT_WIDTH / 8]
 
   -- Flush / framer control
   signal sBsFlush                           : std_logic;
@@ -530,6 +530,10 @@ begin
   -- psl assert always (iRst = '1' -> oReady = '0') report "openjls_top: reset must hold oReady low";
   -- psl assert always ((iRst = '0' and sStallLogic = '1') -> oReady = '0') report "openjls_top: oReady must stay low while the input latch is frozen (no dropped beat)";
   -- psl assert always ((iRst = '0' and iValid = '1' and oReady = '1') -> next (sValid = '1')) report "openjls_top: an accepted pixel (iValid and oReady) must be committed next cycle";
+
+  -- Run count stays within one line
+  postponed assert is_x(sRunCntReg) or sRunCntReg <= MAX_IMAGE_WIDTH
+    report "openjls_top: run count past MAX_IMAGE_WIDTH" severity error;
 
   -------------------------------------------------------------------------------------------------------------
   -- Input Stage — Input register
@@ -892,6 +896,21 @@ begin
   sNqEncRi <= (others => '0') when sS4RiNqNew = to_unsigned(RESET, N_WIDTH) else
               resize(sS4RiNqNew, N_STORED);
 
+  -- Writeback narrows A, -B, N to their stored widths
+  postponed assert sCtxWrEn /= '1' or sReg3.mode /= token_regular or is_x(sS4AqNew) or sS4AqNew < 2 ** A_STORED
+    report "openjls_top: A does not fit A_STORED" severity error;
+  postponed assert sCtxWrEn /= '1' or sReg3.mode /= token_regular or is_x(sS4BqNew) or
+                   (sS4BqNew <= 0 and sS4BqNew > - 2 ** B_STORED)
+    report "openjls_top: B does not fit B_STORED" severity error;
+  postponed assert sCtxWrEn /= '1' or sReg3.mode /= token_regular or is_x(sS4NqNew) or
+                   (sS4NqNew >= 1 and sS4NqNew <= RESET)
+    report "openjls_top: N out of [1, RESET]" severity error;
+  postponed assert sCtxWrEn /= '1' or sReg3.mode /= token_run_interruption or is_x(sS4RiAqNew) or sS4RiAqNew < 2 ** A_STORED
+    report "openjls_top: RI A does not fit A_STORED" severity error;
+  postponed assert sCtxWrEn /= '1' or sReg3.mode /= token_run_interruption or is_x(sS4RiNqNew) or
+                   (sS4RiNqNew >= 1 and sS4RiNqNew <= RESET)
+    report "openjls_top: RI N out of [1, RESET]" severity error;
+
   u_ctx_ram : entity work.context_ram(behavioral)
     generic map (
       RANGE_P     => RANGE_P,
@@ -924,7 +943,7 @@ begin
 
   -- Bq is regular-only (the B slot carries Nn for RI, handled below).
   sS3Bq <= sS4BqNew when sFwdRegHit = '1' else
-           - signed(resize(unsigned(sCtxRdData(CTX_B_HI downto CTX_B_LO)), B_WIDTH));
+           - resize(signed('0' & sCtxRdData(CTX_B_HI downto CTX_B_LO)), B_WIDTH);
 
   -- Cq forwarding is handled by the speculative 3-chain via sS3CqBase.
   sS3Cq <= sS4CqNew when sFwdRegHit = '1' else
@@ -1127,6 +1146,10 @@ begin
 
   -- DeltaCq from live Stage-4 A.13. On miss, sDeltaCq is irrelevant (sFwdRegHit=0).
   sDeltaCq <= sS4CqNew - sReg3.Cq;
+
+  -- A.13 moves C by at most one step, the premise of the 3-way speculation
+  postponed assert sFwdRegHit /= '1' or is_x(sDeltaCq) or (sDeltaCq >= - 1 and sDeltaCq <= 1)
+    report "openjls_top: forwarded C moved by more than one" severity error;
 
   sSpecUseM <= '1' when sFwdRegHit = '1' and sDeltaCq < 0 else
                '0';

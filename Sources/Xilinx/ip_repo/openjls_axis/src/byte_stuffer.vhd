@@ -154,15 +154,15 @@ architecture behavioral of byte_stuffer is
   -- Signals ---------------------------------------------------------------------
   -- Input register
   signal sWord                    : std_logic_vector(IN_WIDTH - 1 downto 0);
-  signal sWordValidLen            : unsigned(log2ceil(IN_WIDTH + 1) - 1 downto 0);
+  signal sWordValidLen            : unsigned(log2ceil(IN_WIDTH + 1) - 1 downto 0);         -- [0, IN_WIDTH]
   signal sWordValid               : std_logic;
   signal sFlush                   : std_logic;
 
   -- Stage 1 accumulator
   signal sAccumBuffer             : std_logic_vector(ACCUM_BITS - 1 downto 0);
-  signal sAccumCountBits          : unsigned(log2ceil(ACCUM_BITS + 1) - 1 downto 0);
-  signal sAccumCountBitsFlush     : unsigned(log2ceil(ACCUM_BITS + 1) - 1 downto 0);
-  signal sFlushValidBits          : unsigned(LAST_BITS_WIDTH - 1 downto 0);
+  signal sAccumCountBits          : unsigned(log2ceil(ACCUM_BITS + 1) - 1 downto 0);       -- [0, ACCUM_BITS]
+  signal sAccumCountBitsFlush     : unsigned(log2ceil(ACCUM_BITS + 1) - 1 downto 0);       -- [0, ACCUM_BITS]
+  signal sFlushValidBits          : unsigned(LAST_BITS_WIDTH - 1 downto 0);                -- [0, FIFO_BITS]
   signal sFlushPending            : std_logic;
 
   -- FIFO interface
@@ -185,18 +185,18 @@ architecture behavioral of byte_stuffer is
 
   -- Final-word valid-bit-count queue (FIFO) signals
   signal sBvQueueInValid          : std_logic;
-  signal sBvQueueInData           : std_logic_vector(LAST_BITS_WIDTH - 1 downto 0);
+  signal sBvQueueInData           : std_logic_vector(LAST_BITS_WIDTH - 1 downto 0);        -- [0, FIFO_BITS]
   signal sBvQueueOutReady         : std_logic;
-  signal sBvQueueOutData          : std_logic_vector(LAST_BITS_WIDTH - 1 downto 0);
+  signal sBvQueueOutData          : std_logic_vector(LAST_BITS_WIDTH - 1 downto 0);        -- [0, FIFO_BITS]
 
   -- Stage 3 (FF stuffer + emit) state.
   signal sStuffBuffer             : std_logic_vector(HOLD_BITS - 1 downto 0);
-  signal sStuffBufferBits         : unsigned(log2ceil(HOLD_BITS + 1) - 1 downto 0);
+  signal sStuffBufferBits         : unsigned(log2ceil(HOLD_BITS + 1) - 1 downto 0);        -- [0, HOLD_BITS]
   signal sStuffBufferLast         : std_logic;
   signal sPrevFF                  : std_logic;
   signal sOutWordReg              : std_logic_vector(OUT_WIDTH - 1 downto 0);
   signal sOutValidReg             : std_logic;
-  signal sOutBytesValidReg        : unsigned(log2ceil(OUT_BYTES_PER_CYCLE + 1) - 1 downto 0);
+  signal sOutBytesValidReg        : unsigned(log2ceil(OUT_BYTES_PER_CYCLE + 1) - 1 downto 0); -- [0, OUT_BYTES_PER_CYCLE]
   signal sFlushDone               : std_logic;
 
   -- End-of-image terminal beat
@@ -273,9 +273,9 @@ begin
     variable vAccumCountBitsFlush : natural range 0 to ACCUM_BITS;
     variable vFlushValidBits      : natural range 0 to FIFO_BITS;
     variable vFlushRawBits        : natural range 0 to ACCUM_BITS;
-    variable vValidLenInt         : natural;
+    variable vValidLenInt         : natural; -- [0, IN_WIDTH]
     variable vFlushPending        : std_logic;
-    variable vPadBits             : natural;
+    variable vPadBits             : natural; -- [1, FIFO_BITS]
     variable vLastFlag            : std_logic;
     variable vWide                : std_logic_vector(ACCUM_BITS - 1 downto 0);
     variable vMaskTop             : std_logic_vector(ACCUM_BITS - 1 downto 0);
@@ -774,5 +774,21 @@ begin
     end if;
 
   end process stage3_proc;
+
+  -- Bit/byte counters within the ranges at their declarations
+  postponed assert is_x(sWordValidLen) or sWordValidLen <= IN_WIDTH
+    report "byte_stuffer: input valid length past IN_WIDTH" severity error;
+  postponed assert is_x(sAccumCountBits) or sAccumCountBits <= ACCUM_BITS
+    report "byte_stuffer: accumulator count past ACCUM_BITS" severity error;
+  postponed assert is_x(sAccumCountBitsFlush) or sAccumCountBitsFlush <= ACCUM_BITS
+    report "byte_stuffer: flush count past ACCUM_BITS" severity error;
+  postponed assert is_x(sFlushValidBits) or sFlushValidBits <= FIFO_BITS
+    report "byte_stuffer: flush valid bits past FIFO_BITS" severity error;
+  postponed assert is_x(sBvQueueOutData) or unsigned(sBvQueueOutData) <= FIFO_BITS
+    report "byte_stuffer: queued valid bits past FIFO_BITS" severity error;
+  postponed assert is_x(sStuffBufferBits) or sStuffBufferBits <= HOLD_BITS
+    report "byte_stuffer: stuff buffer count past HOLD_BITS" severity error;
+  postponed assert is_x(sOutBytesValidReg) or sOutBytesValidReg <= OUT_BYTES_PER_CYCLE
+    report "byte_stuffer: output byte count past OUT_BYTES_PER_CYCLE" severity error;
 
 end architecture behavioral;

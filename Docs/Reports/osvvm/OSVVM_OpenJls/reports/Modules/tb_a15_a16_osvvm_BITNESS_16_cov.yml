@@ -3,7 +3,7 @@ Coverage: 100.00
 Settings: 
   WritePassFail: 0
 Models: 
-  - Name: "terminal"
+  - Name: "G4.Run terminal"
     TestCases: 
       - "tb_a15_a16_osvvm"
     Coverage: 100.00
@@ -11,7 +11,7 @@ Models:
       CovWeight: 1
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [748612636, 1879271559]
+      Seeds: [1070534974, 565282000]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
@@ -29,9 +29,9 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 29
+        Count: 31
         AtLeast: 1
-        PercentCov: 2900.0000
+        PercentCov: 3100.0000
       - Name: "end of line"
         Type: "COUNT"
         Range: 
@@ -40,7 +40,7 @@ Models:
         AtLeast: 1
         PercentCov: 3700.0000
 
-  - Name: "immediateBreak"
+  - Name: "G4.Run immediateBreak"
     TestCases: 
       - "tb_a15_a16_osvvm"
     Coverage: 100.00
@@ -48,7 +48,7 @@ Models:
       CovWeight: 1
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [471581190, 1035809286]
+      Seeds: [1774062170, 1840676098]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
@@ -66,18 +66,18 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 64
+        Count: 65
         AtLeast: 1
-        PercentCov: 6400.0000
+        PercentCov: 6500.0000
       - Name: "immediate break"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 2
+        Count: 3
         AtLeast: 1
-        PercentCov: 200.0000
+        PercentCov: 300.0000
 
-  - Name: "eoiReset"
+  - Name: "G4.Run eoiReset"
     TestCases: 
       - "tb_a15_a16_osvvm"
     Coverage: 100.00
@@ -85,7 +85,7 @@ Models:
       CovWeight: 1
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [748932748, 1615080908]
+      Seeds: [114483262, 937609164]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
@@ -103,18 +103,18 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 60
+        Count: 63
         AtLeast: 1
-        PercentCov: 6000.0000
+        PercentCov: 6300.0000
       - Name: "end of image"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 6
+        Count: 5
         AtLeast: 1
-        PercentCov: 600.0000
+        PercentCov: 500.0000
 
-  - Name: "startIdx"
+  - Name: "G4.Run startIdx"
     TestCases: 
       - "tb_a15_a16_osvvm"
     Coverage: 100.00
@@ -122,19 +122,19 @@ Models:
       CovWeight: 1
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [749092804, 1353837188]
+      Seeds: [1997612348, 52275474]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
       ThresholdEnable: "FALSE"
       IsRequirement: "FALSE"
-      TotalCovCount: 4
-      TotalCovGoal: 4
+      TotalCovCount: 5
+      TotalCovGoal: 5
     BinInfo: 
       Dimensions: 1
       FieldNames: 
         - "startIdx"
-      NumBins: 4
+      NumBins: 5
     Bins: 
       - Name: "startIdx0"
         Type: "COUNT"
@@ -147,21 +147,102 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 3}
-        Count: 3
+        Count: 4
         AtLeast: 1
-        PercentCov: 300.0000
+        PercentCov: 400.0000
       - Name: "startIdxMid"
         Type: "COUNT"
         Range: 
           - {Min: 4, Max: 10}
-        Count: 16
+        Count: 8
         AtLeast: 1
-        PercentCov: 1600.0000
+        PercentCov: 800.0000
       - Name: "startIdxHi"
         Type: "COUNT"
         Range: 
-          - {Min: 11, Max: 31}
-        Count: 36
+          - {Min: 11, Max: 30}
+        Count: 43
         AtLeast: 1
-        PercentCov: 3600.0000
+        PercentCov: 4300.0000
+      - Name: "startIdx31"
+        Type: "COUNT"
+        Range: 
+          - {Min: 31, Max: 31}
+        Count: 2
+        AtLeast: 1
+        PercentCov: 200.0000
+
+  - Name: "G2.Clamp RUNindex"
+    TestCases: 
+      - "tb_a15_a16_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1577220497, 584246357]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 2
+      TotalCovGoal: 2
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "RUNindex"
+      NumBins: 2
+    Bins: 
+      - Name: "RUNindex=31 / increment held"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "RUNindex=31 / break decrements"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+
+  - Name: "G5.States resetPhase"
+    TestCases: 
+      - "tb_a15_a16_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1133384431, 2139824688]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 2
+      TotalCovGoal: 2
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "Bin1"
+      NumBins: 2
+    Bins: 
+      - Name: "between runs"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "mid-run"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
 

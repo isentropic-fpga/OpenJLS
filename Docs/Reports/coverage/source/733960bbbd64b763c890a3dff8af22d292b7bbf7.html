@@ -243,8 +243,8 @@ table, th, td {
     83: &nbsp; &nbsp;&nbsp;constant&nbsp;C_BOUND_WIDTH&nbsp;:&nbsp;natural&nbsp;:=&nbsp;RUN_CNT_WIDTH&nbsp;+&nbsp;1;&nbsp;
     84: &nbsp; &nbsp;
     85: &nbsp; &nbsp;&nbsp;--&nbsp;Registered&nbsp;state&nbsp;
-    86: &nbsp; &nbsp;&nbsp;signal&nbsp;sRunIndex&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unsigned(4&nbsp;downto&nbsp;0);&nbsp;
-    87: &nbsp; &nbsp;&nbsp;signal&nbsp;sNextBound&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unsigned(C_BOUND_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+    86: &nbsp; &nbsp;&nbsp;signal&nbsp;sRunIndex&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unsigned(4&nbsp;downto&nbsp;0);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&nbsp;[0,&nbsp;31],&nbsp;full&nbsp;type:&nbsp;saturated&nbsp;at&nbsp;31&nbsp;
+    87: &nbsp; &nbsp;&nbsp;signal&nbsp;sNextBound&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unsigned(C_BOUND_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;&nbsp;--&nbsp;[1,&nbsp;2^RUN_CNT_WIDTH&nbsp;+&nbsp;2^15]&nbsp;
     88: &nbsp; &nbsp;&nbsp;signal&nbsp;sInRun&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;std_logic;&nbsp;
     89: &nbsp; &nbsp;
     90: &nbsp; &nbsp;&nbsp;--&nbsp;Next-state&nbsp;signals&nbsp;(driven&nbsp;combinationally,&nbsp;captured&nbsp;by&nbsp;clocked&nbsp;process)&nbsp;

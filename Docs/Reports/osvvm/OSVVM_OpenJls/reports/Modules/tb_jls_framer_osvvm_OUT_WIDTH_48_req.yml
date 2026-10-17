@@ -1,0 +1,5 @@
+- Requirement: "OJLS.Framer"
+  TestCases: 
+  - TestName: "tb_jls_framer_osvvm"
+    Status: PASSED
+    Results: {Goal: 1600, Passed: 1814, Errors: 0, Checked: 1814, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}

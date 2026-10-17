@@ -191,7 +191,7 @@ architecture behavioral of jls_framer is
   signal sOutWord               : std_logic_vector(OUT_WIDTH - 1 downto 0);
   signal sOutValid              : std_logic;
   signal sOutLast               : std_logic;
-  signal sValidBytes            : unsigned(log2ceil(OUT_WIDTH / 8 + 1) - 1 downto 0);
+  signal sValidBytes            : unsigned(log2ceil(OUT_WIDTH / 8 + 1) - 1 downto 0); -- [0, BYTES_OUT]
 
   signal sHeaderByteIdx         : natural range 0 to HEADER_LEN;
   -- Pending-start counter. Holds iStart pulses that arrive while an earlier
@@ -424,8 +424,8 @@ begin
     variable vFifoByteCount     : natural range 0 to BUFFER_BYTES;
     variable vEoiIdxFifo        : eoi_offsets_t(0 to EOI_FIFO_DEPTH - 1);
     variable vEoiCount          : natural range 0 to EOI_FIFO_DEPTH;
-    variable vWidth             : unsigned(15 downto 0);
-    variable vHeight            : unsigned(15 downto 0);
+    variable vWidth             : unsigned(15 downto 0); -- [1, 65535] (T.87 SOF field)
+    variable vHeight            : unsigned(15 downto 0); -- [1, 65535]
     variable vHeaderBytesRemain : natural range 0 to HEADER_LEN;
     variable vDataNeededBytes   : natural range 0 to BYTES_OUT;
     variable vEmitDataBytes     : natural range 0 to BYTES_OUT;
@@ -655,5 +655,15 @@ begin
     end if;
 
   end process sync_proc;
+
+  -- Byte counts within one beat; image dims fit the 16-bit SOF fields (resize to 16 above)
+  postponed assert iValid /= '1' or is_x(iByteEnable) or iByteEnable <= BYTES_IN
+    report "jls_framer: input byte count past BYTES_IN" severity error;
+  postponed assert is_x(sValidBytes) or sValidBytes <= BYTES_OUT
+    report "jls_framer: output byte count past BYTES_OUT" severity error;
+  postponed assert iStart /= '1' or is_x(iImageWidth) or iImageWidth < 2 ** 16
+    report "jls_framer: image width past the 16-bit SOF field" severity error;
+  postponed assert iStart /= '1' or is_x(iImageHeight) or iImageHeight < 2 ** 16
+    report "jls_framer: image height past the 16-bit SOF field" severity error;
 
 end architecture behavioral;

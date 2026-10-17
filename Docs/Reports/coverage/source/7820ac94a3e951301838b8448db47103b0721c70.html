@@ -205,8 +205,9 @@ table, th, td {
     45: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0';&nbsp;
     46: &nbsp; &nbsp;&nbsp;oRunCnt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;iRunCnt&nbsp;+&nbsp;1&nbsp;when&nbsp;sRunHit&nbsp;=&nbsp;'1'&nbsp;else&nbsp;
     47: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iRunCnt;&nbsp;
-    48: &nbsp; &nbsp;&nbsp;oRunHit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;sRunHit;&nbsp;
-    49: &nbsp; &nbsp;&nbsp;oRunContinue&nbsp;&lt;=&nbsp;sRunHit&nbsp;and&nbsp;not&nbsp;iEol;&nbsp;
-    50: &nbsp; &nbsp;
-    51: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
+    48: &nbsp; &nbsp;&nbsp;--&nbsp;RUNcnt&nbsp;in&nbsp;[0,&nbsp;width&nbsp;-&nbsp;1]&nbsp;in&nbsp;the&nbsp;top;&nbsp;wraps&nbsp;modulo&nbsp;2^RUN_CNT_WIDTH&nbsp;by&nbsp;design&nbsp;(no&nbsp;assert)&nbsp;
+    49: &nbsp; &nbsp;&nbsp;oRunHit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;sRunHit;&nbsp;
+    50: &nbsp; &nbsp;&nbsp;oRunContinue&nbsp;&lt;=&nbsp;sRunHit&nbsp;and&nbsp;not&nbsp;iEol;&nbsp;
+    51: &nbsp; &nbsp;
+    52: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
 </code></pre>

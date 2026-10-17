@@ -3,7 +3,7 @@ Coverage: 100.00
 Settings: 
   WritePassFail: 0
 Models: 
-  - Name: "clause"
+  - Name: "G4.Run clause"
     TestCases: 
       - "tb_a21_osvvm"
     Coverage: 100.00
@@ -11,7 +11,7 @@ Models:
       CovWeight: 1
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [1129194420, 557427722]
+      Seeds: [1238418316, 370031607]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
@@ -36,9 +36,9 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 16554
+        Count: 16555
         AtLeast: 1
-        PercentCov: 1655400.0000
+        PercentCov: 1655500.0000
       - Name: "negative nonzero k"
         Type: "COUNT"
         Range: 
@@ -50,7 +50,143 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
-        Count: 66738
+        Count: 66739
         AtLeast: 1
-        PercentCov: 6673800.0000
+        PercentCov: 6673900.0000
+
+  - Name: "G2.MinMax node x value"
+    TestCases: 
+      - "tb_a21_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1168425035, 132857010]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 8
+      TotalCovGoal: 8
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "Bin1"
+        - "Bin2"
+      NumBins: 8
+    Bins: 
+      - Name: "k=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 0, Max: 0}
+        Count: 6325
+        AtLeast: 1
+        PercentCov: 632500.0000
+      - Name: "k=15"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 15, Max: 15}
+        Count: 6250
+        AtLeast: 1
+        PercentCov: 625000.0000
+      - Name: "Errval=-256"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: -256, Max: -256}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "Errval=255"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: 255, Max: 255}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "Nn=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+          - {Min: 0, Max: 0}
+        Count: 3075
+        AtLeast: 1
+        PercentCov: 307500.0000
+      - Name: "Nn=127"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+          - {Min: 127, Max: 127}
+        Count: 6
+        AtLeast: 1
+        PercentCov: 600.0000
+      - Name: "N=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 4, Max: 4}
+          - {Min: 0, Max: 0}
+        Count: 3
+        AtLeast: 1
+        PercentCov: 300.0000
+      - Name: "N=127"
+        Type: "COUNT"
+        Range: 
+          - {Min: 4, Max: 4}
+          - {Min: 127, Max: 127}
+        Count: 8
+        AtLeast: 1
+        PercentCov: 800.0000
+
+  - Name: "G3.Stim node x value"
+    TestCases: 
+      - "tb_a21_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [101216275, 2036723784]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 3
+      TotalCovGoal: 3
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "Bin1"
+        - "Bin2"
+      NumBins: 3
+    Bins: 
+      - Name: "Errval=-256"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: -256, Max: -256}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "Nn MSB=64..127"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: 64, Max: 127}
+        Count: 195
+        AtLeast: 1
+        PercentCov: 19500.0000
+      - Name: "N MSB=64..127"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+          - {Min: 64, Max: 127}
+        Count: 3292
+        AtLeast: 1
+        PercentCov: 329200.0000
 

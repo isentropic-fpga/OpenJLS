@@ -350,7 +350,7 @@ table, th, td {
    190: &nbsp; &nbsp;&nbsp;signal&nbsp;sOutWord&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;std_logic_vector(OUT_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
    191: &nbsp; &nbsp;&nbsp;signal&nbsp;sOutValid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;std_logic;&nbsp;
    192: &nbsp; &nbsp;&nbsp;signal&nbsp;sOutLast&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;std_logic;&nbsp;
-   193: &nbsp; &nbsp;&nbsp;signal&nbsp;sValidBytes&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unsigned(log2ceil(OUT_WIDTH&nbsp;/&nbsp;8&nbsp;+&nbsp;1)&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+   193: &nbsp; &nbsp;&nbsp;signal&nbsp;sValidBytes&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unsigned(log2ceil(OUT_WIDTH&nbsp;/&nbsp;8&nbsp;+&nbsp;1)&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;--&nbsp;[0,&nbsp;BYTES_OUT]&nbsp;
    194: &nbsp; &nbsp;
    195: &nbsp; &nbsp;&nbsp;signal&nbsp;sHeaderByteIdx&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural&nbsp;range&nbsp;0&nbsp;to&nbsp;HEADER_LEN;&nbsp;
    196: &nbsp; &nbsp;&nbsp;--&nbsp;Pending-start&nbsp;counter.&nbsp;Holds&nbsp;iStart&nbsp;pulses&nbsp;that&nbsp;arrive&nbsp;while&nbsp;an&nbsp;earlier&nbsp;
@@ -583,8 +583,8 @@ table, th, td {
    423: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;vFifoByteCount&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural&nbsp;range&nbsp;0&nbsp;to&nbsp;BUFFER_BYTES;&nbsp;
    424: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;vEoiIdxFifo&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;eoi_offsets_t(0&nbsp;to&nbsp;EOI_FIFO_DEPTH&nbsp;-&nbsp;1);&nbsp;
    425: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;vEoiCount&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural&nbsp;range&nbsp;0&nbsp;to&nbsp;EOI_FIFO_DEPTH;&nbsp;
-   426: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;vWidth&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unsigned(15&nbsp;downto&nbsp;0);&nbsp;
-   427: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;vHeight&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unsigned(15&nbsp;downto&nbsp;0);&nbsp;
+   426: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;vWidth&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unsigned(15&nbsp;downto&nbsp;0);&nbsp;--&nbsp;[1,&nbsp;65535]&nbsp;(T.87&nbsp;SOF&nbsp;field)&nbsp;
+   427: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;vHeight&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unsigned(15&nbsp;downto&nbsp;0);&nbsp;--&nbsp;[1,&nbsp;65535]&nbsp;
    428: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;vHeaderBytesRemain&nbsp;:&nbsp;natural&nbsp;range&nbsp;0&nbsp;to&nbsp;HEADER_LEN;&nbsp;
    429: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;vDataNeededBytes&nbsp;&nbsp;&nbsp;:&nbsp;natural&nbsp;range&nbsp;0&nbsp;to&nbsp;BYTES_OUT;&nbsp;
    430: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;vEmitDataBytes&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural&nbsp;range&nbsp;0&nbsp;to&nbsp;BYTES_OUT;&nbsp;
@@ -815,5 +815,15 @@ table, th, td {
    655: &nbsp; &nbsp;
    656: &nbsp; &nbsp;&nbsp;end&nbsp;process&nbsp;sync_proc;&nbsp;
    657: &nbsp; &nbsp;
-   658: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
+   658: &nbsp; &nbsp;&nbsp;--&nbsp;Byte&nbsp;counts&nbsp;within&nbsp;one&nbsp;beat;&nbsp;image&nbsp;dims&nbsp;fit&nbsp;the&nbsp;16-bit&nbsp;SOF&nbsp;fields&nbsp;(resize&nbsp;to&nbsp;16&nbsp;above)&nbsp;
+   659: &nbsp; &nbsp;&nbsp;postponed&nbsp;assert&nbsp;iValid&nbsp;/=&nbsp;'1'&nbsp;or&nbsp;is_x(iByteEnable)&nbsp;or&nbsp;iByteEnable&nbsp;&lt;=&nbsp;BYTES_IN&nbsp;
+   660: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"jls_framer:&nbsp;input&nbsp;byte&nbsp;count&nbsp;past&nbsp;BYTES_IN"&nbsp;severity&nbsp;error;&nbsp;
+   661: &nbsp; &nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(sValidBytes)&nbsp;or&nbsp;sValidBytes&nbsp;&lt;=&nbsp;BYTES_OUT&nbsp;
+   662: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"jls_framer:&nbsp;output&nbsp;byte&nbsp;count&nbsp;past&nbsp;BYTES_OUT"&nbsp;severity&nbsp;error;&nbsp;
+   663: &nbsp; &nbsp;&nbsp;postponed&nbsp;assert&nbsp;iStart&nbsp;/=&nbsp;'1'&nbsp;or&nbsp;is_x(iImageWidth)&nbsp;or&nbsp;iImageWidth&nbsp;&lt;&nbsp;2&nbsp;**&nbsp;16&nbsp;
+   664: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"jls_framer:&nbsp;image&nbsp;width&nbsp;past&nbsp;the&nbsp;16-bit&nbsp;SOF&nbsp;field"&nbsp;severity&nbsp;error;&nbsp;
+   665: &nbsp; &nbsp;&nbsp;postponed&nbsp;assert&nbsp;iStart&nbsp;/=&nbsp;'1'&nbsp;or&nbsp;is_x(iImageHeight)&nbsp;or&nbsp;iImageHeight&nbsp;&lt;&nbsp;2&nbsp;**&nbsp;16&nbsp;
+   666: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"jls_framer:&nbsp;image&nbsp;height&nbsp;past&nbsp;the&nbsp;16-bit&nbsp;SOF&nbsp;field"&nbsp;severity&nbsp;error;&nbsp;
+   667: &nbsp; &nbsp;
+   668: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
 </code></pre>
