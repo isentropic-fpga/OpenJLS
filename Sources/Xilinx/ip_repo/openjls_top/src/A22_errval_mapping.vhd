@@ -4,16 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
-----------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
---
--- Module Name: A22_errval_mapping - Behavioral
---
--- Description:                         Code segment A.22
---                                      Errval mapping for run interruption sample
---
-----------------------------------------------------------------------------------
+-- a22_errval_mapping: T.87 A.22, run-interruption Errval to EMErrval
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -50,15 +41,11 @@ begin
 
     vEmErrval := 2 * abs(to_integer(iErrval)) - vRI - vMap;
 
-    -- Clamp to 0 to absorb delta-cycle transients during sReg4 transitions
-    -- (A.21's iNn/iNq go through an extra delta via sNnExt/sNqExt, so iMap
-    -- may briefly trail iErrval/iRItype before A.21's process re-evaluates).
-    -- The settled value is always non-negative when inputs are coherent.
+    -- Absorbs delta-cycle transients (iMap trails iErrval by a delta); settled value is >= 0
     if (vEmErrval < 0) then
       vEmErrval := 0;
     end if;
 
-    -- EMErrval in [0, 2^(B + 1)]
     assert vEmErrval < 2 ** MAPPED_ERRVAL_WIDTH report "a22: EMErrval out of range" severity error;
 
     oEmErrVal <= to_unsigned(vEmErrval, oEmErrVal'length);

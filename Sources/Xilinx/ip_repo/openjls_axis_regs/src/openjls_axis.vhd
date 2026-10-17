@@ -4,44 +4,19 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
--------------------------------------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
+-- openjls_axis: AXI4-Stream wrapper of openjls_top
 --
--- Module Name: openjls_axis - rtl
--- Description: AXI4-Stream wrapper around openjls_top (flavor A).
---
---          Pure structural adaptation — no state, no clocked logic:
---
---            * s_axis_pixel : pixel input. One pixel per beat, right-justified in a
---              byte-aligned TDATA (16 bits for BITNESS 9..16, 8 bits for
---              BITNESS 8). TLAST is accepted and ignored: the core counts
---              width x height internally and flags end-of-image itself.
---
---            * m_axis_jls : encoded .jls byte stream. The core packs the first
---              stream byte into the MSB lanes of oData and fills oKeep from
---              the top lane down; AXI maps byte lane 0 (TDATA[7:0]) to the
---              lowest memory address. The wrapper therefore byte-swaps TDATA
---              and remaps oKeep to an LSB-aligned TKEEP so a memory-mapped
---              consumer (e.g. AXI DMA S2MM) sees the file byte order.
---              Partial beats (TKEEP not all-ones) only occur on the TLAST
---              beat, as required by AXI DMA.
---
---            * iImageWidth/iImageHeight/iRst stay plain ports: the core
---              samples the dimensions only while iRst = '1', so whoever owns
---              reset owns configuration. See openjls_axis_regs for the
---              AXI-Lite flavor that wraps this contract in registers.
---
--------------------------------------------------------------------------------------------------------------
+-- One pixel per s_axis_pixel beat, right-justified; TLAST is ignored (the core counts W x H).
+-- m_axis_jls is byte-swapped so lane 0 carries the first file byte and TKEEP is LSB-aligned, as
+-- AXI DMA S2MM expects; only the TLAST beat is partial.
+-- iImageWidth/iImageHeight are sampled while iRst = '1'; openjls_axis_regs wraps this in registers.
 
 library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
   use work.openjls_pkg.all;
 
--- AXI port names must keep the <prefix>_t* suffix convention (lowercase,
--- underscores) for Vivado IP integrator interface inference; the prefix
--- becomes the interface name in the block diagram.
+-- <prefix>_t* port names: Vivado IP integrator infers the interfaces from them
 -- vsg_off port_010
 
 entity openjls_axis is
@@ -56,12 +31,12 @@ entity openjls_axis is
     iRst                : in    std_logic;
     iImageWidth         : in    std_logic_vector(15 downto 0);
     iImageHeight        : in    std_logic_vector(15 downto 0);
-    -- AXI4-Stream slave — one pixel per beat, right-justified
+    -- Pixel in, right-justified
     s_axis_pixel_tdata  : in    std_logic_vector(8 * ((BITNESS + 7) / 8) - 1 downto 0);
     s_axis_pixel_tvalid : in    std_logic;
     s_axis_pixel_tlast  : in    std_logic;
     s_axis_pixel_tready : out   std_logic;
-    -- AXI4-Stream master — encoded .jls byte stream
+    -- Encoded .jls out
     m_axis_jls_tdata    : out   std_logic_vector(OUT_WIDTH - 1 downto 0);
     m_axis_jls_tkeep    : out   std_logic_vector(OUT_WIDTH / 8 - 1 downto 0);
     m_axis_jls_tvalid   : out   std_logic;
@@ -107,10 +82,7 @@ begin
       iReady           => m_axis_jls_tready
     );
 
-  -- Byte-lane swap: core packs the first stream byte into the MSB lanes;
-  -- AXI byte lane 0 (TDATA[7:0]) goes to the lowest memory address. After the
-  -- swap the valid bytes of a partial (TLAST) beat sit in lanes 0..N-1 with
-  -- an LSB-aligned contiguous TKEEP, as AXI DMA expects.
+  -- The core puts the first byte in the MSB lane; AXI lane 0 is the lowest address
 
   gen_byte_swap : for i in 0 to OUT_WIDTH / 8 - 1 generate
     m_axis_jls_tdata((i + 1) * 8 - 1 downto i * 8) <= sCoreData(OUT_WIDTH - i * 8 - 1 downto OUT_WIDTH - (i + 1) * 8);

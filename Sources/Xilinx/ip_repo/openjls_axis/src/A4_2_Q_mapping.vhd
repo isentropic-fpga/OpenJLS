@@ -4,15 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
-----------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
---
--- Module Name: A4_2_Q_mapping - Behavioral
---
--- Description:                     Written requirement A.4.2 - Merge quantized vector into Q
---
-----------------------------------------------------------------------------------
+-- a4_2_q_mapping: T.87 A.4.2, (Q1, Q2, Q3) to the context index Q
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -36,7 +28,7 @@ architecture behavioral of a4_2_q_mapping is
 
 begin
 
-  sQ1 <= unsigned(iQ1(2 downto 0)); -- Q1 is in range [0..4]
+  sQ1 <= unsigned(iQ1(2 downto 0)); -- Q1 >= 0
 
   s81 <= shift_left(resize(sQ1, 9), 6)
          or shift_left(resize(sQ1, 9), 4)

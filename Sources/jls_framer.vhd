@@ -4,107 +4,14 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
-----------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
+-- jls_framer: JPEG-LS framing, SOI + SOF55 + SOS before the payload and EOI after it
 --
--- Module Name: jls_framer - Behavioral
--- Description:
+-- Header bytes come from a ROM. Payload and the FF D9 footer share one byte FIFO, so oLast lands on
+-- the D9 beat; up to EOI_FIFO_DEPTH footers can be in flight.
 --
---   Wraps the byte-stuffed compressed payload with JPEG-LS framing markers:
---     SOI + SOF55 + SOS  (header, 25 bytes, before data)
---     EOI = FF D9        (footer, 2 bytes, after data)
---
---   Architecture:
---     - One byte FIFO holds payload bytes. The FF D9 footer is pushed into
---       the FIFO right after byte_stuffer's last word on iEoi, so the output
---       side sees footer bytes as ordinary data and oLast falls out naturally.
---     - Header bytes come from a combinational ROM (get_header_byte). The
---       FIFO never stores header bytes since there are too many of them and
---       we need the FIFO to store new data as the HEADER is being sent.
---     - Output FSM (IDLE / HEADER / DATA) selects header ROM vs FIFO per beat.
---       Splicing handles the partial last header beat (filled from the FIFO)
---       and the partial last data beat (cut at sEndOfImage with oLast).
---     - byte_stuffer is never back-pressured. The FIFO is sized so that
---       pushes always fit under correct upstream behavior.
---
---   iEoi (1-cycle pulse): asserts on byte_stuffer's last word for the image.
---   That cycle the framer pushes (iBsValidBytes byte_stuffer bytes) followed
---   by (FF D9), and latches sEndOfImage to the offset (from FIFO head) of the
---   trailing D9. The output FSM watches this offset; when the bytes popped
---   this cycle reach it, oLast asserts on that beat.
---
---   In-flight EoI offsets are held in a small queue (EOI_FIFO_DEPTH) so that
---   tiny back-to-back images can have multiple D9 markers pending in the FIFO
---   at once. Depth 3 covers the smallest line_buffer-supported image (3x1)
---   pipelined back-to-back; overflow is caught by an assert at push time.
---
---   Image dimensions are fixed at reset by the top level and read directly
---   from the ports without registering.
---
---   IN_WIDTH     : word width from byte_stuffer  (CO_BYTE_STUFFER_OUT_WIDTH)
---   OUT_WIDTH    : final output word width        (CO_OUT_WIDTH_STD)
---   BUFFER_BYTES : payload FIFO depth in bytes (auto-derived; see below)
---
----------------------------------------------------------------------------
--- BUFFER_BYTES sizing (worst-case occupancy)
----------------------------------------------------------------------------
---   Two regimes contribute to peak FIFO occupancy:
---
---   1) iEoi cycle (single-image worst case):
---        DATA pop fires only when vCount >= BYTES_OUT, so vCount_pre at iEoi
---        can sit at BYTES_OUT - 1 without triggering a pop. The iEoi cycle
---        then pushes (iBsValidBytes <= BYTES_IN) plus the 2 footer bytes:
---          vCount_iEoi_max = BYTES_OUT - 1 + BYTES_IN + 2
---
---   2) Back-to-back images (image N+1 starts pushing while N drains):
---        From iEoi cycle T, the FF D9 marker takes
---          D = ceil(vCount_iEoi_max / BYTES_OUT)
---        cycles to reach the FIFO head and emit (oLast fires on the D9 beat).
---        After that, the framer transits to HEADER and emits the 25-byte
---        marker block over
---          N_h = ceil(HEADER_LEN / BYTES_OUT)
---        beats. The first (N_h - 1) HEADER beats pull bytes from the ROM and
---        do not pop the FIFO; the final mixed beat splices ROM + FIFO bytes
---        and pops (BYTES_OUT - HEADER_LEN mod BYTES_OUT) data bytes.
---
---        Worst case: byte_stuffer begins pushing image N+1 the cycle after
---        iEoi and continues at BYTES_IN/cycle throughout. Since BYTES_OUT is
---        normally >= BYTES_IN, image N drains faster than N+1 accumulates,
---        so by the time the mixed HEADER beat fires N's bytes are gone and
---        only N+1's bytes occupy the FIFO. Peak N+1 bytes (after the mixed
---        beat's net push):
---          PEAK_N1 = (D + N_h) * BYTES_IN
---                  - (BYTES_OUT - HEADER_LEN mod BYTES_OUT)
---
---   General formula (peak FIFO occupancy across all phases):
---
---     V_iEoi  = BYTES_OUT + BYTES_IN + 1
---     D       = ceil(V_iEoi    / BYTES_OUT)
---     N_h     = ceil(HEADER_LEN / BYTES_OUT)
---
---     BUFFER_BYTES = max(
---       V_iEoi,                                              (a) iEoi cycle
---       D * BYTES_IN,                                        (b) end of N drain
---       (D + N_h - 1) * BYTES_IN,                            (c) last full hdr beat
---       (D + N_h) * BYTES_IN - (N_h*BYTES_OUT - HEADER_LEN)  (d) after mixed beat
---     )
---
---   For typical configs with BYTES_IN <= BYTES_OUT, term (d) dominates.
---
---   Standard config (BYTES_IN=8, BYTES_OUT=9, HEADER_LEN=25):
---     V_iEoi = 18, D = 2, N_h = 3
---     (a)=18, (b)=16, (c)=32, (d)=(5*8) - (3*9 - 25) = 40 - 2 = 38
---     BUFFER_BYTES = 38
---
---   This also implies that outputting the last bytes after EOI can take several
---   cycles, the image last byte needs to be tracked to assert oLast, padding and
---   oKeep on the correct beat.
---
---   Caveat: the BUFFER_BYTES formula above assumes iReady = '1' steady-state.
---   With sustained downstream backpressure the FIFO has no bound (no upstream
---   stall path). A runtime assert catches overflow in simulation.
-----------------------------------------------------------------------------------
+-- FIFO depth at iReady = '1' is the max of: V_IEOI (iEoi cycle), D_DRAIN * BYTES_IN (until the
+-- footer drains) and (D_DRAIN + N_H) * BYTES_IN - H_SLACK (next image during its header).
+-- Under backpressure oReady drops and STALL_MARGIN_BYTES absorbs the bytes in flight.
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -121,9 +28,7 @@ entity jls_framer is
     OUT_WIDTH          : natural := CO_OUT_WIDTH_STD;
     MAX_IMAGE_WIDTH    : natural := 4096;
     MAX_IMAGE_HEIGHT   : natural := 4096;
-    -- Cushion between oReady deassertion and BUFFER_BYTES. Covers two
-    -- in-flight cycles of byte_stuffer emission (decision + transfer pipeline)
-    -- plus the +2 EOI footer push. Worst case: 2*BYTES_IN + 2.
+    -- Bytes in flight after oReady drops: 2 byte_stuffer beats + the 2-byte footer
     STALL_MARGIN_BYTES : natural := 2 * math_ceil_div(CO_BYTE_STUFFER_OUT_WIDTH, 8) + 2
   );
   port (
@@ -134,12 +39,12 @@ entity jls_framer is
     iImageWidth        : in    unsigned(log2ceil(MAX_IMAGE_WIDTH + 1) - 1 downto 0);
     iImageHeight       : in    unsigned(log2ceil(MAX_IMAGE_HEIGHT + 1) - 1 downto 0);
     iEoi               : in    std_logic;
-    -- Byte stuffer interface
+    -- From byte_stuffer
     iWord              : in    std_logic_vector(IN_WIDTH - 1 downto 0);
     iValid             : in    std_logic;
     iByteEnable        : in    unsigned(log2ceil(IN_WIDTH / 8 + 1) - 1 downto 0);
     oReady             : out   std_logic;
-    -- Output AXI stream interface
+    -- AXI-Stream out
     oWord              : out   std_logic_vector(OUT_WIDTH - 1 downto 0);
     oValid             : out   std_logic;
     oByteEnable        : out   unsigned(log2ceil(OUT_WIDTH / 8 + 1) - 1 downto 0);
@@ -155,17 +60,11 @@ architecture behavioral of jls_framer is
   constant BYTES_OUT            : natural := OUT_WIDTH / 8;
   constant HEADER_LEN           : natural := 25;
 
-  -- Auto-derived FIFO depth (worst-case occupancy; see file header).
-  -- BUFFER_BYTES_NOMINAL handles steady-state (iReady='1') traffic.
-  -- STALL_MARGIN_BYTES extends the FIFO so oAlmostFull can assert at the
-  -- nominal threshold and still absorb in-flight bytes from the upstream
-  -- pipeline (Reg5b → bit_packer → byte_stuffer) before the stall reaches.
+  -- Depth = worst-case occupancy at iReady = '1' (see header) + STALL_MARGIN_BYTES
   constant V_IEOI               : natural := BYTES_OUT + BYTES_IN + 1;
   constant D_DRAIN              : natural := math_ceil_div(V_IEOI, BYTES_OUT);
   constant N_H                  : natural := math_ceil_div(HEADER_LEN, BYTES_OUT);
-  -- Header-tail carry: bytes of the final header beat not covered by the
-  -- header itself. Expressed via math_min to stay in natural for wide
-  -- OUT_WIDTHs, where N_H * BYTES_OUT - HEADER_LEN exceeds the fill.
+  -- Unused bytes of the last header beat; math_min keeps term (d) natural for wide OUT_WIDTH
   constant H_SLACK              : natural := N_H * BYTES_OUT - HEADER_LEN;
   constant BUFFER_BYTES_NOMINAL : natural := math_max(
                                                       math_max(V_IEOI, D_DRAIN * BYTES_IN),
@@ -177,8 +76,7 @@ architecture behavioral of jls_framer is
 
   signal sFsmState              : fsm_t;
 
-  -- EoI tracker: queue of footer (D9) byte offsets for in-flight images.
-  -- Needed for really small images, like the 4x4 image on T.87 H.3 example
+  -- Footer (D9) offsets of in-flight images; > 1 only for tiny images (T.87 H.3 4x4)
   constant EOI_FIFO_DEPTH       : natural := 2;
 
   type eoi_offsets_t is array(natural range <>) of natural range 0 to BUFFER_BYTES;
@@ -194,17 +92,13 @@ architecture behavioral of jls_framer is
   signal sValidBytes            : unsigned(log2ceil(OUT_WIDTH / 8 + 1) - 1 downto 0); -- [0, BYTES_OUT]
 
   signal sHeaderByteIdx         : natural range 0 to HEADER_LEN;
-  -- Pending-start counter. Holds iStart pulses that arrive while an earlier
-  -- image is still being framed. Each EOI dequeues one. Sized to absorb the
-  -- worst-case lead of upstream over the framer when byte_stuffer's FIFO is
-  -- buffering several images at once.
+  -- iStart pulses that arrive while earlier images are still being framed
   constant START_QUEUE_DEPTH    : natural := 4;
   signal   sNextPending         : natural range 0 to START_QUEUE_DEPTH;
 
   signal sAxiHandshake          : boolean;
 
-  -- Returns the i-th byte of the 25-byte JPEG-LS frame header.
-  -- Header layout:
+  -- 25-byte header:
   --   [0-1]   FF D8              SOI
   --   [2-5]   FF F7 00 0B        SOF55 marker + Lf=11
   --   [6]     P                  precision (BITNESS)
@@ -336,8 +230,7 @@ architecture behavioral of jls_framer is
 
   end function get_header_byte;
 
-  -- Pop head EoI: shift remaining entries down, decrement their offsets by
-  -- bytes popped this beat, decrement count.
+  -- Pop the head offset and rebase the rest by the bytes emitted
 
   procedure pop_eoi (
     variable fifo : inout eoi_offsets_t;
@@ -361,7 +254,7 @@ architecture behavioral of jls_framer is
 
   end procedure pop_eoi;
 
-  -- Decrement all live EoI offsets by bytes popped this beat (no head pop).
+  -- Rebase the live offsets by the bytes emitted, no pop
 
   procedure dec_eoi (
     variable fifo : inout eoi_offsets_t;
@@ -396,9 +289,7 @@ begin
 
   sAxiHandshake <= (iReady and sOutValid) = '1';
 
-  -- Contract assertions in PSL: the output side is an AXI-Stream master —
-  -- these hold for any downstream behaviour (active in NVC sims via --psl,
-  -- plain comments to synthesis).
+  -- Contracts (PSL, simulation only): AXI-Stream master rules
   -- psl default clock is rising_edge(iClk);
   -- psl assert always (iRst = '1' -> next (oValid = '0' and oLast = '0')) report "jls_framer: reset must clear the output stream";
   -- psl assert always ((iRst = '0' and oValid = '1' and iReady = '0') -> next (oValid = '1')) report "jls_framer: oValid must hold until the beat is accepted (AXIS)";
@@ -409,15 +300,10 @@ begin
   oByteEnable <= sValidBytes;
   oLast       <= sOutLast;
 
-  -- Ready/valid handshake with byte_stuffer: deasserts at the nominal
-  -- sizing threshold, leaving STALL_MARGIN_BYTES headroom for the
-  -- 1-cycle handshake latency (byte_stuffer's registered output).
+  -- Drops at the nominal level; STALL_MARGIN_BYTES absorbs what is in flight
   oReady <= '1' when sFifoByteCount < BUFFER_BYTES_NOMINAL else
             '0';
 
-  -------------------------------------------------------------------------------------------------------------
-  -- SYNCHRONOUS PROCESS
-  -------------------------------------------------------------------------------------------------------------
   sync_proc : process (iClk) is
 
     variable vBuffer            : std_logic_vector(BUFFER_WIDTH - 1 downto 0);
@@ -459,8 +345,6 @@ begin
         vCanEmit       := sAxiHandshake or sOutValid = '0';
         vNextPending   := sNextPending;
 
-        -- iStart latching: queue starts so back-to-back images can be buffered
-        -- in byte_stuffer while framer drains earlier images.
         if (iStart = '1') then
           assert vNextPending < START_QUEUE_DEPTH
             report "jls_framer: iStart dropped (start queue full)"
@@ -468,10 +352,6 @@ begin
           vNextPending := vNextPending + 1;
         end if;
 
-        -----------------------------------------------------------------------------------------------------
-        -- READ
-        -----------------------------------------------------------------------------------------------------
-        -- Beat was consumed
         if (sAxiHandshake) then
           sOutValid <= '0';
           sOutLast  <= '0';
@@ -493,7 +373,6 @@ begin
               vHeaderBytesRemain := HEADER_LEN - sHeaderByteIdx;
 
               if (vHeaderBytesRemain >= BYTES_OUT) then
-                -- Full header beat from HEADER ROM
 
                 for i in 0 to BYTES_OUT - 1 loop
 
@@ -511,11 +390,9 @@ begin
                   sHeaderByteIdx <= sHeaderByteIdx + BYTES_OUT;
                 end if;
               else
-                -- Last partial beat, fill remaining bytes from the DATA FIFO
-
+                -- Last header beat: fill the rest from the FIFO
                 vDataNeededBytes := BYTES_OUT - vHeaderBytesRemain;
 
-                -- Check for EOI in the FIFO bytes
                 vEoiInBeat := vEoiCount > 0 and vEoiIdxFifo(0) < vDataNeededBytes;
                 if (vEoiInBeat) then
                   vEmitDataBytes := vEoiIdxFifo(0) + 1;
@@ -524,8 +401,6 @@ begin
                 end if;
 
                 if (vFifoByteCount >= vEmitDataBytes) then
-                  -- FIFO has enough bytes
-                  -- Otherwise it'll stall here until it does
 
                   for i in 0 to BYTES_OUT - 1 loop
 
@@ -612,9 +487,6 @@ begin
 
         end case;
 
-        -----------------------------------------------------------------------------------------------------
-        -- WRITE
-        -----------------------------------------------------------------------------------------------------
         if (iValid = '1') then
 
           for i in 0 to BYTES_IN - 1 loop
@@ -628,7 +500,7 @@ begin
           vFifoByteCount := vFifoByteCount + to_integer(iByteEnable);
 
           if (iEoi = '1') then
-            -- Push FOOTER into the FIFO right after the last data byte
+            -- Footer goes through the FIFO so oLast lands on the D9 beat
             vBuffer(BUFFER_WIDTH - 1 - vFifoByteCount * 8 downto BUFFER_WIDTH - (vFifoByteCount + 1) * 8)       := x"FF";
             vBuffer(BUFFER_WIDTH - 1 - (vFifoByteCount + 1) * 8 downto BUFFER_WIDTH - (vFifoByteCount + 2) * 8) := x"D9";
             vFifoByteCount                                                                                      := vFifoByteCount + 2;
@@ -656,7 +528,6 @@ begin
 
   end process sync_proc;
 
-  -- Byte counts within one beat; image dims fit the 16-bit SOF fields (resize to 16 above)
   postponed assert iValid /= '1' or is_x(iByteEnable) or iByteEnable <= BYTES_IN
     report "jls_framer: input byte count past BYTES_IN" severity error;
   postponed assert is_x(sValidBytes) or sValidBytes <= BYTES_OUT

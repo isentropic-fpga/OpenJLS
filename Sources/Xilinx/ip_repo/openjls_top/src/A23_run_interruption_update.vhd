@@ -4,16 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
-----------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
---
--- Module Name: A23_run_interruption_update - Behavioral
---
--- Description:                         Code segment A.23
---                                      Update of variables for run interruption sample
---
-----------------------------------------------------------------------------------
+-- a23_run_interruption_update: T.87 A.23, run-interruption update of A[Q], N[Q], Nn[Q]
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -60,7 +51,7 @@ begin
       vNn := vNn + 1;
     end if;
 
-    -- Mert 2018 Fig. 9 equivalence: A[Q] += abs(Errval) - RItype
+    -- Mert 2018 Fig. 9 form: A[Q] += abs(Errval) - RItype
     vAq := vAq + abs(to_integer(iErrVal)) - std_to_int(iRiType);
 
     if (vNq = integer(RESET)) then
@@ -71,7 +62,6 @@ begin
 
     vNq := vNq + 1;
 
-    -- A in [0, 2^A_WIDTH - 1]; N in [1, RESET]; Nn in [0, 2^NN_WIDTH - 1]
     assert vAq < 2 ** A_WIDTH report "a23: A out of range" severity error;
     assert iNq > RESET or vNq <= integer(RESET) report "a23: N above RESET" severity error;
     assert vNn < 2 ** NN_WIDTH report "a23: Nn out of range" severity error;

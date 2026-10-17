@@ -4,16 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
-----------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
---
--- Module Name: A14_run_length_determination - Behavioral
--- Description: Code segment A.14 — run-length determination (lossless only).
---              With NEAR=0, the T.87 condition  |Ix - RUNval| <= NEAR
---              reduces to  Ix == RUNval  (RUNval = Ra).
---              In lossless mode, Rx = Ix always, so oRx is not produced.
-----------------------------------------------------------------------------------
+-- a14_run_length_determination: T.87 A.14, run-length determination
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -46,7 +37,7 @@ begin
                   '0';
   oRunCnt      <= iRunCnt + 1 when sRunHit = '1' else
                   iRunCnt;
-  -- RUNcnt in [0, width - 1] in the top; wraps modulo 2^RUN_CNT_WIDTH by design (no assert)
+  -- No range assert: the module TB wraps RUNcnt by design
   oRunHit      <= sRunHit;
   oRunContinue <= sRunHit and not iEol;
 

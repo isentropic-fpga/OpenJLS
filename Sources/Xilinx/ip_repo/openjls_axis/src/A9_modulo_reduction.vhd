@@ -4,16 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
-----------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
---
--- Module Name: A9_modulo_reduction - Behavioral
---
--- Description:                         Code segment A.9
---                                      Modulo reduction of the error
---
-----------------------------------------------------------------------------------
+-- a9_modulo_reduction: T.87 A.9, modulo reduction of Errval
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -37,19 +28,15 @@ begin
 
   gen_binary_range : if RANGE_P = 2 ** BITNESS generate
 
-    -- The low BITNESS bits give the residue modulo 2**BITNESS. Interpreting
-    -- them as signed chooses [-RANGE/2, RANGE/2-1], including the negative
-    -- result at exactly RANGE/2. Sign extension restores the interface width.
-    -- Slice first: resizing the original signed error down would retain its
-    -- old sign bit, rather than the residue's sign bit.
+    -- Low BITNESS bits read as signed are the residue in [-RANGE/2, RANGE/2 - 1].
+    -- Slice before resize, or the input's sign bit is kept instead of the residue's.
     oErrorVal <= resize(iErrorVal(BITNESS - 1 downto 0), BITNESS + 1);
 
   end generate gen_binary_range;
 
   gen_general_range : if RANGE_P /= 2 ** BITNESS generate
 
-    -- Retain the A.9 arithmetic for configurations without a full binary
-    -- sample range. The extra bit lets RANGE_P fit without sign-bit roll.
+    -- RANGE not a power of two: plain A.9 arithmetic
     constant RANGE_S : signed(BITNESS + 1 downto 0) := to_signed(RANGE_P, BITNESS + 2);
 
     signal sExt    : signed(BITNESS + 1 downto 0);
@@ -67,7 +54,6 @@ begin
 
   end generate gen_general_range;
 
-  -- Errval in [(RANGE + 1) / 2 - RANGE, (RANGE + 1) / 2 - 1] for |input| < RANGE
   postponed assert is_x(oErrorVal) or abs(to_integer(iErrorVal)) >= RANGE_P
                    or (to_integer(oErrorVal) >= (RANGE_P + 1) / 2 - RANGE_P and to_integer(oErrorVal) < (RANGE_P + 1) / 2)
     report "a9: Errval out of range" severity error;

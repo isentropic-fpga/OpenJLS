@@ -4,17 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
-----------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
---
--- Module Name: A12_variables_update - Behavioral
---
--- Assumptions:
---                 B_WIDTH  >=  ERROR_WIDTH
---                 A_WIDTH  >=  ERROR_WIDTH
---
-----------------------------------------------------------------------------------
+-- a12_variables_update: T.87 A.12, update of A[Q], B[Q], N[Q]
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -63,9 +53,8 @@ begin
   sBqNew <= iBq + resize(iErrorVal, B_WIDTH);
   sNqNew <= iNq + 1;
 
-  -- Rescale: halve A & B; N sequencing: (N>>1) + 1 (per T.87)
   sARescale <= shift_right(sAqNew, 1);
-  sBRescale <= shift_right(sBqNew, 1); -- arithmetic >> 1 => floor for negatives
+  sBRescale <= shift_right(sBqNew, 1); -- arithmetic shift: floor for negatives
   sNRescale <= shift_right(iNq, 1) + 1;
 
   oAq <= sARescale when sDoRescale = '1' else
@@ -75,7 +64,6 @@ begin
   oNq <= sNRescale when sDoRescale = '1' else
          sNqNew;
 
-  -- A + |Errval| in [0, 2^A_WIDTH - 1] (no wrap); N in [1, RESET]
   postponed assert is_x(sAqNew) or sAqNew >= iAq report "a12: A wrapped" severity error;
   postponed assert is_x(oNq) or iNq > RESET or (oNq >= 1 and oNq <= RESET) report "a12: N out of range" severity error;
 

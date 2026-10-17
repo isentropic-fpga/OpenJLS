@@ -4,16 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
-----------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
---
--- Module Name: quant_gradient_merging - Behavioral
---
--- Description:                       Code segment A.4.1
---                                    Text only, described on section A.3.4
---
-----------------------------------------------------------------------------------
+-- a4_1_quant_gradient_merging: T.87 A.4.1 (A.3.4 text), sign merging of (Q1, Q2, Q3)
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -38,13 +29,12 @@ architecture behavioral of a4_1_quant_gradient_merging is
 
 begin
 
-  -- Sign of first non-zero (1 if negative)
+  -- Sign of the first non-zero Qi
   sSign <= CO_SIGN_NEG when iQ1 < 0 else
            CO_SIGN_NEG when (iQ1 = 0 and iQ2 < 0) else
            CO_SIGN_NEG when (iQ1 = 0 and iQ2 = 0 and iQ3 < 0) else
            CO_SIGN_POS;
 
-  -- Flip quantized values if sign is negative
   oQ1 <= - iQ1 when sSign = CO_SIGN_NEG else
          iQ1;
   oQ2 <= - iQ2 when sSign = CO_SIGN_NEG else
@@ -54,7 +44,6 @@ begin
 
   oSign <= sSign;
 
-  -- Q1 in [0, 4] (first non-zero made positive), Q2, Q3 in [-4, 4]
   postponed assert is_x(oQ1) or (oQ1 >= 0 and oQ1 <= 4) report "a4_1: Q1 out of range" severity error;
   postponed assert is_x(oQ2) or abs(to_integer(oQ2)) <= 4 report "a4_1: Q2 out of range" severity error;
   postponed assert is_x(oQ3) or abs(to_integer(oQ3)) <= 4 report "a4_1: Q3 out of range" severity error;

@@ -4,16 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
-----------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
---
--- Module Name: A10_compute_k - Behavioral
---
--- Description:                     Code segment A.10
---                                  Computation of the Golomg coding variable k
---
-----------------------------------------------------------------------------------
+-- a10_compute_k: T.87 A.10, Golomb parameter k
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -35,16 +26,13 @@ end entity a10_compute_k;
 
 architecture behavioral of a10_compute_k is
 
-  -- Worst case: Nq = 1 and Aq = 2^A_WIDTH - 1
+  -- Worst case Nq = 1, Aq = 2^A_WIDTH - 1
   constant MAX_K : natural := A_WIDTH;
   constant W     : natural := A_WIDTH + 1;
 
 begin
 
-  -- Parallel formulation: compute all candidate shifts up-front, compare each
-  -- against Aq, then priority-encode for the smallest index whose shift
-  -- reaches/exceeds Aq. Depth collapses from MAX_K ripple levels to one
-  -- compare + log2(MAX_K+1) encoder levels.
+  -- Parallel compares + priority encode instead of T.87's serial loop
   p_compute_k : process (iNq, iAq) is
 
     variable vAq    : unsigned(W - 1 downto 0);
@@ -57,7 +45,6 @@ begin
     vAq := resize(iAq, W);
     vNq := resize(iNq, W);
 
-    -- Parallel compares: vMatch(k) = '1' iff (Nq << k) >= Aq
     for k in 0 to MAX_K loop
 
       if (shift_left(vNq, k) >= vAq) then
@@ -68,8 +55,7 @@ begin
 
     end loop;
 
-    -- Priority encode: smallest index with match='1' wins.
-    -- Loop high→low, last assignment carried forward yields the lowest match.
+    -- Lowest matching k wins
     vK := to_unsigned(MAX_K + 1, vK'length);
 
     for k in MAX_K downto 0 loop
@@ -84,7 +70,7 @@ begin
 
   end process p_compute_k;
 
-  -- k in [0, MAX_K]; Nq = 0 (pipeline reset value) yields MAX_K + 1
+  -- Nq = 0 (reset value) yields MAX_K + 1
   postponed assert is_x(iNq) or is_x(iAq) or iNq = 0 or oK <= MAX_K report "a10: k above MAX_K" severity error;
 
 end architecture behavioral;

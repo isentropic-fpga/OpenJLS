@@ -4,17 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
-----------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
---
--- Module Name: A20_2_compute_k - Behavioral
---
--- Description:                         Written requirement A.20.2
---                                      Shared A.10: k from A[Q] in regular mode,
---                                      from TEMP in run interruption
---
-----------------------------------------------------------------------------------
+-- a20_2_compute_k: T.87 A.20.2, A.10 shared by both modes, from A[Q] or TEMP
 
 library ieee;
   use ieee.std_logic_1164.all;

@@ -4,29 +4,9 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
-----------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
+-- a11_2_bit_packer: one cycle's raw and Golomb fields packed into one MSB-aligned word
 --
--- Module Name: A11_2_bit_packer - Behavioral
--- Description:
---
---    Concatenates this cycle's raw + Golomb fields into a single
---    variable-length word. Output is (oWord, oValidLen): MSB-aligned
---    bitstream in oWord, oValidLen counts how many top bits are
---    meaningful. Downstream byte_stuffer accumulates these
---    variable-length words and produces byte-aligned output.
---
---    Word layout (MSB → LSB):
---      [raw bits (rawLen)][unary zeros (unaryZeros)]['1'][suffix (suffixLen)]
---
---    When only one of raw/Golomb fires, the corresponding portion is
---    omitted. Both fire simultaneously in RI (run-interruption) mode.
---
---    No internal buffer. Concat is combinational on the inputs;
---    outputs are registered to break the comb chain into byte_stuffer.
---
-----------------------------------------------------------------------------------
+-- Layout: [raw][unary zeros]['1'][suffix]; oValidLen counts the top bits in use.
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -48,16 +28,16 @@ entity a11_2_bit_packer is
     iClk            : in    std_logic;
     iRst            : in    std_logic;
     iStall          : in    std_logic;
-    -- Raw bits interface - A.15 boundary bits, A.16 break residual (Sporadic raws & RI)
+    -- Raw bits: A.15 boundary bits, A.16 break residual
     iRawValid       : in    std_logic;
     iRawLen         : in    unsigned(SUFFIXLEN_WIDTH - 1 downto 0);
     iRawVal         : in    unsigned(SUFFIX_WIDTH - 1 downto 0);
-    -- Golomb interface (regular mode & RI)
+    -- Golomb code: regular and RI
     iGolombValid    : in    std_logic;
     iUnaryZeros     : in    unsigned(UNARY_WIDTH - 1 downto 0);
     iSuffixLen      : in    unsigned(SUFFIXLEN_WIDTH - 1 downto 0);
     iSuffixVal      : in    unsigned(SUFFIX_WIDTH - 1 downto 0);
-    -- Output: MSB-aligned variable-length word
+    -- MSB-aligned
     oWord           : out   std_logic_vector(OUT_WIDTH - 1 downto 0);
     oWordValid      : out   std_logic;
     oValidLen       : out   unsigned(log2ceil(OUT_WIDTH + 1) - 1 downto 0)
@@ -76,16 +56,12 @@ begin
     report "A11_2_bit_packer: OUT_WIDTH must be >= LIMIT (per-cycle worst case)"
     severity failure;
 
-  -- Contract assertions in PSL (active in NVC sims via --psl, plain
-  -- comments to synthesis).
+  -- Contracts (PSL, simulation only)
   -- psl default clock is rising_edge(iClk);
   -- psl assert always (iRst = '1' -> next (oWordValid = '0')) report "a11_2: reset must clear oWordValid";
   -- psl assert always ((iRst = '0' and iStall = '1' and oWordValid = '1') -> next (oWordValid = '1')) report "a11_2: stall must hold oWordValid asserted";
   -- psl assert always ((iRst = '0' and iStall = '1' and oWordValid = '0') -> next (oWordValid = '0')) report "a11_2: stall must hold oWordValid deasserted";
 
-  -------------------------------------------------------------------------------------------------------------------------
-  -- COMBINATORIAL PROCESS
-  -------------------------------------------------------------------------------------------------------------------------
   comb_proc : process (iRawValid, iRawLen, iRawVal, iGolombValid, iUnaryZeros, iSuffixLen, iSuffixVal) is
 
     constant GOLOMB_WIDTH : natural := LIMIT;
@@ -114,7 +90,7 @@ begin
 
     if (iGolombValid = '1') then
       vMarker     := shift_left(to_unsigned(1, GOLOMB_WIDTH), vSufLen);
-      vGolombWord := vMarker or (resize(iSuffixVal, GOLOMB_WIDTH) and (vMarker - 1)); -- Masks the desired suffix bits and adds to marker
+      vGolombWord := vMarker or (resize(iSuffixVal, GOLOMB_WIDTH) and (vMarker - 1));
 
       vGolombLen   := to_integer(iUnaryZeros) + 1 + vSufLen;
       vGolombShift := shift_left(resize(vGolombWord, OUT_WIDTH), OUT_WIDTH - vTotal - vGolombLen);
@@ -129,9 +105,6 @@ begin
 
   end process comb_proc;
 
-  -------------------------------------------------------------------------------------------------------------------------
-  -- SYNCHRONOUS PROCESS
-  -------------------------------------------------------------------------------------------------------------------------
   sync_proc : process (iClk) is
   begin
 

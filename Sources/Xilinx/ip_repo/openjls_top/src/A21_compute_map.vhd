@@ -4,16 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
-----------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
---
--- Module Name: A21_compute_map - Behavioral
---
--- Description:                         Code segment A.21
---                                      Computation of map for Errval mapping
---
-----------------------------------------------------------------------------------
+-- a21_compute_map: T.87 A.21, map flag for the run-interruption Errval mapping
 
 library ieee;
   use ieee.std_logic_1164.all;

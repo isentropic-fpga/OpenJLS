@@ -4,16 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
-----------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
---
--- Module Name: gradient_comp - Behavioral
---
--- Description:                         Code segment A.1
---                                      Local gradient computation for context determination
---
-----------------------------------------------------------------------------------
+-- a1_gradient_comp: T.87 A.1, local gradients D1, D2, D3
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -43,7 +34,6 @@ begin
   oD2 <= signed('0' & iB) - signed('0' & iC);
   oD3 <= signed('0' & iC) - signed('0' & iA);
 
-  -- D1..D3 in [-(2^B - 1), 2^B - 1]
   postponed assert is_x(oD1) or abs(to_integer(oD1)) < 2 ** BITNESS report "a1: D1 out of range" severity error;
   postponed assert is_x(oD2) or abs(to_integer(oD2)) < 2 ** BITNESS report "a1: D2 out of range" severity error;
   postponed assert is_x(oD3) or abs(to_integer(oD3)) < 2 ** BITNESS report "a1: D3 out of range" severity error;

@@ -4,54 +4,27 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
--------------------------------------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
+-- openjls_axis_regs: AXI4-Lite registers and reset controller around openjls_axis
 --
--- Module Name: openjls_axis_regs - rtl
--- Description: AXI4-Stream + AXI4-Lite wrapper around openjls_top (flavor B).
+-- Write WIDTH/HEIGHT, then CTRL.APPLY: a one-cycle core reset samples them; AXI-Lite stays on
+-- aresetn. Unchanged dimensions need no APPLY. During the pulse BUSY = 1, TREADY is low and
+-- register writes are dropped (OKAY). WIDTH/HEIGHT clamp on write, so readback is the value in use.
 --
---          Instantiates openjls_axis (flavor A) and adds an AXI4-Lite register
---          bank plus a reset controller. The core samples iImageWidth/
---          iImageHeight only while its synchronous reset is high, so
---          reconfiguration is expressed as: write WIDTH/HEIGHT, set CTRL.APPLY.
---          APPLY pulses the core reset for one clock while the
---          registers are held stable; the AXI-Lite endpoint itself stays on
---          aresetn only, so the bus never disappears mid-reconfigure.
---          Back-to-back images of unchanged dimensions need no APPLY.
---
---          While the pulse is active STATUS.BUSY reads 1 and the core holds
---          s_axis_pixel_tready low, so a stream started too early stalls
---          instead of losing pixels. Writes to WIDTH/HEIGHT/CTRL while BUSY
---          are dropped (responded OKAY, not applied).
---
---          WIDTH/HEIGHT writes are clamped to the core's rule (out-of-range
---          values become the MAX generic), so a readback always returns the
---          value the core will actually use.
---
---------------------------------------------------------------------------------------------
--- REGISTER MAP (word-aligned offsets, 32-bit)
---------------------------------------------------------------------------------------------
---
---   0x00  ID       RO  ASCII "OJLS" (0x4F4A4C53)
---   0x04  VERSION  RO  0x00MMmmpp (major/minor/patch)
---   0x08  CAPS     RO  [7:0] BITNESS, [15:8] output bytes per beat (OUT_WIDTH/8)
+--   0x00  ID       RO  "OJLS" (0x4F4A4C53)
+--   0x04  VERSION  RO  0x00MMmmpp
+--   0x08  CAPS     RO  [7:0] BITNESS, [15:8] OUT_WIDTH / 8
 --   0x0C  MAXDIM   RO  [15:0] MAX_IMAGE_WIDTH, [31:16] MAX_IMAGE_HEIGHT
---   0x10  WIDTH    RW  [15:0] image width  (clamped on write)
---   0x14  HEIGHT   RW  [15:0] image height (clamped on write)
---   0x18  CTRL     WO  [0] APPLY — self-clearing, pulses the core reset
---   0x1C  STATUS   RO  [0] BUSY (reset pulse active), [1] s_axis_pixel TREADY mirror
---
--------------------------------------------------------------------------------------------------------------
+--   0x10  WIDTH    RW  [15:0] image width
+--   0x14  HEIGHT   RW  [15:0] image height
+--   0x18  CTRL     WO  [0] APPLY, self-clearing
+--   0x1C  STATUS   RO  [0] BUSY, [1] s_axis_pixel TREADY
 
 library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
   use work.openjls_pkg.all;
 
--- AXI port names must keep the <prefix>_* suffix convention (lowercase,
--- underscores) for Vivado IP integrator interface inference; the prefix
--- becomes the interface name in the block diagram.
+-- <prefix>_* port names: Vivado IP integrator infers the interfaces from them
 -- vsg_off port_010 port_map_002
 
 entity openjls_axis_regs is
@@ -64,7 +37,7 @@ entity openjls_axis_regs is
   port (
     aclk                : in    std_logic;
     aresetn             : in    std_logic;
-    -- AXI4-Lite slave — configuration and status
+    -- AXI4-Lite config and status
     s_axi_ctrl_awaddr   : in    std_logic_vector(7 downto 0);
     s_axi_ctrl_awprot   : in    std_logic_vector(2 downto 0);
     s_axi_ctrl_awvalid  : in    std_logic;
@@ -84,12 +57,12 @@ entity openjls_axis_regs is
     s_axi_ctrl_rresp    : out   std_logic_vector(1 downto 0);
     s_axi_ctrl_rvalid   : out   std_logic;
     s_axi_ctrl_rready   : in    std_logic;
-    -- AXI4-Stream slave — one pixel per beat, right-justified
+    -- Pixel in, right-justified
     s_axis_pixel_tdata  : in    std_logic_vector(8 * ((BITNESS + 7) / 8) - 1 downto 0);
     s_axis_pixel_tvalid : in    std_logic;
     s_axis_pixel_tlast  : in    std_logic;
     s_axis_pixel_tready : out   std_logic;
-    -- AXI4-Stream master — encoded .jls byte stream
+    -- Encoded .jls out
     m_axis_jls_tdata    : out   std_logic_vector(OUT_WIDTH - 1 downto 0);
     m_axis_jls_tkeep    : out   std_logic_vector(OUT_WIDTH / 8 - 1 downto 0);
     m_axis_jls_tvalid   : out   std_logic;
@@ -101,7 +74,7 @@ entity openjls_axis_regs is
   attribute x_interface_info                   : string;
   attribute x_interface_parameter              : string;
   attribute x_interface_info of aclk           : signal is "xilinx.com:signal:clock:1.0 aclk CLK";
-  -- aresetn is auto-associated with aclk by Vivado (standard name/polarity)
+  -- Vivado associates aresetn with aclk by name
   attribute x_interface_parameter of aclk      : signal is "ASSOCIATED_BUSIF s_axi_ctrl:s_axis_pixel:m_axis_jls";
   attribute x_interface_info of aresetn        : signal is "xilinx.com:signal:reset:1.0 aresetn RST";
   attribute x_interface_parameter of aresetn   : signal is "POLARITY ACTIVE_LOW";
@@ -109,9 +82,9 @@ end entity openjls_axis_regs;
 
 architecture rtl of openjls_axis_regs is
 
-  constant VERSION     : std_logic_vector(31 downto 0) := x"00010300"; -- 1.3.0
+  constant VERSION     : std_logic_vector(31 downto 0) := x"00010300";
 
-  -- Word-address decode (byte offset / 4)
+  -- Word addresses (byte offset / 4)
   constant REG_ID      : natural := 0;
   constant REG_VERSION : natural := 1;
   constant REG_CAPS    : natural := 2;
@@ -129,7 +102,7 @@ architecture rtl of openjls_axis_regs is
   signal sSoftRst      : std_logic;
   signal sCoreRst      : std_logic;
 
-  -- AXI-Lite handshake state (single outstanding transaction per channel)
+  -- AXI-Lite, one outstanding transaction per channel
   signal sWrHandshake  : std_logic;
   signal sRdHandshake  : std_logic;
   signal sBValid       : std_logic;
@@ -138,9 +111,7 @@ architecture rtl of openjls_axis_regs is
 
   signal sReadyMirror  : std_logic;
 
-  -- Merge an AXI-Lite write into the low 16 bits of a register, honoring
-  -- WSTRB, then clamp to the core's sample-time rule (out-of-range -> MAX)
-  -- so readback always reports the value the core will actually use.
+  -- WSTRB merge into the low 16 bits, then the core's clamp, so readback shows the value in use
 
   function merge_clamp_dim (
     vcur   : unsigned(15 downto 0);
@@ -174,19 +145,15 @@ architecture rtl of openjls_axis_regs is
 
 begin
 
-  -------------------------------------------------------------------------------------------------------------
-  -- AXI4-Lite WRITE CHANNEL
-  -------------------------------------------------------------------------------------------------------------
-  -- Address and data are accepted in the same cycle (ready waits for both
-  -- valids — legal: ready may depend on valid, not vice versa). Single
-  -- outstanding transaction; next one is accepted after BREADY.
+  -- AXI4-Lite write ---
+  -- AW and W are accepted together: ready may depend on valid, not the reverse
 
   sWrHandshake <= '1' when s_axi_ctrl_awvalid = '1' and s_axi_ctrl_wvalid = '1' and sBValid = '0' else
                   '0';
 
   s_axi_ctrl_awready <= sWrHandshake;
   s_axi_ctrl_wready  <= sWrHandshake;
-  s_axi_ctrl_bresp   <= "00"; -- OKAY; RO/unmapped writes are silently dropped
+  s_axi_ctrl_bresp   <= "00"; -- OKAY; RO/unmapped writes are dropped
   s_axi_ctrl_bvalid  <= sBValid;
 
   p_axi_write : process (aclk) is
@@ -202,9 +169,7 @@ begin
         sHeight  <= to_unsigned(MAX_IMAGE_HEIGHT, sHeight'length);
         sSoftRst <= '0';
       else
-        -- Soft-reset pulse is a single clock: every synchronous element in
-        -- the core resets in one cycle (see openjls_top). Default-clear here,
-        -- set on an APPLY write below (last assignment wins).
+        -- One-cycle pulse resets the whole core; an APPLY write below overrides this
         sSoftRst <= '0';
 
         if (sBValid = '1' and s_axi_ctrl_bready = '1') then
@@ -215,8 +180,7 @@ begin
           sBValid   <= '1';
           vAddrWord := to_integer(unsigned(s_axi_ctrl_awaddr(7 downto 2)));
 
-          -- Configuration writes are dropped while the reset pulse is live:
-          -- the core is sampling these registers right now.
+          -- Dropped during the reset pulse: the core is sampling the registers
           if (sSoftRst = '0') then
 
             case vAddrWord is
@@ -237,7 +201,7 @@ begin
 
               when others =>
 
-                null; -- RO / unmapped: dropped
+                null;
 
             end case;
 
@@ -248,9 +212,7 @@ begin
 
   end process p_axi_write;
 
-  -------------------------------------------------------------------------------------------------------------
-  -- AXI4-Lite READ CHANNEL
-  -------------------------------------------------------------------------------------------------------------
+  -- AXI4-Lite read ---
 
   sRdHandshake <= '1' when s_axi_ctrl_arvalid = '1' and sRValid = '0' else
                   '0';
@@ -313,7 +275,6 @@ begin
 
             when others =>
 
-              -- REG_CTRL reads as zero (write-only), unmapped reads zero
               null;
 
           end case;
@@ -324,10 +285,7 @@ begin
 
   end process p_axi_read;
 
-  -------------------------------------------------------------------------------------------------------------
-  -- RESET CONTROLLER + CORE
-  -------------------------------------------------------------------------------------------------------------
-
+  -- Reset controller and core ---
   sCoreRst <= (not aresetn) or sSoftRst;
 
   s_axis_pixel_tready <= sReadyMirror;

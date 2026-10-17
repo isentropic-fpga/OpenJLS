@@ -4,16 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
-----------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
---
--- Module Name: A20_1_run_context_index - Behavioral
---
--- Description:                         Written requirement A.20.1
---                                      Run interruption context: Q = RItype + 365
---
-----------------------------------------------------------------------------------
+-- a20_1_run_context_index: T.87 A.20.1, run-interruption context Q = RItype + 365
 
 library ieee;
   use ieee.std_logic_1164.all;

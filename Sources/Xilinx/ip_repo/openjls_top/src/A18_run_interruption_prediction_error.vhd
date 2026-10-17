@@ -4,16 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
-----------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
---
--- Module Name: A18_run_interruption_prediction_error - Behavioral
---
--- Description:                         Code segment A.18
---                                      Prediction error for a run interruption sample
---
-----------------------------------------------------------------------------------
+-- a18_run_interruption_prediction_error: T.87 A.18, run-interruption prediction error
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -44,7 +35,6 @@ begin
 
   oErrval <= signed('0' & iIx) - signed('0' & sPx);
 
-  -- Errval in [-(2^B - 1), 2^B - 1]
   postponed assert is_x(oErrval) or abs(to_integer(oErrval)) < 2 ** BITNESS report "a18: Errval out of range" severity error;
 
 end architecture behavioral;

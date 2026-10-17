@@ -4,16 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
-----------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
---
--- Module Name: prediction_correction - Behavioral
---
--- Description:                         Code segment A.6
---                                      Prediction correction from the bias
---
-----------------------------------------------------------------------------------
+-- a6_prediction_correction: T.87 A.6, prediction correction by C[Q]
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -42,17 +33,14 @@ architecture behavioral of a6_prediction_correction is
   signal sPxPlusCq   : signed (EXT_WIDTH - 1 downto 0);
   signal sPxMinusCq  : signed (EXT_WIDTH - 1 downto 0);
 
-  -- Precomputed saturated results (vector-select is shallow)
   signal sAddSat     : unsigned (BITNESS - 1 downto 0);
   signal sSubSat     : unsigned (BITNESS - 1 downto 0);
 
 begin
 
-  -- Align widths explicitly for portable, predictable arithmetic
   sPxPlusCq  <= resize(signed('0' & iPx), EXT_WIDTH) + resize(iCq, EXT_WIDTH);
   sPxMinusCq <= resize(signed('0' & iPx), EXT_WIDTH) - resize(iCq, EXT_WIDTH);
 
-  -- Saturate add/sub results in parallel
   sAddSat <= (others => '0') when (sPxPlusCq < ZERO_S) else
              TO_UNSIGNED(MAX_VAL, BITNESS) when (sPxPlusCq > MAX_S) else
              unsigned(sPxPlusCq(BITNESS - 1 downto 0));
@@ -60,11 +48,9 @@ begin
              TO_UNSIGNED(MAX_VAL, BITNESS) when (sPxMinusCq > MAX_S) else
              unsigned(sPxMinusCq(BITNESS - 1 downto 0));
 
-  -- Final 2:1 mux by sign
   oPx <= sAddSat when iSign = CO_SIGN_POS else
          sSubSat;
 
-  -- Px +- C in [-128, 2^B + 127] before clipping; Px in [0, MAX_VAL]
   postponed assert is_x(oPx) or oPx <= MAX_VAL report "a6: Px above MAX_VAL" severity error;
 
 end architecture behavioral;

@@ -4,16 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
-----------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
---
--- Module Name: quantization_gradients - Behavioral
---
--- Description:                             Code segment A.4
---                                          Quantization of the gradients
---
-----------------------------------------------------------------------------------
+-- a4_quantization_gradients: T.87 A.4, gradient quantization to Q1, Q2, Q3
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -37,7 +28,7 @@ end entity a4_quantization_gradients;
 
 architecture behavioral of a4_quantization_gradients is
 
-  -- T.87 compliant clamping function
+  -- T.87 CLAMP: out of range returns j, not maxvalue
 
   function clamp (
     i        : integer;
@@ -104,7 +95,6 @@ begin
   oQ2 <= quantizate(iD2, T1, T2, T3);
   oQ3 <= quantizate(iD3, T1, T2, T3);
 
-  -- Q1..Q3 in [-4, 4]
   postponed assert is_x(oQ1) or abs(to_integer(oQ1)) <= 4 report "a4: Q1 out of range" severity error;
   postponed assert is_x(oQ2) or abs(to_integer(oQ2)) <= 4 report "a4: Q2 out of range" severity error;
   postponed assert is_x(oQ3) or abs(to_integer(oQ3)) <= 4 report "a4: Q3 out of range" severity error;

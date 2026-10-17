@@ -4,19 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
-----------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
---
--- Module Name: A19_run_interruption_error - Behavioral
--- Description: Code segment A.19 — error computation for run-interruption
---              sample (lossless only).
---
---              With NEAR=0, the T.87 Quantize() step is identity and
---              Rx = Ix, so no reconstruction is produced here. Only:
---                - sign flip when RItype=0 and Ra > Rb
---                - modulo reduction (A.9 inlined)
-----------------------------------------------------------------------------------
+-- a19_run_interruption_error: T.87 A.19, run-interruption error sign and modulo reduction
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -49,7 +37,6 @@ begin
 
   begin
 
-    -- Sign adjustment: RItype=0 and Ra > Rb → negate error
     if (iRItype = '0' and iRa > iRb) then
       vErr  := - to_integer(iErrval);
       oSign <= CO_SIGN_NEG;
@@ -58,7 +45,6 @@ begin
       oSign <= CO_SIGN_POS;
     end if;
 
-    -- Modulo reduction (A.9 inline)
     vErrAdj := vErr;
 
     if (vErrAdj < 0) then
@@ -69,7 +55,6 @@ begin
       vErrAdj := vErrAdj - RANGE_P;
     end if;
 
-    -- Errval in [(RANGE + 1) / 2 - RANGE, (RANGE + 1) / 2 - 1] for |Errval| < RANGE
     assert abs(vErr) >= RANGE_P or (vErrAdj >= (RANGE_P + 1) / 2 - RANGE_P and vErrAdj < (RANGE_P + 1) / 2)
       report "a19: Errval out of range" severity error;
 

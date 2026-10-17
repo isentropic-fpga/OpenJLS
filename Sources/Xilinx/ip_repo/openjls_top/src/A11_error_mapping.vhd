@@ -4,16 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
-----------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
---
--- Module Name: A11_error_mapping - Behavioral
---
--- Description:                     Code segment A.11
---                                  Error mapping to non-negative values
---
-----------------------------------------------------------------------------------
+-- a11_error_mapping: T.87 A.11, Errval to the non-negative MErrval
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -39,16 +30,14 @@ end entity a11_error_mapping;
 
 architecture behavioral of a11_error_mapping is
 
-  -- Control flags
   signal sSpecialMap          : std_logic;
   signal sErrEqualGreaterZero : std_logic;
 
-  -- Width-extended compare for 2*B <= -N (avoid overflow and mismatched lengths)
+  -- One extra bit so 2*B <= -N cannot overflow
   signal sBExt                : signed(B_WIDTH downto 0);
   signal sNExt                : signed(B_WIDTH downto 0);
-  signal sErrorValExt         : signed((2 * MAPPED_ERROR_VAL_WIDTH) - 1 downto 0); -- so that abs(ErrorVal) fits
+  signal sErrorValExt         : signed((2 * MAPPED_ERROR_VAL_WIDTH) - 1 downto 0);
 
-  -- Precomputed mapping candidates (parallel)
   signal sErrU, sErrAbsU      : unsigned (oMappedErrorVal'range);
   signal sMapErrorSpecialPos  : unsigned (oMappedErrorVal'range);
   signal sMapErrorSpecialNeg  : unsigned (oMappedErrorVal'range);
@@ -58,37 +47,30 @@ architecture behavioral of a11_error_mapping is
 begin
 
   sErrorValExt <= resize(iErrorVal, sErrorValExt'length);
-  -- Extend and compare: 2*B <= -N with one extra bit to prevent overflow
   sBExt <= resize(iBq, sBExt'length);
-  -- N reaches RESET (64), which sets the MSB of iNq: zero-extend before signed.
+  -- N = RESET sets the MSB of iNq: zero-extend
   sNExt <= resize(signed('0' & iNq), sBExt'length);
 
   sSpecialMap <= '1' when (iK = 0 and 2 * sBExt <= - sNExt) else
                  '0';
 
-  -- Error sign flag
   sErrEqualGreaterZero <= '1' when iErrorVal >= 0 else
                           '0';
 
-  -- Magnitudes for mapping
-  sErrU    <= resize(unsigned(iErrorVal), sErrU'length); -- Only used when ErrorVal >= 0, conversion is safe
+  sErrU    <= resize(unsigned(iErrorVal), sErrU'length); -- only used when ErrorVal >= 0
   sErrAbsU <= resize(unsigned(abs(sErrorValExt)), sErrAbsU'length);
 
-  -- Special mapping
   sMapErrorSpecialPos <= resize((2 * sErrU) + 1, sMapErrorSpecialPos'length);
   sMapErrorSpecialNeg <= resize((2 * sErrAbsU) - 2, sMapErrorSpecialNeg'length);
 
-  -- Regular mapping
   sMapErrorRegPos <= resize(2 * sErrU, sMapErrorRegPos'length);
   sMapErrorRegNeg <= resize((2 * sErrAbsU) - 1, sMapErrorRegNeg'length);
 
-  -- Final selection (purely combinational)
   oMappedErrorVal <= sMapErrorSpecialPos when (sSpecialMap = '1' and sErrEqualGreaterZero = '1') else
                      sMapErrorSpecialNeg when (sSpecialMap = '1' and sErrEqualGreaterZero = '0') else
                      sMapErrorRegPos when (sSpecialMap = '0' and sErrEqualGreaterZero = '1') else
-                     sMapErrorRegNeg; -- last case (Errval<0)
+                     sMapErrorRegNeg;
 
-  -- MErrval in [0, 2^ERROR_WIDTH - 1]; unselected candidates may wrap
   postponed assert is_x(oMappedErrorVal) or oMappedErrorVal < 2 ** ERROR_WIDTH
     report "a11: MErrval out of range" severity error;
 

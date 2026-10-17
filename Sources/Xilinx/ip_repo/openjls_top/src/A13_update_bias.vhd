@@ -4,16 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
-----------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
---
--- Module Name: A13_update_bias - Behavioral
---
--- Assumptions:
---               B_WIDTH >= N_WIDTH
---
-----------------------------------------------------------------------------------
+-- a13_update_bias: T.87 A.13, bias update of B[Q] and C[Q]
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -43,7 +34,7 @@ architecture rtl of a13_update_bias is
   signal sIsBPosBranch : std_logic;
   signal sNeedNegClp   : std_logic;
   signal sNeedPosClp   : std_logic;
-  signal sNqSig        : signed(iBq'range); -- signed and extended Nq
+  signal sNqSig        : signed(iBq'range);
   signal sBNegFinal    : signed(iBq'range);
   signal sBPosFinal    : signed(iBq'range);
   signal sCDec         : signed(iCq'range);
@@ -81,7 +72,6 @@ begin
          sCInc when sIsBPosBranch = '1' else
          iCq;
 
-  -- C in [MIN_C, MAX_C]
   postponed assert is_x(oCq) or iCq < MIN_C or iCq > MAX_C or (oCq >= MIN_C and oCq <= MAX_C)
     report "a13: C outside [MIN_C, MAX_C]" severity error;
 

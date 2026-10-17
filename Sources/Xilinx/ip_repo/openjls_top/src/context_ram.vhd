@@ -4,10 +4,9 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
-----------------------------------------------------------------------------------
--- Engineer: Vitor Mendes Camilo
-----------------------------------------------------------------------------------
+-- context_ram: context variables A, B, C, N for the 365 regular and 2 run-interruption contexts
+--
+-- Per-address init flags: after iEndOfImage, the first read of each context returns the initial values.
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -47,31 +46,25 @@ architecture behavioral of context_ram is
   constant C_INIT      : integer := 0;
   constant N_INIT      : natural := 1;
 
-  -- Packed init word (A | B | C | N)
-  -- For run context (A | Nn | 0 | N)
-  -- Nn also initializes to 0, like B
+  -- (A | B | C | N); run contexts reuse it as (A | Nn | 0 | N) with Nn = 0
   constant CTX_INIT    : std_logic_vector(TOTAL_WIDTH - 1 downto 0) :=
                                                                        std_logic_vector(to_unsigned(A_INIT, A_WIDTH)) &
                                                                        std_logic_vector(to_signed(B_INIT, B_WIDTH)) &
                                                                        std_logic_vector(to_signed(C_INIT, C_WIDTH)) &
                                                                        std_logic_vector(to_unsigned(N_INIT, N_WIDTH));
 
-  signal sUseInitValue : std_logic_vector(RAM_DEPTH - 1 downto 0); -- Indicates if init value should be used for each address
-  signal sUseInitReg   : std_logic;                                -- Indicates if use init value for the address read last cycle
+  signal sUseInitValue : std_logic_vector(RAM_DEPTH - 1 downto 0); -- per address: next read returns CTX_INIT
+  signal sUseInitReg   : std_logic;
   signal sBramRdData   : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
 
-  -- Same-cycle write->read forwarding: rebuilds WBR on top of an RBW BRAM.
+  -- Same-address write forwarding: WBR on top of an RBW BRAM
   signal sFwdSameReg   : std_logic;
   signal sWrDataReg    : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
 
 begin
 
-  -- Accesses may be in flight on the FIRST reset cycle: the pipeline's valid
-  -- registers clear synchronously, so the pre-reset valid still drives the
-  -- enables that cycle. Harmless by construction — the re-arm wins over the
-  -- read's flag-clear, a write lands in BRAM but stays masked by the re-armed
-  -- init flag, and the read result is consumed by nothing (downstream is
-  -- reset). Verified by directed cases in the module TB.
+  -- Accesses can ride the first reset cycle (valids clear synchronously). Harmless:
+  -- the init flags re-arm and win, and the read result is discarded downstream.
 
   olo_base_ram_sdp_inst : entity work.olo_base_ram_sdp(rtl)
     generic map (
@@ -136,7 +129,6 @@ begin
              sWrDataReg when sFwdSameReg = '1' else
              sBramRdData;
 
-  -- Enabled addresses in [0, RAM_DEPTH - 1]
   postponed assert iRdEn /= '1' or is_x(iRdAddr) or unsigned(iRdAddr) < RAM_DEPTH
     report "context_ram: read address past depth" severity error;
   postponed assert iWrEn /= '1' or is_x(iWrAddr) or unsigned(iWrAddr) < RAM_DEPTH

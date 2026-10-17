@@ -4,21 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
-----------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
---
--- Module Name: A11_1_golomb_encoder - Behavioral
---
--- Description:                     Code segment A11.1
---                                  Not actual segment, described in text
---                                  on A.5.3
---
--- Assumptions:
---              (1) k <= SUFFIX_WIDTH       and     k   <= MAPPED_ERROR_VAL_WIDTH
---              (2) QBPP <= SUFFIX_WIDTH    and     QBPP <= MAPPED_ERROR_VAL_WIDTH
---
-----------------------------------------------------------------------------------
+-- a11_1_golomb_encoder: T.87 A.5.3 text (no code segment), limited-length Golomb code LG(k, LIMIT)
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -38,8 +24,7 @@ entity a11_1_golomb_encoder is
   port (
     iK                     : in    unsigned (K_WIDTH - 1 downto 0);
     iMappedErrorVal        : in    unsigned (MAPPED_ERROR_VAL_WIDTH - 1 downto 0);
-    -- iRiMode selects T.87 A.22.1 LG(k, glimit) with glimit = LIMIT - J[iRunIndex] - 1.
-    -- iRunIndex is the RUNindex value before the A.16 decrement. Ignored when iRiMode='0'.
+    -- iRunIndex: RUNindex before the A.16 decrement, used only when iRiMode = '1'
     iRiMode                : in    std_logic;
     iRunIndex              : in    unsigned (4 downto 0);
     oUnaryZeros            : out   unsigned (UNARY_WIDTH - 1 downto 0);
@@ -54,10 +39,7 @@ architecture behavioral of a11_1_golomb_encoder is
 
 begin
 
-  -- Limited-Length Golomb LG(k, L). L=LIMIT in regular mode (A.5.3) and
-  -- L=glimit=LIMIT-J[iRunIndex]-1 in RI mode (A.22.1). Non-escape if
-  -- high_order < L - QBPP - 1. Escape emits (L - QBPP - 1) zeros + '1' + QBPP
-  -- bits of (MErrval - 1); total escape length = L, so RI prefix + code = LIMIT.
+  -- LG(k, L) with L = LIMIT (regular) or glimit = LIMIT - J[RUNindex] - 1 (RI, A.22.1)
   p_golomb_encode : process (iK, iMappedErrorVal, iRiMode, iRunIndex) is
 
     variable vKInt           : integer;
@@ -80,11 +62,9 @@ begin
       vThreshold := REG_THRESHOLD;
     end if;
 
-    vKInt := to_integer(iK);
-    -- q = high-order bits of MErrval = floor(MErrval / 2^k)
+    vKInt      := to_integer(iK);
     vHighOrder := shift_right(iMappedErrorVal, vKInt);
-    -- r = low k bits of MErrval = MErrval - (q << k)
-    vLowOrder := iMappedErrorVal - shift_left(vHighOrder, vKInt);
+    vLowOrder  := iMappedErrorVal - shift_left(vHighOrder, vKInt);
 
     vIsEscape := (vHighOrder >= vThreshold);
 
@@ -94,16 +74,14 @@ begin
 
       vSuffixVal := resize(vLowOrder, vSuffixVal'length);
     else
-      -- Assertions ----------------------------------------------------------------
-      assert (iMappedErrorVal /= 0)                                               -- Catch impossible case on simulation set
+      assert (iMappedErrorVal /= 0)
         report "LG(k,LIMIT) escape with MErrval=0 is impossible per T.87/14495-1"
         severity failure;
-      ------------------------------------------------------------------------------
 
       vUnaryZeros := to_unsigned(vThreshold, vUnaryZeros'length);
       vSuffixLen  := to_unsigned(QBPP, vSuffixLen'length);
 
-      vMappedErrorDec := iMappedErrorVal - 1;                                     -- MErrval is guaranteed to be greater than 1 when escape
+      vMappedErrorDec := iMappedErrorVal - 1;
 
       vSuffixVal                    := (others => '0');
       vSuffixVal(QBPP - 1 downto 0) := vMappedErrorDec(QBPP - 1 downto 0);

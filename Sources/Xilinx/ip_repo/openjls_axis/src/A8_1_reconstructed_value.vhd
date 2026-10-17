@@ -4,16 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
-----------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
---
--- Module Name: A8_1_reconstructed_value - Behavioral
---
--- Description:                         Written requirement A.8.1
---                                      Lossless reconstruction: Rx = Ix
---
-----------------------------------------------------------------------------------
+-- a8_1_reconstructed_value: T.87 A.8.1, lossless reconstruction Rx = Ix
 
 library ieee;
   use ieee.std_logic_1164.all;

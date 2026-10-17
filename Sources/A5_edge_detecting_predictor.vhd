@@ -4,16 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
-----------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
---
--- Module Name: edge_detecting_predictor - Behavioral
---
--- Description:                     Code segment A.5
---                                  Edge-detecting predictor
---
-----------------------------------------------------------------------------------
+-- a5_edge_detecting_predictor: T.87 A.5, edge-detecting predictor Px
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -40,7 +31,7 @@ begin
          math_max(iA, iB) when iC <= math_min(iA, iB) else
          iA + iB - iC;
 
-  -- Px in [min(Ra, Rb), max(Ra, Rb)]; Ra + Rb - Rc may wrap mid-expression, the result does not
+  -- Ra + Rb - Rc may wrap mid-expression; the result does not
   postponed assert is_x(oPx) or (oPx >= math_min(iA, iB) and oPx <= math_max(iA, iB))
     report "a5: Px outside [min(Ra, Rb), max(Ra, Rb)]" severity error;
 

@@ -4,16 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
-----------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
---
--- Module Name: mode_selection - Behavioral
---
--- Description:                         Code segment A.3
---                                      Local gradient computation for context determination
---
-----------------------------------------------------------------------------------
+-- a3_mode_selection: T.87 A.3, run mode when D1 = D2 = D3 = 0
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -26,7 +17,7 @@ entity a3_mode_selection is
     BITNESS  : natural range 8 to 16 := CO_BITNESS_STD
   );
   port (
-    iD1      : in    signed(BITNESS downto 0); -- signed
+    iD1      : in    signed(BITNESS downto 0);
     iD2      : in    signed(BITNESS downto 0);
     iD3      : in    signed(BITNESS downto 0);
     oModeRun : out   std_logic

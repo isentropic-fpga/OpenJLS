@@ -4,16 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
-----------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
---
--- Module Name: A17_run_interruption_index - Behavioral
---
--- Description:                         Code segment A.17
---                                      Index computation for run interruption
---
-----------------------------------------------------------------------------------
+-- a17_run_interruption_index: T.87 A.17, run-interruption type RItype
 
 library ieee;
   use ieee.std_logic_1164.all;

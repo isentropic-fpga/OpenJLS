@@ -130,7 +130,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>0312478a</spirit:value>
+            <spirit:value>68b1edf1</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -146,7 +146,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>0312478a</spirit:value>
+            <spirit:value>68b1edf1</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -598,7 +598,7 @@
       <spirit:file>
         <spirit:name>src/openjls_axis.vhd</spirit:name>
         <spirit:userFileType>vhdlSource-2008</spirit:userFileType>
-        <spirit:userFileType>CHECKSUM_f34cc3fb</spirit:userFileType>
+        <spirit:userFileType>CHECKSUM_39cdf197</spirit:userFileType>
         <spirit:userFileType>IMPORTED_FILE</spirit:userFileType>
       </spirit:file>
     </spirit:fileSet>
@@ -860,13 +860,13 @@
       <xilinx:definitionSource>package_project</xilinx:definitionSource>
       <xilinx:vendorDisplayName>Isentropic</xilinx:vendorDisplayName>
       <xilinx:vendorURL>https://github.com/isentropic-fpga/OpenJLS</xilinx:vendorURL>
-      <xilinx:coreRevision>26101711</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2026-10-17T14:49:18Z</xilinx:coreCreationDateTime>
+      <xilinx:coreRevision>26101713</xilinx:coreRevision>
+      <xilinx:coreCreationDateTime>2026-10-17T16:53:24Z</xilinx:coreCreationDateTime>
     </xilinx:coreExtensions>
     <xilinx:packagingInfo>
       <xilinx:xilinxVersion>2025.2</xilinx:xilinxVersion>
       <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="8e5b7ba9"/>
-      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="06214bc1"/>
+      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="6a800825"/>
       <xilinx:checksum xilinx:scope="ports" xilinx:value="76c8cdce"/>
       <xilinx:checksum xilinx:scope="hdlParameters" xilinx:value="b0b062b2"/>
       <xilinx:checksum xilinx:scope="parameters" xilinx:value="7b3665db"/>

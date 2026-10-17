@@ -4,36 +4,10 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
-
-----------------------------------------------------------------------------------
--- Engineer:    Vitor Mendes Camilo
+-- line_buffer: one-row FIFO giving the causal neighbours of x
 --
--- Module Name: line_buffer - Behavioral
---
--- Notes:
---              Stores one row of pixels on FIFO and provides the four T.87 causal
---              context neighbors for each pixel, where x is the current pixel:
---
---                  c  b  d
---                  a  x
---
---              a = left neighbor        (same row, col-1)
---              b = upper neighbor       (previous row, col)
---              c = upper-left neighbor  (previous row, col-1)
---              d = upper-right neighbor (previous row, col+1)
---
---              Border conditions (T.87 A.2.1):
---                First row      : b = c = d = 0
---                Col 0 (rows>0) : a = Rb = first pixel of previous row
---                                 c = Ra from start of previous row
---                                   = first pixel of the row before that
---                Col W-1        : d = b (replicate last pixel of previous row)
---
--- Assumptions:
---              iImageWidth >= 3, iImageHeight >= 1.
---              iImageWidth and iImageHeight are stable for the entire image.
---
-----------------------------------------------------------------------------------
+--   c b d
+--   a x
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -61,8 +35,8 @@ entity line_buffer is
     oC               : out   unsigned(BITNESS - 1 downto 0);
     oD               : out   unsigned(BITNESS - 1 downto 0);
     oValid           : out   std_logic;
-    oEol             : out   std_logic; -- end of line
-    oEoi             : out   std_logic  -- end of image
+    oEol             : out   std_logic;
+    oEoi             : out   std_logic
   );
 end entity line_buffer;
 
@@ -84,7 +58,7 @@ architecture behavioral of line_buffer is
   signal sB                  : unsigned(BITNESS - 1 downto 0); -- b: upper
   signal sC                  : unsigned(BITNESS - 1 downto 0); -- c: upper-left
   signal sA                  : unsigned(BITNESS - 1 downto 0); -- a: left
-  signal sBorderC            : unsigned(BITNESS - 1 downto 0); -- c at col 0: sB captured at col 0 of previous row
+  signal sBorderC            : unsigned(BITNESS - 1 downto 0); -- c at col 0: b latched at col 0 of the previous row
   signal sColCounter         : unsigned(COL_WIDTH - 1 downto 0);
   signal sRowCounter         : unsigned(ROW_WIDTH - 1 downto 0);
   signal sIsLastCol          : boolean;
@@ -98,7 +72,6 @@ architecture behavioral of line_buffer is
 
 begin
 
-  -- Combinatorial process ----------------------------------------------------------------
   comb_proc : process (iValid, iImageWidth, iImageHeight, sFifoState,
                        sFifoOutReady, sFifoOutValid, sColCounter, sRowCounter,
                        sIsLastCol, sIsLastRow, sIsFirstCol, sIsEol, sIsEoi,
@@ -115,7 +88,6 @@ begin
     oEol                <= bool2bit(sIsEol);
     sIsFifoOutHandshake <= (sFifoOutReady and sFifoOutValid) = '1';
 
-    -- Read FIFO logic ------------------------------------------------------
     if (sFifoState = preload) then
       sFifoOutReady <= '1';
     elsif (sFifoState = nominal) then
@@ -124,35 +96,34 @@ begin
       sFifoOutReady <= '0';
     end if;
 
-    -- Corner case handling for border conditions (T.87 A.2.1) --------------
-    if (sRowCounter = 0) then                                          -- First row: b = c = d = 0
+    -- T.87 A.2.1 borders
+    if (sRowCounter = 0) then
       oB <= (others => '0');
       oC <= (others => '0');
       oD <= (others => '0');
     else
       oB <= sB;
       if (sIsFirstCol) then
-        oC <= sBorderC;                                                -- Col 0: c = Ra from start of previous row
+        oC <= sBorderC;
       else
         oC <= sC;
       end if;
 
       if (sIsLastCol) then
-        oD <= sB;                                                      -- Last col: replicate last pixel of previous row (= b)
+        oD <= sB;
       else
         oD <= sD;
       end if;
     end if;
 
     if (sIsFirstCol) then
-      oA <= sB;                                                        -- First col: replicate first pixel of previous row (= b)
+      oA <= sB;
     else
       oA <= sA;
     end if;
 
-  end process comb_proc; ----------------------------------------------------------------------------
+  end process comb_proc;
 
-  -- Clocked Process ----------------------------------------------------------------------
   clocked_proc : process (iClk) is
   begin
 
@@ -170,21 +141,17 @@ begin
         sA       <= (others => '0');
         sBorderC <= (others => '0');
       else
-        -- FIFO control FSM ----------------------------
-        -- sFifoOutReady is controlled combinationally using these states
         case sFifoState is
 
           when preload =>
 
-            -- When FIFO receives the first pixels it loads them into registers, preparing for nominal operation
-            -- Only loads b and d, since c is out of image
-
+            -- Preload b and d from the FIFO
             if (sIsFifoOutHandshake) then
               sPreloadCounter <= sPreloadCounter + 1;
               if (sPreloadCounter = 1) then
                 sFifoState <= wait_end_first_row;
 
-                if (sIsEol) then                           -- needs this check to work with images with width=4 (Annex H.3 test image)
+                if (sIsEol) then                           -- width = 4 (T.87 H.3 test image)
                   sFifoState <= nominal;
                 end if;
               end if;
@@ -192,14 +159,11 @@ begin
 
           when wait_end_first_row =>
 
-            -- Nominal operation starts only on second row, since first row has no valid context
             if (sIsEol) then
               sFifoState <= nominal;
             end if;
 
           when nominal =>
-
-            -- On valid operation, every new pixel steps the context window by reading a new neighbor pixels and shifting the current ones
 
             if (sIsEoi) then
               sFifoState      <= preload;
@@ -208,7 +172,6 @@ begin
 
         end case;
 
-        -- Counters -------------------------------------
         if (iValid = '1') then
           if (sIsLastCol) then
             sColCounter <= (others => '0');
@@ -222,24 +185,21 @@ begin
           end if;
         end if;
 
-        -- Output control -------------------------------
-        -- Shift context window
         if (sIsFifoOutHandshake) then
           sC <= sB;
           sB <= sD;
           sD <= unsigned(sFifoOutData);
         elsif (sFifoState = nominal and iValid = '1') then
-          -- FIFO empty (last row, end of row): sD has no new data but sB/sC still step
+          -- FIFO empty on the last row: b and c still step
           sC <= sB;
           sB <= sD;
         end if;
 
         if (iValid = '1') then
-          -- Store last pixel
           sA <= iPixel;
 
           if (sIsFirstCol) then
-            sBorderC <= sB;                                -- Capture sB at col 0 for use as c border at col 0 of next ro
+            sBorderC <= sB;
           end if;
         end if;
 
@@ -253,9 +213,8 @@ begin
       end if;
     end if;
 
-  end process clocked_proc; -----------------------------------------------------------------------------
+  end process clocked_proc;
 
-  -- Instance FIFO -------------------------------------------------------------------------
   sFifoInValid <= iValid and not bool2bit(sIsLastRow);
 
   fifo_inst : entity work.olo_base_fifo_sync(rtl)
@@ -276,7 +235,6 @@ begin
       Empty         => sFifoEmpty
     );
 
-  -- Col in [0, width - 1], row in [0, height - 1]
   postponed assert is_x(iImageWidth) or is_x(sColCounter) or sColCounter < iImageWidth
     report "line_buffer: column counter past width" severity error;
   postponed assert is_x(iImageHeight) or is_x(sRowCounter) or sRowCounter < iImageHeight
