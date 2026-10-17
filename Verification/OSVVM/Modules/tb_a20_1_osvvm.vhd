@@ -10,6 +10,20 @@
 --
 -- T.87 written requirement A.20.1: Q = RItype + 365. Both RItype values are
 -- checked, along with the regular/run split (run Q never below 365).
+--
+-- Guidelines:
+--   G1.Req      T87.A20.1
+--   G1.Property A.20.1 Q = RItype + 365
+--   G2.Range    RTL A20_1_run_context_index.vhd (range comments + postponed asserts)
+--   G2.MinMax   N/A: 1-bit input, both values in G4.Run RItype
+--   G2.Clamp    N/A: no accumulator
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     N/A: 1-bit input
+--   G4.Run      G4.Run RItype
+--   G4.Config   N/A: no BITNESS generic
+--   G4 other    N/A: Edge/Coding/Stream not in scope
+--   G5          N/A: combinational
+--   G6.Code     fully covered
 --------------------------------------------------------------------------------
 
 library ieee;
@@ -51,7 +65,7 @@ begin
     SetLogEnable(PASSED, FALSE);
     req := GetReqID("T87.A20.1", 4);
 
-    cov := NewID("RItype");
+    cov := NewID("G4.Run RItype");
     SetFieldName(cov, "RItype");
     AddBins(cov, "Q=365", GenBin(0));
     AddBins(cov, "Q=366", GenBin(1));

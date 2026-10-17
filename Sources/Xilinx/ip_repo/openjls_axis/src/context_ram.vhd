@@ -136,4 +136,10 @@ begin
              sWrDataReg when sFwdSameReg = '1' else
              sBramRdData;
 
+  -- Enabled addresses in [0, RAM_DEPTH - 1]
+  postponed assert iRdEn /= '1' or is_x(iRdAddr) or unsigned(iRdAddr) < RAM_DEPTH
+    report "context_ram: read address past depth" severity error;
+  postponed assert iWrEn /= '1' or is_x(iWrAddr) or unsigned(iWrAddr) < RAM_DEPTH
+    report "context_ram: write address past depth" severity error;
+
 end architecture behavioral;

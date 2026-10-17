@@ -51,7 +51,7 @@ architecture rtl of a13_update_bias is
 
 begin
 
-  sNqSig <= signed(resize(iNq, B_WIDTH));
+  sNqSig <= resize(signed('0' & iNq), B_WIDTH);
 
   sIsBNegBranch <= '1' when iBq <= - sNqSig else
                    '0';
@@ -80,5 +80,9 @@ begin
   oCq <= sCDec when sIsBNegBranch = '1' else
          sCInc when sIsBPosBranch = '1' else
          iCq;
+
+  -- C in [MIN_C, MAX_C]
+  postponed assert is_x(oCq) or iCq < MIN_C or iCq > MAX_C or (oCq >= MIN_C and oCq <= MAX_C)
+    report "a13: C outside [MIN_C, MAX_C]" severity error;
 
 end architecture rtl;

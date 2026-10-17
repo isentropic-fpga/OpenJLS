@@ -28,6 +28,20 @@
 -- unreachable from a real AXI-Lite master -- BUSY is a one-clock APPLY pulse and
 -- a bus write cannot land inside it -- so that branch is intentionally not
 -- covered here.
+--
+-- Guidelines:
+--   G1.Req      OJLS.AxiLiteRegMap, OJLS.AxiApplyReconfig, OJLS.AxiAbortReencode
+--   G1.Ojls     register map + APPLY/abort model
+--   G2.Range    N/A: register file, clamps only (no asserts)
+--   G2.MinMax   G4.Branch register access (clamp over max / under min)
+--   G2.Clamp    N/A: no accumulator
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     N/A: register values
+--   G4.Branch   G4.Branch register access
+--   G4.Config   OUT_WIDTH 48, MAX 1024x768 variants (OpenJls.pro)
+--   G4 other    N/A: Edge/Run/Coding/Stream not in scope
+--   G5          G5.States resetPhase (APPLY idle / mid-image); re-encode after abort checked
+--   G6.Code     fully covered
 --------------------------------------------------------------------------------
 
 library ieee;
@@ -274,6 +288,8 @@ begin
     variable reqApply : AlertLogIDType;
     variable reqAbort : AlertLogIDType;
     variable vResidue : integer;
+    variable ra       : CoverageIDType;
+    variable rs       : CoverageIDType;
 
   begin
 
@@ -285,6 +301,23 @@ begin
     reqReg   := GetReqID("OJLS.AxiLiteRegMap", 16);
     reqApply := GetReqID("OJLS.AxiApplyReconfig", H3_EXPECTED'length);
     reqAbort := GetReqID("OJLS.AxiAbortReencode", H3_EXPECTED'length);
+
+    ra := NewID("G4.Branch register access");
+    AddBins(ra, "RO identity read", GenBin(0));
+    AddBins(ra, "reset default", GenBin(1));
+    AddBins(ra, "RW write/read", GenBin(2));
+    AddBins(ra, "clamp over max", GenBin(3));
+    AddBins(ra, "clamp under min / zero", GenBin(4));
+    AddBins(ra, "partial WSTRB merge", GenBin(5));
+    AddBins(ra, "skewed AW/W", GenBin(6));
+    AddBins(ra, "upper lanes ignored", GenBin(7));
+    AddBins(ra, "RO write dropped", GenBin(8));
+    AddBins(ra, "WO/unmapped read zero", GenBin(9));
+    AddBins(ra, "STATUS read", GenBin(10));
+
+    rs := NewID("G5.States resetPhase");
+    AddBins(rs, "APPLY idle", GenBin(0));
+    AddBins(rs, "APPLY mid-image", GenBin(1));
 
     wait until nReset = '1';
     GetDelayCoverageID(StreamTxRec, delayCov);
@@ -309,6 +342,7 @@ begin
     AffirmIfEqual(reqReg, rdata, EXP_CAPS, "REG_CAPS");
     Read(ManagerRec, A_MAXDIM, rdata);
     AffirmIfEqual(reqReg, rdata, EXP_MAXDIM, "REG_MAXDIM");
+    ICover(ra, 0);
 
     -- Power-on defaults: WIDTH/HEIGHT come out of reset at the MAX generics
     -- (must be read before the first write touches them)
@@ -316,6 +350,7 @@ begin
     AffirmIfEqual(reqReg, rdata(15 downto 0), MAX_W_SLV, "WIDTH reset default");
     Read(ManagerRec, A_HEIGHT, rdata);
     AffirmIfEqual(reqReg, rdata(15 downto 0), MAX_H_SLV, "HEIGHT reset default");
+    ICover(ra, 1);
 
     -- WIDTH / HEIGHT read-write
     Write(ManagerRec, A_WIDTH, x"00000004");
@@ -324,14 +359,17 @@ begin
     Write(ManagerRec, A_HEIGHT, x"00000004");
     Read(ManagerRec, A_HEIGHT, rdata);
     AffirmIfEqual(reqReg, rdata(15 downto 0), x"0004", "HEIGHT read-write");
+    ICover(ra, 2);
 
     -- Out-of-range writes clamp to MAX (above the range, then below the floor)
     Write(ManagerRec, A_WIDTH, x"0000FFFF");
     Read(ManagerRec, A_WIDTH, rdata);
     AffirmIfEqual(reqReg, rdata(15 downto 0), MAX_W_SLV, "WIDTH clamp (over max)");
+    ICover(ra, 3);
     Write(ManagerRec, A_WIDTH, x"00000002");
     Read(ManagerRec, A_WIDTH, rdata);
     AffirmIfEqual(reqReg, rdata(15 downto 0), MAX_W_SLV, "WIDTH clamp (under min)");
+    ICover(ra, 4);
 
     -- Partial-WSTRB byte-lane merge: 1-byte writes at byte offsets 0 then 1
     Write(ManagerRec, A_WIDTH, x"00000100");           -- seed 0x0100
@@ -341,6 +379,7 @@ begin
     Write(ManagerRec, x"00000011", x"02");             -- byte1 -> WSTRB 0010
     Read(ManagerRec, A_WIDTH, rdata);
     AffirmIfEqual(reqReg, rdata(15 downto 0), x"0204", "WIDTH WSTRB byte1 merge");
+    ICover(ra, 5);
 
     -- Address and data may arrive independently; delay B/R acceptance too.
     SetAxi4Options(ManagerRec, WRITE_RESPONSE_READY_BEFORE_VALID, false);
@@ -353,6 +392,7 @@ begin
       Write(ManagerRec, A_HEIGHT, x"00000003");
       Read(ManagerRec, A_HEIGHT, rdata);
       AffirmIfEqual(reqReg, rdata, x"00000003", "skewed AW/W with delayed responses");
+      ICover(ra, 6);
     end loop;
     SetAxi4Options(ManagerRec, WRITE_ADDRESS_VALID_DELAY_CYCLES, 0);
     SetAxi4Options(ManagerRec, WRITE_DATA_VALID_DELAY_CYCLES, 0);
@@ -361,24 +401,29 @@ begin
     Write(ManagerRec, x"00000017", x"FF");
     Read(ManagerRec, A_HEIGHT, rdata);
     AffirmIfEqual(reqReg, rdata, x"00000003", "upper HEIGHT lanes ignored");
+    ICover(ra, 7);
     Write(ManagerRec, A_HEIGHT, x"00000000");
     Read(ManagerRec, A_HEIGHT, rdata);
     AffirmIfEqual(reqReg, rdata(15 downto 0), MAX_H_SLV, "HEIGHT zero clamps to maximum");
+    ICover(ra, 4);
     Write(ManagerRec, A_HEIGHT, x"0000FFFF");
     Read(ManagerRec, A_HEIGHT, rdata);
     AffirmIfEqual(reqReg, rdata(15 downto 0), MAX_H_SLV, "HEIGHT over maximum clamps");
+    ICover(ra, 3);
     Write(ManagerRec, A_UNMAP, x"DEADBEEF");
 
     -- RO write is dropped (OKAY response), value unchanged
     Write(ManagerRec, A_ID, x"DEADBEEF");
     Read(ManagerRec, A_ID, rdata);
     AffirmIfEqual(reqReg, rdata, EXP_ID, "REG_ID read-only");
+    ICover(ra, 8);
 
     -- Write-only CTRL and unmapped offset read back zero
     Read(ManagerRec, A_CTRL, rdata);
     AffirmIfEqual(reqReg, rdata, x"00000000", "REG_CTRL reads zero");
     Read(ManagerRec, A_UNMAP, rdata);
     AffirmIfEqual(reqReg, rdata, x"00000000", "unmapped reads zero");
+    ICover(ra, 9);
 
     ----------------------------------------------------------------------------
     -- Phase 2: APPLY reconfiguration + register-configured encode
@@ -386,10 +431,12 @@ begin
     Write(ManagerRec, A_WIDTH, x"00000004");
     Write(ManagerRec, A_HEIGHT, x"00000004");
     Write(ManagerRec, A_CTRL, x"00000001");            -- APPLY: pulse core reset
+    ICover(rs, 0);
     WaitForClock(ManagerRec, 4);
     Read(ManagerRec, A_STATUS, rdata);
     AffirmIfEqual(reqReg, rdata(0), '0', "STATUS BUSY clear after APPLY");
     AffirmIfEqual(reqReg, rdata(1), '1', "STATUS TREADY mirror high when idle");
+    ICover(ra, 10);
 
     SetBurstMode(StreamTxRec, STREAM_BURST_BYTE_MODE);
     SetBurstMode(StreamRxRec, STREAM_BURST_BYTE_MODE);
@@ -417,6 +464,7 @@ begin
     WaitForTransaction(StreamTxRec);                  -- all half-image pixels accepted
     WaitForClock(ManagerRec, 50);                      -- drain the core pipeline
     Write(ManagerRec, A_CTRL, x"00000001");            -- APPLY: abort + re-arm
+    ICover(rs, 1);
     WaitForClock(ManagerRec, 4);
 
     PushBurst(StreamTxRec.BurstFifo, H3_PIXELS);
@@ -437,6 +485,8 @@ begin
       end if;
     end loop;
 
+    affirm_covered(ra, "register access coverage closed");
+    affirm_covered(rs, "reset phase coverage closed");
     WaitForClock(ManagerRec, 4);
     end_of_test("tb_openjls_axis_regs_osvvm");
     wait;

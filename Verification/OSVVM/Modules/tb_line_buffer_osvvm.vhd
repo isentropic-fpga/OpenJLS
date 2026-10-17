@@ -18,7 +18,21 @@
 -- Outputs are combinational and aligned with the presented pixel; random iValid
 -- gaps exercise the stall (model index only advances on valid cycles). EOI
 -- auto-resets the window, so several images run back to back without iRst.
--- Coverage crosses row-position (first/other) with col-position (first/mid/last).
+-- Coverage: row x col position, width x height extremes, reset phase.
+--
+-- Guidelines:
+--   G1.Req      OJLS.LineBuffer
+--   G1.Ojls     A.2.1 border model on a 2-D reference image
+--   G2.Range    RTL line_buffer.vhd (range comments + postponed asserts)
+--   G2.MinMax   N/A: pixels pass through unchanged
+--   G2.Clamp    N/A: no accumulator
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     N/A: pixels pass through unchanged (random full range)
+--   G4.Edge     G4.Edge rowPos x colPos
+--   G4.Config   G4.Config width x height (MAX_W/H = 16), BITNESS 8/16
+--   G4 other    N/A: Run/Coding/Stream not in scope
+--   G5          G5.States resetPhase; outputs idle after reset, aborted output discarded, replay checked
+--   G6.Code     fully covered
 --------------------------------------------------------------------------------
 
 library ieee;
@@ -102,7 +116,10 @@ begin
 
     variable rv  : RandomPType;
     variable cov : CoverageIDType;
+    variable cfg : CoverageIDType;
+    variable rs  : CoverageIDType;
     variable img : image_t;
+    variable req : AlertLogIDType;
 
     -- T.87 A.2.1 reference neighbour (0 outside the image).
     impure function px (
@@ -220,10 +237,10 @@ begin
           wait for 1 ns;
 
           ref_nbr(r, c, w, ea, eb, ec, ed);
-          AffirmIfEqual(GetAlertLogID("DataChecks"), checked_integer(oA), ea, "a r=" & integer'image(r) & " c=" & integer'image(c));
-          AffirmIfEqual(GetAlertLogID("DataChecks"), checked_integer(oB), eb, "b r=" & integer'image(r) & " c=" & integer'image(c));
-          AffirmIfEqual(GetAlertLogID("DataChecks"), checked_integer(oC), ec, "c r=" & integer'image(r) & " c=" & integer'image(c));
-          AffirmIfEqual(GetAlertLogID("DataChecks"), checked_integer(oD), ed, "d r=" & integer'image(r) & " c=" & integer'image(c));
+          AffirmIfEqual(req, checked_integer(oA), ea, "a r=" & integer'image(r) & " c=" & integer'image(c));
+          AffirmIfEqual(req, checked_integer(oB), eb, "b r=" & integer'image(r) & " c=" & integer'image(c));
+          AffirmIfEqual(req, checked_integer(oC), ec, "c r=" & integer'image(r) & " c=" & integer'image(c));
+          AffirmIfEqual(req, checked_integer(oD), ed, "d r=" & integer'image(r) & " c=" & integer'image(c));
           AffirmIf(GetAlertLogID("Protocol"), oValid = '1', "oValid on presented pixel");
           AffirmIf(GetAlertLogID("Protocol"), oEol = bool2bit(c = w - 1), "oEol at last col");
           AffirmIf(GetAlertLogID("Protocol"), oEoi = bool2bit(c = w - 1 and r = h - 1), "oEoi at last pixel");
@@ -249,8 +266,42 @@ begin
       end loop;
 
       iValid <= '0';
+      ICover(cfg, (w, h));
 
     end procedure run_image;
+
+    -- Drive n pixels of a w x h image, then iRst; the next image must be
+    -- correct from scratch. Phase: 0 idle, 1 first row, 2 middle row, 3 last row.
+    procedure reset_after (
+      w : integer;
+      h : integer;
+      n : integer
+    ) is
+    begin
+
+      iWidth  <= to_unsigned(w, W_W);
+      iHeight <= to_unsigned(h, H_W);
+      for k in 1 to n loop
+        iPixel <= to_unsigned(rv.RandInt(0, PX_MAX), BITNESS);
+        iValid <= '1';
+        wait until rising_edge(clk);
+      end loop;
+      iValid <= '0';
+      if (n = 0) then
+        ICover(rs, 0);
+      elsif (n <= w) then
+        ICover(rs, 1);
+      elsif (n > (h - 1) * w) then
+        ICover(rs, 3);
+      else
+        ICover(rs, 2);
+      end if;
+      apply_reset(clk, rst, 4, '1');
+      wait for 1 ns;
+      AffirmIf(GetAlertLogID("ResetRecovery"), oValid = '0', "mid-image reset: oValid low while idle");
+      run_image(5, 4, false);
+
+    end procedure reset_after;
 
   begin
 
@@ -262,13 +313,28 @@ begin
     SetAlertLogName("tb_line_buffer_osvvm");
     SetLogEnable(PASSED, FALSE);
     rv.InitSeed(rv'instance_name);
-    cov := NewID("rowPos x colPos");
+    -- 2477 pixels in the fixed image list x 4 neighbours.
+    req := GetReqID("OJLS.LineBuffer", 9908);
+    cov := NewID("G4.Edge rowPos x colPos");
     SetFieldName(cov, "rowPos", "colPos");
     for axis0 in 0 to 1 loop
       for axis1 in 0 to 2 loop
         AddCross(cov, "rowPos=" & to_string(axis0) & " / " & "colPos=" & to_string(axis1), GenBin(axis0), GenBin(axis1));
       end loop;
     end loop;
+
+    cfg := NewID("G4.Config width x height");
+    for wi in 0 to 1 loop
+      for hi in 0 to 1 loop
+        AddCross(cfg, "width=" & to_string(4 + wi * (MAX_W - 4)) & " / height=" & to_string(1 + hi * (MAX_H - 1)),
+                 GenBin(4 + wi * (MAX_W - 4)), GenBin(1 + hi * (MAX_H - 1)));
+      end loop;
+    end loop;
+    rs := NewID("G5.States resetPhase");
+    AddBins(rs, "idle", GenBin(0));
+    AddBins(rs, "first row", GenBin(1));
+    AddBins(rs, "middle row", GenBin(2));
+    AddBins(rs, "last row", GenBin(3));
 
     apply_reset(clk, rst, 4, '1');
 
@@ -290,25 +356,15 @@ begin
     -- produce correct T.87 border neighbours from scratch. Stale counters or a
     -- stale window would corrupt row 0/1 of the next image.
     --------------------------------------------------------------------------
-    iWidth  <= to_unsigned(6, W_W);
-    iHeight <= to_unsigned(6, H_W);
-
-    for k in 0 to 8 loop
-
-      iPixel <= to_unsigned(rv.RandInt(0, PX_MAX), BITNESS);
-      iValid <= '1';
-      wait until rising_edge(clk);
-
-    end loop;
-
-    iValid <= '0';
-    apply_reset(clk, rst, 4, '1');
-    wait for 1 ns;
-    AffirmIf(GetAlertLogID("ResetRecovery"), oValid = '0', "mid-image reset: oValid low while idle");
-    run_image(5, 4, false);     -- fresh image must be byte-correct from scratch
+    reset_after(6, 6, 9);       -- ~1.5 rows
+    reset_after(6, 6, 0);
+    reset_after(6, 6, 3);
+    reset_after(6, 6, 33);
 
     WriteBin(cov);
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "row x col position coverage closed");
+    affirm_covered(cfg, "width x height extremes coverage closed");
+    affirm_covered(rs, "reset phase coverage closed");
 
     end_of_test("tb_line_buffer_osvvm");
     wait;

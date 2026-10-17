@@ -12,6 +12,20 @@
 -- using the T.87 default threshold derivation (T1/T2/T3 from FACTOR). The RTL
 -- realises this with the absolute-value optimisation; the reference stays on the
 -- verbatim signed-branch form so the two are independent.
+--
+-- Guidelines:
+--   G1.Req      T87.A4
+--   G1.Golden   A.4 C code as an integer reference
+--   G2.Range    RTL A4_quantization_gradients.vhd (range comments + postponed asserts)
+--   G2.MinMax   G4.Branch Qi (Qi = -4 and 4)
+--   G2.Clamp    N/A: no accumulator
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     G3.Stim node x value
+--   G4.Branch   G4.Branch Qi
+--   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
+--   G4 other    N/A: Edge/Run/Coding/Stream not in scope
+--   G5          N/A: combinational
+--   G6.Code     A4 defensive arm waived (cover_summary.py)
 --------------------------------------------------------------------------------
 
 library ieee;
@@ -112,6 +126,7 @@ begin
 
     variable rv      : RandomPType;
     variable cov     : CoverageIDType;
+    variable st      : CoverageIDType;
     variable req     : AlertLogIDType;
     constant N_RAND  : natural := 6000;
 
@@ -133,6 +148,9 @@ begin
       ICover(cov, (1, quantize(d1)));
       ICover(cov, (2, quantize(d2)));
       ICover(cov, (3, quantize(d3)));
+      ICover(st, (1, d1));
+      ICover(st, (2, d2));
+      ICover(st, (3, d3));
 
     end procedure drive_check;
 
@@ -143,13 +161,20 @@ begin
     rv.InitSeed(rv'instance_name);
     req := GetReqID("T87.A4", 200);
 
-    cov := NewID("Qi");
+    cov := NewID("G4.Branch Qi");
     SetFieldName(cov, "gradient lane", "quantized level");
     for lane in 1 to 3 loop
       for level in -4 to 4 loop
         AddCross(cov, "lane=" & to_string(lane) & " / level=" & to_string(level),
                  GenBin(lane), GenBin(level));
       end loop;
+    end loop;
+
+    -- Q min/max: the +-4 levels of G4.Branch Qi.
+    st := NewID("G3.Stim node x value");
+    for lane in 1 to 3 loop
+      add_value_bin(st, lane, "D" & to_string(lane), D_MIN);
+      add_value_bin(st, lane, "D" & to_string(lane) & " MSB", D_MIN, -1);
     end loop;
 
     -- Directed threshold boundaries (both signs).
@@ -159,6 +184,7 @@ begin
     drive_check(-T1, -T2, -T3, "neg thresholds");
     drive_check(-(T1 - 1), -(T2 - 1), -(T3 - 1), "just inside neg");
     drive_check(D_MAX, D_MIN, 0, "extremes");
+    drive_check(D_MIN, D_MIN, D_MIN, "most negative");
 
     -- Random sweep.
     -- Each lane sees every gradient; other lanes differ to detect cross-wiring.
@@ -176,6 +202,7 @@ begin
 
     WriteBin(cov);
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "Qi level coverage closed");
+    affirm_covered(st, "D1..D3 most negative covered");
 
     end_of_test("tb_a4_osvvm");
     wait;

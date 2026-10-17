@@ -5,6 +5,24 @@
 -- Sweep every bias and both signs around both clipping thresholds, and
 -- exhaust every uncorrected 8-bit prediction. Larger widths add random cases.
 
+--------------------------------------------------------------------------------
+-- OSVVM testbench: a6_a7_prediction_error (combinational).
+--
+-- Guidelines:
+--   G1.Req      T87.A6-A7
+--   G1.Golden   A.6 + A.7 C code as an integer reference
+--   G2.Range    RTL A6_A7_prediction_error.vhd (range comments + postponed asserts)
+--   G2.MinMax   G2.MinMax node x value
+--   G2.Clamp    N/A: no accumulator
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     G3.Stim node x value
+--   G4.Branch   G4.Branch sign x clipping region
+--   G4.Config   BITNESS 8/16 + MAX_VAL 200 variants (OpenJls.pro)
+--   G4 other    N/A: Edge/Run/Coding/Stream not in scope
+--   G5          N/A: combinational
+--   G6.Code     fully covered
+--------------------------------------------------------------------------------
+
 library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
@@ -38,6 +56,7 @@ begin
     variable rv : RandomPType;
     variable req : AlertLogIDType;
     variable cov : CoverageIDType;
+    variable mm, st : CoverageIDType;
     variable sign_value : std_logic;
     variable lower_edge, upper_edge : integer;
 
@@ -79,6 +98,10 @@ begin
                " Cq=" & integer'image(cq) & " sign=" & std_logic'image(sign_bit)
         severity failure;
       ICover(cov, (sign_index, region));
+      ICover(mm, (1, expected));
+      ICover(st, (1, ix));
+      ICover(st, (2, px));
+      ICover(st, (3, cq));
     end procedure;
 
     procedure check_prediction(px, cq : integer; sign_bit : std_logic) is
@@ -108,7 +131,7 @@ begin
     SetLogEnable(PASSED, FALSE);
     rv.InitSeed(rv'instance_name);
     req := GetReqID("T87.A6-A7", 20000);
-    cov := NewID("sign x clipping region");
+    cov := NewID("G4.Branch sign x clipping region");
     SetFieldName(cov, "sign", "clipping region");
     for axis0 in 0 to 1 loop
       for axis1 in 0 to 2 loop
@@ -116,6 +139,13 @@ begin
       end loop;
     end loop;
 
+    mm := NewID("G2.MinMax node x value");
+    add_value_bin(mm, 1, "Errval", -MAX_VAL);
+    add_value_bin(mm, 1, "Errval", MAX_VAL);
+    st := NewID("G3.Stim node x value");
+    add_value_bin(st, 1, "Ix MSB", 2 ** (BITNESS - 1), PIXEL_MAX);
+    add_value_bin(st, 2, "Px MSB", 2 ** (BITNESS - 1), PIXEL_MAX);
+    add_value_bin(st, 3, "C", CO_MIN_CQ);
     for cq in CO_MIN_CQ to CO_MAX_CQ loop
       for sign_index in 0 to 1 loop
         if sign_index = 0 then
@@ -156,6 +186,8 @@ begin
     end loop;
     WriteBin(cov);
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "both signs and all clipping regions covered");
+    affirm_covered(mm, "Errval min/max covered");
+    affirm_covered(st, "input MSB and most negative C covered");
     end_of_test("tb_a6_a7_osvvm");
     wait;
   end process;

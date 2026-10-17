@@ -44,4 +44,7 @@ begin
 
   oErrval <= signed('0' & iIx) - signed('0' & sPx);
 
+  -- Errval in [-(2^B - 1), 2^B - 1]
+  postponed assert is_x(oErrval) or abs(to_integer(oErrval)) < 2 ** BITNESS report "a18: Errval out of range" severity error;
+
 end architecture behavioral;

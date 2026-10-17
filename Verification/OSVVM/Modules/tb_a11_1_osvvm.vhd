@@ -16,6 +16,21 @@
 --   non-escape (high < L-qbpp-1): unary=high, len=k,    val = low k bits
 --   escape:                       unary=L-qbpp-1, len=qbpp, val = (MErrval-1) low qbpp bits
 -- with L = LIMIT (regular) or glimit (RI). Coverage crosses RI-mode x escape.
+--
+-- Guidelines:
+--   G1.Req      T87.A11.1, T87.A22.1
+--   G1.Property A.11.1/A.22.1 LG(k, L) written rule
+--   G2.Range    RTL A11_1_golomb_encoder.vhd (range comments + postponed asserts)
+--   G2.MinMax   G2.MinMax node x value
+--   G2.Clamp    N/A: no accumulator
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     G3.Stim node x value
+--   G4.Coding   G4.Coding Golomb k, G4.Coding riMode x escape
+--   G4.Run      G4.Run Run interruption J table
+--   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
+--   G4 other    N/A: Edge/Stream not in scope
+--   G5          N/A: combinational
+--   G6.Code     fully covered
 --------------------------------------------------------------------------------
 
 library ieee;
@@ -102,6 +117,7 @@ begin
     variable reqRi   : AlertLogIDType;
     variable reqSel  : AlertLogIDType;
     variable covK, covJ : CoverageIDType;
+    variable mm, st  : CoverageIDType;
     variable k       : integer;
     variable merr    : integer;
     variable ridx    : integer;
@@ -158,6 +174,11 @@ begin
 
       ICover(cov, (std_to_int(ri), escape));
       ICover(covK, kv);
+      ICover(mm, (1, mv));
+      ICover(mm, (2, expUn));
+      ICover(mm, (3, expLen));
+      ICover(st, (1, mv));
+      ICover(st, (2, rix));
       if ri = '1' then ICover(covJ, rix); end if;
 
     end procedure drive_check;
@@ -171,17 +192,17 @@ begin
     -- Guaranteed by the sweep: 32 RUNindex x 2 suffix cases x 3 fields.
     reqRi := GetReqID("T87.A22.1", 192);
 
-    covK := NewID("Golomb k");
+    covK := NewID("G4.Coding Golomb k");
     SetFieldName(covK, "k");
     for kval in 0 to K_HI loop
       AddBins(covK, "k=" & to_string(kval), GenBin(kval));
     end loop;
-    covJ := NewID("Run interruption J table");
+    covJ := NewID("G4.Run Run interruption J table");
     SetFieldName(covJ, "RUNindex");
     for index in 0 to 31 loop
       AddBins(covJ, "RUNindex=" & to_string(index) & " J=" & to_string(TB_J_TABLE(index)), GenBin(index));
     end loop;
-    cov := NewID("riMode x escape");
+    cov := NewID("G4.Coding riMode x escape");
     SetFieldName(cov, "riMode", "escape");
     for axis0 in 0 to 1 loop
       for axis1 in 0 to 1 loop
@@ -190,6 +211,16 @@ begin
     end loop;
 
     -- Directed corners.
+    mm := NewID("G2.MinMax node x value");
+    add_value_bin(mm, 1, "MErrval", 0);
+    add_value_bin(mm, 1, "MErrval", MERR_MAX);
+    add_value_bin(mm, 2, "Unary", 0);
+    add_value_bin(mm, 2, "Unary", LIMIT - QBPP - 1);
+    add_value_bin(mm, 3, "SuffixLen", 0);
+    add_value_bin(mm, 3, "SuffixLen", K_HI);
+    st := NewID("G3.Stim node x value");
+    add_value_bin(st, 1, "MErrval MSB", 2 ** (MAPPED_W - 1), MERR_MAX);
+    add_value_bin(st, 2, "RUNindex MSB", 16, 31);
     drive_check(0, 0, '0', 0, "reg merr0 k0");           -- non-escape, all minimal
     drive_check(0, MERR_MAX, '0', 0, "reg escape k0");   -- big merr -> escape
     drive_check(K_HI, 1, '0', 0, "reg big-k small");
@@ -231,6 +262,8 @@ begin
     WriteBin(covK);
     WriteBin(covJ);
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covK), "every supported k covered");
+    affirm_covered(mm, "MErrval/unary/suffix length min/max covered");
+    affirm_covered(st, "MErrval/RUNindex MSB covered");
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covJ), "every J table entry covered");
     WriteBin(cov);
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "riMode x escape coverage closed");

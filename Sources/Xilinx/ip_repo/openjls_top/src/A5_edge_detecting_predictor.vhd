@@ -40,4 +40,8 @@ begin
          math_max(iA, iB) when iC <= math_min(iA, iB) else
          iA + iB - iC;
 
+  -- Px in [min(Ra, Rb), max(Ra, Rb)]; Ra + Rb - Rc may wrap mid-expression, the result does not
+  postponed assert is_x(oPx) or (oPx >= math_min(iA, iB) and oPx <= math_max(iA, iB))
+    report "a5: Px outside [min(Ra, Rb), max(Ra, Rb)]" severity error;
+
 end architecture behavioral;

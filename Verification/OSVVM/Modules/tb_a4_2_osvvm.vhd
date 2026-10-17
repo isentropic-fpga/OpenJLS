@@ -14,6 +14,20 @@
 -- non-negative => exactly 365 vectors), plus the design's documented choice
 -- Q = 81*Q1 + 9*Q2 + Q3 (Docs/Project.md). Injectivity is checked with a
 -- seen[] map and completeness by requiring all 365 codes hit.
+--
+-- Guidelines:
+--   G1.Req      T87.A4.2
+--   G1.Property A.4.2 range, one-to-one, totality
+--   G2.Range    RTL A4_2_Q_mapping.vhd (range comments + postponed asserts)
+--   G2.MinMax   G1.Property a4_2_Q_codes (all 365 codes)
+--   G2.Clamp    N/A: no accumulator
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     N/A: exhaustive over the 365-vector domain
+--   G1.Property G1.Property a4_2_Q_codes
+--   G4.Config   N/A: no BITNESS generic
+--   G4 other    N/A: Edge/Run/Coding/Stream not in scope
+--   G5          N/A: combinational
+--   G6.Code     fully covered
 --------------------------------------------------------------------------------
 
 library ieee;
@@ -102,7 +116,7 @@ begin
 
     -- Functional coverage: one bin per valid Q code, closed once every one of
     -- the 365 contexts has been produced (the exhaustive sweep guarantees it).
-    cov := NewID("a4_2_Q_codes");
+    cov := NewID("G1.Property a4_2_Q_codes");
     SetFieldName(cov, "a4_2_Q_codes");
     for code in 0 to 364 loop
       AddBins(cov, "context_" & to_string(code), GenBin(code));

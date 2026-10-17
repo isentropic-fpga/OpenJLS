@@ -11,6 +11,20 @@
 -- oModeRun = '1' iff D1 = D2 = D3 = 0 (the bitwise OR of the three signed
 -- gradients reduces to all-zero). The run-mode trigger is rare under uniform
 -- random, so the all-zero case is biased in to close coverage.
+--
+-- Guidelines:
+--   G1.Req      T87.A3
+--   G1.Golden   A.3 C code as an integer reference
+--   G2.Range    RTL A3_mode_selection.vhd (range comments + postponed asserts)
+--   G2.MinMax   G2.MinMax node x value
+--   G2.Clamp    N/A: no accumulator
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     G3.Stim node x value
+--   G4.Branch   G4.Branch modeRun
+--   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
+--   G4 other    N/A: Edge/Run/Coding/Stream not in scope
+--   G5          N/A: combinational
+--   G6.Code     fully covered
 --------------------------------------------------------------------------------
 
 library ieee;
@@ -62,6 +76,7 @@ begin
     variable d3      : integer;
     variable expRun  : integer;
     constant N_RAND  : natural := 3000;
+    variable mm, st  : CoverageIDType;
 
     procedure drive_check (
       a   : integer;
@@ -86,6 +101,12 @@ begin
       end if;
       AffirmIfEqual(req, checked_bit(sModeRun), run, msg);
       ICover(cov, run);
+      ICover(mm, (1, a));
+      ICover(mm, (2, b));
+      ICover(mm, (3, c));
+      ICover(st, (1, a));
+      ICover(st, (2, b));
+      ICover(st, (3, c));
 
     end procedure drive_check;
 
@@ -96,12 +117,22 @@ begin
     rv.InitSeed(rv'instance_name);
     req := GetReqID("T87.A3", 100);
 
-    cov := NewID("modeRun");
+    cov := NewID("G4.Branch modeRun");
     SetFieldName(cov, "modeRun");
     AddBins(cov, "regular", GenBin(0));
     AddBins(cov, "run", GenBin(1));
 
     -- Directed corners.
+    mm := NewID("G2.MinMax node x value");
+    for node in 1 to 3 loop
+      add_value_bin(mm, node, "D" & to_string(node), D_MIN);
+      add_value_bin(mm, node, "D" & to_string(node), D_MAX);
+    end loop;
+    st := NewID("G3.Stim node x value");
+    for node in 1 to 3 loop
+      add_value_bin(st, node, "D" & to_string(node), D_MIN);
+    end loop;
+    drive_check(D_MAX, D_MIN, D_MAX, "regular opposite extremes");
     drive_check(0, 0, 0, "run all-zero");
     drive_check(1, 0, 0, "regular d1");
     drive_check(0, 1, 0, "regular d2");
@@ -139,6 +170,8 @@ begin
 
     WriteBin(cov);
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "modeRun coverage closed");
+    affirm_covered(mm, "D1..D3 min/max covered");
+    affirm_covered(st, "most negative D1..D3 covered");
 
     end_of_test("tb_a3_osvvm");
     wait;

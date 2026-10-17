@@ -58,6 +58,9 @@ begin
       vEmErrval := 0;
     end if;
 
+    -- EMErrval in [0, 2^(B + 1)]
+    assert vEmErrval < 2 ** MAPPED_ERRVAL_WIDTH report "a22: EMErrval out of range" severity error;
+
     oEmErrVal <= to_unsigned(vEmErrval, oEmErrVal'length);
 
   end process p_errval_map;

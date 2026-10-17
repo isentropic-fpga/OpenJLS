@@ -104,4 +104,9 @@ begin
   oQ2 <= quantizate(iD2, T1, T2, T3);
   oQ3 <= quantizate(iD3, T1, T2, T3);
 
+  -- Q1..Q3 in [-4, 4]
+  postponed assert is_x(oQ1) or abs(to_integer(oQ1)) <= 4 report "a4: Q1 out of range" severity error;
+  postponed assert is_x(oQ2) or abs(to_integer(oQ2)) <= 4 report "a4: Q2 out of range" severity error;
+  postponed assert is_x(oQ3) or abs(to_integer(oQ3)) <= 4 report "a4: Q3 out of range" severity error;
+
 end architecture behavioral;

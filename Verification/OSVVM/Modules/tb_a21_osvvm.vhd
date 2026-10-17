@@ -11,6 +11,20 @@
 -- T.87 Code segment A.21 map computation, transcribed verbatim. Coverage closes
 -- which clause fired (the two positive paths, the k!=0 negative path, and the
 -- else), biasing k, Errval sign and the 2*Nn vs Nq relation to reach all four.
+--
+-- Guidelines:
+--   G1.Req      T87.A21
+--   G1.Golden   A.21 C code as an integer reference
+--   G2.Range    RTL A21_compute_map.vhd (range comments + postponed asserts)
+--   G2.MinMax   G2.MinMax node x value
+--   G2.Clamp    N/A: no accumulator
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     G3.Stim node x value
+--   G4.Run      G4.Run clause
+--   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
+--   G4 other    N/A: Edge/Coding/Stream not in scope
+--   G5          N/A: combinational
+--   G6.Code     fully covered
 --------------------------------------------------------------------------------
 
 library ieee;
@@ -108,6 +122,7 @@ begin
     variable nn      : integer;
     variable nq      : integer;
     constant N_RAND  : natural := 8000;
+    variable mm, st  : CoverageIDType;
 
     procedure drive_check (
       k   : integer;
@@ -127,6 +142,13 @@ begin
                     msg & " k=" & integer'image(k) & " err=" & integer'image(err) &
                     " nn=" & integer'image(nn) & " nq=" & integer'image(nq));
       ICover(cov, clause_of(k, err, nn, nq));
+      ICover(mm, (1, k));
+      ICover(mm, (2, err));
+      ICover(mm, (3, nn));
+      ICover(mm, (4, nq));
+      ICover(st, (1, err));
+      ICover(st, (2, nn));
+      ICover(st, (3, nq));
 
     end procedure drive_check;
 
@@ -137,7 +159,7 @@ begin
     rv.InitSeed(rv'instance_name);
     req := GetReqID("T87.A21", 400);
 
-    cov := NewID("clause");
+    cov := NewID("G4.Run clause");
     SetFieldName(cov, "clause");
     AddBins(cov, "positive special", GenBin(0));
     AddBins(cov, "negative frequent", GenBin(1));
@@ -145,6 +167,21 @@ begin
     AddBins(cov, "unmapped", GenBin(3));
 
     -- Directed: one per clause.
+    mm := NewID("G2.MinMax node x value");
+    add_value_bin(mm, 1, "k", 0);
+    add_value_bin(mm, 1, "k", K_MAX);
+    add_value_bin(mm, 2, "Errval", ERR_MIN);
+    add_value_bin(mm, 2, "Errval", ERR_MAX);
+    add_value_bin(mm, 3, "Nn", 0);
+    add_value_bin(mm, 3, "Nn", N_MAX);
+    add_value_bin(mm, 4, "N", 0);
+    add_value_bin(mm, 4, "N", N_MAX);
+    st := NewID("G3.Stim node x value");
+    add_value_bin(st, 1, "Errval", ERR_MIN);
+    add_value_bin(st, 2, "Nn MSB", 2 ** (N_WIDTH - 1), N_MAX);
+    add_value_bin(st, 3, "N MSB", 2 ** (N_WIDTH - 1), N_MAX);
+    drive_check(K_MAX, ERR_MIN, N_MAX, N_MAX, "most negative err, max k/Nn/N");
+    drive_check(0, ERR_MAX, 0, 0, "max err, min k/Nn/N");
     drive_check(0, 5, 1, 10, "clause1");
     drive_check(2, -5, 10, 5, "clause2");
     drive_check(2, -5, 1, 10, "clause3");
@@ -180,6 +217,8 @@ begin
 
     WriteBin(cov);
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "clause coverage closed");
+    affirm_covered(mm, "k/Errval/Nn/N min/max covered");
+    affirm_covered(st, "most negative Errval and Nn/N MSB covered");
 
     end_of_test("tb_a21_osvvm");
     wait;

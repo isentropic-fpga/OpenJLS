@@ -276,4 +276,10 @@ begin
       Empty         => sFifoEmpty
     );
 
+  -- Col in [0, width - 1], row in [0, height - 1]
+  postponed assert is_x(iImageWidth) or is_x(sColCounter) or sColCounter < iImageWidth
+    report "line_buffer: column counter past width" severity error;
+  postponed assert is_x(iImageHeight) or is_x(sRowCounter) or sRowCounter < iImageHeight
+    report "line_buffer: row counter past height" severity error;
+
 end architecture behavioral;

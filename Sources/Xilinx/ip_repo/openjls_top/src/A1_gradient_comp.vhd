@@ -43,4 +43,9 @@ begin
   oD2 <= signed('0' & iB) - signed('0' & iC);
   oD3 <= signed('0' & iC) - signed('0' & iA);
 
+  -- D1..D3 in [-(2^B - 1), 2^B - 1]
+  postponed assert is_x(oD1) or abs(to_integer(oD1)) < 2 ** BITNESS report "a1: D1 out of range" severity error;
+  postponed assert is_x(oD2) or abs(to_integer(oD2)) < 2 ** BITNESS report "a1: D2 out of range" severity error;
+  postponed assert is_x(oD3) or abs(to_integer(oD3)) < 2 ** BITNESS report "a1: D3 out of range" severity error;
+
 end architecture behavioral;

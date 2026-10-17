@@ -33,6 +33,20 @@
 -- Every address is written before any second read so the modelled and real
 -- BRAM contents always agree.
 -- Coverage closes the three read outcomes plus fresh/seen reads on EOI cycles.
+--
+-- Guidelines:
+--   G1.Req      OJLS.CtxRam
+--   G1.Ojls     per-image init + same-cycle forwarding model
+--   G2.Range    RTL context_ram.vhd (postponed address asserts)
+--   G2.MinMax   G2.MinMax field x value
+--   G2.Clamp    N/A: no accumulator
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     N/A: fields stored, no arithmetic
+--   G4.Stream   G4.Stream readOutcome, G4.Stream readOnEoiCycle
+--   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
+--   G4 other    N/A: Edge/Run/Coding not in scope
+--   G5          G5.States resetPhase; outputs idle after reset, aborted output discarded, replay checked
+--   G6.Code     fully covered
 --------------------------------------------------------------------------------
 
 library ieee;
@@ -72,6 +86,17 @@ architecture sim of tb_context_ram_osvvm is
     std_logic_vector(to_signed(0, B_WIDTH)) &
     std_logic_vector(to_signed(0, C_WIDTH)) &
     std_logic_vector(to_unsigned(1, N_WIDTH));
+
+  -- Field extremes: A/N zero and all ones, B/C most negative and most positive.
+  constant W_MIN : std_logic_vector(TOTAL_WIDTH - 1 downto 0) :=
+    std_logic_vector(to_unsigned(0, A_WIDTH)) &
+    std_logic_vector(to_signed(-2 ** (B_WIDTH - 1), B_WIDTH)) &
+    std_logic_vector(to_signed(-2 ** (C_WIDTH - 1), C_WIDTH)) &
+    std_logic_vector(to_unsigned(0, N_WIDTH));
+  constant W_MAX : std_logic_vector(TOTAL_WIDTH - 1 downto 0) := not W_MIN;
+  constant A_LO  : natural := TOTAL_WIDTH - A_WIDTH;
+  constant B_LO  : natural := A_LO - B_WIDTH;
+  constant C_LO  : natural := B_LO - C_WIDTH;
 
   signal clk     : std_logic := '0';
   signal rst     : std_logic;
@@ -125,6 +150,9 @@ begin
     variable rv       : RandomPType;
     variable cov      : CoverageIDType;
     variable covEoiRd : CoverageIDType;
+    variable mm       : CoverageIDType;
+    variable rs       : CoverageIDType;
+    variable req      : AlertLogIDType;
     variable mem   : mem_t := (others => (others => '0'));
     variable ini   : ini_t := (others => true);
     variable touched : ini_t := (others => false);  -- has the test written it?
@@ -146,6 +174,7 @@ begin
       variable exp     : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
       variable outcome : integer;
       variable held : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+      variable q    : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
 
     begin
 
@@ -190,7 +219,12 @@ begin
       wait for 1 ns;
       iEoi <= '0';
       if (rdEn = '1') then
-        AffirmIfEqual(GetAlertLogID("DataChecks"), oRdData, exp, msg);
+        q := oRdData;
+        AffirmIfEqual(req, q, exp, msg);
+        ICover(mm, (0, checked_integer(unsigned(q(TOTAL_WIDTH - 1 downto A_LO)))));
+        ICover(mm, (1, checked_integer(signed(q(A_LO - 1 downto B_LO)))));
+        ICover(mm, (2, checked_integer(signed(q(B_LO - 1 downto C_LO)))));
+        ICover(mm, (3, checked_integer(unsigned(q(C_LO - 1 downto 0)))));
         ICover(cov, outcome);
         if (eoi = '1') then
           ICover(covEoiRd, outcome);
@@ -221,6 +255,7 @@ begin
       iRdEn <= '0';
       iWrEn <= '0';
       rst   <= '1';
+      ICover(rs, 0);
       clk_tick(clk, 2);
       rst   <= '0';
       ini := (others => true);                    -- re-arm init, keep mem
@@ -246,6 +281,7 @@ begin
       iWrAddr <= std_logic_vector(to_unsigned(wrAddr, ADDR_W));
       iWrData <= wrData;
       rst     <= '1';
+      ICover(rs, 1);
       wait until rising_edge(clk);
       mem(wrAddr)     := wrData;                  -- the write still lands
       touched(wrAddr) := true;
@@ -275,16 +311,31 @@ begin
     SetAlertLogName("tb_context_ram_osvvm");
     SetLogEnable(PASSED, FALSE);
     rv.InitSeed(rv'instance_name);
-    cov := NewID("readOutcome");
+    -- Directed 18 + 3 x RAM_DEPTH sweep + 2 + at least 201 random reads.
+    req := GetReqID("OJLS.CtxRam", 1322);
+    cov := NewID("G4.Stream readOutcome");
     SetFieldName(cov, "readOutcome");
     AddBins(cov, "initial value", GenBin(0));
     AddBins(cov, "stored value", GenBin(1));
     AddBins(cov, "forwarded write", GenBin(2));   -- init / bram / forward
-    covEoiRd := NewID("readOnEoiCycle");
+    covEoiRd := NewID("G4.Stream readOnEoiCycle");
     SetFieldName(covEoiRd, "readOnEoiCycle");
     AddBins(covEoiRd, "initial on EOI", GenBin(0));
     AddBins(covEoiRd, "stored on EOI", GenBin(1));
     AddBins(covEoiRd, "forwarded on EOI", GenBin(2)); -- fresh / RAM / forwarded
+
+    rs := NewID("G5.States resetPhase");
+    AddBins(rs, "idle", GenBin(0));
+    AddBins(rs, "read+write in flight", GenBin(1));
+    mm := NewID("G2.MinMax field x value");
+    add_value_bin(mm, 0, "A", 0);
+    add_value_bin(mm, 0, "A", 2 ** A_WIDTH - 1);
+    add_value_bin(mm, 1, "B", -2 ** (B_WIDTH - 1));
+    add_value_bin(mm, 1, "B", 2 ** (B_WIDTH - 1) - 1);
+    add_value_bin(mm, 2, "C", -2 ** (C_WIDTH - 1));
+    add_value_bin(mm, 2, "C", 2 ** (C_WIDTH - 1) - 1);
+    add_value_bin(mm, 3, "N", 0);
+    add_value_bin(mm, 3, "N", 2 ** N_WIDTH - 1);
 
     apply_reset(clk, rst, 4, '1');
 
@@ -348,6 +399,12 @@ begin
     step('1', 21, '0', 0, ZERO, "seen addr21 on EOI cycle = BRAM value", '1');
     step('1', 21, '0', 0, ZERO, "addr21 after second EOI = CTX_INIT");
 
+    -- Field extremes through the BRAM and the forwarding path.
+    step('1', 50, '1', 50, W_MIN, "addr50 init read + write field minima");
+    step('1', 50, '0', 0, ZERO, "addr50 read field minima");
+    step('1', 50, '1', 50, W_MAX, "addr50 forward field maxima");
+    step('1', 50, '0', 0, ZERO, "addr50 read field maxima");
+
     --------------------------------------------------------------------------
     -- Constrained-random: random addresses, always read-modify-write so the
     -- modelled and real BRAM stay in sync.
@@ -402,6 +459,8 @@ begin
     WriteBin(covEoiRd);
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "read-outcome coverage closed");
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covEoiRd), "read-on-EOI-cycle coverage closed");
+    affirm_covered(mm, "field min/max coverage closed");
+    affirm_covered(rs, "reset phase coverage closed");
 
     end_of_test("tb_context_ram_osvvm");
     wait;

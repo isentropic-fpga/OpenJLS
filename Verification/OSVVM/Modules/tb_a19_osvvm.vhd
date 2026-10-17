@@ -13,6 +13,20 @@
 --   Errval = ModRange(Errval, RANGE);     -- A.9 inline
 -- Reference applies the sign flip then the A.9 modulo reduction. Coverage
 -- crosses the sign-flip condition with the upper-half subtract of ModRange.
+--
+-- Guidelines:
+--   G1.Req      T87.A19
+--   G1.Golden   A.19 C code as an integer reference
+--   G2.Range    RTL A19_run_interruption_error.vhd (range comments + postponed asserts)
+--   G2.MinMax   G2.MinMax node x value
+--   G2.Clamp    N/A: no accumulator
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     G3.Stim node x value
+--   G4.Branch   G4.Branch sign x wrapNeg x geHalf
+--   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
+--   G4 other    N/A: Edge/Run/Coding/Stream not in scope
+--   G5          N/A: combinational
+--   G6.Code     fully covered
 --------------------------------------------------------------------------------
 
 library ieee;
@@ -67,6 +81,7 @@ begin
     variable cov     : CoverageIDType;
     variable req     : AlertLogIDType;
     constant N_RAND  : natural := 6000;
+    variable mm, st  : CoverageIDType;
 
     procedure drive_check (
       err : integer;
@@ -119,6 +134,11 @@ begin
       AffirmIfEqual(req, checked_integer(sErrOut), result, msg & " err");
       AffirmIfEqual(req, checked_bit(sSign), std_to_int(eSign), msg & " sign");
       ICover(cov, (std_to_int(eSign), wn, gh));
+      ICover(mm, (1, err));
+      ICover(mm, (2, result));
+      ICover(st, (1, err));
+      ICover(st, (2, ra));
+      ICover(st, (3, rb));
 
     end procedure drive_check;
 
@@ -128,7 +148,7 @@ begin
     SetLogEnable(PASSED, FALSE);
     rv.InitSeed(rv'instance_name);
     req := GetReqID("T87.A19", 300);
-    cov := NewID("sign x wrapNeg x geHalf");
+    cov := NewID("G4.Branch sign x wrapNeg x geHalf");
     SetFieldName(cov, "sign", "wrapNeg", "geHalf");
     for axis0 in 0 to 1 loop
       for axis1 in 0 to 1 loop
@@ -139,6 +159,16 @@ begin
     end loop;
 
     -- Directed corners.
+    mm := NewID("G2.MinMax node x value");
+    add_value_bin(mm, 1, "Errval in", ERR_LO);
+    add_value_bin(mm, 1, "Errval in", ERR_HI);
+    add_value_bin(mm, 2, "Errval out", (RANGE_P + 1) / 2 - RANGE_P);
+    add_value_bin(mm, 2, "Errval out", (RANGE_P + 1) / 2 - 1);
+    st := NewID("G3.Stim node x value");
+    add_value_bin(st, 1, "Errval", ERR_LO);
+    add_value_bin(st, 2, "Ra MSB", 2 ** (BITNESS - 1), PX_MAX);
+    add_value_bin(st, 3, "Rb MSB", 2 ** (BITNESS - 1), PX_MAX);
+    drive_check(ERR_LO, '0', PX_MAX, PX_MAX, "most negative err, max Ra/Rb");
     drive_check(0, '0', 5, 1, "flip err0");           -- flip, e=0
     drive_check(ERR_HI, '0', 5, 1, "flip max");       -- flip large
     drive_check(ERR_LO, '1', 5, 1, "no flip (ri1)");
@@ -171,6 +201,8 @@ begin
 
     WriteBin(cov);
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "sign x wrapNeg x geHalf coverage closed");
+    affirm_covered(mm, "Errval in/out min/max covered");
+    affirm_covered(st, "most negative Errval and Ra/Rb MSB covered");
 
     end_of_test("tb_a19_osvvm");
     wait;

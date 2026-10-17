@@ -67,4 +67,9 @@ begin
 
   end generate gen_general_range;
 
+  -- Errval in [(RANGE + 1) / 2 - RANGE, (RANGE + 1) / 2 - 1] for |input| < RANGE
+  postponed assert is_x(oErrorVal) or abs(to_integer(iErrorVal)) >= RANGE_P
+                   or (to_integer(oErrorVal) >= (RANGE_P + 1) / 2 - RANGE_P and to_integer(oErrorVal) < (RANGE_P + 1) / 2)
+    report "a9: Errval out of range" severity error;
+
 end architecture behavioral;

@@ -30,6 +30,21 @@
 -- IN_WIDTH is a generic (= byte_stuffer LIMIT). Defaults to CO_LIMIT_STD (48,
 -- the 12-bit config); OpenJls.pro re-runs it at 32 and 64 (the 8-/16-bit
 -- LIMITs) via [generic IN_WIDTH ...].
+--
+-- Guidelines:
+--   G1.Req      OJLS.ByteStuffer
+--   G1.Ojls     T.87 FF-stuffing bit-string model
+--   G2.Range    RTL byte_stuffer.vhd: PSL contract + FIFO overflow asserts, no range comments yet
+--   G2.MinMax   N/A: bit packing, no arithmetic node
+--   G2.Clamp    N/A: no accumulator
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     N/A: payload random, FF runs in G4.Branch stuffEvent
+--   G4.Branch   G4.Branch stuffEvent
+--   G4.Stream   G4.Stream emitBytes, flushType, data x almostFull
+--   G4.Config   IN_WIDTH 32/48/64 variants (OpenJls.pro)
+--   G4 other    N/A: Edge/Run/Coding not in scope
+--   G5          G5.States resetPhase; outputs idle after reset, aborted output discarded, replay checked
+--   G6.Code     fully covered
 --------------------------------------------------------------------------------
 
 library ieee;
@@ -90,6 +105,7 @@ architecture sim of tb_byte_stuffer_osvvm is
   shared variable covFlush : CoverageIDType;      -- flush terminal type (0..3)
   shared variable covCross : CoverageIDType;      -- (emitBytes>0) x (oAlmostFull)
   shared variable covStuff : CoverageIDType;      -- stuff event per emitted byte (none/first/run)
+  shared variable covRst   : CoverageIDType;      -- reset phase (idle/mid-image/flush draining)
 
   -- Stuff-event codes (the module's headline behaviour: a '0' is stuffed after
   -- every 0xFF payload byte). (this-byte-FF x prev-byte-FF) would have an
@@ -265,9 +281,12 @@ begin
     variable cnt     : natural;
     variable af      : integer;
     variable hasData : integer;
+    variable req     : AlertLogIDType;
 
   begin
 
+    -- Seeded; floor under the smallest variant (IN_WIDTH 32: 2951).
+    req := GetReqID("OJLS.ByteStuffer", 2900);
     cnt := 0;
     wait until rst = '0';
 
@@ -293,7 +312,7 @@ begin
         for i in 0 to nb - 1 loop
 
           byte := oWord(OUT_WIDTH - 1 - i * 8 downto OUT_WIDTH - (i + 1) * 8);
-          Check(SB_ID, byte);
+          AffirmIfEqual(req, byte, Pop(SB_ID), "stuffed byte");
 
         end loop;
 
@@ -518,6 +537,64 @@ begin
 
     end procedure directed;
 
+    -- Drive n full beats (flush on the last if flush='1'), then iRst. The
+    -- aborted output is never scored (sIgnore); after reset the module must be
+    -- idle and a fresh image byte-exact. The reference state is clean here
+    -- (last image was flushed) and is re-initialised to mirror the reset.
+    procedure reset_mid (
+      n     : natural;
+      flush : std_logic
+    ) is
+    begin
+
+      sIgnore <= true;
+
+      for k in 1 to n loop
+
+        iWord         <= rv.RandSlv(IN_WIDTH);
+        iWordValidLen <= to_unsigned(IN_WIDTH, VLEN_W);
+        iWordValid    <= '1';
+        if (k = n) then
+          iFlush <= flush;
+        else
+          iFlush <= '0';
+        end if;
+
+        loop
+
+          wait until rising_edge(clk);
+          exit when iStall = '0';
+
+        end loop;
+
+      end loop;
+
+      iWordValid <= '0';
+      iFlush     <= '0';
+      if (n = 0) then
+        ICover(covRst, 0);
+      else
+        ICover(covRst, 1 + std_to_int(flush));
+      end if;
+      apply_reset(clk, rst, 6, '1');
+      wait for 1 ns;
+      AffirmIf(GetAlertLogID("ResetRecovery"), oWordValid = '0', "mid-op reset: byte_stuffer output cleared");
+      AffirmIf(GetAlertLogID("ResetRecovery"), oFlushDone = '0', "mid-op reset: no flush-done after reset");
+
+      curByte    := (others => '0');
+      bitsInByte := 0;
+      anyBits    := false;
+      lastEmitFF := false;
+      realSince  := false;
+      stuffSeen  := false;
+
+      sIgnore <= false;
+      wait until rising_edge(clk);
+
+      send_image(rv.RandInt(1, MAX_BEATS));
+
+    end procedure reset_mid;
+
     variable ones : std_logic_vector(IN_WIDTH - 1 downto 0);
     variable wtmp : std_logic_vector(IN_WIDTH - 1 downto 0);
 
@@ -541,13 +618,13 @@ begin
     SetLogEnable(PASSED, FALSE);
     rv.InitSeed(rv'instance_name);
 
-    covEmit := NewID("emitBytes");
+    covEmit := NewID("G4.Stream emitBytes");
     SetFieldName(covEmit, "emitBytes");
     for count in 0 to OUT_BYTES loop
       AddBins(covEmit, "emitted bytes=" & to_string(count), GenBin(count));
     end loop;
     -- FT_EMPTY is unreachable (see directed-corner note) and excluded.
-    covFlush := NewID("flushType");
+    covFlush := NewID("G4.Stream flushType");
     SetFieldName(covFlush, "flushType");
     AddBins(covFlush, "byte aligned", GenBin(1));
     AddBins(covFlush, "padded residue", GenBin(2));
@@ -555,7 +632,7 @@ begin
     -- Require seeing data output BOTH with and without almost-full backpressure.
     -- (The 0-byte terminal beat only fires after the FIFO has drained, so
     -- 0-byte x almostFull is unreachable and deliberately not a bin.)
-    covCross := NewID("data x almostFull");
+    covCross := NewID("G4.Stream data x almostFull");
     SetFieldName(covCross, "data", "almostFull");
     for almost_full in 0 to 1 loop
       AddCross(covCross, "data beat / almostFull=" & to_string(almost_full),
@@ -564,11 +641,16 @@ begin
     -- Stuff event per emitted byte: at least one image with no stuff, one with
     -- its first stuff, and one with a subsequent (run) stuff. Makes the FF->'0'
     -- stuffing -- the module's whole purpose -- visible in its own coverage.
-    covStuff := NewID("stuffEvent");
+    covStuff := NewID("G4.Branch stuffEvent");
     SetFieldName(covStuff, "stuffEvent");
     AddBins(covStuff, "noStuff",    GenBin(SE_NONE, SE_NONE));
     AddBins(covStuff, "firstStuff", GenBin(SE_FIRST, SE_FIRST));
     AddBins(covStuff, "runStuff",   GenBin(SE_RUN, SE_RUN));
+
+    covRst := NewID("G5.States resetPhase");
+    AddBins(covRst, "idle", GenBin(0));
+    AddBins(covRst, "mid-image", GenBin(1));
+    AddBins(covRst, "flush draining", GenBin(2));
 
     apply_reset(clk, rst, 6, '1');
     ones := (others => '1');
@@ -635,50 +717,11 @@ begin
     end loop;
 
     --------------------------------------------------------------------------
-    -- Mid-operation iRst: drive a partial image (valid beats, no flush) then
-    -- assert iRst before the flush. The aborted bits are never scored (sIgnore);
-    -- after reset the byte_stuffer must be idle, and a fresh image must come out
-    -- byte-exact. The reference FF-stuffer state is clean here (last image was
-    -- flushed) and is re-initialised below to mirror the reset.
+    -- Mid-operation iRst: mid-image, idle, and while a flush drains.
     --------------------------------------------------------------------------
-    sIgnore <= true;
-
-    for k in 1 to 4 loop
-
-      iWord         <= rv.RandSlv(IN_WIDTH);
-      iWordValidLen <= to_unsigned(IN_WIDTH, VLEN_W);
-      iWordValid    <= '1';
-      iFlush        <= '0';
-
-      loop
-
-        wait until rising_edge(clk);
-        exit when iStall = '0';
-
-      end loop;
-
-    end loop;
-
-    iWordValid <= '0';
-    iFlush     <= '0';
-    apply_reset(clk, rst, 6, '1');
-    wait for 1 ns;
-    AffirmIf(GetAlertLogID("ResetRecovery"), oWordValid = '0', "mid-op reset: byte_stuffer output cleared");
-    AffirmIf(GetAlertLogID("ResetRecovery"), oFlushDone = '0', "mid-op reset: no flush-done after reset");
-
-    -- Re-initialise the reference FF-stuffer state to mirror the reset.
-    curByte    := (others => '0');
-    bitsInByte := 0;
-    anyBits    := false;
-    lastEmitFF := false;
-    realSince  := false;
-    stuffSeen  := false;
-
-    sIgnore <= false;
-    wait until rising_edge(clk);
-
-    -- Recovery: a fresh image must encode byte-exact through the scoreboard.
-    send_image(rv.RandInt(1, MAX_BEATS));
+    reset_mid(4, '0');
+    reset_mid(0, '0');
+    reset_mid(4, '1');
 
     --------------------------------------------------------------------------
     -- Done: every image already drained (each send_image/directed waits for its
@@ -702,6 +745,7 @@ begin
     end_of_test("tb_byte_stuffer_osvvm");
     wait;
 
+    affirm_covered(covRst, "reset phase coverage closed");
   end process stim_proc;
 
   -----------------------------------------------------------------------------

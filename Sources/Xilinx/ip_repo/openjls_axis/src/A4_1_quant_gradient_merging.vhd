@@ -54,4 +54,9 @@ begin
 
   oSign <= sSign;
 
+  -- Q1 in [0, 4] (first non-zero made positive), Q2, Q3 in [-4, 4]
+  postponed assert is_x(oQ1) or (oQ1 >= 0 and oQ1 <= 4) report "a4_1: Q1 out of range" severity error;
+  postponed assert is_x(oQ2) or abs(to_integer(oQ2)) <= 4 report "a4_1: Q2 out of range" severity error;
+  postponed assert is_x(oQ3) or abs(to_integer(oQ3)) <= 4 report "a4_1: Q3 out of range" severity error;
+
 end architecture behavioral;

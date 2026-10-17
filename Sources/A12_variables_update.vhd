@@ -75,4 +75,8 @@ begin
   oNq <= sNRescale when sDoRescale = '1' else
          sNqNew;
 
+  -- A + |Errval| in [0, 2^A_WIDTH - 1] (no wrap); N in [1, RESET]
+  postponed assert is_x(sAqNew) or sAqNew >= iAq report "a12: A wrapped" severity error;
+  postponed assert is_x(oNq) or iNq > RESET or (oNq >= 1 and oNq <= RESET) report "a12: N out of range" severity error;
+
 end architecture rtl;

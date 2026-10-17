@@ -46,6 +46,7 @@ begin
                   '0';
   oRunCnt      <= iRunCnt + 1 when sRunHit = '1' else
                   iRunCnt;
+  -- RUNcnt in [0, width - 1] in the top; wraps modulo 2^RUN_CNT_WIDTH by design (no assert)
   oRunHit      <= sRunHit;
   oRunContinue <= sRunHit and not iEol;
 

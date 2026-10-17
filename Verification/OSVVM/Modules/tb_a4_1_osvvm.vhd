@@ -11,6 +11,20 @@
 -- T.87 A.4.1: if the first non-zero element of (Q1,Q2,Q3) is negative, reverse
 -- all three signs and set SIGN = -1, else SIGN = +1. Reference encodes that rule
 -- directly; coverage closes which element decided the sign.
+--
+-- Guidelines:
+--   G1.Req      T87.A4.1
+--   G1.Property A.4.1 sign rule
+--   G2.Range    RTL A4_1_quant_gradient_merging.vhd (range comments + postponed asserts)
+--   G2.MinMax   G2.MinMax node x value
+--   G2.Clamp    N/A: no accumulator
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     G3.Stim node x value
+--   G4.Branch   G4.Branch decider
+--   G4.Config   N/A: no BITNESS generic
+--   G4 other    N/A: Edge/Run/Coding/Stream not in scope
+--   G5          N/A: combinational
+--   G6.Code     fully covered
 --------------------------------------------------------------------------------
 
 library ieee;
@@ -86,6 +100,8 @@ begin
 
     variable rv  : RandomPType;
     variable cov : CoverageIDType;
+    variable mm  : CoverageIDType;
+    variable st  : CoverageIDType;
     variable req : AlertLogIDType;
 
     procedure drive_check (
@@ -124,6 +140,12 @@ begin
       end if;
 
       ICover(cov, decider_of(q1, q2, q3));
+      ICover(mm, (1, checked_integer(sQ1o)));
+      ICover(mm, (2, checked_integer(sQ2o)));
+      ICover(mm, (3, checked_integer(sQ3o)));
+      ICover(st, (1, q1));
+      ICover(st, (2, q2));
+      ICover(st, (3, q3));
 
     end procedure drive_check;
 
@@ -134,12 +156,23 @@ begin
     rv.InitSeed(rv'instance_name);
     req := GetReqID("T87.A4.1", 729);
 
-    cov := NewID("decider");
+    cov := NewID("G4.Branch decider");
     SetFieldName(cov, "decider");
     AddBins(cov, "Q1 decides", GenBin(0));
     AddBins(cov, "Q2 decides", GenBin(1));
     AddBins(cov, "Q3 decides", GenBin(2));
     AddBins(cov, "all zero", GenBin(3));
+    mm := NewID("G2.MinMax node x value");
+    add_value_bin(mm, 1, "Q1 out", 0);
+    add_value_bin(mm, 1, "Q1 out", 4);
+    for lane in 2 to 3 loop
+      add_value_bin(mm, lane, "Q" & to_string(lane) & " out", -4);
+      add_value_bin(mm, lane, "Q" & to_string(lane) & " out", 4);
+    end loop;
+    st := NewID("G3.Stim node x value");
+    for lane in 1 to 3 loop
+      add_value_bin(st, lane, "Q" & to_string(lane), -4);
+    end loop;
 
     -- Directed: each decider category, both polarities.
     drive_check(0, 0, 0, "all-zero");
@@ -167,6 +200,8 @@ begin
 
     WriteBin(cov);
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "decider coverage closed");
+    affirm_covered(mm, "Q1..Q3 out min/max covered");
+    affirm_covered(st, "Qi most negative covered");
 
     end_of_test("tb_a4_1_osvvm");
     wait;

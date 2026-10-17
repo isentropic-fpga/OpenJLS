@@ -14,6 +14,20 @@
 -- arithmetic with the RTL) and checks the registered (oWord,oValidLen,oWordValid)
 -- one cycle after each accepted beat. A directed stall sequence confirms the
 -- output holds across iStall. Coverage closes the four raw/Golomb-present cases.
+--
+-- Guidelines:
+--   G1.Req      T87.A11.2
+--   G1.Property A.11.2 MSB-first packing
+--   G2.Range    RTL A11_2_bit_packer.vhd (range comments + postponed asserts)
+--   G2.MinMax   G2.MinMax node x value
+--   G2.Clamp    N/A: no accumulator
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     N/A: inputs are bit fields and lengths, no signed source
+--   G4.Branch   G4.Branch case
+--   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
+--   G4 other    N/A: Edge/Run/Coding/Stream not in scope
+--   G5          G5.States resetPhase; outputs idle after reset, replay checked
+--   G6.Code     fully covered
 --------------------------------------------------------------------------------
 
 library ieee;
@@ -165,6 +179,8 @@ begin
     variable rValid  : std_logic;
     variable gValid  : std_logic;
     constant N_RAND  : natural := 4000;
+    variable mm      : CoverageIDType;
+    variable rs      : CoverageIDType;
 
     -- Present one beat (iStall='0'), then check the registered output.
     procedure beat (
@@ -211,8 +227,36 @@ begin
         caseT := 0;
       end if;
       ICover(cov, caseT);
+      ICover(mm, (1, expLen));
+      if gValid = '1' then
+        ICover(mm, (2, uzv));
+        ICover(mm, (3, slv));
+      end if;
+      if rValid = '1' then
+        ICover(mm, (4, rLen));
+      end if;
 
     end procedure beat;
+
+    -- Latch a beat, reset (held by iStall or not), check outputs clear and a
+    -- fresh beat packs correctly.
+    procedure reset_mid (stall : std_logic) is
+    begin
+
+      beat('1', 9, to_unsigned(16#1AA#, SUFFIX_W), '1', 4, 6, to_unsigned(16#33#, SUFFIX_W), "pre-reset beat");
+      -- Go idle so the post-reset latch captures no new beat, then reset.
+      iRawValid  <= '0';
+      iGolombVal <= '0';
+      iStall     <= stall;  -- '1': reset must override the clock-enable hold
+      ICover(rs, std_to_int(stall));
+      apply_reset(clk, rst, 3, '1');
+      wait for 1 ns;
+      AffirmIf(GetAlertLogID("ResetRecovery"), oWordValid = '0', "mid-op reset: oWordValid cleared");
+      AffirmIfEqual(GetAlertLogID("ResetRecovery"), checked_integer(oValidLen), 0, "mid-op reset: oValidLen cleared");
+      AffirmIf(GetAlertLogID("ResetRecovery"), oWord = std_logic_vector'(oWord'range => '0'), "mid-op reset: oWord cleared");
+      beat('1', 7, to_unsigned(16#5C#, SUFFIX_W), '0', 0, 0, to_unsigned(0, SUFFIX_W), "post-reset recovery");
+
+    end procedure reset_mid;
 
   begin
 
@@ -229,13 +273,25 @@ begin
     SetLogEnable(PASSED, FALSE);
     rv.InitSeed(rv'instance_name);
     req := GetReqID("T87.A11.2", 100);
-    cov := NewID("case");
+    cov := NewID("G4.Branch case");
     SetFieldName(cov, "case");
     AddBins(cov, "idle", GenBin(0));
     AddBins(cov, "raw only", GenBin(1));
     AddBins(cov, "Golomb only", GenBin(2));
     AddBins(cov, "raw and Golomb", GenBin(3));
 
+    mm := NewID("G2.MinMax node x value");
+    add_value_bin(mm, 1, "ValidLen", 0);
+    add_value_bin(mm, 1, "ValidLen", LIMIT);
+    add_value_bin(mm, 2, "Unary", 0);
+    add_value_bin(mm, 2, "Unary", LIMIT - 1);
+    add_value_bin(mm, 3, "SuffixLen", 0);
+    add_value_bin(mm, 3, "SuffixLen", SUFFIX_W);
+    add_value_bin(mm, 4, "RawLen", 0);
+    add_value_bin(mm, 4, "RawLen", math_min(16, SUFFIX_W));
+    rs := NewID("G5.States resetPhase");
+    AddBins(rs, "output held (stall)", GenBin(1));
+    AddBins(rs, "output running", GenBin(0));
     apply_reset(clk, rst, 4, '1');
 
     -- Reset must drive the registered outputs to their defined reset values.
@@ -293,17 +349,8 @@ begin
     -- Mid-operation reset: latch a beat, assert reset, confirm the output is
     -- cleared, then confirm a fresh beat is packed correctly (recovery).
     --------------------------------------------------------------------------
-    beat('1', 9, to_unsigned(16#1AA#, SUFFIX_W), '1', 4, 6, to_unsigned(16#33#, SUFFIX_W), "pre-reset beat");
-    -- Go idle so the post-reset latch captures no new beat, then reset.
-    iRawValid  <= '0';
-    iGolombVal <= '0';
-    iStall     <= '1';  -- reset must override the clock-enable hold
-    apply_reset(clk, rst, 3, '1');
-    wait for 1 ns;
-    AffirmIf(GetAlertLogID("ResetRecovery"), oWordValid = '0', "mid-op reset: oWordValid cleared");
-    AffirmIfEqual(GetAlertLogID("ResetRecovery"), checked_integer(oValidLen), 0, "mid-op reset: oValidLen cleared");
-    AffirmIf(GetAlertLogID("ResetRecovery"), oWord = std_logic_vector'(oWord'range => '0'), "mid-op reset: oWord cleared");
-    beat('1', 7, to_unsigned(16#5C#, SUFFIX_W), '0', 0, 0, to_unsigned(0, SUFFIX_W), "post-reset recovery");
+    reset_mid('1');
+    reset_mid('0');
 
     --------------------------------------------------------------------------
     -- Constrained-random beats (field sums bounded <= OUT_WIDTH).
@@ -336,6 +383,8 @@ begin
 
     WriteBin(cov);
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "case coverage closed");
+    affirm_covered(mm, "length/unary min/max covered");
+    affirm_covered(rs, "reset phase coverage closed");
 
     end_of_test("tb_a11_2_osvvm");
     wait;

@@ -10,6 +10,20 @@
 --
 -- T.87 written requirement A.8.1: with NEAR=0 the reconstructed value Rx is Ix.
 -- Exhaustive over every pixel value; coverage closes the 0 and MAXVAL ends.
+--
+-- Guidelines:
+--   G1.Req      T87.A8.1
+--   G1.Property A.8.1 Rx = Ix
+--   G2.Range    RTL A8_1_reconstructed_value.vhd (range comments + postponed asserts)
+--   G2.MinMax   G4.Branch Ix (0 and MAXVAL)
+--   G2.Clamp    N/A: no accumulator
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     N/A: exhaustive over every pixel value
+--   G4.Branch   G4.Branch Ix
+--   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
+--   G4 other    N/A: Edge/Run/Coding/Stream not in scope
+--   G5          N/A: combinational
+--   G6.Code     fully covered
 --------------------------------------------------------------------------------
 
 library ieee;
@@ -57,7 +71,7 @@ begin
     SetLogEnable(PASSED, FALSE);
     req := GetReqID("T87.A8.1", PX_MAX + 1);
 
-    cov := NewID("Ix");
+    cov := NewID("G4.Branch Ix");
     SetFieldName(cov, "Ix");
     AddBins(cov, "zero", GenBin(0));
     AddBins(cov, "interior", GenBin(1, PX_MAX - 1, 1));

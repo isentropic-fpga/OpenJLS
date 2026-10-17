@@ -25,13 +25,29 @@
 --   run 2  input stall (TVALID gaps)      run 3  both at once
 --   run 4  input TLAST mid-image (image split across two send bursts)
 -- Back-to-back (no reset between images) also exercises the adapter across the
--- core's image-boundary machinery. The BITNESS generic selects the image: 8
--- replays the H.3 conformance vectors, 12 a CharLS-minted golden whose pixels
--- ride a 16-bit lane with garbage driven on the TDATA bits above BITNESS.
+-- core's image-boundary machinery. Then the core is reset idle, mid-image and
+-- with all pixels in; each reset is followed by a clean golden image. The
+-- BITNESS generic selects the image: 8 replays the H.3 conformance vectors,
+-- 12 and 16 CharLS-minted goldens on a 16-bit lane (at 12 with garbage driven
+-- on the TDATA bits above BITNESS).
 --
--- Requirement tracked (see Verification/OSVVM/README.md registry):
+-- Requirement tracked (see Docs/verification_requirements.md):
 --   OJLS.AxiStreamTransparent  m_axis_jls byte-identical to the golden for
 --                              every image, under backpressure and input stalls
+--
+-- Guidelines:
+--   G1.Req      OJLS.AxiStreamTransparent
+--   G1.Ojls     CharLS-minted streams through the AXI4-Stream VCs
+--   G2.Range    N/A: wrapper, no arithmetic (no asserts)
+--   G2.MinMax   N/A: wrapper
+--   G2.Clamp    N/A: no accumulator
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     N/A: wrapper
+--   G4.Stream   G4.Stream handshake profile
+--   G4.Config   BITNESS 8/12/16, OUT_WIDTH 48 variants (OpenJls.pro)
+--   G4 other    N/A: Edge/Run/Coding not in scope
+--   G5          G5.States resetPhase; outputs idle after reset, aborted output discarded, replay checked
+--   G6.Code     fully covered
 --------------------------------------------------------------------------------
 
 library ieee;
@@ -51,7 +67,7 @@ library tb_support;
 
 entity tb_openjls_axis_osvvm is
   generic (
-    BITNESS   : positive range 8 to 16    := H3_BITNESS;        -- 8 or 12
+    BITNESS   : positive range 8 to 16    := H3_BITNESS;        -- 8, 12 or 16
     OUT_WIDTH : positive range 48 to 1024 := CO_OUT_WIDTH_STD   -- 64
   );
 end entity tb_openjls_axis_osvvm;
@@ -67,28 +83,32 @@ architecture sim of tb_openjls_axis_osvvm is
   constant JLS_DATA_W : natural := OUT_WIDTH;
 
   -- Golden vector selection: BITNESS 8 replays the T.87 Annex H.3 conformance
-  -- image, BITNESS 12 the CharLS-minted companion (B12_* in tb_support_pkg).
-  function pick_iv (constant a : integer_vector; constant b : integer_vector)
-    return integer_vector is
+  -- image, BITNESS 12/16 the CharLS-minted companions (B12_*/B16_* in
+  -- tb_support_pkg).
+  function pick_iv (constant a, b, c : integer_vector) return integer_vector is
   begin
     if BITNESS = 8 then
       return a;
+    elsif BITNESS = 12 then
+      return b;
     end if;
-    return b;
+    return c;
   end function pick_iv;
 
-  function pick_n (constant a : natural; constant b : natural) return natural is
+  function pick_n (constant a, b, c : natural) return natural is
   begin
     if BITNESS = 8 then
       return a;
+    elsif BITNESS = 12 then
+      return b;
     end if;
-    return b;
+    return c;
   end function pick_n;
 
-  constant IMG_PIXELS   : integer_vector := pick_iv(H3_PIXELS, B12_PIXELS);
-  constant IMG_EXPECTED : integer_vector := pick_iv(H3_EXPECTED, B12_EXPECTED);
-  constant IMG_WIDTH    : natural        := pick_n(H3_WIDTH, B12_WIDTH);
-  constant IMG_HEIGHT   : natural        := pick_n(H3_HEIGHT, B12_HEIGHT);
+  constant IMG_PIXELS   : integer_vector := pick_iv(H3_PIXELS, B12_PIXELS, B16_PIXELS);
+  constant IMG_EXPECTED : integer_vector := pick_iv(H3_EXPECTED, B12_EXPECTED, B16_EXPECTED);
+  constant IMG_WIDTH    : natural        := pick_n(H3_WIDTH, B12_WIDTH, B16_WIDTH);
+  constant IMG_HEIGHT   : natural        := pick_n(H3_HEIGHT, B12_HEIGHT, B16_HEIGHT);
 
   -- Sideband widths (unused by the DUT, but the VC ports must be sized).
   constant ID_W   : natural := 8;
@@ -103,6 +123,9 @@ architecture sim of tb_openjls_axis_osvvm is
   signal clk      : std_logic := '0';
   signal nReset   : std_logic := '0';
   signal sCoreRst : std_logic;
+  signal sMidRst  : std_logic := '0';         -- mid-operation core reset
+  signal sAbort   : boolean   := false;       -- discard output before the receiver
+  signal sAbortLast : boolean := false;       -- TLAST seen while sAbort
 
   -- Pixel AXI4-Stream (TB transmitter -> DUT slave)
   signal sPixTValid : std_logic;
@@ -115,9 +138,12 @@ architecture sim of tb_openjls_axis_osvvm is
   signal sPixTStrb  : std_logic_vector(PIX_DATA_W / 8 - 1 downto 0);
   signal sPixTKeep  : std_logic_vector(PIX_DATA_W / 8 - 1 downto 0);
 
-  -- Encoded AXI4-Stream (DUT master -> TB receiver)
+  -- Encoded AXI4-Stream (DUT master -> TB receiver); the Rx copies are gated
+  -- by sAbort so aborted output never reaches the receiver.
   signal sJlsTValid : std_logic;
   signal sJlsTReady : std_logic;
+  signal sRxTValid  : std_logic;
+  signal sRxTReady  : std_logic;
   signal sJlsTData  : std_logic_vector(JLS_DATA_W - 1 downto 0);
   signal sJlsTKeep  : std_logic_vector(JLS_DATA_W / 8 - 1 downto 0);
   signal sJlsTLast  : std_logic;
@@ -144,13 +170,27 @@ begin
 
   stream_contract : monitor_stream(clk, sCoreRst, sJlsTValid, sJlsTReady, sJlsTData, sJlsTKeep, sJlsTLast, '1', false);
 
-  assert BITNESS = 8 or BITNESS = 12
-    report "tb_openjls_axis_osvvm carries golden vectors for BITNESS 8 and 12 only"
+  assert BITNESS = 8 or BITNESS = 12 or BITNESS = 16
+    report "tb_openjls_axis_osvvm carries golden vectors for BITNESS 8, 12 and 16 only"
     severity failure;
 
   clk      <= not clk after CLK_PERIOD / 2;
   nReset   <= '0', '1' after 8 * CLK_PERIOD;
-  sCoreRst <= not nReset;                     -- core samples dims while iRst = '1'
+  sCoreRst <= not nReset or sMidRst;          -- core samples dims while iRst = '1'
+
+  sRxTValid  <= '0' when sAbort else sJlsTValid;
+  sJlsTReady <= '1' when sAbort else sRxTReady;
+
+  p_abort_last : process (clk) is
+  begin
+    if rising_edge(clk) then
+      if not sAbort then
+        sAbortLast <= false;
+      elsif sJlsTValid = '1' and sJlsTLast = '1' then
+        sAbortLast <= true;
+      end if;
+    end if;
+  end process p_abort_last;
 
   ------------------------------------------------------------------------------
   -- DUT + AXI4-Stream verification components
@@ -214,8 +254,8 @@ begin
     port map (
       Clk      => clk,
       nReset   => nReset,
-      TValid   => sJlsTValid,
-      TReady   => sJlsTReady,
+      TValid   => sRxTValid,
+      TReady   => sRxTReady,
       TID      => sJlsTID,
       TDest    => sJlsTDest,
       TUser    => sJlsTUser,
@@ -241,11 +281,65 @@ begin
     variable delayCov : DelayCoverageIDType;
     variable rxByte   : std_logic_vector(7 downto 0);
     variable reqPass  : AlertLogIDType;
+    variable cov      : CoverageIDType;
+    variable rs       : CoverageIDType;
 
     -- Transmitted image: golden pixels plus garbage on any TDATA bits above
     -- BITNESS (16-bit lane, BITNESS 9..15). The DUT must ignore those bits;
     -- for BITNESS 8/16 the vector is IMG_PIXELS unchanged.
     variable vPix : integer_vector(0 to IMG_PIXELS'length - 1);
+
+    -- Stream one image (TLAST mid-image if split) and check it byte-exact.
+    procedure send_check (split : boolean; tag : string) is
+    begin
+      if split then
+        PushBurst(StreamTxRec.BurstFifo, vPix(0 to vPix'length / 2 - 1), PIX_DATA_W);
+        SendBurstAsync(StreamTxRec, vPix'length / 2);
+        PushBurst(StreamTxRec.BurstFifo, vPix(vPix'length / 2 to vPix'high), PIX_DATA_W);
+        SendBurstAsync(StreamTxRec, vPix'length - vPix'length / 2);
+      else
+        PushBurst(StreamTxRec.BurstFifo, vPix, PIX_DATA_W);
+        SendBurstAsync(StreamTxRec, vPix'length);
+      end if;
+
+      GetBurst(StreamRxRec, numBytes);
+      AffirmIfEqual(reqPass, numBytes, IMG_EXPECTED'length, tag & " encoded byte count");
+      for i in 0 to numBytes - 1 loop
+        Pop(StreamRxRec.BurstFifo, rxByte);
+        AffirmIfEqual(reqPass, checked_integer(unsigned(rxByte)), IMG_EXPECTED(i),
+                      tag & " byte " & to_string(i));
+      end loop;
+    end procedure send_check;
+
+    -- Accept n pixels, reset the core, then replay a full image. Output of the
+    -- aborted image is discarded before the receiver; no TLAST may escape it.
+    procedure reset_mid (n : natural) is
+    begin
+      sAbort <= true;
+      if n > 0 then
+        PushBurst(StreamTxRec.BurstFifo, vPix(0 to n - 1), PIX_DATA_W);
+        SendBurst(StreamTxRec, n);
+      end if;
+      if n = 0 then
+        ICover(rs, 0);
+      elsif n < vPix'length then
+        ICover(rs, 1);
+      else
+        ICover(rs, 2);
+      end if;
+      WaitForClock(StreamTxRec, 1);
+      sMidRst <= '1';
+      WaitForClock(StreamTxRec, 4);
+      AffirmIf(GetAlertLogID("ResetRecovery"), not sAbortLast,
+               "aborted image emitted no TLAST before iRst");
+      sMidRst <= '0';
+      WaitForClock(StreamTxRec, 1);
+      AffirmIf(GetAlertLogID("ResetRecovery"), sJlsTValid = '0' and sPixTReady = '1',
+               "core idle and ready after iRst");
+      sAbort <= false;
+      WaitForClock(StreamTxRec, 1);
+      send_check(false, "after reset at pixel " & to_string(n));
+    end procedure reset_mid;
 
   begin
 
@@ -255,7 +349,19 @@ begin
     -- Let the VCs create their burst FIFOs before the first PushBurst.
     wait for 0 ns;
     wait for 0 ns;
-    reqPass := GetReqID("OJLS.AxiStreamTransparent", 5 * IMG_EXPECTED'length);
+    reqPass := GetReqID("OJLS.AxiStreamTransparent", 8 * IMG_EXPECTED'length);
+
+    cov := NewID("G4.Stream handshake profile");
+    AddBins(cov, "clean", GenBin(0));
+    AddBins(cov, "output backpressure", GenBin(1));
+    AddBins(cov, "input stall", GenBin(2));
+    AddBins(cov, "backpressure + stall", GenBin(3));
+    AddBins(cov, "TLAST mid-image", GenBin(4));
+
+    rs := NewID("G5.States resetPhase");
+    AddBins(rs, "idle", GenBin(0));
+    AddBins(rs, "mid-image", GenBin(1));
+    AddBins(rs, "pixels in, output draining", GenBin(2));
 
     wait until nReset = '1';
     GetDelayCoverageID(StreamTxRec, delayCov);
@@ -289,28 +395,20 @@ begin
         SetAxiStreamOptions(StreamTxRec, TRANSMIT_VALID_DELAY_CYCLES, 0);
       end if;
 
-      if run = 4 then
-        -- Split image: the transmitter raises TLAST after the first half.
-        PushBurst(StreamTxRec.BurstFifo, vPix(0 to vPix'length / 2 - 1), PIX_DATA_W);
-        SendBurstAsync(StreamTxRec, vPix'length / 2);
-        PushBurst(StreamTxRec.BurstFifo, vPix(vPix'length / 2 to vPix'high), PIX_DATA_W);
-        SendBurstAsync(StreamTxRec, vPix'length - vPix'length / 2);
-      else
-        PushBurst(StreamTxRec.BurstFifo, vPix, PIX_DATA_W);
-        SendBurstAsync(StreamTxRec, vPix'length);
-      end if;
-
-      GetBurst(StreamRxRec, numBytes);
-      AffirmIfEqual(reqPass, numBytes, IMG_EXPECTED'length,
-                    "run " & to_string(run) & " encoded byte count");
-      for i in 0 to numBytes - 1 loop
-        Pop(StreamRxRec.BurstFifo, rxByte);
-        AffirmIfEqual(reqPass, checked_integer(unsigned(rxByte)), IMG_EXPECTED(i),
-                      "run " & to_string(run) & " byte " & to_string(i));
-      end loop;
+      send_check(run = 4, "run " & to_string(run));
+      ICover(cov, run);
 
     end loop;
 
+    -- Mid-operation core reset: idle, mid-image, all pixels in.
+    SetAxiStreamOptions(StreamRxRec, RECEIVE_READY_DELAY_CYCLES, 0);
+    SetAxiStreamOptions(StreamTxRec, TRANSMIT_VALID_DELAY_CYCLES, 0);
+    reset_mid(0);
+    reset_mid(vPix'length / 2);
+    reset_mid(vPix'length);
+
+    affirm_covered(cov, "handshake profile coverage closed");
+    affirm_covered(rs, "reset phase coverage closed");
     WaitForClock(StreamTxRec, 4);
     end_of_test("tb_openjls_axis_osvvm");
     wait;

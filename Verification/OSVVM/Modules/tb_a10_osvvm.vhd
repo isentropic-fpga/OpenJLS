@@ -12,6 +12,20 @@
 -- loop directly. N>=1 is a T.87 invariant (the counter starts at 1), so the loop
 -- always terminates by k = A_WIDTH. Coverage closes k=0, an interior k, and the
 -- maximum k.
+--
+-- Guidelines:
+--   G1.Req      T87.A10
+--   G1.Golden   A.10 C code as an integer reference
+--   G2.Range    RTL A10_compute_k.vhd (range comments + postponed asserts)
+--   G2.MinMax   G2.MinMax node x value
+--   G2.Clamp    N/A: no accumulator
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     G3.Stim node x value
+--   G4.Coding   G4.Coding kZero
+--   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
+--   G4 other    N/A: Edge/Run/Stream not in scope
+--   G5          N/A: combinational
+--   G6.Code     fully covered
 --------------------------------------------------------------------------------
 
 library ieee;
@@ -81,6 +95,7 @@ begin
 
     variable rv      : RandomPType;
     variable cov     : CoverageIDType;
+    variable mm, st  : CoverageIDType;
     variable req     : AlertLogIDType;
     constant N_RAND  : natural := 6000;
 
@@ -97,6 +112,10 @@ begin
       AffirmIfEqual(req, checked_integer(sK), ref_k(n, a),
                     msg & " N=" & integer'image(n) & " A=" & integer'image(a));
       ICover(cov, ref_k(n, a));
+      ICover(mm, (1, n));
+      ICover(mm, (2, a));
+      ICover(st, (1, n));
+      ICover(st, (2, a));
 
     end procedure drive_check;
 
@@ -107,13 +126,21 @@ begin
     rv.InitSeed(rv'instance_name);
     req := GetReqID("T87.A10", 400);
 
-    cov := NewID("kZero");
+    cov := NewID("G4.Coding kZero");
     SetFieldName(cov, "kZero");
     for k in 0 to MAX_K loop
       AddBins(cov, "k=" & to_string(k), GenBin(k));
     end loop;
 
     -- Directed corners.
+    mm := NewID("G2.MinMax node x value");
+    add_value_bin(mm, 1, "N", 1);
+    add_value_bin(mm, 1, "N", N_MAX);
+    add_value_bin(mm, 2, "A", 0);
+    add_value_bin(mm, 2, "A", A_MAX);
+    st := NewID("G3.Stim node x value");
+    add_value_bin(st, 1, "N MSB", 2 ** (N_WIDTH - 1), N_MAX);
+    add_value_bin(st, 2, "A MSB", 2 ** (A_WIDTH - 1), A_MAX);
     drive_check(64, 0, "A=0 -> k=0");
     drive_check(1, 1, "N>=A -> k=0");
     drive_check(1, 2, "k=1");
@@ -141,6 +168,8 @@ begin
 
     WriteBin(cov);
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "k range coverage closed");
+    affirm_covered(mm, "N/A min/max covered");
+    affirm_covered(st, "N/A MSB covered");
 
     end_of_test("tb_a10_osvvm");
     wait;

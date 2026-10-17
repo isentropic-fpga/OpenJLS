@@ -10,6 +10,20 @@
 --
 -- T.87 Code segment A.6: Px += C[Q] when SIGN==+1 else Px -= C[Q]; then clamp to
 -- [0, MAXVAL]. Coverage crosses the sign with the saturation region (low/in/high).
+--
+-- Guidelines:
+--   G1.Req      T87.A6
+--   G1.Golden   A.6 C code as an integer reference
+--   G2.Range    RTL A6_prediction_correction.vhd (range comments + postponed asserts)
+--   G2.MinMax   G2.MinMax node x value
+--   G2.Clamp    N/A: no accumulator
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     G3.Stim node x value
+--   G4.Branch   G4.Branch sign x region
+--   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
+--   G4 other    N/A: Edge/Run/Coding/Stream not in scope
+--   G5          N/A: combinational
+--   G6.Code     fully covered
 --------------------------------------------------------------------------------
 
 library ieee;
@@ -110,6 +124,8 @@ begin
 
     variable rv      : RandomPType;
     variable cov     : CoverageIDType;
+    variable mm      : CoverageIDType;
+    variable st      : CoverageIDType;
     variable req     : AlertLogIDType;
     variable boundary : integer;
     constant N_RAND  : natural := 5000;
@@ -129,6 +145,14 @@ begin
       AffirmIfEqual(req, checked_integer(sPxOut), corrected(px, sg, cq),
                     msg & " px=" & integer'image(px) & " cq=" & integer'image(cq));
       ICover(cov, (std_to_int(sg), region_of(px, sg, cq)));
+      if (sg = CO_SIGN_POS) then
+        ICover(mm, (1, px + cq));
+      else
+        ICover(mm, (2, px - cq));
+      end if;
+      ICover(mm, (3, corrected(px, sg, cq)));
+      ICover(st, (1, px));
+      ICover(st, (2, cq));
 
     end procedure drive_check;
 
@@ -139,7 +163,7 @@ begin
     rv.InitSeed(rv'instance_name);
     req := GetReqID("T87.A6", 300);
 
-    cov := NewID("sign x region");
+    cov := NewID("G4.Branch sign x region");
     SetFieldName(cov, "sign", "region");
     for axis0 in 0 to 1 loop
       for axis1 in 0 to 2 loop
@@ -148,6 +172,18 @@ begin
     end loop;
 
     -- Directed corners.
+    mm := NewID("G2.MinMax node x value");
+    add_value_bin(mm, 1, "Px+C", CQ_MIN);
+    add_value_bin(mm, 1, "Px+C", MAX_VAL + CQ_MAX);
+    add_value_bin(mm, 2, "Px-C", -CQ_MAX);
+    add_value_bin(mm, 2, "Px-C", MAX_VAL - CQ_MIN);
+    add_value_bin(mm, 3, "Px", 0);
+    add_value_bin(mm, 3, "Px", MAX_VAL);
+    st := NewID("G3.Stim node x value");
+    add_value_bin(st, 1, "Px MSB", 2 ** (BITNESS - 1), MAX_VAL);
+    add_value_bin(st, 2, "C", CQ_MIN);
+    add_value_bin(st, 2, "C MSB", CQ_MIN, -1);
+
     drive_check(0, CO_SIGN_POS, CQ_MIN, "low sat pos");
     drive_check(MAX_VAL, CO_SIGN_POS, CQ_MAX, "high sat pos");
     drive_check(MAX_VAL, CO_SIGN_NEG, CQ_MIN, "high sat neg");
@@ -184,6 +220,8 @@ begin
 
     WriteBin(cov);
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "sign x region coverage closed");
+    affirm_covered(mm, "Px+-C and Px min/max covered");
+    affirm_covered(st, "input MSB / most negative covered");
 
     end_of_test("tb_a6_osvvm");
     wait;

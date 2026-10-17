@@ -15,6 +15,20 @@
 -- Reference follows that order verbatim; the negative-B halving uses the C
 -- -((1-B)>>1) form (not the RTL arithmetic shift) so the two stay independent.
 -- Coverage crosses the RESET rescale with the post-add sign of B.
+--
+-- Guidelines:
+--   G1.Req      T87.A12
+--   G1.Golden   A.12 C code as an integer reference
+--   G2.Range    RTL A12_variables_update.vhd (range comments + postponed asserts)
+--   G2.MinMax   G2.MinMax node x value
+--   G2.Clamp    G2.Clamp node x value
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     G3.Stim node x value
+--   G4.Coding   G4.Coding rescale x bSumSign
+--   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
+--   G4 other    N/A: Edge/Run/Stream not in scope
+--   G5          N/A: combinational
+--   G6.Code     fully covered
 --------------------------------------------------------------------------------
 
 library ieee;
@@ -81,6 +95,7 @@ begin
     variable cov     : CoverageIDType;
     variable req     : AlertLogIDType;
     constant N_RAND  : natural := 8000;
+    variable mm, st, cl : CoverageIDType;
 
     procedure drive_check (
       err : integer;
@@ -138,6 +153,14 @@ begin
         bSgn := 1;
       end if;
       ICover(cov, (rsc, bSgn));
+      ICover(mm, (1, err));
+      ICover(mm, (2, a));
+      ICover(mm, (3, b));
+      ICover(mm, (4, n));
+      ICover(st, (1, err));
+      ICover(st, (2, b));
+      ICover(st, (3, n));
+      ICover(cl, (1, n));
 
     end procedure drive_check;
 
@@ -148,7 +171,7 @@ begin
     rv.InitSeed(rv'instance_name);
     req := GetReqID("T87.A12", 300);
 
-    cov := NewID("rescale x bSumSign");
+    cov := NewID("G4.Coding rescale x bSumSign");
     SetFieldName(cov, "rescale", "bSumSign");
     for axis0 in 0 to 1 loop
       for axis1 in 0 to 1 loop
@@ -157,6 +180,24 @@ begin
     end loop;
 
     -- Directed corners.
+    mm := NewID("G2.MinMax node x value");
+    add_value_bin(mm, 1, "Errval", ERR_LO);
+    add_value_bin(mm, 1, "Errval", ERR_HI);
+    add_value_bin(mm, 2, "A", 0);
+    add_value_bin(mm, 2, "A", A_HI);
+    add_value_bin(mm, 3, "B", -B_LIM);
+    add_value_bin(mm, 3, "B", B_LIM);
+    add_value_bin(mm, 4, "N", 1);
+    add_value_bin(mm, 4, "N", RESET);
+    st := NewID("G3.Stim node x value");
+    add_value_bin(st, 1, "Errval", ERR_LO);
+    add_value_bin(st, 2, "B", -B_LIM);
+    add_value_bin(st, 3, "N MSB", 2 ** (N_WIDTH - 1), RESET);
+    cl := NewID("G2.Clamp node x value");
+    add_value_bin(cl, 1, "N", RESET - 1);
+    add_value_bin(cl, 1, "N", RESET);
+    drive_check(ERR_LO, 0, -B_LIM, RESET - 1, "min A most negative B");
+    drive_check(ERR_HI, A_HI, B_LIM, RESET - 1, "max A max B no rescale");
     drive_check(0, 0, 0, 1, "min no-rescale");
     drive_check(ERR_HI, A_HI, B_LIM, RESET, "rescale pos B");
     drive_check(ERR_LO, A_HI, -B_LIM, RESET, "rescale neg B");
@@ -187,6 +228,9 @@ begin
 
     WriteBin(cov);
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "rescale x bSign coverage closed");
+    affirm_covered(mm, "inputs min/max covered");
+    affirm_covered(st, "most negative Errval/B and N MSB covered");
+    affirm_covered(cl, "N reset point and one before covered");
 
     end_of_test("tb_a12_osvvm");
     wait;

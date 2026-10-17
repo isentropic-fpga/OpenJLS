@@ -192,23 +192,26 @@ foreach bitness {8 16} {
 }
 
 # Top-level control-plane stress: the 64-bit default OUT_WIDTH, then
-# non-power-of-2 MAX dims, then the range floor and ceiling.
+# non-power-of-2 MAX dims, MAX dims equal to the 48x48 image, then the OUT_WIDTH
+# range floor and ceiling.
 TestSuite Top
 Test Top/tb_openjls_top_osvvm.vhd
 Test Top/tb_openjls_top_osvvm.vhd [generic MAX_W 320] [generic MAX_H 200]
+Test Top/tb_openjls_top_osvvm.vhd [generic MAX_W 48] [generic MAX_H 48]
 Test Top/tb_openjls_top_osvvm.vhd [generic OUT_WIDTH 48]
 Test Top/tb_openjls_top_osvvm.vhd [generic OUT_WIDTH 1024]
 
 # Xilinx AXI wrappers, driven by the OSVVM AXI4 verification components:
 # stream-adapter transparency (openjls_axis) and the AXI4-Lite register file /
 # control plane (openjls_axis_regs). Variants cover a non-default OUT_WIDTH
-# (also moves CAPS output-bytes-per-beat), BITNESS 12 (two-byte pixel lane,
-# CharLS-minted golden, garbage on the unused TDATA bits) and
+# (also moves CAPS output-bytes-per-beat), BITNESS 12/16 (two-byte pixel lane,
+# CharLS-minted goldens, garbage on the unused TDATA bits at 12) and
 # non-default/non-square MAX dims (MAXDIM readback + the clamp target).
 TestSuite Xilinx
 Test Modules/tb_openjls_axis_osvvm.vhd
 Test Modules/tb_openjls_axis_osvvm.vhd [generic OUT_WIDTH 48]
 Test Modules/tb_openjls_axis_osvvm.vhd [generic BITNESS 12]
+Test Modules/tb_openjls_axis_osvvm.vhd [generic BITNESS 16]
 Test Modules/tb_openjls_axis_regs_osvvm.vhd
 Test Modules/tb_openjls_axis_regs_osvvm.vhd [generic OUT_WIDTH 48]
 Test Modules/tb_openjls_axis_regs_osvvm.vhd [generic MAX_W 1024] [generic MAX_H 768]

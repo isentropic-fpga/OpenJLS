@@ -23,6 +23,20 @@
 --   reachable only at (RItype=0, map=0, Errval=0) -- which is driven and checked.
 -- Skipped (EMErrval<0) vectors are asserted to be exactly that forbidden combo.
 -- Coverage crosses RItype x map and includes the EMErrval==0 boundary.
+--
+-- Guidelines:
+--   G1.Req      T87.A22
+--   G1.Golden   A.22 C code as an integer reference
+--   G2.Range    RTL A22_errval_mapping.vhd (range comments + postponed asserts)
+--   G2.MinMax   G2.MinMax node x value
+--   G2.Clamp    N/A: no accumulator
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     G3.Stim node x value
+--   G4.Run      G4.Run ri x map, G4.Run emZero
+--   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
+--   G4 other    N/A: Edge/Coding/Stream not in scope
+--   G5          N/A: combinational
+--   G6.Code     fully covered
 --------------------------------------------------------------------------------
 
 library ieee;
@@ -88,6 +102,7 @@ begin
     variable ri       : integer;
     variable mp       : integer;
     constant N_RAND   : natural := 8000;
+    variable mm, st   : CoverageIDType;
 
     procedure drive_check (
       ev  : integer;
@@ -119,6 +134,9 @@ begin
         end if;
         ICover(covCross, (riv, mpv));
         ICover(covZero, z);
+        ICover(mm, (1, ev));
+        ICover(mm, (2, exp));
+        ICover(st, (1, ev));
       else
         -- EMErrval<0 is T.87-unreachable: it requires Errval=0 with RItype or map
         -- set, but RItype=1 => Errval/=0 and Errval=0 => map=0 (see header).
@@ -137,19 +155,26 @@ begin
     rv.InitSeed(rv'instance_name);
     req := GetReqID("T87.A22", 300);
 
-    covCross := NewID("ri x map");
+    covCross := NewID("G4.Run ri x map");
     SetFieldName(covCross, "ri", "map");
     for axis0 in 0 to 1 loop
       for axis1 in 0 to 1 loop
         AddCross(covCross, "ri=" & to_string(axis0) & " / " & "map=" & to_string(axis1), GenBin(axis0), GenBin(axis1));
       end loop;
     end loop;
-    covZero := NewID("emZero");
+    covZero := NewID("G4.Run emZero");
     SetFieldName(covZero, "emZero");
     AddBins(covZero, "nonzero mapped error", GenBin(0));
     AddBins(covZero, "zero mapped error", GenBin(1));
 
     -- Directed: EMErrval==0 boundary for each ri/map needing it.
+    mm := NewID("G2.MinMax node x value");
+    add_value_bin(mm, 1, "Errval", ERR_MIN);
+    add_value_bin(mm, 1, "Errval", ERR_MAX);
+    add_value_bin(mm, 2, "EMErrval", 0);
+    add_value_bin(mm, 2, "EMErrval", 2 * (-ERR_MIN));
+    st := NewID("G3.Stim node x value");
+    add_value_bin(st, 1, "Errval", ERR_MIN);
     drive_check(1, 1, 1, "err1 ri1 map1 -> 0");        -- 2-1-1 = 0
     drive_check(1, 1, 0, "err1 ri1 map0 -> 1");
     drive_check(1, 0, 1, "err1 ri0 map1 -> 1");
@@ -183,6 +208,8 @@ begin
     WriteBin(covCross);
     WriteBin(covZero);
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covCross), "ri x map coverage closed");
+    affirm_covered(mm, "Errval/EMErrval min/max covered");
+    affirm_covered(st, "most negative Errval covered");
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covZero), "EMErrval==0 boundary covered");
 
     end_of_test("tb_a22_osvvm");

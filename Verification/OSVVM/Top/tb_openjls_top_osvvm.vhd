@@ -35,7 +35,7 @@
 -- upstream stall propagation, back-to-back (clean / stressed), reset
 -- (mid-feed / mid-feed-under-stress / mid-drain).
 --
--- Requirements tracked (see Verification/OSVVM/README.md registry):
+-- Requirements tracked (see Docs/verification_requirements.md):
 --   T87.H3               output byte-identical to the Annex H.3 golden stream
 --   OJLS.BackToBack      next image accepted while the previous one drains
 --   OJLS.RIForward       run-interruption context forwarding (sFwdRiHit) emits
@@ -46,6 +46,22 @@
 --
 -- Restores the output-backpressure / stall-recovery coverage the golden TB
 -- dropped (project-backpressure-coverage-gap).
+--
+-- Guidelines:
+--   G1.Req      T87.H3, OJLS.BackToBack, OJLS.RIForward, OJLS.NoStallCompress, OJLS.NoStallEOL
+--   G1.Ojls     Annex H.3 golden + clean-run self reference (payload owned by the golden suite)
+--   G2.Range    RTL openjls_top.vhd: PSL contract asserts, no range comments yet
+--   G2.MinMax   N/A: owned by module TBs
+--   G2.Clamp    N/A: owned by module TBs
+--   G2.Checked  N/A: slv byte compare, X never matches
+--   G3.Signed   gap: openjls_top.vhd:927 B decode not in signed('0' & x) form (safe by range)
+--   G3.Stim     N/A: owned by module TBs
+--   G4.Edge     G4.Config width x height (1-line image)
+--   G4.Stream   G4.Stream bp x inputStall x prelude, backToBack, upstreamStallPropagated
+--   G4.Config   G4.Config width x height (4x1, MAX 48x48), OUT_WIDTH 48/1024; BITNESS 16 in tb_openjls_axis
+--   G4 other    N/A: Run/Coding owned by module TBs + golden suite
+--   G5          G5.States reset midFeed/midFeedStress/midDrain; replay checked
+--   G6.Code     DEBUG_MODE trace lines waived (cover_summary.py)
 --------------------------------------------------------------------------------
 
 library ieee;
@@ -419,6 +435,7 @@ begin
     variable covUp      : CoverageIDType;
     variable covB2B     : CoverageIDType;
     variable covRst     : CoverageIDType;
+    variable covCfg     : CoverageIDType;
     variable base       : natural;
     variable baseL      : natural;
     variable bigImg     : pixel_array_t(0 to BIG_W * BIG_H - 1);
@@ -569,7 +586,7 @@ begin
     SetAlertLogName("tb_openjls_top_osvvm");
     SetLogEnable(PASSED, FALSE);
     rv.InitSeed(rv'instance_name);
-    covSweep := NewID("bp x inputStall x prelude");
+    covSweep := NewID("G4.Stream bp x inputStall x prelude");
     SetFieldName(covSweep, "bp", "inputStall", "prelude");
     for axis0 in 0 to 1 loop
       for axis1 in 0 to 1 loop
@@ -578,19 +595,26 @@ begin
         end loop;
       end loop;
     end loop;
-    covUp := NewID("upstreamStallPropagated");
+    covUp := NewID("G4.Stream upstreamStallPropagated");
     SetFieldName(covUp, "upstreamStallPropagated");
     AddBins(covUp, "upstreamStallPropagated", GenBin(1, 1));
-    covB2B := NewID("backToBack clean/stressed/minimal");
+    covB2B := NewID("G4.Stream backToBack clean/stressed/minimal");
     SetFieldName(covB2B, "backToBack clean/stressed/minimal");
     AddBins(covB2B, "clean overlap", GenBin(0));
     AddBins(covB2B, "stressed overlap", GenBin(1));
     AddBins(covB2B, "minimal image overlap", GenBin(2));
-    covRst := NewID("reset midFeed/midFeedStress/midDrain");
+    covRst := NewID("G5.States reset midFeed/midFeedStress/midDrain");
     SetFieldName(covRst, "reset midFeed/midFeedStress/midDrain");
     AddBins(covRst, "reset during input", GenBin(0));
     AddBins(covRst, "reset during stressed input", GenBin(1));
     AddBins(covRst, "reset during output", GenBin(2));
+
+    -- Max dims are reached by the 48x48 image only in the MAX 48x48 variant.
+    covCfg := NewID("G4.Config width x height");
+    AddBins(covCfg, "width=4 / height=1", GenBin(0));
+    if (MAX_W = BIG_W and MAX_H = BIG_H) then
+      AddBins(covCfg, "width=MAX / height=MAX", GenBin(1));
+    end if;
 
     -- Requirement goals: H.3 = at least one full golden image; BackToBack = the
     -- three directed b2b runs (b2b x3, B5 stressed, C minimal).
@@ -714,6 +738,7 @@ begin
     wait_images(1);
     refLen := collectedCount - base;
     AffirmIfEqual(GetAlertLogID("DataChecks"), lastCount - baseL, 1, "B1: reference image completed");
+    ICover(covCfg, 1);
     -- Must dwarf the framer FIFO + byte_stuffer buffer, or the hold run below
     -- could never propagate a stall and the coverage would be vacuous.
     AffirmIf(GetAlertLogID("DataChecks"), refLen > 1000, "B1: stress image defeats internal buffering" &
@@ -809,6 +834,7 @@ begin
     wait_images(1);
     refLen := collectedCount - base;
     AffirmIfEqual(GetAlertLogID("DataChecks"), lastCount - baseL, 1, "C: reference 4x1 image completed");
+    ICover(covCfg, 0);
     for i in 0 to refLen - 1 loop
 
       refBuf(i) := collected(base + i);
@@ -921,6 +947,7 @@ begin
     WriteBin(covUp);
     WriteBin(covB2B);
     WriteBin(covRst);
+    affirm_covered(covCfg, "width x height coverage closed");
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covSweep), "bp x input-stall x prelude cross closed");
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covUp), "upstream-stall-propagation coverage closed");
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covB2B), "back-to-back coverage closed");

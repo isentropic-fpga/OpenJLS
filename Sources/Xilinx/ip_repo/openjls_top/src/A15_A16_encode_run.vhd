@@ -84,8 +84,8 @@ architecture behavioral of a15_a16_encode_run is
   constant C_BOUND_WIDTH : natural := RUN_CNT_WIDTH + 1;
 
   -- Registered state
-  signal sRunIndex       : unsigned(4 downto 0);
-  signal sNextBound      : unsigned(C_BOUND_WIDTH - 1 downto 0);
+  signal sRunIndex       : unsigned(4 downto 0);                  -- [0, 31], full type: saturated at 31
+  signal sNextBound      : unsigned(C_BOUND_WIDTH - 1 downto 0);  -- [1, 2^RUN_CNT_WIDTH + 2^15]
   signal sInRun          : std_logic;
 
   -- Next-state signals (driven combinationally, captured by clocked process)

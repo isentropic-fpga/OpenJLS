@@ -18,6 +18,20 @@
 -- is validated implicitly: the reference tracks RUNindex with the C model and the
 -- next run's bits depend on it. Coverage: terminal type, immediate break,
 -- EOI reset, and the start-RUNindex range.
+--
+-- Guidelines:
+--   G1.Req      T87.A15-A16
+--   G1.Golden   A.15 + A.16 C code as a bit-string reference
+--   G2.Range    RTL A15_A16_encode_run.vhd (range comments + postponed asserts)
+--   G2.MinMax   G2.Clamp RUNindex + G4.Run startIdx (RUNindex 0..31)
+--   G2.Clamp    G2.Clamp RUNindex
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     N/A: inputs are run events, no signed source
+--   G4.Run      G4.Run startIdx, terminal, immediateBreak, eoiReset
+--   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
+--   G4 other    N/A: Edge/Coding/Stream not in scope
+--   G5          G5.States resetPhase; outputs idle after reset, replay checked
+--   G6.Code     fully covered
 --------------------------------------------------------------------------------
 
 library ieee;
@@ -193,6 +207,8 @@ begin
     variable covImm  : CoverageIDType;
     variable covEoi  : CoverageIDType;
     variable covIdx  : CoverageIDType;
+    variable cl      : CoverageIDType;
+    variable rs      : CoverageIDType;
     variable req     : AlertLogIDType;
 
     variable actBuf  : string(1 to MAXBITS);
@@ -257,6 +273,7 @@ begin
       variable nMatch : natural;
       variable terminalIdx : natural;
       variable residual : natural;
+      variable sat : boolean := false;
 
     begin
 
@@ -266,6 +283,7 @@ begin
       residual := m;
       while residual >= 2 ** TB_J_TABLE(terminalIdx) loop
         residual := residual - 2 ** TB_J_TABLE(terminalIdx);
+        sat := sat or terminalIdx = 31;
         if terminalIdx < 31 then
           terminalIdx := terminalIdx + 1;
         end if;
@@ -314,6 +332,12 @@ begin
       ICover(covImm, boolean'pos(m = 0));
       ICover(covEoi, std_to_int(eoi));
       ICover(covIdx, carried);
+      if sat then
+        ICover(cl, 1);
+      end if;
+      if term = T_BREAK and terminalIdx = 31 then
+        ICover(cl, 2);
+      end if;
 
       if (eoi = '1') then
         carried := 0;
@@ -345,6 +369,32 @@ begin
 
     end procedure idle;
 
+    -- iRst after n matching pixels (0 = between runs); the FSM must go cold
+    -- and the next run encode from RUNindex=0. Bits emitted before are discarded.
+    procedure reset_mid (n : natural) is
+    begin
+
+      for i in 1 to n loop
+        cycle_collect('1', '1', i, RUNVAL, RUNVAL, '0');
+        wait until rising_edge(clk);
+      end loop;
+      iModeIsRun <= '0';
+      iRunHit    <= '0';
+      iRunCont   <= '0';
+      iEoi       <= '0';
+      iCE <= '0';
+      ICover(rs, boolean'pos(n > 0));
+      apply_reset(clk, rst, 4, '1');
+      iCE <= '1';
+      wait for 1 ns;
+      AffirmIf(GetAlertLogID("ResetRecovery"), oRawValid = '0', "mid-op reset: no spurious raw output");
+      AffirmIf(GetAlertLogID("ResetRecovery"), oInRunNext = '0', "mid-op reset: sInRun cleared");
+      iModeIsRun <= '1';
+      carried    := 0;
+      do_run(3, T_BREAK, '0', "post-reset recovery");
+
+    end procedure reset_mid;
+
     variable m    : natural;
     variable term : integer;
     variable eoi  : std_logic;
@@ -366,24 +416,33 @@ begin
     rv.InitSeed(rv'instance_name);
     req := GetReqID("T87.A15-A16", 100);
 
-    covTerm := NewID("terminal");
+    covTerm := NewID("G4.Run terminal");
     SetFieldName(covTerm, "terminal");
     AddBins(covTerm, "interruption", GenBin(0));
     AddBins(covTerm, "end of line", GenBin(1));
-    covImm := NewID("immediateBreak");
+    covImm := NewID("G4.Run immediateBreak");
     SetFieldName(covImm, "immediateBreak");
     AddBins(covImm, "nonempty run", GenBin(0));
     AddBins(covImm, "immediate break", GenBin(1));
-    covEoi := NewID("eoiReset");
+    covEoi := NewID("G4.Run eoiReset");
     SetFieldName(covEoi, "eoiReset");
     AddBins(covEoi, "within image", GenBin(0));
     AddBins(covEoi, "end of image", GenBin(1));
-    covIdx := NewID("startIdx");
+    covIdx := NewID("G4.Run startIdx");
     SetFieldName(covIdx, "startIdx");
     AddBins(covIdx, "startIdx0", GenBin(0, 0));
     AddBins(covIdx, "startIdxLo", GenBin(1, 3, 1));
     AddBins(covIdx, "startIdxMid", GenBin(4, 10, 1));
-    AddBins(covIdx, "startIdxHi", GenBin(11, 31, 1));
+    AddBins(covIdx, "startIdxHi", GenBin(11, 30, 1));
+    AddBins(covIdx, "startIdx31", GenBin(31, 31));
+    cl := NewID("G2.Clamp RUNindex");
+    SetFieldName(cl, "RUNindex");
+    AddBins(cl, "RUNindex=31 / increment held", GenBin(1));
+    AddBins(cl, "RUNindex=31 / break decrements", GenBin(2));
+
+    rs := NewID("G5.States resetPhase");
+    AddBins(rs, "between runs", GenBin(0));
+    AddBins(rs, "mid-run", GenBin(1));
 
     apply_reset(clk, rst, 4, '1');
     carried := 0;
@@ -427,19 +486,9 @@ begin
     -- sInRun cleared) and the next run encodes from RUNindex=0 again -- the
     -- bitstream check with carried=0 proves the state register was cleared.
     --------------------------------------------------------------------------
-    iModeIsRun <= '0';
-    iRunHit    <= '0';
-    iRunCont   <= '0';
-    iEoi       <= '0';
-    iCE <= '0';
-    apply_reset(clk, rst, 4, '1');
-    iCE <= '1';
-    wait for 1 ns;
-    AffirmIf(GetAlertLogID("ResetRecovery"), oRawValid = '0', "mid-op reset: no spurious raw output");
-    AffirmIf(GetAlertLogID("ResetRecovery"), oInRunNext = '0', "mid-op reset: sInRun cleared");
-    iModeIsRun <= '1';
-    carried    := 0;
-    do_run(3, T_BREAK, '0', "post-reset recovery");
+    reset_mid(0);
+    do_run(800, T_EOL, '0', "climb before mid-run reset");
+    reset_mid(40);
 
     --------------------------------------------------------------------------
     -- Constrained-random runs.
@@ -479,6 +528,8 @@ begin
     WriteBin(covEoi);
     WriteBin(covIdx);
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covTerm), "terminal coverage closed");
+    affirm_covered(cl, "RUNindex saturation and step past covered");
+    affirm_covered(rs, "reset phase coverage closed");
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covImm), "immediate-break coverage closed");
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covEoi), "EOI-reset coverage closed");
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covIdx), "start-RUNindex coverage closed");

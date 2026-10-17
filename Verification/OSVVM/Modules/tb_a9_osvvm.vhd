@@ -11,6 +11,20 @@
 -- Reduces valid errors into [-floor(RANGE/2), ceil(RANGE/2)-1]: add RANGE if negative,
 -- then subtract RANGE once the adjusted value reaches ceil(RANGE/2). Coverage
 -- crosses the negative-wrap path with the upper-half subtract.
+--
+-- Guidelines:
+--   G1.Req      T87.A9
+--   G1.Golden   A.9 C code as an integer reference
+--   G2.Range    RTL A9_modulo_reduction.vhd (range comments + postponed asserts)
+--   G2.MinMax   G2.MinMax node x value
+--   G2.Clamp    N/A: no accumulator
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     G3.Stim node x value
+--   G4.Branch   G4.Branch wrapNeg x geHalf
+--   G4.Config   BITNESS 8..16 + RANGE_P around 2**BITNESS (OpenJls.pro)
+--   G4 other    N/A: Edge/Run/Coding/Stream not in scope
+--   G5          N/A: combinational
+--   G6.Code     fully covered
 --------------------------------------------------------------------------------
 
 library ieee;
@@ -91,6 +105,7 @@ begin
   stim : process is
 
     variable cov     : CoverageIDType;
+    variable mm, st  : CoverageIDType;
     variable req     : AlertLogIDType;
 
     procedure drive_check (
@@ -118,6 +133,9 @@ begin
         g := 0;
       end if;
       ICover(cov, (w, g));
+      ICover(mm, (1, ev));
+      ICover(mm, (2, ref_mod(ev)));
+      ICover(st, (1, ev));
 
     end procedure drive_check;
 
@@ -127,7 +145,7 @@ begin
     SetLogEnable(PASSED, FALSE);
     req := GetReqID("T87.A9", 200);
 
-    cov := NewID("wrapNeg x geHalf");
+    cov := NewID("G4.Branch wrapNeg x geHalf");
     SetFieldName(cov, "wrapNeg", "geHalf");
     for axis0 in 0 to 1 loop
       for axis1 in 0 to 1 loop
@@ -136,6 +154,13 @@ begin
     end loop;
 
     -- Directed corners.
+    mm := NewID("G2.MinMax node x value");
+    add_value_bin(mm, 1, "Errval in", ERR_MIN);
+    add_value_bin(mm, 1, "Errval in", ERR_MAX);
+    add_value_bin(mm, 2, "Errval out", (RANGE_P + 1) / 2 - RANGE_P);
+    add_value_bin(mm, 2, "Errval out", (RANGE_P + 1) / 2 - 1);
+    st := NewID("G3.Stim node x value");
+    add_value_bin(st, 1, "Errval in", ERR_MIN);
     drive_check(0, "zero");
     drive_check(ERR_MAX, "max");
     drive_check(ERR_MIN, "min");
@@ -153,6 +178,8 @@ begin
 
     WriteBin(cov);
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "wrap/half cross coverage closed");
+    affirm_covered(mm, "Errval in/out min/max covered");
+    affirm_covered(st, "most negative Errval covered");
 
     end_of_test("tb_a9_osvvm");
     wait;

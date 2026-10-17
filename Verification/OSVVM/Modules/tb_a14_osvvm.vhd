@@ -14,6 +14,20 @@
 --   RUNcnt' = runHit ? RUNcnt+1 : RUNcnt
 --   continue = runHit and not EOLine
 -- Coverage crosses run-hit with the EOL break.
+--
+-- Guidelines:
+--   G1.Req      T87.A14
+--   G1.Golden   A.14 C code as an integer reference
+--   G2.Range    RTL A14_run_length_determination.vhd (range comments + postponed asserts)
+--   G2.MinMax   G2.MinMax node x value
+--   G2.Clamp    N/A: no accumulator
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     G3.Stim node x value
+--   G4.Run      G4.Run runHit x eol
+--   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
+--   G4 other    N/A: Edge/Coding/Stream not in scope
+--   G5          N/A: combinational
+--   G6.Code     fully covered
 --------------------------------------------------------------------------------
 
 library ieee;
@@ -72,6 +86,7 @@ begin
     variable ix      : integer;
     variable rc      : integer;
     constant N_RAND  : natural := 3000;
+    variable mm, st  : CoverageIDType;
 
     procedure drive_check (
       rav : integer;
@@ -108,6 +123,12 @@ begin
       AffirmIfEqual(req, checked_bit(sRunHit), hit, msg & " runHit");
       AffirmIfEqual(req, checked_bit(sRunCont), hit * std_to_int(not eol), msg & " continue");
       ICover(cov, (hit, std_to_int(eol)));
+      ICover(mm, (1, rav));
+      ICover(mm, (2, ixv));
+      ICover(mm, (3, rcv));
+      ICover(st, (1, rav));
+      ICover(st, (2, ixv));
+      ICover(st, (3, rcv));
 
     end procedure drive_check;
 
@@ -117,7 +138,7 @@ begin
     SetLogEnable(PASSED, FALSE);
     rv.InitSeed(rv'instance_name);
     req := GetReqID("T87.A14", 100);
-    cov := NewID("runHit x eol");
+    cov := NewID("G4.Run runHit x eol");
     SetFieldName(cov, "runHit", "eol");
     for axis0 in 0 to 1 loop
       for axis1 in 0 to 1 loop
@@ -126,6 +147,20 @@ begin
     end loop;
 
     -- Directed corners.
+    mm := NewID("G2.MinMax node x value");
+    add_value_bin(mm, 1, "Ra", 0);
+    add_value_bin(mm, 1, "Ra", PX_MAX);
+    add_value_bin(mm, 2, "Ix", 0);
+    add_value_bin(mm, 2, "Ix", PX_MAX);
+    add_value_bin(mm, 3, "RUNcnt", 0);
+    add_value_bin(mm, 3, "RUNcnt", RC_MOD - 1);
+    st := NewID("G3.Stim node x value");
+    add_value_bin(st, 1, "Ra MSB", 2 ** (BITNESS - 1), PX_MAX);
+    add_value_bin(st, 2, "Ix MSB", 2 ** (BITNESS - 1), PX_MAX);
+    add_value_bin(st, 3, "RUNcnt MSB", 2 ** (RC_W - 1), RC_MOD - 1);
+    drive_check(PX_MAX, PX_MAX, 0, '0', "max pixels hit");
+    drive_check(0, PX_MAX, 1, '0', "min Ra max Ix miss");
+    drive_check(PX_MAX, 0, 1, '1', "max Ra min Ix miss");
     drive_check(7, 7, 0, '0', "hit no-eol");
     drive_check(7, 7, 5, '1', "hit eol break");
     drive_check(7, 9, 5, '0', "miss");
@@ -147,6 +182,8 @@ begin
 
     WriteBin(cov);
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "runHit x eol coverage closed");
+    affirm_covered(mm, "Ra/Ix/RUNcnt min/max covered");
+    affirm_covered(st, "Ra/Ix/RUNcnt MSB covered");
 
     end_of_test("tb_a14_osvvm");
     wait;

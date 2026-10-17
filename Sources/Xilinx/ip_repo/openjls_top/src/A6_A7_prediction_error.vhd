@@ -60,4 +60,8 @@ begin
   oErrorVal <= sAtZero when sCorrectedPx < 0 else
                sAtMax when sCorrectedPx > MAX_S else
                sRawError;
+
+  -- Errval in [-MAX_VAL, MAX_VAL] for Ix, Px <= MAX_VAL; sRawError may wrap when clipped
+  postponed assert is_x(oErrorVal) or iIx > MAX_VAL or iPx > MAX_VAL or abs(to_integer(oErrorVal)) <= MAX_VAL
+    report "a6_a7: Errval out of range" severity error;
 end architecture behavioral;

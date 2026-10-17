@@ -29,6 +29,20 @@
 -- Directed and random stimulus obey these invariants. Invalid inputs or
 -- unrepresentable reference results fail under the ReferenceDomain alert ID.
 -- Coverage crosses RESET x Errval-sign x RItype.
+--
+-- Guidelines:
+--   G1.Req      T87.A23
+--   G1.Golden   A.23 C code as an integer reference
+--   G2.Range    RTL A23_run_interruption_update.vhd (range comments + postponed asserts)
+--   G2.MinMax   G2.MinMax node x value
+--   G2.Clamp    G2.Clamp node x value
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     G3.Stim node x value
+--   G4.Run      G4.Run rescale x errNeg x RItype
+--   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
+--   G4 other    N/A: Edge/Coding/Stream not in scope
+--   G5          N/A: combinational
+--   G6.Code     fully covered
 --------------------------------------------------------------------------------
 
 library ieee;
@@ -116,6 +130,7 @@ begin
     variable ri      : integer;
     variable mp      : integer;
     constant N_RAND  : natural := 12000;
+    variable mm, st, cl : CoverageIDType;
 
     -- Reject invalid stimulus instead of silently skipping a comparison.
     procedure drive_check (
@@ -188,6 +203,16 @@ begin
         eNeg := 0;
       end if;
       ICover(cov, (rsc, eNeg, riv));
+      ICover(mm, (1, errv));
+      ICover(mm, (2, av));
+      ICover(mm, (3, nv));
+      ICover(mm, (4, nnv));
+      ICover(st, (1, errv));
+      ICover(st, (2, nv));
+      ICover(cl, (1, nv));
+      if rescale then
+        ICover(cl, (2, nnv));
+      end if;
 
     end procedure drive_check;
 
@@ -198,7 +223,7 @@ begin
     rv.InitSeed(rv'instance_name);
     req := GetReqID("T87.A23", 600);
 
-    cov := NewID("rescale x errNeg x RItype");
+    cov := NewID("G4.Run rescale x errNeg x RItype");
     SetFieldName(cov, "rescale", "errNeg", "RItype");
     for axis0 in 0 to 1 loop
       for axis1 in 0 to 1 loop
@@ -209,6 +234,24 @@ begin
     end loop;
 
     -- Directed corners (both map values on the same vector to exercise equivalence).
+    mm := NewID("G2.MinMax node x value");
+    add_value_bin(mm, 1, "Errval", ERR_LO);
+    add_value_bin(mm, 1, "Errval", ERR_HI);
+    add_value_bin(mm, 2, "A", 0);
+    add_value_bin(mm, 2, "A", A_HI);
+    add_value_bin(mm, 3, "N", 1);
+    add_value_bin(mm, 3, "N", RESET);
+    add_value_bin(mm, 4, "Nn", 0);
+    add_value_bin(mm, 4, "Nn", RESET - 1);
+    st := NewID("G3.Stim node x value");
+    add_value_bin(st, 1, "Errval", ERR_LO);
+    add_value_bin(st, 2, "N MSB", 2 ** (N_WIDTH - 1), RESET);
+    cl := NewID("G2.Clamp node x value");
+    add_value_bin(cl, 1, "N", RESET - 1);
+    add_value_bin(cl, 1, "N", RESET);
+    add_value_bin(cl, 2, "Nn at N=RESET", RESET - 1);
+    drive_check(ERR_LO, 0, A_HI, RESET, RESET - 1, 0, "most negative err, max A/N/Nn");
+    drive_check(ERR_HI, 1, 0, 1, 0, 0, "max err, min A/N/Nn");
     drive_check(-5, 0, 100, RESET, 10, 0, "rescale errneg ri0 m0");
     drive_check(-5, 0, 100, RESET, 10, 1, "rescale errneg ri0 m1");
     drive_check(5, 1, 100, 10, 4, 0, "errpos ri1 m0");
@@ -251,6 +294,9 @@ begin
 
     WriteBin(cov);
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "rescale x errNeg x RItype coverage closed");
+    affirm_covered(mm, "Errval/A/N/Nn min/max covered");
+    affirm_covered(st, "most negative Errval and N MSB covered");
+    affirm_covered(cl, "N/Nn reset point and one before covered");
 
     end_of_test("tb_a23_osvvm");
     wait;

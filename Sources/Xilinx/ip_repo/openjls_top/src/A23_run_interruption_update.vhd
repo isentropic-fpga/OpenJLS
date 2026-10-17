@@ -71,6 +71,11 @@ begin
 
     vNq := vNq + 1;
 
+    -- A in [0, 2^A_WIDTH - 1]; N in [1, RESET]; Nn in [0, 2^NN_WIDTH - 1]
+    assert vAq < 2 ** A_WIDTH report "a23: A out of range" severity error;
+    assert iNq > RESET or vNq <= integer(RESET) report "a23: N above RESET" severity error;
+    assert vNn < 2 ** NN_WIDTH report "a23: Nn out of range" severity error;
+
     oAq <= to_unsigned(vAq, oAq'length);
     oNq <= to_unsigned(vNq, oNq'length);
     oNn <= to_unsigned(vNn, oNn'length);

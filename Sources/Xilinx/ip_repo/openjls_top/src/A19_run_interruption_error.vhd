@@ -69,6 +69,10 @@ begin
       vErrAdj := vErrAdj - RANGE_P;
     end if;
 
+    -- Errval in [(RANGE + 1) / 2 - RANGE, (RANGE + 1) / 2 - 1] for |Errval| < RANGE
+    assert abs(vErr) >= RANGE_P or (vErrAdj >= (RANGE_P + 1) / 2 - RANGE_P and vErrAdj < (RANGE_P + 1) / 2)
+      report "a19: Errval out of range" severity error;
+
     oErrval <= to_signed(vErrAdj, oErrval'length);
 
   end process p_ri_error;

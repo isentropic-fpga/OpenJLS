@@ -18,6 +18,20 @@
 -- and asserts oLast lands exactly on the trailing 0xD9 beat. Upstream oReady and
 -- downstream random iReady backpressure are both honoured. Images are serialized
 -- (drain before the next) so dimensions stay coherent.
+--
+-- Guidelines:
+--   G1.Req      OJLS.Framer
+--   G1.Ojls     marker/header byte model
+--   G2.Range    RTL jls_framer.vhd: PSL contract + FIFO count asserts, no range comments yet
+--   G2.MinMax   N/A: byte framing, no arithmetic node
+--   G2.Clamp    N/A: no accumulator
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     N/A: payload random bytes
+--   G4.Stream   G4.Stream partialBeat
+--   G4.Config   OUT_WIDTH 48/56/200/1024 variants (OpenJls.pro)
+--   G4 other    N/A: Edge/Run/Coding not in scope
+--   G5          G5.States resetPhase; outputs idle after reset, aborted output discarded, replay checked
+--   G6.Code     defensive arm waived (cover_summary.py)
 --------------------------------------------------------------------------------
 
 library ieee;
@@ -166,7 +180,9 @@ begin
   -----------------------------------------------------------------------------
   driver : process is
 
-    variable rv : RandomPType;
+    variable rv   : RandomPType;
+    variable rs   : CoverageIDType;
+    variable sent : natural := 0;
 
     -- Wait for an oReady cycle, present the word, push it on the edge.
     procedure push_word (
@@ -248,6 +264,43 @@ begin
 
     end procedure send_image;
 
+    -- Start an image of n words (iEoi on the last if eoi='1'), then iRst.
+    -- The aborted output is never scored; after reset the framer must be
+    -- idle and the next image frame correctly.
+    procedure reset_mid (
+      n   : natural;
+      eoi : std_logic
+    ) is
+    begin
+
+      sIgnore <= true;
+      iWidth  <= to_unsigned(64, WDIM);
+      iHeight <= to_unsigned(64, HDIM);
+      for k in 1 to n loop
+        push_word(rv.RandSlv(IN_WIDTH), 4, eoi and bool2bit(k = n), bool2bit(k = 1));
+      end loop;
+      if (n = 0) then
+        ICover(rs, 0);
+      elsif (eoi = '1') then
+        ICover(rs, 3);
+      elsif (n = 1) then
+        ICover(rs, 1);
+      else
+        ICover(rs, 2);
+      end if;
+      apply_reset(clk, rst, 4, '1');
+      wait for 1 ns;
+      AffirmIf(GetAlertLogID("ResetRecovery"), oValid = '0', "mid-op reset: framer output idle after iRst");
+      sIgnore <= false;
+      wait until rising_edge(clk);
+
+      send_image(rv.RandInt(4, MAX_W), rv.RandInt(1, MAX_H), rv.RandInt(1, MAX_WORDS));
+      sent        := sent + 1;
+      sImagesSent <= sent;
+      wait until sImagesDone = sent;
+
+    end procedure reset_mid;
+
   begin
 
     rst      <= '0';
@@ -263,38 +316,31 @@ begin
     SetLogEnable(PASSED, FALSE);
     rv.InitSeed(rv'instance_name);
 
+    rs := NewID("G5.States resetPhase");
+    AddBins(rs, "idle", GenBin(0));
+    AddBins(rs, "start word", GenBin(1));
+    AddBins(rs, "payload", GenBin(2));
+    AddBins(rs, "EOI pending", GenBin(3));
+
     apply_reset(clk, rst, 4, '1');
 
     for img in 1 to N_IMAGES loop
 
       send_image(rv.RandInt(4, MAX_W), rv.RandInt(1, MAX_H), rv.RandInt(1, MAX_WORDS));
-      sImagesSent <= img;
+      sent        := sent + 1;
+      sImagesSent <= sent;
       -- Serialize: drain this image before the next (keeps dims coherent).
-      wait until sImagesDone = img;
+      wait until sImagesDone = sent;
 
     end loop;
 
     --------------------------------------------------------------------------
-    -- Mid-operation iRst: start an image and abort it with iRst before the
-    -- footer. The aborted output is ignored (never pushed to the scoreboard);
-    -- after reset the framer must be idle, and the next image must frame
-    -- correctly. Recovery goes through the scoreboard normally.
+    -- Mid-operation iRst: idle, after the start word, mid-payload, EOI pending.
     --------------------------------------------------------------------------
-    sIgnore <= true;
-    iWidth  <= to_unsigned(64, WDIM);
-    iHeight <= to_unsigned(64, HDIM);
-    push_word(rv.RandSlv(IN_WIDTH), 4, '0', '1');   -- iStart + first word, no sb push
-    push_word(rv.RandSlv(IN_WIDTH), 4, '0', '0');
-    push_word(rv.RandSlv(IN_WIDTH), 4, '0', '0');
-    apply_reset(clk, rst, 4, '1');
-    wait for 1 ns;
-    AffirmIf(GetAlertLogID("ResetRecovery"), oValid = '0', "mid-op reset: framer output idle after iRst");
-    sIgnore <= false;
-    wait until rising_edge(clk);
-
-    send_image(rv.RandInt(4, MAX_W), rv.RandInt(1, MAX_H), rv.RandInt(1, MAX_WORDS));
-    sImagesSent <= N_IMAGES + 1;
-    wait until sImagesDone = N_IMAGES + 1;
+    reset_mid(1, '0');
+    reset_mid(0, '0');
+    reset_mid(12, '0');
+    reset_mid(6, '1');
 
     --------------------------------------------------------------------------
     -- Directed: two back-to-back minimal images (payload = the FF D9 footer
@@ -321,9 +367,11 @@ begin
     iHeight <= to_unsigned(1, HDIM);
     push_word(rv.RandSlv(IN_WIDTH), 0, '1', '1');   -- image A: start+EOI, no payload
     push_word(rv.RandSlv(IN_WIDTH), 0, '1', '1');   -- image B: queued behind A
-    sImagesSent <= N_IMAGES + 3;
-    wait until sImagesDone = N_IMAGES + 3;
+    sent        := sent + 2;
+    sImagesSent <= sent;
+    wait until sImagesDone = sent;
 
+    affirm_covered(rs, "reset phase coverage closed");
     sDriverDone <= true;
     wait;
 
@@ -341,12 +389,15 @@ begin
     variable lastByte : std_logic_vector(7 downto 0);
     variable done    : natural;
     variable covBeat : CoverageIDType;
+    variable req     : AlertLogIDType;
 
   begin
 
     iReady <= '1';
     done   := 0;
-    covBeat := NewID("partialBeat");
+    -- Seeded; floor under the smallest variant (default: 1669).
+    req := GetReqID("OJLS.Framer", 1600);
+    covBeat := NewID("G4.Stream partialBeat");
     SetFieldName(covBeat, "partialBeat");
     AddBins(covBeat, "partialBeat", GenBin(1, BYTES_OUT - 1, 1));
     AddBins(covBeat, "fullBeat", GenBin(BYTES_OUT, BYTES_OUT));
@@ -368,7 +419,7 @@ begin
 
           byte     := oWord(OUT_WIDTH - 1 - i * 8 downto OUT_WIDTH - (i + 1) * 8);
           lastByte := byte;
-          Check(SB_ID, bool2bit(oLast = '1' and i = nb - 1) & byte);
+          AffirmIfEqual(req, bool2bit(oLast = '1' and i = nb - 1) & byte, Pop(SB_ID), "framed byte");
 
         end loop;
 

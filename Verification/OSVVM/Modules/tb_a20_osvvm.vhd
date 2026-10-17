@@ -12,6 +12,20 @@
 --   RItype==0 -> TEMP = A[365] = Aq
 --   RItype==1 -> TEMP = A[366] + (N[366] >> 1) = Aq + (Nq >> 1)
 -- Coverage closes both RItype paths.
+--
+-- Guidelines:
+--   G1.Req      T87.A20
+--   G1.Golden   A.20 C code as an integer reference
+--   G2.Range    RTL A20_compute_temp.vhd (range comments + postponed asserts)
+--   G2.MinMax   G2.MinMax node x value
+--   G2.Clamp    N/A: no accumulator
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     G3.Stim node x value
+--   G4.Run      G4.Run RItype
+--   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
+--   G4 other    N/A: Edge/Coding/Stream not in scope
+--   G5          N/A: combinational
+--   G6.Code     fully covered
 --------------------------------------------------------------------------------
 
 library ieee;
@@ -62,6 +76,7 @@ begin
     variable cov     : CoverageIDType;
     variable req     : AlertLogIDType;
     constant N_RAND  : natural := 3000;
+    variable mm, st  : CoverageIDType;
 
     procedure drive_check (
       ri  : std_logic;
@@ -86,6 +101,11 @@ begin
       end if;
       AffirmIfEqual(req, checked_integer(sTemp), e, msg & " a=" & integer'image(a) & " n=" & integer'image(n));
       ICover(cov, std_to_int(ri));
+      ICover(mm, (1, a));
+      ICover(mm, (2, n));
+      ICover(mm, (3, e));
+      ICover(st, (1, a));
+      ICover(st, (2, n));
 
     end procedure drive_check;
 
@@ -95,11 +115,21 @@ begin
     SetLogEnable(PASSED, FALSE);
     rv.InitSeed(rv'instance_name);
     req := GetReqID("T87.A20", 50);
-    cov := NewID("RItype");
+    cov := NewID("G4.Run RItype");
     SetFieldName(cov, "RItype");
     AddBins(cov, "A only", GenBin(0));
     AddBins(cov, "A plus floor N/2", GenBin(1));
 
+    mm := NewID("G2.MinMax node x value");
+    add_value_bin(mm, 1, "A", 0);
+    add_value_bin(mm, 1, "A", A_MAX);
+    add_value_bin(mm, 2, "N", 0);
+    add_value_bin(mm, 2, "N", N_MAX);
+    add_value_bin(mm, 3, "TEMP", 0);
+    add_value_bin(mm, 3, "TEMP", A_MAX);
+    st := NewID("G3.Stim node x value");
+    add_value_bin(st, 1, "A MSB", 2 ** (A_WIDTH - 1), A_MAX);
+    add_value_bin(st, 2, "N MSB", 2 ** (N_WIDTH - 1), N_MAX);
     drive_check('0', 0, 0, "ri0 zero");
     drive_check('0', A_MAX, N_MAX, "ri0 max (N unused)");
     drive_check('1', 0, N_MAX, "ri1 odd N");
@@ -125,6 +155,8 @@ begin
 
     WriteBin(cov);
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "RItype coverage closed");
+    affirm_covered(mm, "A/N/TEMP min/max covered");
+    affirm_covered(st, "A/N MSB covered");
 
     end_of_test("tb_a20_osvvm");
     wait;

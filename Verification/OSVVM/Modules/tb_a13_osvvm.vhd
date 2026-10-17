@@ -13,6 +13,20 @@
 --   if (B <= -N) { B += N; if (C>MIN_C) C--; if (B <= -N) B = -N+1; }
 --   else if (B > 0) { B -= N; if (C<MAX_C) C++; if (B > 0) B = 0; }
 -- Coverage closes the three branches and both inner-clamp outcomes.
+--
+-- Guidelines:
+--   G1.Req      T87.A13
+--   G1.Golden   A.13 C code as an integer reference
+--   G2.Range    RTL A13_update_bias.vhd (range comments + postponed asserts)
+--   G2.MinMax   G2.MinMax node x value
+--   G2.Clamp    G2.Clamp event
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     G3.Stim node x value
+--   G4.Coding   G4.Coding cUpdate
+--   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
+--   G4 other    N/A: Edge/Run/Stream not in scope
+--   G5          N/A: combinational
+--   G6.Code     fully covered
 --------------------------------------------------------------------------------
 
 library ieee;
@@ -71,6 +85,9 @@ begin
     variable covC    : CoverageIDType;   -- C-register update: held / moved / clamp-min / clamp-max
     variable req     : AlertLogIDType;
     constant N_RAND  : natural := 8000;
+    constant B_TMIN  : integer := -(2 ** (B_WIDTH - 1));
+    constant B_TMAX  : integer := 2 ** (B_WIDTH - 1) - 1;
+    variable mm, st  : CoverageIDType;
 
     -- event: 0 neg-noclamp, 1 neg-clamp, 2 pos-noclamp, 3 pos-clamp, 4 none.
     procedure drive_check (
@@ -131,6 +148,12 @@ begin
       AffirmIfEqual(req, checked_integer(sCqO), cNew, msg & " C");
       ICover(cov, ev);
       ICover(covC, cev);
+      ICover(mm, (1, b));
+      ICover(mm, (2, n));
+      ICover(mm, (3, cNew));
+      ICover(st, (1, b));
+      ICover(st, (2, c));
+      ICover(st, (3, n));
 
     end procedure drive_check;
 
@@ -141,7 +164,7 @@ begin
     rv.InitSeed(rv'instance_name);
     req := GetReqID("T87.A13", 300);
 
-    cov := NewID("event");
+    cov := NewID("G2.Clamp event");
     SetFieldName(cov, "event");
     AddBins(cov, "negative adjust", GenBin(0));
     AddBins(cov, "negative clamp", GenBin(1));
@@ -152,7 +175,7 @@ begin
     -- C-register saturation: the event bins above don't distinguish a clamped
     -- C from a moved C, so bin the C update separately (held in the none branch,
     -- moved within range, or clamped at MIN_C/MAX_C).
-    covC := NewID("cUpdate");
+    covC := NewID("G4.Coding cUpdate");
     SetFieldName(covC, "cUpdate");
     AddBins(covC, "held",     GenBin(0, 0));
     AddBins(covC, "moved",    GenBin(1, 1));
@@ -160,6 +183,19 @@ begin
     AddBins(covC, "clampMax", GenBin(3, 3));
 
     -- Directed: one per event.
+    mm := NewID("G2.MinMax node x value");
+    add_value_bin(mm, 1, "B", B_TMIN);
+    add_value_bin(mm, 1, "B", B_TMAX);
+    add_value_bin(mm, 2, "N", 1);
+    add_value_bin(mm, 2, "N", RESET);
+    add_value_bin(mm, 3, "C out", MIN_C);
+    add_value_bin(mm, 3, "C out", MAX_C);
+    st := NewID("G3.Stim node x value");
+    add_value_bin(st, 1, "B", B_TMIN);
+    add_value_bin(st, 2, "C", MIN_C);
+    add_value_bin(st, 3, "N MSB", 2 ** (N_WIDTH - 1), RESET);
+    drive_check(B_TMIN, RESET, MIN_C, "most negative B, C at MIN");
+    drive_check(B_TMAX, RESET, MAX_C, "max B, C at MAX");
     drive_check(-100, 10, 0, "neg branch, big B (clamp)");   -- B=-100<=-10; B+N=-90<=-10 -> clamp
     drive_check(-12, 10, 0, "neg branch no clamp");          -- B=-12<=-10; B+N=-2 >-10 -> no clamp
     drive_check(50, 10, 0, "pos branch clamp");              -- B=50>0; B-N=40>0 -> clamp 0
@@ -196,6 +232,8 @@ begin
     WriteBin(cov);
     WriteBin(covC);
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "branch/clamp coverage closed");
+    affirm_covered(mm, "B/N/C min/max covered");
+    affirm_covered(st, "most negative B/C and N MSB covered");
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covC), "C-update coverage closed");
 
     end_of_test("tb_a13_osvvm");

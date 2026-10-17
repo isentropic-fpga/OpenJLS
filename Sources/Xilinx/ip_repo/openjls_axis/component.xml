@@ -130,7 +130,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>75b9a195</spirit:value>
+            <spirit:value>a9a2588a</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -146,7 +146,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>75b9a195</spirit:value>
+            <spirit:value>a9a2588a</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -860,13 +860,13 @@
       <xilinx:definitionSource>package_project</xilinx:definitionSource>
       <xilinx:vendorDisplayName>Isentropic</xilinx:vendorDisplayName>
       <xilinx:vendorURL>https://github.com/isentropic-fpga/OpenJLS</xilinx:vendorURL>
-      <xilinx:coreRevision>26101615</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2026-10-16T18:52:16Z</xilinx:coreCreationDateTime>
+      <xilinx:coreRevision>26101711</xilinx:coreRevision>
+      <xilinx:coreCreationDateTime>2026-10-17T14:04:05Z</xilinx:coreCreationDateTime>
     </xilinx:coreExtensions>
     <xilinx:packagingInfo>
       <xilinx:xilinxVersion>2025.2</xilinx:xilinxVersion>
       <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="8e5b7ba9"/>
-      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="626975e1"/>
+      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="f7eeb72f"/>
       <xilinx:checksum xilinx:scope="ports" xilinx:value="76c8cdce"/>
       <xilinx:checksum xilinx:scope="hdlParameters" xilinx:value="b0b062b2"/>
       <xilinx:checksum xilinx:scope="parameters" xilinx:value="7b3665db"/>

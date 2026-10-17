@@ -10,6 +10,20 @@
 --
 -- T.87 edge-detecting predictor: Px = min(A,B) if C >= max(A,B);
 -- max(A,B) if C <= min(A,B); else A+B-C. Coverage closes the three branches.
+--
+-- Guidelines:
+--   G1.Req      T87.A5
+--   G1.Golden   A.5 C code as an integer reference
+--   G2.Range    RTL A5_edge_detecting_predictor.vhd (range comments + postponed asserts)
+--   G2.MinMax   G2.MinMax node x value
+--   G2.Clamp    N/A: no accumulator
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     G3.Stim node x value
+--   G4.Branch   G4.Branch branch
+--   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
+--   G4 other    N/A: Edge/Run/Coding/Stream not in scope
+--   G5          N/A: combinational
+--   G6.Code     fully covered
 --------------------------------------------------------------------------------
 
 library ieee;
@@ -104,6 +118,8 @@ begin
 
     variable rv      : RandomPType;
     variable cov     : CoverageIDType;
+    variable mm      : CoverageIDType;
+    variable st      : CoverageIDType;
     variable req     : AlertLogIDType;
     variable a       : integer;
     variable b       : integer;
@@ -129,6 +145,10 @@ begin
                     " B=" & integer'image(bv) &
                     " C=" & integer'image(cv));
       ICover(cov, branch_of(av, bv, cv));
+      ICover(mm, (1, predict(av, bv, cv)));
+      ICover(st, (1, av));
+      ICover(st, (2, bv));
+      ICover(st, (3, cv));
 
     end procedure drive_check;
 
@@ -139,11 +159,18 @@ begin
     rv.InitSeed(rv'instance_name);
     req := GetReqID("T87.A5", 200);
 
-    cov := NewID("branch");
+    cov := NewID("G4.Branch branch");
     SetFieldName(cov, "branch");
     AddBins(cov, "C >= max: choose min", GenBin(0));
     AddBins(cov, "C <= min: choose max", GenBin(1));
     AddBins(cov, "interpolate", GenBin(2));
+    mm := NewID("G2.MinMax node x value");
+    add_value_bin(mm, 1, "Px", 0);
+    add_value_bin(mm, 1, "Px", PX_MAX);
+    st := NewID("G3.Stim node x value");
+    add_value_bin(st, 1, "Ra MSB", 2 ** (BITNESS - 1), PX_MAX);
+    add_value_bin(st, 2, "Rb MSB", 2 ** (BITNESS - 1), PX_MAX);
+    add_value_bin(st, 3, "Rc MSB", 2 ** (BITNESS - 1), PX_MAX);
 
     -- Directed corners.
     drive_check(10, 5, 10, "c=max");
@@ -175,6 +202,8 @@ begin
 
     WriteBin(cov);
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "branch coverage closed");
+    affirm_covered(mm, "Px min/max covered");
+    affirm_covered(st, "input MSB covered");
 
     end_of_test("tb_a5_osvvm");
     wait;

@@ -60,10 +60,8 @@ begin
   sErrorValExt <= resize(iErrorVal, sErrorValExt'length);
   -- Extend and compare: 2*B <= -N with one extra bit to prevent overflow
   sBExt <= resize(iBq, sBExt'length);
-  -- Zero-extend N before the signed reinterpretation: N reaches RESET (64), whose
-  -- bit pattern sets the MSB of the N_WIDTH-bit vector, so signed(iNq) would read
-  -- it as negative and wrongly trigger the special map. Widen first => sign bit 0.
-  sNExt <= signed(resize(iNq, sBExt'length));
+  -- N reaches RESET (64), which sets the MSB of iNq: zero-extend before signed.
+  sNExt <= resize(signed('0' & iNq), sBExt'length);
 
   sSpecialMap <= '1' when (iK = 0 and 2 * sBExt <= - sNExt) else
                  '0';
@@ -89,5 +87,9 @@ begin
                      sMapErrorSpecialNeg when (sSpecialMap = '1' and sErrEqualGreaterZero = '0') else
                      sMapErrorRegPos when (sSpecialMap = '0' and sErrEqualGreaterZero = '1') else
                      sMapErrorRegNeg; -- last case (Errval<0)
+
+  -- MErrval in [0, 2^ERROR_WIDTH - 1]; unselected candidates may wrap
+  postponed assert is_x(oMappedErrorVal) or oMappedErrorVal < 2 ** ERROR_WIDTH
+    report "a11: MErrval out of range" severity error;
 
 end architecture behavioral;

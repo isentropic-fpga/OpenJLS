@@ -5,6 +5,24 @@
 -- commercial license. See LICENSE and README for details.
 --
 
+--------------------------------------------------------------------------------
+-- OSVVM testbench: a11_error_mapping (combinational).
+--
+-- Guidelines:
+--   G1.Req      T87.A11
+--   G1.Golden   A.11 C code as an integer reference
+--   G2.Range    RTL A11_error_mapping.vhd (range comments + postponed asserts)
+--   G2.MinMax   G2.MinMax node x value
+--   G2.Clamp    N/A: no accumulator
+--   G2.Checked  checked_* on all outputs
+--   G3.Stim     G3.Stim node x value
+--   G4.Coding   G4.Coding Special x ErrSign
+--   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
+--   G4 other    N/A: Edge/Run/Stream not in scope
+--   G5          N/A: combinational
+--   G6.Code     fully covered
+--------------------------------------------------------------------------------
+
 library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
@@ -106,6 +124,15 @@ begin
     variable special  : integer;
     variable signIdx  : integer;
     constant N_RAND   : natural := 8000;
+    variable mm, st   : CoverageIDType;
+    procedure sample is
+    begin
+      ICover(mm, (1, to_integer(sErrorVal)));
+      ICover(mm, (2, to_integer(sMappedErrorVal)));
+      ICover(st, (1, to_integer(sErrorVal)));
+      ICover(st, (2, to_integer(sBq)));
+      ICover(st, (3, to_integer(sNq)));
+    end procedure sample;
 
   begin
 
@@ -118,7 +145,7 @@ begin
     -- The interesting axis is (special_map, err_sign). Special map only fires
     -- when k=0 AND 2*B <= -N, which is rare under uniform random — bias it.
     -- Axis 0 (regular=0, special=1), axis 1 (err>=0 => 0, err<0 => 1).
-    cov := NewID("Special x ErrSign");
+    cov := NewID("G4.Coding Special x ErrSign");
     SetFieldName(cov, "Special", "ErrSign");
     for special in 0 to 1 loop
       for negative in 0 to 1 loop
@@ -130,6 +157,15 @@ begin
 
     -- Directed corners
     -- (k=0, B=0, N=0, err=0) — special path fires (2*0 <= -0), expect 2*0+1 = 1
+    mm := NewID("G2.MinMax node x value");
+    add_value_bin(mm, 1, "Errval", ERR_MIN);
+    add_value_bin(mm, 1, "Errval", ERR_MAX);
+    add_value_bin(mm, 2, "MErrval", 0);
+    add_value_bin(mm, 2, "MErrval", 2 * (-ERR_MIN) - 1);
+    st := NewID("G3.Stim node x value");
+    add_value_bin(st, 1, "Errval", ERR_MIN);
+    add_value_bin(st, 2, "B", B_MIN);
+    add_value_bin(st, 3, "N MSB", 2 ** (N_WIDTH - 1), N_MAX);
     sK        <= to_unsigned(0, sK'length);
     sBq       <= to_signed(0, sBq'length);
     sNq       <= to_unsigned(0, sNq'length);
@@ -141,6 +177,7 @@ begin
     sK <= to_unsigned(1, sK'length);
     wait for 1 ns;
     AffirmIfEqual(req, checked_integer(sMappedErrorVal), 0, "corner k=1 err=0 regular");
+    sample;
 
     -- Special path at err=0 → expect 2*0 - 2 in unsigned wrap? No — err>=0 branch: 2*0+1 = 1
     -- 2*(-1) <= -1 → special path.
@@ -163,11 +200,19 @@ begin
     sErrorVal <= to_signed(ERR_MAX, sErrorVal'length);
     wait for 1 ns;
     AffirmIfEqual(req, checked_integer(sMappedErrorVal), 2 * ERR_MAX, "corner regular err=ERR_MAX");
+    sample;
 
     -- Regular path at err=ERR_MIN
     sErrorVal <= to_signed(ERR_MIN, sErrorVal'length);
     wait for 1 ns;
     AffirmIfEqual(req, checked_integer(sMappedErrorVal), 2 * (-ERR_MIN) - 1, "corner regular err=ERR_MIN");
+    sample;
+    sK        <= to_unsigned(0, sK'length);
+    sBq       <= to_signed(B_MIN, sBq'length);
+    sNq       <= to_unsigned(N_MAX, sNq'length);
+    wait for 1 ns;
+    AffirmIfEqual(req, checked_integer(sMappedErrorVal), ref_map(0, B_MIN, N_MAX, ERR_MIN), "corner most negative B");
+    sample;
 
     -- Random sweep, biased so special-map fires often enough to close coverage.
     for n in 1 to CO_RESET_STD loop
@@ -230,6 +275,7 @@ begin
       end if;
 
       ICover(cov, (special, signIdx));
+      sample;
 
       exit when IsCovered(cov) and i > 500;
 
@@ -237,6 +283,8 @@ begin
 
     WriteBin(cov);
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "Coverage closed");
+    affirm_covered(mm, "Errval/MErrval min/max covered");
+    affirm_covered(st, "most negative Errval/B and N MSB covered");
 
     end_of_test("tb_a11_osvvm");
     wait;

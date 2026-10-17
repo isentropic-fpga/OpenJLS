@@ -65,6 +65,23 @@ package tb_support_pkg is
      16#FF#, 16#5E#, 16#EA#, 16#1D#, 16#C0#, 16#7D#, 16#00#, 16#0F#, 16#00#, 16#00#, 16#00#,
      16#00#, 16#28#, 16#00#, 16#FF#, 16#D9#);
 
+  -- 16-bit companion (G4.Config BITNESS 16), minted the same way from a
+  -- maxval 65535 PGM: full range (0/65535), MSB set and a flat run.
+  constant B16_WIDTH   : natural := 4;
+  constant B16_HEIGHT  : natural := 4;
+  constant B16_BITNESS : natural := 16;
+
+  constant B16_PIXELS  : integer_vector(0 to 15) :=
+    (0, 65535, 32768, 16384, 1200, 1200, 1200, 1200, 256, 511, 32767, 48000, 100, 100, 40000, 65000);
+
+  constant B16_EXPECTED : integer_vector(0 to 64) :=
+    (16#FF#, 16#D8#, 16#FF#, 16#F7#, 16#00#, 16#0B#, 16#10#, 16#00#, 16#04#, 16#00#, 16#04#,
+     16#01#, 16#01#, 16#11#, 16#00#, 16#FF#, 16#DA#, 16#00#, 16#08#, 16#01#, 16#01#, 16#00#,
+     16#00#, 16#00#, 16#00#, 16#A0#, 16#00#, 16#00#, 16#00#, 16#00#, 16#00#, 16#00#, 16#0F#,
+     16#FF#, 16#77#, 16#FF#, 16#7C#, 16#56#, 16#02#, 16#B0#, 16#C0#, 16#08#, 16#00#, 16#35#,
+     16#F8#, 16#1F#, 16#A1#, 16#EF#, 16#EB#, 16#DC#, 16#26#, 16#9B#, 16#DF#, 16#D0#, 16#00#,
+     16#3D#, 16#C0#, 16#00#, 16#00#, 16#00#, 16#02#, 16#69#, 16#00#, 16#FF#, 16#D9#);
+
   -- Label the delay models created internally by the OSVVM AXI components.
   -- Their stock bins have blank names and repeated model names in YAML.
   procedure label_delay_coverage(id : DelayCoverageIDType; prefix : string);
@@ -97,6 +114,13 @@ package tb_support_pkg is
   procedure end_of_test (
     constant test_name : in string
   );
+
+  -- G2.MinMax / G3.Stim / G2.Clamp: one bin per named node value, cross of (node, value);
+  -- sample with ICover(cov, (node, value)).
+  procedure add_value_bin(cov : CoverageIDType; node : natural; name : string; lo : integer; hi : integer);
+  procedure add_value_bin(cov : CoverageIDType; node : natural; name : string; value : integer);
+
+  procedure affirm_covered(cov : CoverageIDType; msg : string);
 
 end package tb_support_pkg;
 
@@ -247,6 +271,22 @@ package body tb_support_pkg is
       report test_name & ": FAIL" severity failure;
     end if;
     std.env.stop;
+  end procedure;
+
+  procedure add_value_bin(cov : CoverageIDType; node : natural; name : string; lo : integer; hi : integer) is
+  begin
+    AddCross(cov, name & "=" & to_string(lo) & ".." & to_string(hi), GenBin(node), GenBin(lo, hi, 1));
+  end procedure;
+
+  procedure add_value_bin(cov : CoverageIDType; node : natural; name : string; value : integer) is
+  begin
+    AddCross(cov, name & "=" & to_string(value), GenBin(node), GenBin(value));
+  end procedure;
+
+  procedure affirm_covered(cov : CoverageIDType; msg : string) is
+  begin
+    WriteBin(cov);
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), msg);
   end procedure;
 
 end package body tb_support_pkg;

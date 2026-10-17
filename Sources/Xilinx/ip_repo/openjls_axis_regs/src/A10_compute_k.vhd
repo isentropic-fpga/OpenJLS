@@ -84,4 +84,7 @@ begin
 
   end process p_compute_k;
 
+  -- k in [0, MAX_K]; Nq = 0 (pipeline reset value) yields MAX_K + 1
+  postponed assert is_x(iNq) or is_x(iAq) or iNq = 0 or oK <= MAX_K report "a10: k above MAX_K" severity error;
+
 end architecture behavioral;

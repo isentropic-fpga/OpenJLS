@@ -39,4 +39,8 @@ begin
   oErrorVal <= signed('0' & iIx) - signed('0' & iPx) when iSign = CO_SIGN_POS else
                signed('0' & iPx) - signed('0' & iIx);
 
+  -- Errval in [-(2^B - 1), 2^B - 1]
+  postponed assert is_x(oErrorVal) or abs(to_integer(oErrorVal)) < 2 ** BITNESS
+    report "a7: Errval out of range" severity error;
+
 end architecture behavioral;

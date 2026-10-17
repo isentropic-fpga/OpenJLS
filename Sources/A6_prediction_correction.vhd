@@ -64,4 +64,7 @@ begin
   oPx <= sAddSat when iSign = CO_SIGN_POS else
          sSubSat;
 
+  -- Px +- C in [-128, 2^B + 127] before clipping; Px in [0, MAX_VAL]
+  postponed assert is_x(oPx) or oPx <= MAX_VAL report "a6: Px above MAX_VAL" severity error;
+
 end architecture behavioral;

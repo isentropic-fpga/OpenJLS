@@ -46,4 +46,7 @@ begin
   oTemp <= iAq when iRItype = '0' else
            iAq + resize(shift_right(iNq, 1), A_WIDTH);
 
+  -- TEMP = A + N / 2 in [0, 2^A_WIDTH - 1] (no wrap)
+  postponed assert is_x(oTemp) or oTemp >= iAq report "a20: TEMP wrapped" severity error;
+
 end architecture behavioral;
