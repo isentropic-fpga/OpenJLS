@@ -298,18 +298,18 @@ table, th, td {
   <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
  <h2 style="margin-top: 0px; margin-bottom: 0px">Covered statements:</h2>
   <div style="padding:0px 10px;">
-<h3>Variable assignment statement on line 57:</h3><code>57:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vAq&nbsp;:=&nbsp;resize(iAq,&nbsp;W);</code>&nbsp;</code><br><b>Count:</b> 275643<br><b>Threshold:</b> 1<hr/>
-<h3>Variable assignment statement on line 58:</h3><code>58:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vNq&nbsp;:=&nbsp;resize(iNq,&nbsp;W);</code>&nbsp;</code><br><b>Count:</b> 275643<br><b>Threshold:</b> 1<hr/>
-<h3>Loop statement on lines 61 to 69:</h3><code>61:&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;k&nbsp;in&nbsp;0&nbsp;to&nbsp;MAX_K&nbsp;loop&nbsp;<br>62:&nbsp;<br>...<br>68:&nbsp;<br>69:&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;</code><br><b>Count:</b> 275643<br><b>Threshold:</b> 1<hr/>
-<h3>If statement on lines 63 to 67:</h3><code>63:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(shift_left(vNq,&nbsp;k)&nbsp;&gt;=&nbsp;vAq)&nbsp;then&nbsp;<br>64:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vMatch(k)&nbsp;:=&nbsp;'1';&nbsp;<br>65:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<br>66:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vMatch(k)&nbsp;:=&nbsp;'0';&nbsp;<br>67:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;</code><br><b>Count:</b> 4368885<br><b>Threshold:</b> 1<hr/>
-<h3>Variable assignment statement on line 64:</h3><code>64:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vMatch(k)&nbsp;:=&nbsp;'1';</code>&nbsp;</code><br><b>Count:</b> 2396648<br><b>Threshold:</b> 1<hr/>
-<h3>Variable assignment statement on line 66:</h3><code>66:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vMatch(k)&nbsp;:=&nbsp;'0';</code>&nbsp;</code><br><b>Count:</b> 1972237<br><b>Threshold:</b> 1<hr/>
-<h3>Variable assignment statement on line 73:</h3><code>73:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vK&nbsp;:=&nbsp;to_unsigned(MAX_K&nbsp;+&nbsp;1,&nbsp;vK'length);</code>&nbsp;</code><br><b>Count:</b> 275643<br><b>Threshold:</b> 1<hr/>
-<h3>Loop statement on lines 75 to 81:</h3><code>75:&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;k&nbsp;in&nbsp;MAX_K&nbsp;downto&nbsp;0&nbsp;loop&nbsp;<br>76:&nbsp;<br>...<br>80:&nbsp;<br>81:&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;</code><br><b>Count:</b> 275643<br><b>Threshold:</b> 1<hr/>
-<h3>If statement on lines 77 to 79:</h3><code>77:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(vMatch(k)&nbsp;=&nbsp;'1')&nbsp;then&nbsp;<br>78:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vK&nbsp;:=&nbsp;to_unsigned(k,&nbsp;vK'length);&nbsp;<br>79:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;</code><br><b>Count:</b> 4368885<br><b>Threshold:</b> 1<hr/>
-<h3>Variable assignment statement on line 78:</h3><code>78:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vK&nbsp;:=&nbsp;to_unsigned(k,&nbsp;vK'length);</code>&nbsp;</code><br><b>Count:</b> 2396648<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 83:</h3><code>83:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">oK&nbsp;&lt;=&nbsp;vK;</code>&nbsp;</code><br><b>Count:</b> 275643<br><b>Threshold:</b> 1<hr/>
-<h3>Assertion statement on line 88:</h3><code>88:&nbsp;&nbsp;<code class="cbg">postponed&nbsp;assert&nbsp;is_x(iNq)&nbsp;or&nbsp;is_x(iAq)&nbsp;or&nbsp;iNq&nbsp;=&nbsp;0&nbsp;or&nbsp;oK&nbsp;&lt;=&nbsp;MAX_K&nbsp;report&nbsp;"a10:&nbsp;k&nbsp;above&nbsp;MAX_K"&nbsp;severity&nbsp;error;</code>&nbsp;</code><br><b>Count:</b> 160872<br><b>Threshold:</b> 1  </div>
+<h3>Variable assignment statement on line 45:</h3><code>45:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vAq&nbsp;:=&nbsp;resize(iAq,&nbsp;W);</code>&nbsp;</code><br><b>Count:</b> 275643<br><b>Threshold:</b> 1<hr/>
+<h3>Variable assignment statement on line 46:</h3><code>46:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vNq&nbsp;:=&nbsp;resize(iNq,&nbsp;W);</code>&nbsp;</code><br><b>Count:</b> 275643<br><b>Threshold:</b> 1<hr/>
+<h3>Loop statement on lines 48 to 56:</h3><code>48:&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;k&nbsp;in&nbsp;0&nbsp;to&nbsp;MAX_K&nbsp;loop&nbsp;<br>49:&nbsp;<br>...<br>55:&nbsp;<br>56:&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;</code><br><b>Count:</b> 275643<br><b>Threshold:</b> 1<hr/>
+<h3>If statement on lines 50 to 54:</h3><code>50:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(shift_left(vNq,&nbsp;k)&nbsp;&gt;=&nbsp;vAq)&nbsp;then&nbsp;<br>51:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vMatch(k)&nbsp;:=&nbsp;'1';&nbsp;<br>52:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<br>53:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vMatch(k)&nbsp;:=&nbsp;'0';&nbsp;<br>54:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;</code><br><b>Count:</b> 4368885<br><b>Threshold:</b> 1<hr/>
+<h3>Variable assignment statement on line 51:</h3><code>51:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vMatch(k)&nbsp;:=&nbsp;'1';</code>&nbsp;</code><br><b>Count:</b> 2396648<br><b>Threshold:</b> 1<hr/>
+<h3>Variable assignment statement on line 53:</h3><code>53:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vMatch(k)&nbsp;:=&nbsp;'0';</code>&nbsp;</code><br><b>Count:</b> 1972237<br><b>Threshold:</b> 1<hr/>
+<h3>Variable assignment statement on line 59:</h3><code>59:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vK&nbsp;:=&nbsp;to_unsigned(MAX_K&nbsp;+&nbsp;1,&nbsp;vK'length);</code>&nbsp;</code><br><b>Count:</b> 275643<br><b>Threshold:</b> 1<hr/>
+<h3>Loop statement on lines 61 to 67:</h3><code>61:&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;k&nbsp;in&nbsp;MAX_K&nbsp;downto&nbsp;0&nbsp;loop&nbsp;<br>62:&nbsp;<br>...<br>66:&nbsp;<br>67:&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;</code><br><b>Count:</b> 275643<br><b>Threshold:</b> 1<hr/>
+<h3>If statement on lines 63 to 65:</h3><code>63:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(vMatch(k)&nbsp;=&nbsp;'1')&nbsp;then&nbsp;<br>64:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vK&nbsp;:=&nbsp;to_unsigned(k,&nbsp;vK'length);&nbsp;<br>65:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;</code><br><b>Count:</b> 4368885<br><b>Threshold:</b> 1<hr/>
+<h3>Variable assignment statement on line 64:</h3><code>64:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vK&nbsp;:=&nbsp;to_unsigned(k,&nbsp;vK'length);</code>&nbsp;</code><br><b>Count:</b> 2396648<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 69:</h3><code>69:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">oK&nbsp;&lt;=&nbsp;vK;</code>&nbsp;</code><br><b>Count:</b> 275643<br><b>Threshold:</b> 1<hr/>
+<h3>Assertion statement on line 74:</h3><code>74:&nbsp;&nbsp;<code class="cbg">postponed&nbsp;assert&nbsp;is_x(iNq)&nbsp;or&nbsp;is_x(iAq)&nbsp;or&nbsp;iNq&nbsp;=&nbsp;0&nbsp;or&nbsp;oK&nbsp;&lt;=&nbsp;MAX_K&nbsp;report&nbsp;"a10:&nbsp;k&nbsp;above&nbsp;MAX_K"&nbsp;severity&nbsp;error;</code>&nbsp;</code><br><b>Count:</b> 160872<br><b>Threshold:</b> 1  </div>
   </section>
 
 </div>
@@ -329,10 +329,10 @@ table, th, td {
   <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
  <h2 style="margin-top: 0px; margin-bottom: 0px">Covered branches:</h2>
   <div style="padding:0px 10px;">
-<h3>"if" / "when" / "else" condition on line 63:</h3><code>63:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(<code class="cbg">shift_left(vNq,&nbsp;k)&nbsp;&gt;=&nbsp;vAq</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>2396648</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 63:</h3><code>63:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(<code class="cbg">shift_left(vNq,&nbsp;k)&nbsp;&gt;=&nbsp;vAq</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>132634</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 77:</h3><code>77:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(<code class="cbg">vMatch(k)&nbsp;=&nbsp;'1'</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>2396648</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 77:</h3><code>77:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(<code class="cbg">vMatch(k)&nbsp;=&nbsp;'1'</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>132634</td><td>1</td></tr></table>  </div>
+<h3>"if" / "when" / "else" condition on line 50:</h3><code>50:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(<code class="cbg">shift_left(vNq,&nbsp;k)&nbsp;&gt;=&nbsp;vAq</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>2396648</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 50:</h3><code>50:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(<code class="cbg">shift_left(vNq,&nbsp;k)&nbsp;&gt;=&nbsp;vAq</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>132634</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 63:</h3><code>63:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(<code class="cbg">vMatch(k)&nbsp;=&nbsp;'1'</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>2396648</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 63:</h3><code>63:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(<code class="cbg">vMatch(k)&nbsp;=&nbsp;'1'</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>132634</td><td>1</td></tr></table>  </div>
   </section>
 
 </div>
@@ -459,7 +459,7 @@ table, th, td {
    document.getElementById("defaultOpen").click();
 </script>
 <footer>   <p> NVC version: 1.23.0 </p>
-   <p> Generated on: Sat Oct 17 11:48:27 2026
+   <p> Generated on: Sun Oct 18 00:52:09 2026
  </p>
 </footer>
 </body>

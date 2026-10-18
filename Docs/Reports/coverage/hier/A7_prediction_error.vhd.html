@@ -298,10 +298,10 @@ table, th, td {
   <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
  <h2 style="margin-top: 0px; margin-bottom: 0px">Covered statements:</h2>
   <div style="padding:0px 10px;">
-<h3>If statement on lines 39 to 40:</h3><code>39:&nbsp;&nbsp;oErrorVal&nbsp;&lt;=&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;iPx)&nbsp;when&nbsp;iSign&nbsp;=&nbsp;CO_SIGN_POS&nbsp;else&nbsp;<br>40:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;signed('0'&nbsp;&amp;&nbsp;iPx)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx);&nbsp;</code><br><b>Count:</b> 140397<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 39:</h3><code>39:&nbsp;&nbsp;oErrorVal&nbsp;&lt;=&nbsp;<code class="cbg">signed('0'&nbsp;&amp;&nbsp;iIx)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;iPx)</code>&nbsp;when&nbsp;iSign&nbsp;=&nbsp;CO_SIGN_POS&nbsp;else&nbsp;</code><br><b>Count:</b> 70251<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 40:</h3><code>40:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">signed('0'&nbsp;&amp;&nbsp;iPx)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx)</code>;&nbsp;</code><br><b>Count:</b> 70146<br><b>Threshold:</b> 1<hr/>
-<h3>Assertion statement on lines 43 to 44:</h3><code>43:&nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(oErrorVal)&nbsp;or&nbsp;abs(to_integer(oErrorVal))&nbsp;&lt;&nbsp;2&nbsp;**&nbsp;BITNESS&nbsp;<br>44:&nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"a7:&nbsp;Errval&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;&nbsp;</code><br><b>Count:</b> 620<br><b>Threshold:</b> 1  </div>
+<h3>If statement on lines 30 to 31:</h3><code>30:&nbsp;&nbsp;oErrorVal&nbsp;&lt;=&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;iPx)&nbsp;when&nbsp;iSign&nbsp;=&nbsp;CO_SIGN_POS&nbsp;else&nbsp;<br>31:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;signed('0'&nbsp;&amp;&nbsp;iPx)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx);&nbsp;</code><br><b>Count:</b> 140397<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 30:</h3><code>30:&nbsp;&nbsp;oErrorVal&nbsp;&lt;=&nbsp;<code class="cbg">signed('0'&nbsp;&amp;&nbsp;iIx)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;iPx)</code>&nbsp;when&nbsp;iSign&nbsp;=&nbsp;CO_SIGN_POS&nbsp;else&nbsp;</code><br><b>Count:</b> 70251<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 31:</h3><code>31:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">signed('0'&nbsp;&amp;&nbsp;iPx)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx)</code>;&nbsp;</code><br><b>Count:</b> 70146<br><b>Threshold:</b> 1<hr/>
+<h3>Assertion statement on lines 33 to 34:</h3><code>33:&nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(oErrorVal)&nbsp;or&nbsp;abs(to_integer(oErrorVal))&nbsp;&lt;&nbsp;2&nbsp;**&nbsp;BITNESS&nbsp;<br>34:&nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"a7:&nbsp;Errval&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;&nbsp;</code><br><b>Count:</b> 620<br><b>Threshold:</b> 1  </div>
   </section>
 
 </div>
@@ -321,8 +321,8 @@ table, th, td {
   <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
  <h2 style="margin-top: 0px; margin-bottom: 0px">Covered branches:</h2>
   <div style="padding:0px 10px;">
-<h3>"if" / "when" / "else" condition on line 39:</h3><code>39:&nbsp;&nbsp;oErrorVal&nbsp;&lt;=&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;iPx)&nbsp;when&nbsp;<code class="cbg">iSign&nbsp;=&nbsp;CO_SIGN_POS</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>70251</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 39:</h3><code>39:&nbsp;&nbsp;oErrorVal&nbsp;&lt;=&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;iPx)&nbsp;when&nbsp;<code class="cbg">iSign&nbsp;=&nbsp;CO_SIGN_POS</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>70146</td><td>1</td></tr></table>  </div>
+<h3>"if" / "when" / "else" condition on line 30:</h3><code>30:&nbsp;&nbsp;oErrorVal&nbsp;&lt;=&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;iPx)&nbsp;when&nbsp;<code class="cbg">iSign&nbsp;=&nbsp;CO_SIGN_POS</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>70251</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 30:</h3><code>30:&nbsp;&nbsp;oErrorVal&nbsp;&lt;=&nbsp;signed('0'&nbsp;&amp;&nbsp;iIx)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;iPx)&nbsp;when&nbsp;<code class="cbg">iSign&nbsp;=&nbsp;CO_SIGN_POS</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>70146</td><td>1</td></tr></table>  </div>
   </section>
 
 </div>
@@ -449,7 +449,7 @@ table, th, td {
    document.getElementById("defaultOpen").click();
 </script>
 <footer>   <p> NVC version: 1.23.0 </p>
-   <p> Generated on: Sat Oct 17 11:48:27 2026
+   <p> Generated on: Sun Oct 18 00:52:09 2026
  </p>
 </footer>
 </body>

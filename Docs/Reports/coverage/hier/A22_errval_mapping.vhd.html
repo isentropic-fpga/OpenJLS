@@ -298,13 +298,13 @@ table, th, td {
   <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
  <h2 style="margin-top: 0px; margin-bottom: 0px">Covered statements:</h2>
   <div style="padding:0px 10px;">
-<h3>Variable assignment statement on line 48:</h3><code>48:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vRI&nbsp;&nbsp;:=&nbsp;std_to_int(iRiType);</code>&nbsp;</code><br><b>Count:</b> 730975<br><b>Threshold:</b> 1<hr/>
-<h3>Variable assignment statement on line 49:</h3><code>49:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vMap&nbsp;:=&nbsp;std_to_int(iMap);</code>&nbsp;</code><br><b>Count:</b> 730975<br><b>Threshold:</b> 1<hr/>
-<h3>Variable assignment statement on line 51:</h3><code>51:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vEmErrval&nbsp;:=&nbsp;2&nbsp;*&nbsp;abs(to_integer(iErrval))&nbsp;-&nbsp;vRI&nbsp;-&nbsp;vMap;</code>&nbsp;</code><br><b>Count:</b> 730975<br><b>Threshold:</b> 1<hr/>
-<h3>If statement on lines 57 to 59:</h3><code>57:&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(vEmErrval&nbsp;&lt;&nbsp;0)&nbsp;then&nbsp;<br>58:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vEmErrval&nbsp;:=&nbsp;0;&nbsp;<br>59:&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;</code><br><b>Count:</b> 730975<br><b>Threshold:</b> 1<hr/>
-<h3>Variable assignment statement on line 58:</h3><code>58:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vEmErrval&nbsp;:=&nbsp;0;</code>&nbsp;</code><br><b>Count:</b> 4839<br><b>Threshold:</b> 1<hr/>
-<h3>Assertion statement on line 62:</h3><code>62:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">assert&nbsp;vEmErrval&nbsp;&lt;&nbsp;2&nbsp;**&nbsp;MAPPED_ERRVAL_WIDTH&nbsp;report&nbsp;"a22:&nbsp;EMErrval&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;</code>&nbsp;</code><br><b>Count:</b> 730975<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 64:</h3><code>64:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">oEmErrVal&nbsp;&lt;=&nbsp;to_unsigned(vEmErrval,&nbsp;oEmErrVal'length);</code>&nbsp;</code><br><b>Count:</b> 730975<br><b>Threshold:</b> 1  </div>
+<h3>Variable assignment statement on line 39:</h3><code>39:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vRI&nbsp;&nbsp;:=&nbsp;std_to_int(iRiType);</code>&nbsp;</code><br><b>Count:</b> 730975<br><b>Threshold:</b> 1<hr/>
+<h3>Variable assignment statement on line 40:</h3><code>40:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vMap&nbsp;:=&nbsp;std_to_int(iMap);</code>&nbsp;</code><br><b>Count:</b> 730975<br><b>Threshold:</b> 1<hr/>
+<h3>Variable assignment statement on line 42:</h3><code>42:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vEmErrval&nbsp;:=&nbsp;2&nbsp;*&nbsp;abs(to_integer(iErrval))&nbsp;-&nbsp;vRI&nbsp;-&nbsp;vMap;</code>&nbsp;</code><br><b>Count:</b> 730975<br><b>Threshold:</b> 1<hr/>
+<h3>If statement on lines 45 to 47:</h3><code>45:&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(vEmErrval&nbsp;&lt;&nbsp;0)&nbsp;then&nbsp;<br>46:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vEmErrval&nbsp;:=&nbsp;0;&nbsp;<br>47:&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;</code><br><b>Count:</b> 730975<br><b>Threshold:</b> 1<hr/>
+<h3>Variable assignment statement on line 46:</h3><code>46:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vEmErrval&nbsp;:=&nbsp;0;</code>&nbsp;</code><br><b>Count:</b> 4839<br><b>Threshold:</b> 1<hr/>
+<h3>Assertion statement on line 49:</h3><code>49:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">assert&nbsp;vEmErrval&nbsp;&lt;&nbsp;2&nbsp;**&nbsp;MAPPED_ERRVAL_WIDTH&nbsp;report&nbsp;"a22:&nbsp;EMErrval&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;</code>&nbsp;</code><br><b>Count:</b> 730975<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 51:</h3><code>51:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">oEmErrVal&nbsp;&lt;=&nbsp;to_unsigned(vEmErrval,&nbsp;oEmErrVal'length);</code>&nbsp;</code><br><b>Count:</b> 730975<br><b>Threshold:</b> 1  </div>
   </section>
 
 </div>
@@ -324,8 +324,8 @@ table, th, td {
   <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
  <h2 style="margin-top: 0px; margin-bottom: 0px">Covered branches:</h2>
   <div style="padding:0px 10px;">
-<h3>"if" / "when" / "else" condition on line 57:</h3><code>57:&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(<code class="cbg">vEmErrval&nbsp;&lt;&nbsp;0</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>4839</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 57:</h3><code>57:&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(<code class="cbg">vEmErrval&nbsp;&lt;&nbsp;0</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>560190</td><td>1</td></tr></table>  </div>
+<h3>"if" / "when" / "else" condition on line 45:</h3><code>45:&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(<code class="cbg">vEmErrval&nbsp;&lt;&nbsp;0</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>4839</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 45:</h3><code>45:&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(<code class="cbg">vEmErrval&nbsp;&lt;&nbsp;0</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>560190</td><td>1</td></tr></table>  </div>
   </section>
 
 </div>
@@ -452,7 +452,7 @@ table, th, td {
    document.getElementById("defaultOpen").click();
 </script>
 <footer>   <p> NVC version: 1.23.0 </p>
-   <p> Generated on: Sat Oct 17 11:48:27 2026
+   <p> Generated on: Sun Oct 18 00:52:09 2026
  </p>
 </footer>
 </body>
