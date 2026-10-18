@@ -7,19 +7,9 @@
 -- tb_a11_1_osvvm: a11_1_golomb_encoder against the T.87 LG(k, L) written rule
 --
 -- Guidelines:
---   G1.Req      T87.A11.1, T87.A22.1
---   G1.Property A.11.1/A.22.1 LG(k, L) written rule
---   G2.Range    RTL A11_1_golomb_encoder.vhd (range comments + postponed asserts)
---   G2.MinMax   G2.MinMax node x value
 --   G2.Clamp    N/A: no accumulator
---   G2.Checked  checked_* on all outputs
---   G3.Stim     G3.Stim node x value
---   G4.Coding   G4.Coding Golomb k, G4.Coding riMode x escape
---   G4.Run      G4.Run Run interruption J table
---   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
 --   G4 other    N/A: Edge/Stream not in scope
 --   G5          N/A: combinational
---   G6.Code     fully covered
 
 library ieee;
   use ieee.std_logic_1164.all;

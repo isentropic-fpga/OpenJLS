@@ -7,18 +7,9 @@
 -- tb_a14_osvvm: a14_run_length_determination against one T.87 A.14 loop iteration
 --
 -- Guidelines:
---   G1.Req      T87.A14
---   G1.Golden   A.14 C code as an integer reference
---   G2.Range    RTL A14_run_length_determination.vhd (range comments + postponed asserts)
---   G2.MinMax   G2.MinMax node x value
 --   G2.Clamp    N/A: no accumulator
---   G2.Checked  checked_* on all outputs
---   G3.Stim     G3.Stim node x value
---   G4.Run      G4.Run runHit x eol
---   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
 --   G4 other    N/A: Edge/Coding/Stream not in scope
 --   G5          N/A: combinational
---   G6.Code     fully covered
 
 library ieee;
   use ieee.std_logic_1164.all;

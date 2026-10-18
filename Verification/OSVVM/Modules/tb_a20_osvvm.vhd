@@ -7,18 +7,9 @@
 -- tb_a20_osvvm: a20_compute_temp against the T.87 A.20 C code
 --
 -- Guidelines:
---   G1.Req      T87.A20
---   G1.Golden   A.20 C code as an integer reference
---   G2.Range    RTL A20_compute_temp.vhd (range comments + postponed asserts)
---   G2.MinMax   G2.MinMax node x value
 --   G2.Clamp    N/A: no accumulator
---   G2.Checked  checked_* on all outputs
---   G3.Stim     G3.Stim node x value
---   G4.Run      G4.Run RItype
---   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
 --   G4 other    N/A: Edge/Coding/Stream not in scope
 --   G5          N/A: combinational
---   G6.Code     fully covered
 
 library ieee;
   use ieee.std_logic_1164.all;

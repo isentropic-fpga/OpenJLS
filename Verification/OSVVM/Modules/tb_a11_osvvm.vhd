@@ -7,18 +7,9 @@
 -- tb_a11_osvvm: a11_error_mapping against the T.87 A.11 C code
 --
 -- Guidelines:
---   G1.Req      T87.A11
---   G1.Golden   A.11 C code as an integer reference
---   G2.Range    RTL A11_error_mapping.vhd (range comments + postponed asserts)
---   G2.MinMax   G2.MinMax node x value
 --   G2.Clamp    N/A: no accumulator
---   G2.Checked  checked_* on all outputs
---   G3.Stim     G3.Stim node x value
---   G4.Coding   G4.Coding Special x ErrSign
---   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
 --   G4 other    N/A: Edge/Run/Stream not in scope
 --   G5          N/A: combinational
---   G6.Code     fully covered
 
 library ieee;
   use ieee.std_logic_1164.all;

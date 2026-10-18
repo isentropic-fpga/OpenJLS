@@ -10,18 +10,11 @@
 -- TREADY x TVALID gaps, run 4 raises TLAST mid-image; then three mid-op resets.
 --
 -- Guidelines:
---   G1.Req      OJLS.AxiStreamTransparent
---   G1.Ojls     CharLS-minted streams through the AXI4-Stream VCs
 --   G2.Range    N/A: wrapper, no arithmetic (no asserts)
 --   G2.MinMax   N/A: wrapper
 --   G2.Clamp    N/A: no accumulator
---   G2.Checked  checked_* on all outputs
 --   G3.Stim     N/A: wrapper
---   G4.Stream   G4.Stream handshake profile
---   G4.Config   BITNESS 8/12/16, OUT_WIDTH 48 variants (OpenJls.pro)
 --   G4 other    N/A: Edge/Run/Coding not in scope
---   G5          G5.States resetPhase; outputs idle after reset, aborted output discarded, replay checked
---   G6.Code     fully covered
 
 library ieee;
   use ieee.std_logic_1164.all;

@@ -12,18 +12,13 @@
 -- iReady to stall oReady.
 --
 -- Guidelines:
---   G1.Req      T87.H3, OJLS.BackToBack, OJLS.RIForward, OJLS.NoStallCompress, OJLS.NoStallEOL
---   G1.Ojls     Annex H.3 golden + clean-run self reference (payload owned by the golden suite)
---   G2.Range    RTL openjls_top.vhd (range comments + postponed asserts on writeback narrowing, C delta, run count)
 --   G2.MinMax   N/A: owned by module TBs
 --   G2.Clamp    N/A: owned by module TBs
 --   G2.Checked  N/A: slv byte compare, X never matches
 --   G3.Stim     N/A: owned by module TBs
 --   G4.Edge     G4.Config width x height (1-line image)
---   G4.Stream   G4.Stream bp x inputStall x prelude, backToBack, upstreamStallPropagated
---   G4.Config   G4.Config width x height (4x1, MAX 48x48), OUT_WIDTH 48/1024; BITNESS 16 in tb_openjls_axis
+--   G4.Config   BITNESS 16 in tb_openjls_axis_osvvm
 --   G4 other    N/A: Run/Coding owned by module TBs + golden suite
---   G5          G5.States reset midFeed/midFeedStress/midDrain; replay checked
 --   G6.Code     DEBUG_MODE trace lines waived (cover_summary.py)
 
 library ieee;

@@ -10,18 +10,12 @@
 -- 365 merged vectors, plus the design's Q = 81*Q1 + 9*Q2 + Q3.
 --
 -- Guidelines:
---   G1.Req      T87.A4.2
---   G1.Property A.4.2 range, one-to-one, totality
---   G2.Range    RTL A4_2_Q_mapping.vhd (range comments + postponed asserts)
 --   G2.MinMax   G1.Property a4_2_Q_codes (all 365 codes)
 --   G2.Clamp    N/A: no accumulator
---   G2.Checked  checked_* on all outputs
 --   G3.Stim     N/A: exhaustive over the 365-vector domain
---   G1.Property G1.Property a4_2_Q_codes
 --   G4.Config   N/A: no BITNESS generic
 --   G4 other    N/A: Edge/Run/Coding/Stream not in scope
 --   G5          N/A: combinational
---   G6.Code     fully covered
 
 library ieee;
   use ieee.std_logic_1164.all;

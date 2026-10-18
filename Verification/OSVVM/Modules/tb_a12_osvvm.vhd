@@ -9,18 +9,8 @@
 -- Negative B halves with the C form -((1-B)>>1), not the RTL shift.
 --
 -- Guidelines:
---   G1.Req      T87.A12
---   G1.Golden   A.12 C code as an integer reference
---   G2.Range    RTL A12_variables_update.vhd (range comments + postponed asserts)
---   G2.MinMax   G2.MinMax node x value
---   G2.Clamp    G2.Clamp node x value
---   G2.Checked  checked_* on all outputs
---   G3.Stim     G3.Stim node x value
---   G4.Coding   G4.Coding rescale x bSumSign
---   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
 --   G4 other    N/A: Edge/Run/Stream not in scope
 --   G5          N/A: combinational
---   G6.Code     fully covered
 
 library ieee;
   use ieee.std_logic_1164.all;

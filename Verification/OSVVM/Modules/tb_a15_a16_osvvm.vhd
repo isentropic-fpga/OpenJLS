@@ -10,18 +10,9 @@
 -- compares it against the burst the C code writes.
 --
 -- Guidelines:
---   G1.Req      T87.A15-A16
---   G1.Golden   A.15 + A.16 C code as a bit-string reference
---   G2.Range    RTL A15_A16_encode_run.vhd (range comments + postponed asserts)
---   G2.MinMax   G2.Clamp RUNindex + G4.Run startIdx (RUNindex 0..31)
---   G2.Clamp    G2.Clamp RUNindex
---   G2.Checked  checked_* on all outputs
+--   G2.MinMax   G2.Clamp RUNindex, G4.Run startIdx (RUNindex 0..31)
 --   G3.Stim     N/A: inputs are run events, no signed source
---   G4.Run      G4.Run startIdx, terminal, immediateBreak, eoiReset
---   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
 --   G4 other    N/A: Edge/Coding/Stream not in scope
---   G5          G5.States resetPhase; outputs idle after reset, replay checked
---   G6.Code     fully covered
 
 library ieee;
   use ieee.std_logic_1164.all;

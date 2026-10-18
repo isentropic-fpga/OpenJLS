@@ -7,18 +7,9 @@
 -- tb_a3_osvvm: a3_mode_selection against D1 = D2 = D3 = 0
 --
 -- Guidelines:
---   G1.Req      T87.A3
---   G1.Golden   A.3 C code as an integer reference
---   G2.Range    RTL A3_mode_selection.vhd (range comments + postponed asserts)
---   G2.MinMax   G2.MinMax node x value
 --   G2.Clamp    N/A: no accumulator
---   G2.Checked  checked_* on all outputs
---   G3.Stim     G3.Stim node x value
---   G4.Branch   G4.Branch modeRun
---   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
 --   G4 other    N/A: Edge/Run/Coding/Stream not in scope
 --   G5          N/A: combinational
---   G6.Code     fully covered
 
 library ieee;
   use ieee.std_logic_1164.all;

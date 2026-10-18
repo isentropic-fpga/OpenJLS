@@ -7,18 +7,10 @@
 -- tb_line_buffer_osvvm: line_buffer against the T.87 A.2.1 border rules
 --
 -- Guidelines:
---   G1.Req      OJLS.LineBuffer
---   G1.Ojls     A.2.1 border model on a 2-D reference image
---   G2.Range    RTL line_buffer.vhd (range comments + postponed asserts)
 --   G2.MinMax   N/A: pixels pass through unchanged
 --   G2.Clamp    N/A: no accumulator
---   G2.Checked  checked_* on all outputs
 --   G3.Stim     N/A: pixels pass through unchanged (random full range)
---   G4.Edge     G4.Edge rowPos x colPos
---   G4.Config   G4.Config width x height (MAX_W/H = 16), BITNESS 8/16
 --   G4 other    N/A: Run/Coding/Stream not in scope
---   G5          G5.States resetPhase; outputs idle after reset, aborted output discarded, replay checked
---   G6.Code     fully covered
 
 library ieee;
   use ieee.std_logic_1164.all;

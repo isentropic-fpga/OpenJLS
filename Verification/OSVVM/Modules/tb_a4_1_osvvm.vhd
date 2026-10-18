@@ -7,18 +7,10 @@
 -- tb_a4_1_osvvm: a4_1_quant_gradient_merging against the T.87 A.4.1 rule
 --
 -- Guidelines:
---   G1.Req      T87.A4.1
---   G1.Property A.4.1 sign rule
---   G2.Range    RTL A4_1_quant_gradient_merging.vhd (range comments + postponed asserts)
---   G2.MinMax   G2.MinMax node x value
 --   G2.Clamp    N/A: no accumulator
---   G2.Checked  checked_* on all outputs
---   G3.Stim     G3.Stim node x value
---   G4.Branch   G4.Branch decider
 --   G4.Config   N/A: no BITNESS generic
 --   G4 other    N/A: Edge/Run/Coding/Stream not in scope
 --   G5          N/A: combinational
---   G6.Code     fully covered
 
 library ieee;
   use ieee.std_logic_1164.all;

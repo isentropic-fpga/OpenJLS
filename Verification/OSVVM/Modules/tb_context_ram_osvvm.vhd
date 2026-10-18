@@ -12,18 +12,9 @@
 -- stay masked by the re-arm; their read result is a don't-care.
 --
 -- Guidelines:
---   G1.Req      OJLS.CtxRam
---   G1.Ojls     per-image init + same-cycle forwarding model
---   G2.Range    RTL context_ram.vhd (postponed address asserts)
---   G2.MinMax   G2.MinMax field x value
 --   G2.Clamp    N/A: no accumulator
---   G2.Checked  checked_* on all outputs
 --   G3.Stim     N/A: fields stored, no arithmetic
---   G4.Stream   G4.Stream readOutcome, G4.Stream readOnEoiCycle
---   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
 --   G4 other    N/A: Edge/Run/Coding not in scope
---   G5          G5.States resetPhase; outputs idle after reset, aborted output discarded, replay checked
---   G6.Code     fully covered
 
 library ieee;
   use ieee.std_logic_1164.all;

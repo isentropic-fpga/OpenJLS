@@ -7,17 +7,10 @@
 -- tb_jls_framer_osvvm: jls_framer against an independent T.87 frame model
 --
 -- Guidelines:
---   G1.Req      OJLS.Framer
---   G1.Ojls     marker/header byte model
---   G2.Range    RTL jls_framer.vhd (range comments + postponed asserts)
 --   G2.MinMax   N/A: byte framing, no arithmetic node
 --   G2.Clamp    N/A: no accumulator
---   G2.Checked  checked_* on all outputs
 --   G3.Stim     N/A: payload random bytes
---   G4.Stream   G4.Stream partialBeat
---   G4.Config   OUT_WIDTH 48/56/200/1024 variants (OpenJls.pro)
 --   G4 other    N/A: Edge/Run/Coding not in scope
---   G5          G5.States resetPhase; outputs idle after reset, aborted output discarded, replay checked
 --   G6.Code     defensive arm waived (cover_summary.py)
 
 library ieee;

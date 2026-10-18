@@ -9,18 +9,9 @@
 -- Aq and TEMP always differ, so a wrong select cannot pass.
 --
 -- Guidelines:
---   G1.Req      T87.A20.2
---   G1.Property A.20.2 k loop on TEMP
---   G2.Range    RTL A20_2_compute_k.vhd (range comments + postponed asserts)
---   G2.MinMax   G2.MinMax node x value
 --   G2.Clamp    N/A: no accumulator
---   G2.Checked  checked_* on all outputs
---   G3.Stim     G3.Stim node x value
---   G4.Coding   G4.Coding mode x k
---   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
 --   G4 other    N/A: Edge/Run/Stream not in scope
 --   G5          N/A: combinational
---   G6.Code     fully covered
 
 library ieee;
   use ieee.std_logic_1164.all;

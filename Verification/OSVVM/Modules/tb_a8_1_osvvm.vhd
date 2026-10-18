@@ -7,18 +7,11 @@
 -- tb_a8_1_osvvm: a8_1_reconstructed_value against the T.87 A.8.1 rule (Rx = Ix)
 --
 -- Guidelines:
---   G1.Req      T87.A8.1
---   G1.Property A.8.1 Rx = Ix
---   G2.Range    RTL A8_1_reconstructed_value.vhd (range comments + postponed asserts)
 --   G2.MinMax   G4.Branch Ix (0 and MAXVAL)
 --   G2.Clamp    N/A: no accumulator
---   G2.Checked  checked_* on all outputs
 --   G3.Stim     N/A: exhaustive over every pixel value
---   G4.Branch   G4.Branch Ix
---   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
 --   G4 other    N/A: Edge/Run/Coding/Stream not in scope
 --   G5          N/A: combinational
---   G6.Code     fully covered
 
 library ieee;
   use ieee.std_logic_1164.all;

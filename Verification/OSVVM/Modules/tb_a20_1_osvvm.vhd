@@ -7,18 +7,12 @@
 -- tb_a20_1_osvvm: a20_1_run_context_index against the T.87 A.20.1 rule
 --
 -- Guidelines:
---   G1.Req      T87.A20.1
---   G1.Property A.20.1 Q = RItype + 365
---   G2.Range    RTL A20_1_run_context_index.vhd (range comments + postponed asserts)
 --   G2.MinMax   N/A: 1-bit input, both values in G4.Run RItype
 --   G2.Clamp    N/A: no accumulator
---   G2.Checked  checked_* on all outputs
 --   G3.Stim     N/A: 1-bit input
---   G4.Run      G4.Run RItype
 --   G4.Config   N/A: no BITNESS generic
 --   G4 other    N/A: Edge/Coding/Stream not in scope
 --   G5          N/A: combinational
---   G6.Code     fully covered
 
 library ieee;
   use ieee.std_logic_1164.all;

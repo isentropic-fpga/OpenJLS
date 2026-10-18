@@ -10,18 +10,11 @@
 -- no AXI-Lite write can land inside it.
 --
 -- Guidelines:
---   G1.Req      OJLS.AxiLiteRegMap, OJLS.AxiApplyReconfig, OJLS.AxiAbortReencode
---   G1.Ojls     register map + APPLY/abort model
 --   G2.Range    N/A: register file, clamps only (no asserts)
 --   G2.MinMax   G4.Branch register access (clamp over max / under min)
 --   G2.Clamp    N/A: no accumulator
---   G2.Checked  checked_* on all outputs
 --   G3.Stim     N/A: register values
---   G4.Branch   G4.Branch register access
---   G4.Config   OUT_WIDTH 48, MAX 1024x768 variants (OpenJls.pro)
 --   G4 other    N/A: Edge/Run/Coding/Stream not in scope
---   G5          G5.States resetPhase (APPLY idle / mid-image); re-encode after abort checked
---   G6.Code     fully covered
 
 library ieee;
   use ieee.std_logic_1164.all;

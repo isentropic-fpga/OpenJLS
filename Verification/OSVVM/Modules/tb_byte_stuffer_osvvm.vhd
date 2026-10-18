@@ -10,19 +10,10 @@
 -- random stalls; stalling less would overrun the FIFO.
 --
 -- Guidelines:
---   G1.Req      OJLS.ByteStuffer
---   G1.Ojls     T.87 FF-stuffing bit-string model
---   G2.Range    RTL byte_stuffer.vhd (range comments + postponed asserts)
 --   G2.MinMax   N/A: bit packing, no arithmetic node
 --   G2.Clamp    N/A: no accumulator
---   G2.Checked  checked_* on all outputs
 --   G3.Stim     N/A: payload random, FF runs in G4.Branch stuffEvent
---   G4.Branch   G4.Branch stuffEvent
---   G4.Stream   G4.Stream emitBytes, flushType, data x almostFull
---   G4.Config   IN_WIDTH 32/48/64 variants (OpenJls.pro)
 --   G4 other    N/A: Edge/Run/Coding not in scope
---   G5          G5.States resetPhase; outputs idle after reset, aborted output discarded, replay checked
---   G6.Code     fully covered
 
 library ieee;
   use ieee.std_logic_1164.all;

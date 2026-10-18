@@ -1,7 +1,7 @@
 # Verification requirements
 
 Requirement registry and traceability for the OSVVM suite in [`Verification/OSVVM`](../Verification/OSVVM).
-Rules G1–G6 are defined in [`verification_guidelines.md`](verification_guidelines.md); per-rule detail (coverage IDs, N/A reasons) is in each TB's `Guidelines:` header.
+Rules G1–G6 are defined in [`verification_guidelines.md`](verification_guidelines.md); coverage IDs carry the rule tag, and N/A reasons and other exceptions are in each TB's `Guidelines:` header.
 
 ## ID families
 - `T87.*`: conformance. The RTL matches a reference derived from [T.87](Requirements.md). Clause numbers follow the module decomposition (`A4.1`, `A11.2` are sub-blocks of A.4, A.11).

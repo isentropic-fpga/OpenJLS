@@ -7,18 +7,9 @@
 -- tb_a6_a7_osvvm: a6_a7_prediction_error against the T.87 A.6 + A.7 C code
 --
 -- Guidelines:
---   G1.Req      T87.A6-A7
---   G1.Golden   A.6 + A.7 C code as an integer reference
---   G2.Range    RTL A6_A7_prediction_error.vhd (range comments + postponed asserts)
---   G2.MinMax   G2.MinMax node x value
 --   G2.Clamp    N/A: no accumulator
---   G2.Checked  checked_* on all outputs
---   G3.Stim     G3.Stim node x value
---   G4.Branch   G4.Branch sign x clipping region
---   G4.Config   BITNESS 8/16 + MAX_VAL 200 variants (OpenJls.pro)
 --   G4 other    N/A: Edge/Run/Coding/Stream not in scope
 --   G5          N/A: combinational
---   G6.Code     fully covered
 
 library ieee;
   use ieee.std_logic_1164.all;

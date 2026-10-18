@@ -7,18 +7,9 @@
 -- tb_a11_2_osvvm: a11_2_bit_packer against an independent MSB-first assembler
 --
 -- Guidelines:
---   G1.Req      T87.A11.2
---   G1.Property A.11.2 MSB-first packing
---   G2.Range    RTL A11_2_bit_packer.vhd (range comments + postponed asserts)
---   G2.MinMax   G2.MinMax node x value
 --   G2.Clamp    N/A: no accumulator
---   G2.Checked  checked_* on all outputs
 --   G3.Stim     N/A: inputs are bit fields and lengths, no signed source
---   G4.Branch   G4.Branch case
---   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
 --   G4 other    N/A: Edge/Run/Coding/Stream not in scope
---   G5          G5.States resetPhase; outputs idle after reset, replay checked
---   G6.Code     fully covered
 
 library ieee;
   use ieee.std_logic_1164.all;

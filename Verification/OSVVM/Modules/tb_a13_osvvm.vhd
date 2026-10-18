@@ -7,18 +7,8 @@
 -- tb_a13_osvvm: a13_update_bias against the T.87 A.13 C code
 --
 -- Guidelines:
---   G1.Req      T87.A13
---   G1.Golden   A.13 C code as an integer reference
---   G2.Range    RTL A13_update_bias.vhd (range comments + postponed asserts)
---   G2.MinMax   G2.MinMax node x value
---   G2.Clamp    G2.Clamp event
---   G2.Checked  checked_* on all outputs
---   G3.Stim     G3.Stim node x value
---   G4.Coding   G4.Coding cUpdate
---   G4.Config   BITNESS 8/16 variants (OpenJls.pro)
 --   G4 other    N/A: Edge/Run/Stream not in scope
 --   G5          N/A: combinational
---   G6.Code     fully covered
 
 library ieee;
   use ieee.std_logic_1164.all;
