@@ -32,7 +32,7 @@ PS_OSVVM_LOG="$ROOT/Verification/Post synth/Output/postsynth_osvvm.log"
 PS_GOLDEN_ENV="$ROOT/Verification/Post synth/Output/report_status_golden.env"
 PS_GOLDEN_TSV="$ROOT/Verification/Post synth/Output/ps_golden_image_results.tsv"
 
-# hil/ comes from the OpenJLS-Demos sweep; keep it
+# hil/results.csv comes from the OpenJLS-Demos sweep; keep it
 HIL_TMP=""
 if [ -d "$DEST/hil" ]; then
   HIL_TMP="$(mktemp -d)"
@@ -248,7 +248,7 @@ if [ -f "$DEST/hil/results.csv" ]; then
   hil_date=$(git -C "$ROOT" log -1 --format=%cs -- "Docs/Reports/hil" 2>/dev/null || true)
   emit_row "Hardware-in-the-loop" "The whole corpus, including the full-size originals too large to simulate, encoded on a PYNQ-Z2 FPGA at depths $hil_depths (one bitstream per depth) by the OpenJLS-Demos EncodeOverEthernet sweep." "$hil_status" "$hil_pct" \
     "$hil_pass of $hil_total images byte-exact vs CharLS on PYNQ-Z2 silicon" \
-    "hil/index.html" "$hil_date"
+    "https://github.com/isentropic-fpga/OpenJLS-Demos/blob/main/EncodeOverEthernet/Verification/out/report.md" "$hil_date"
 fi
 
 # --- landing page ----------------------------------------------------------
