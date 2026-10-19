@@ -3,7 +3,7 @@ Coverage: 100.00
 Settings: 
   WritePassFail: 0
 Models: 
-  - Name: "G1.Property a4_2_Q_codes"
+  - Name: "G1.Property G2.MinMax a4_2_Q_codes"
     TestCases: 
       - "tb_a4_2_osvvm"
     Coverage: 100.00
@@ -11,7 +11,7 @@ Models:
       CovWeight: 1
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [414985318, 1462724811]
+      Seeds: [1519099274, 430045682]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0

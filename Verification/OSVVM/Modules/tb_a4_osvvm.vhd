@@ -9,11 +9,10 @@
 -- The reference keeps the signed branches; the RTL works on absolute values.
 --
 -- Guidelines:
---   G2.MinMax   G4.Branch Qi (Qi = -4 and 4)
 --   G2.Clamp    N/A: no accumulator
 --   G4 other    N/A: Edge/Run/Coding/Stream not in scope
 --   G5          N/A: combinational
---   G6.Code     A4 defensive arm waived (cover_summary.py)
+--   G6.Code     N/A: clamp's out-of-range arm, unreachable for MAXVAL >= 255
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -148,7 +147,7 @@ begin
     rv.InitSeed(rv'instance_name);
     req := GetReqID("T87.A4", 200);
 
-    cov := NewID("G4.Branch Qi");
+    cov := NewID("G4.Branch G2.MinMax Qi");
     SetFieldName(cov, "gradient lane", "quantized level");
     for lane in 1 to 3 loop
       for level in -4 to 4 loop

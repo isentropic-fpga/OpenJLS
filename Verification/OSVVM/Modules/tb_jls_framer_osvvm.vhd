@@ -11,7 +11,7 @@
 --   G2.Clamp    N/A: no accumulator
 --   G3.Stim     N/A: payload random bytes
 --   G4 other    N/A: Edge/Run/Coding not in scope
---   G6.Code     defensive arm waived (cover_summary.py)
+--   G6.Code     N/A: get_header_byte "when others", the index stays below the header length
 
 library ieee;
   use ieee.std_logic_1164.all;

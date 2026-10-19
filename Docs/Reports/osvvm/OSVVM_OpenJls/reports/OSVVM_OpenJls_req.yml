@@ -255,13 +255,13 @@
   TestCases:
   - TestName: tb_a15_a16_osvvm
     Status: PASSED
-    Results: { Goal: 100, Passed: 329, Errors: 0, Checked: 329, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
+    Results: { Goal: 100, Passed: 340, Errors: 0, Checked: 340, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
   - TestName: tb_a15_a16_osvvm
     Status: PASSED
-    Results: { Goal: 100, Passed: 329, Errors: 0, Checked: 329, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
+    Results: { Goal: 100, Passed: 340, Errors: 0, Checked: 340, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
   - TestName: tb_a15_a16_osvvm
     Status: PASSED
-    Results: { Goal: 100, Passed: 329, Errors: 0, Checked: 329, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
+    Results: { Goal: 100, Passed: 340, Errors: 0, Checked: 340, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
 - Requirement: T87.A17
   TestCases:
   - TestName: tb_a17_osvvm

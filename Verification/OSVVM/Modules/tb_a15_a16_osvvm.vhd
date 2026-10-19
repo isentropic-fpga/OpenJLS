@@ -10,7 +10,6 @@
 -- compares it against the burst the C code writes.
 --
 -- Guidelines:
---   G2.MinMax   G2.Clamp RUNindex, G4.Run startIdx (RUNindex 0..31)
 --   G3.Stim     N/A: inputs are run events, no signed source
 --   G4 other    N/A: Edge/Coding/Stream not in scope
 
@@ -187,6 +186,7 @@ begin
     variable covEoi  : CoverageIDType;
     variable covIdx  : CoverageIDType;
     variable cl      : CoverageIDType;
+    variable covCnt  : CoverageIDType;
     variable rs      : CoverageIDType;
     variable req     : AlertLogIDType;
 
@@ -305,6 +305,7 @@ begin
       ICover(covImm, boolean'pos(m = 0));
       ICover(covEoi, std_to_int(eoi));
       ICover(covIdx, carried);
+      ICover(covCnt, m);
       if sat then
         ICover(cl, 1);
       end if;
@@ -399,17 +400,21 @@ begin
     SetFieldName(covEoi, "eoiReset");
     AddBins(covEoi, "within image", GenBin(0));
     AddBins(covEoi, "end of image", GenBin(1));
-    covIdx := NewID("G4.Run startIdx");
+    covIdx := NewID("G4.Run G2.MinMax startIdx");
     SetFieldName(covIdx, "startIdx");
     AddBins(covIdx, "startIdx0", GenBin(0, 0));
     AddBins(covIdx, "startIdxLo", GenBin(1, 3, 1));
     AddBins(covIdx, "startIdxMid", GenBin(4, 10, 1));
     AddBins(covIdx, "startIdxHi", GenBin(11, 30, 1));
     AddBins(covIdx, "startIdx31", GenBin(31, 31));
-    cl := NewID("G2.Clamp RUNindex");
+    cl := NewID("G2.Clamp G2.MinMax RUNindex");
     SetFieldName(cl, "RUNindex");
     AddBins(cl, "RUNindex=31 / increment held", GenBin(1));
     AddBins(cl, "RUNindex=31 / break decrements", GenBin(2));
+
+    covCnt := NewID("G2.MinMax G3.Stim RUNcnt");
+    AddBins(covCnt, "RUNcnt=0", GenBin(0));
+    AddBins(covCnt, "RUNcnt=2^RC_W-1 (MSB set)", GenBin(2 ** RC_W - 1));
 
     rs := NewID("G5.States resetPhase");
     AddBins(rs, "between runs", GenBin(0));
@@ -438,6 +443,7 @@ begin
     -- segment boundary at 31
     do_run(33100, T_EOL, '0', "saturate RUNindex to 31");
     do_run(40000, T_EOL, '0', "boundary at saturated RUNindex");
+    do_run(2 ** RC_W - 1, T_EOL, '0', "longest run RUNcnt can count");
     do_run(3, T_BREAK, '0', "break from saturated RUNindex");
     wait for 1 ns;
     AffirmIfEqual(req, checked_integer(oRiRunIndex), 30,
@@ -484,6 +490,7 @@ begin
     WriteBin(covIdx);
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covTerm), "terminal coverage closed");
     affirm_covered(cl, "RUNindex saturation and step past covered");
+    affirm_covered(covCnt, "RUNcnt min/max covered");
     affirm_covered(rs, "reset phase coverage closed");
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covImm), "immediate-break coverage closed");
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covEoi), "EOI-reset coverage closed");

@@ -6,9 +6,9 @@ A rule that doesn't apply is marked N/A in the TB header, with a reason.
 
 ## Naming
 - Requirement IDs: `T87.<segment>` for T.87 code segments and written requirements (`T87.A12`, `T87.A11.1`), or a range for a combined module (`T87.A15-A16`); `OJLS.<Name>` for OpenJLS-only behaviour (`OJLS.BackToBack`).
-- Coverage models: `NewID("<tag> <axes>")`, e.g. `NewID("G4.Coding rescale x bSumSign")`.
+- Coverage models: `NewID("<tags> <axes>")`, e.g. `NewID("G4.Coding rescale x bSumSign")`. A model that serves several rules lists every tag it serves: `NewID("G4.Branch G2.MinMax Qi")`.
 - Bins: `axis=value` joined by ` / `; named corners use the rule's wording (`N=RESET`, `k=0`, `Ra=Rb`).
-- TB header: license, a one-line description, a note only where the TB is non-obvious, then a `Guidelines:` block listing only the exceptions, one line per rule: `N/A: <reason>` (a group line `G4 other  N/A: ...` is fine), a rule met by a model tagged with another rule (`G2.MinMax  G4.Branch Qi`), or code left uncovered (G6.Code).
+- TB header: license, a one-line description, a note only where the TB is non-obvious, then a `Guidelines:` block listing only the rules that don't apply, one line per rule: `N/A: <reason>`. A group line (`G4 other  N/A: ...`) or a partial one (`G4.Config  BITNESS N/A: ...`) is fine; code left uncovered is `G6.Code  N/A: <reason>`.
 - A rule not listed is met by a model with its tag. G1 is met by the requirement IDs the TB registers, G2.Range and G2.Assert in the RTL, G2.Checked in the TB code, G4.Config generic variants in the `.pro`.
 
 ## G1. Requirements and golden model
@@ -47,5 +47,5 @@ Each one is a named coverage bin; TBs close on `IsCovered`.
 
 ## G6. Done
 - **G6.Clean** Zero errors, all requirement goals met, all coverage `IsCovered`.
-- **G6.Header** Every applicable rule has a model with its tag or an exception line in the header, and the requirement's row in [`verification_requirements.md`](verification_requirements.md) shows no gap.
+- **G6.Header** Every rule has a model with its tag or an N/A line in the header, and the requirement's row in [`verification_requirements.md`](verification_requirements.md) shows no gap.
 - **G6.Code** Code coverage reviewed; uncovered lines covered, or justified on the TB's G6.Code line.

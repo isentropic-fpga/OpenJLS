@@ -29,16 +29,16 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 31
+        Count: 33
         AtLeast: 1
-        PercentCov: 3100.0000
+        PercentCov: 3300.0000
       - Name: "end of line"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 37
+        Count: 36
         AtLeast: 1
-        PercentCov: 3700.0000
+        PercentCov: 3600.0000
 
   - Name: "G4.Run immediateBreak"
     TestCases: 
@@ -66,16 +66,16 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 65
+        Count: 63
         AtLeast: 1
-        PercentCov: 6500.0000
+        PercentCov: 6300.0000
       - Name: "immediate break"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 3
+        Count: 6
         AtLeast: 1
-        PercentCov: 300.0000
+        PercentCov: 600.0000
 
   - Name: "G4.Run eoiReset"
     TestCases: 
@@ -103,9 +103,9 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 63
+        Count: 64
         AtLeast: 1
-        PercentCov: 6300.0000
+        PercentCov: 6400.0000
       - Name: "end of image"
         Type: "COUNT"
         Range: 
@@ -114,7 +114,7 @@ Models:
         AtLeast: 1
         PercentCov: 500.0000
 
-  - Name: "G4.Run startIdx"
+  - Name: "G4.Run G2.MinMax startIdx"
     TestCases: 
       - "tb_a15_a16_osvvm"
     Coverage: 100.00
@@ -122,7 +122,7 @@ Models:
       CovWeight: 1
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [1997612348, 52275474]
+      Seeds: [1219270138, 1185154664]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
@@ -140,9 +140,9 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 11
+        Count: 10
         AtLeast: 1
-        PercentCov: 1100.0000
+        PercentCov: 1000.0000
       - Name: "startIdxLo"
         Type: "COUNT"
         Range: 
@@ -154,25 +154,25 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 4, Max: 10}
-        Count: 8
+        Count: 16
         AtLeast: 1
-        PercentCov: 800.0000
+        PercentCov: 1600.0000
       - Name: "startIdxHi"
         Type: "COUNT"
         Range: 
           - {Min: 11, Max: 30}
-        Count: 43
+        Count: 36
         AtLeast: 1
-        PercentCov: 4300.0000
+        PercentCov: 3600.0000
       - Name: "startIdx31"
         Type: "COUNT"
         Range: 
           - {Min: 31, Max: 31}
-        Count: 2
+        Count: 3
         AtLeast: 1
-        PercentCov: 200.0000
+        PercentCov: 300.0000
 
-  - Name: "G2.Clamp RUNindex"
+  - Name: "G2.Clamp G2.MinMax RUNindex"
     TestCases: 
       - "tb_a15_a16_osvvm"
     Coverage: 100.00
@@ -180,7 +180,7 @@ Models:
       CovWeight: 1
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [1577220497, 584246357]
+      Seeds: [624791976, 1959000246]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
@@ -198,13 +198,50 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 1
+        Count: 2
         AtLeast: 1
-        PercentCov: 100.0000
+        PercentCov: 200.0000
       - Name: "RUNindex=31 / break decrements"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+
+  - Name: "G2.MinMax G3.Stim RUNcnt"
+    TestCases: 
+      - "tb_a15_a16_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1786163510, 1730099207]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 2
+      TotalCovGoal: 2
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "Bin1"
+      NumBins: 2
+    Bins: 
+      - Name: "RUNcnt=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+        Count: 6
+        AtLeast: 1
+        PercentCov: 600.0000
+      - Name: "RUNcnt=2^RC_W-1 (MSB set)"
+        Type: "COUNT"
+        Range: 
+          - {Min: 65535, Max: 65535}
         Count: 1
         AtLeast: 1
         PercentCov: 100.0000

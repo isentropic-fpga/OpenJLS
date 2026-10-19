@@ -16,10 +16,8 @@
 --   G2.Clamp    N/A: owned by module TBs
 --   G2.Checked  N/A: slv byte compare, X never matches
 --   G3.Stim     N/A: owned by module TBs
---   G4.Edge     G4.Config width x height (1-line image)
---   G4.Config   BITNESS 16 in tb_openjls_axis_osvvm
+--   G4.Config   BITNESS N/A: 12 and 16 run in tb_openjls_axis_osvvm
 --   G4 other    N/A: Run/Coding owned by module TBs + golden suite
---   G6.Code     DEBUG_MODE trace lines waived (cover_summary.py)
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -532,7 +530,7 @@ begin
     AddBins(covRst, "reset during output", GenBin(2));
 
     -- MAX is only reached in the MAX 48x48 variant
-    covCfg := NewID("G4.Config width x height");
+    covCfg := NewID("G4.Config G4.Edge width x height");
     AddBins(covCfg, "width=4 / height=1", GenBin(0));
     if (MAX_W = BIG_W and MAX_H = BIG_H) then
       AddBins(covCfg, "width=MAX / height=MAX", GenBin(1));

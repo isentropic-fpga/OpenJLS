@@ -11,7 +11,6 @@
 --
 -- Guidelines:
 --   G2.Range    N/A: register file, clamps only (no asserts)
---   G2.MinMax   G4.Branch register access (clamp over max / under min)
 --   G2.Clamp    N/A: no accumulator
 --   G3.Stim     N/A: register values
 --   G4 other    N/A: Edge/Run/Coding/Stream not in scope
@@ -267,7 +266,7 @@ begin
     reqApply := GetReqID("OJLS.AxiApplyReconfig", H3_EXPECTED'length);
     reqAbort := GetReqID("OJLS.AxiAbortReencode", H3_EXPECTED'length);
 
-    ra := NewID("G4.Branch register access");
+    ra := NewID("G4.Branch G2.MinMax register access");
     AddBins(ra, "RO identity read", GenBin(0));
     AddBins(ra, "reset default", GenBin(1));
     AddBins(ra, "RW write/read", GenBin(2));

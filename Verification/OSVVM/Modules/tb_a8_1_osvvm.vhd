@@ -7,7 +7,6 @@
 -- tb_a8_1_osvvm: a8_1_reconstructed_value against the T.87 A.8.1 rule (Rx = Ix)
 --
 -- Guidelines:
---   G2.MinMax   G4.Branch Ix (0 and MAXVAL)
 --   G2.Clamp    N/A: no accumulator
 --   G3.Stim     N/A: exhaustive over every pixel value
 --   G4 other    N/A: Edge/Run/Coding/Stream not in scope
@@ -58,7 +57,7 @@ begin
     SetLogEnable(PASSED, FALSE);
     req := GetReqID("T87.A8.1", PX_MAX + 1);
 
-    cov := NewID("G4.Branch Ix");
+    cov := NewID("G4.Branch G2.MinMax Ix");
     SetFieldName(cov, "Ix");
     AddBins(cov, "zero", GenBin(0));
     AddBins(cov, "interior", GenBin(1, PX_MAX - 1, 1));

@@ -3,7 +3,7 @@ Coverage: 100.00
 Settings: 
   WritePassFail: 0
 Models: 
-  - Name: "G4.Branch register access"
+  - Name: "G4.Branch G2.MinMax register access"
     TestCases: 
       - "tb_openjls_axis_regs_osvvm"
     Coverage: 100.00
@@ -11,7 +11,7 @@ Models:
       CovWeight: 1
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [1728078243, 1168026133]
+      Seeds: [2026981903, 1635547249]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0

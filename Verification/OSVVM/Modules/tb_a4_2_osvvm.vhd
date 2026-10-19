@@ -10,7 +10,6 @@
 -- 365 merged vectors, plus the design's Q = 81*Q1 + 9*Q2 + Q3.
 --
 -- Guidelines:
---   G2.MinMax   G1.Property a4_2_Q_codes (all 365 codes)
 --   G2.Clamp    N/A: no accumulator
 --   G3.Stim     N/A: exhaustive over the 365-vector domain
 --   G4.Config   N/A: no BITNESS generic
@@ -99,7 +98,7 @@ begin
     SetLogEnable(PASSED, FALSE);
     req := GetReqID("T87.A4.2", 365);
 
-    cov := NewID("G1.Property a4_2_Q_codes");
+    cov := NewID("G1.Property G2.MinMax a4_2_Q_codes");
     SetFieldName(cov, "a4_2_Q_codes");
     for code in 0 to 364 loop
       AddBins(cov, "context_" & to_string(code), GenBin(code));

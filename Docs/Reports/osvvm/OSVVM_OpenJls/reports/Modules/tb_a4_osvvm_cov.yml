@@ -3,7 +3,7 @@ Coverage: 100.00
 Settings: 
   WritePassFail: 0
 Models: 
-  - Name: "G4.Branch Qi"
+  - Name: "G4.Branch G2.MinMax Qi"
     TestCases: 
       - "tb_a4_osvvm"
     Coverage: 100.00
@@ -11,7 +11,7 @@ Models:
       CovWeight: 1
       Goal: 100.0
       WeightMode: "REMAIN"
-      Seeds: [1271085104, 455332626]
+      Seeds: [1546387436, 807582908]
       CountMode: "COUNT_FIRST"
       IllegalMode: "ILLEGAL_ON"
       Threshold: 45.0
