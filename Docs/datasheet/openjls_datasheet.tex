@@ -115,7 +115,7 @@
 \pagestyle{fancy}
 \fancyhf{}
 \lhead{\raisebox{-0.5pt}{\isentropicmark{3.2mm}}}
-\rhead{{\color{muted}\kicker{OpenJLS \textperiodcentered{} Datasheet \textperiodcentered{} v1.3.1}}}
+\rhead{{\color{muted}\kicker{OpenJLS \textperiodcentered{} Datasheet \textperiodcentered{} v1.3.2}}}
 \lfoot{{\color{muted}\small isentropic.com.br}}
 \rfoot{{\color{muted}\small\thepage}}
 \renewcommand{\headrule}{{\color{divider}\hrule height 0.4pt}}
@@ -133,7 +133,7 @@
 \vspace{0.5mm}{\color{divider}\hrule height 0.4pt}
 
 \vspace*{58mm}
-{\color{accent}\kicker{JPEG-LS Encoder IP Core \textperiodcentered{} v1.3.1}}\par
+{\color{accent}\kicker{JPEG-LS Encoder IP Core \textperiodcentered{} v1.3.2}}\par
 \vspace{6mm}
 \openjlsmark{24mm}\par
 \vspace{8mm}
@@ -654,6 +654,8 @@ simulation; their 84 full-size originals are part of the corpus but run on hardw
   BRAM up 1 tile. \\
   1.3.1 & 2026-10 & Source cleanup; verification extended, no functional
   change. \\
+  1.3.2 & 2026-10 & Fix per-image queue overflow on back-to-back images of
+  8 pixels or fewer. \\
   \bottomrule
 \end{tabular}
 \end{table}

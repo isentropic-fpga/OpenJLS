@@ -59,7 +59,7 @@ architecture sim of tb_openjls_axis_regs_osvvm is
   constant A_UNMAP   : std_logic_vector(ADDR_W - 1 downto 0) := x"00000020";
 
   constant EXP_ID      : std_logic_vector(31 downto 0) := x"4F4A4C53";           -- "OJLS"
-  constant EXP_VERSION : std_logic_vector(31 downto 0) := x"00010301";           -- 1.3.1
+  constant EXP_VERSION : std_logic_vector(31 downto 0) := x"00010302";           -- 1.3.2
   constant EXP_CAPS    : std_logic_vector(31 downto 0) :=
     std_logic_vector(to_unsigned(H3_BITNESS + (OUT_WIDTH / 8) * 256, 32));
   constant EXP_MAXDIM  : std_logic_vector(31 downto 0) :=

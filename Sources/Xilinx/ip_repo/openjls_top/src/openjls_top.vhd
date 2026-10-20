@@ -105,6 +105,9 @@ architecture rtl of openjls_top is
   constant BYTE_STUFFER_OUT_BYTES_PER_CYCLE : natural := 4;                                           -- fixed by the stuffing layout table
   constant BYTE_STUFFER_BURST_DEPTH         : natural := 64;                                          -- covers natural images with margin
   constant BYTE_STUFFER_OUT_WIDTH           : natural := BYTE_STUFFER_OUT_BYTES_PER_CYCLE * 8;
+  -- Must not exceed the shallowest per-image queue: jls_framer EOI FIFO (3), start queue (4),
+  -- byte_stuffer valid-bits queue (3)
+  constant MAX_IMAGES_IN_FLIGHT             : natural := 3;
 
   -- Context RAM word: regular (A | B | C | N), run (A | Nn | 0 | N) ---
   constant CTX_A_HI                         : natural := TOTAL_WIDTH - 1;
@@ -359,6 +362,9 @@ architecture rtl of openjls_top is
   signal sFirstPixel                        : std_logic;
   signal sFramerStart                       : std_logic;
   signal sReadyOut                          : std_logic;
+  signal sImagesInFlight                    : natural range 0 to MAX_IMAGES_IN_FLIGHT;
+  signal sNextIsFirst                       : std_logic;
+  signal sInFlightStall                     : std_logic;
 
 begin
 
@@ -418,7 +424,7 @@ begin
   sCE6 <= '1' when sStallLogic = '0' and (sReg6V = '1' or sReg5V = '1') else
           '0';
 
-  sReadyOut <= not iRst and not sStallUpstream;
+  sReadyOut <= not iRst and not sStallUpstream and not sInFlightStall;
   oReady    <= sReadyOut;
 
   -- Contracts (PSL, simulation only): AXI-Stream input
@@ -1437,5 +1443,38 @@ begin
   end process p_first_pixel;
 
   sFramerStart <= sValid and sFirstPixel;
+
+  -- Images from first pixel accepted to last output beat accepted; holding the next image's
+  -- first pixel at the cap bounds every per-image queue downstream
+  p_images_in_flight : process (iClk) is
+
+    variable vCount : natural range 0 to MAX_IMAGES_IN_FLIGHT + 1;
+
+  begin
+
+    if rising_edge(iClk) then
+      if (iRst = '1') then
+        sImagesInFlight <= 0;
+      else
+        vCount := sImagesInFlight;
+        if (sFramerStart = '1') then
+          vCount := vCount + 1;
+        end if;
+        if (oValid = '1' and iReady = '1' and oLast = '1') then
+          vCount := vCount - 1;
+        end if;
+        assert vCount <= MAX_IMAGES_IN_FLIGHT
+          report "openjls_top: images in flight past MAX_IMAGES_IN_FLIGHT"
+          severity failure;
+        sImagesInFlight <= vCount;
+      end if;
+    end if;
+
+  end process p_images_in_flight;
+
+  sNextIsFirst   <= sLbEoi when sValid = '1' else
+                    sFirstPixel;
+  sInFlightStall <= '1' when sImagesInFlight = MAX_IMAGES_IN_FLIGHT and sNextIsFirst = '1' else
+                    '0';
 
 end architecture rtl;

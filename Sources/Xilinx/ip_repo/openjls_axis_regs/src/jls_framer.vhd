@@ -77,7 +77,7 @@ architecture behavioral of jls_framer is
   signal sFsmState              : fsm_t;
 
   -- Footer (D9) offsets of in-flight images; > 1 only for tiny images (T.87 H.3 4x4)
-  constant EOI_FIFO_DEPTH       : natural := 2;
+  constant EOI_FIFO_DEPTH       : natural := 3;
 
   type eoi_offsets_t is array(natural range <>) of natural range 0 to BUFFER_BYTES;
 

@@ -123,7 +123,7 @@ if [ -d "$COV_HTML" ]; then
             | awk '/^TOTAL/{print $3}')
   fi
   # The coverage HTML has no date; use its mtime
-  cov_date=$(date -u -r "$COV_HTML/index.html" '+%Y-%m-%d' 2>/dev/null || true)
+  cov_date=$(date -r "$COV_HTML/index.html" '+%Y-%m-%d' 2>/dev/null || true)
   COV_NOTE="Statement coverage of the RTL, unioned over every OSVVM test; the report breaks it down per source file."
   emit_row "NVC code coverage" "$COV_NOTE" "INFO" \
     "${pct:-n/a}" "per-file breakdown in report" "coverage/index.html" "$cov_date"
