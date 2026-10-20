@@ -299,9 +299,9 @@ table, th, td {
  <h2 style="margin-top: 0px; margin-bottom: 0px">Covered statements:</h2>
   <div style="padding:0px 10px;">
 <h3>Assertion statement on lines 31 to 33:</h3><code>31:&nbsp;&nbsp;assert&nbsp;A_WIDTH&nbsp;&gt;=&nbsp;N_WIDTH&nbsp;<br>32:&nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"A_WIDTH&nbsp;has&nbsp;to&nbsp;be&nbsp;&gt;=&nbsp;than&nbsp;N_WIDTH"&nbsp;<br>33:&nbsp;&nbsp;&nbsp;&nbsp;severity&nbsp;failure;&nbsp;</code><br><b>Count:</b> 3<br><b>Threshold:</b> 1<hr/>
-<h3>If statement on lines 35 to 36:</h3><code>35:&nbsp;&nbsp;oTemp&nbsp;&lt;=&nbsp;iAq&nbsp;when&nbsp;iRItype&nbsp;=&nbsp;'0'&nbsp;else&nbsp;<br>36:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iAq&nbsp;+&nbsp;resize(shift_right(iNq,&nbsp;1),&nbsp;A_WIDTH);&nbsp;</code><br><b>Count:</b> 158466<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 35:</h3><code>35:&nbsp;&nbsp;oTemp&nbsp;&lt;=&nbsp;<code class="cbg">iAq</code>&nbsp;when&nbsp;iRItype&nbsp;=&nbsp;'0'&nbsp;else&nbsp;</code><br><b>Count:</b> 156552<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 36:</h3><code>36:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">iAq&nbsp;+&nbsp;resize(shift_right(iNq,&nbsp;1),&nbsp;A_WIDTH)</code>;&nbsp;</code><br><b>Count:</b> 1914<br><b>Threshold:</b> 1<hr/>
+<h3>If statement on lines 35 to 36:</h3><code>35:&nbsp;&nbsp;oTemp&nbsp;&lt;=&nbsp;iAq&nbsp;when&nbsp;iRItype&nbsp;=&nbsp;'0'&nbsp;else&nbsp;<br>36:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iAq&nbsp;+&nbsp;resize(shift_right(iNq,&nbsp;1),&nbsp;A_WIDTH);&nbsp;</code><br><b>Count:</b> 158626<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 35:</h3><code>35:&nbsp;&nbsp;oTemp&nbsp;&lt;=&nbsp;<code class="cbg">iAq</code>&nbsp;when&nbsp;iRItype&nbsp;=&nbsp;'0'&nbsp;else&nbsp;</code><br><b>Count:</b> 156632<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 36:</h3><code>36:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">iAq&nbsp;+&nbsp;resize(shift_right(iNq,&nbsp;1),&nbsp;A_WIDTH)</code>;&nbsp;</code><br><b>Count:</b> 1994<br><b>Threshold:</b> 1<hr/>
 <h3>Assertion statement on line 38:</h3><code>38:&nbsp;&nbsp;<code class="cbg">postponed&nbsp;assert&nbsp;is_x(oTemp)&nbsp;or&nbsp;oTemp&nbsp;&gt;=&nbsp;iAq&nbsp;report&nbsp;"a20:&nbsp;TEMP&nbsp;wrapped"&nbsp;severity&nbsp;error;</code>&nbsp;</code><br><b>Count:</b> 106342<br><b>Threshold:</b> 1  </div>
   </section>
 
@@ -322,7 +322,7 @@ table, th, td {
   <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
  <h2 style="margin-top: 0px; margin-bottom: 0px">Covered branches:</h2>
   <div style="padding:0px 10px;">
-<h3>"if" / "when" / "else" condition on line 35:</h3><code>35:&nbsp;&nbsp;oTemp&nbsp;&lt;=&nbsp;iAq&nbsp;when&nbsp;<code class="cbg">iRItype&nbsp;=&nbsp;'0'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>156552</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 35:</h3><code>35:&nbsp;&nbsp;oTemp&nbsp;&lt;=&nbsp;iAq&nbsp;when&nbsp;<code class="cbg">iRItype&nbsp;=&nbsp;'0'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>156632</td><td>1</td></tr></table><hr/>
 <h3>"if" / "when" / "else" condition on line 35:</h3><code>35:&nbsp;&nbsp;oTemp&nbsp;&lt;=&nbsp;iAq&nbsp;when&nbsp;<code class="cbg">iRItype&nbsp;=&nbsp;'0'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>870</td><td>1</td></tr></table>  </div>
   </section>
 
@@ -450,7 +450,7 @@ table, th, td {
    document.getElementById("defaultOpen").click();
 </script>
 <footer>   <p> NVC version: 1.23.0 </p>
-   <p> Generated on: Mon Oct 19 13:32:18 2026
+   <p> Generated on: Mon Oct 19 21:43:52 2026
  </p>
 </footer>
 </body>

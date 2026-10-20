@@ -298,8 +298,8 @@ table, th, td {
   <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
  <h2 style="margin-top: 0px; margin-bottom: 0px">Covered statements:</h2>
   <div style="padding:0px 10px;">
-<h3>Assertion statement on lines 57 to 59:</h3><code>57:&nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(oErrorVal)&nbsp;or&nbsp;abs(to_integer(iErrorVal))&nbsp;&gt;=&nbsp;RANGE_P&nbsp;<br>58:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or&nbsp;(to_integer(oErrorVal)&nbsp;&gt;=&nbsp;(RANGE_P&nbsp;+&nbsp;1)&nbsp;/&nbsp;2&nbsp;-&nbsp;RANGE_P&nbsp;and&nbsp;to_integer(oErrorVal)&nbsp;&lt;&nbsp;(RANGE_P&nbsp;+&nbsp;1)&nbsp;/&nbsp;2)&nbsp;<br>59:&nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"a9:&nbsp;Errval&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;&nbsp;</code><br><b>Count:</b> 625866<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 33:</h3><code>33:&nbsp;&nbsp;&nbsp;&nbsp;oErrorVal&nbsp;&lt;=&nbsp;<code class="cbg">resize(iErrorVal(BITNESS&nbsp;-&nbsp;1&nbsp;downto&nbsp;0),&nbsp;BITNESS&nbsp;+&nbsp;1)</code>;&nbsp;</code><br><b>Count:</b> 1371357<br><b>Threshold:</b> 1<hr/>
+<h3>Assertion statement on lines 57 to 59:</h3><code>57:&nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(oErrorVal)&nbsp;or&nbsp;abs(to_integer(iErrorVal))&nbsp;&gt;=&nbsp;RANGE_P&nbsp;<br>58:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or&nbsp;(to_integer(oErrorVal)&nbsp;&gt;=&nbsp;(RANGE_P&nbsp;+&nbsp;1)&nbsp;/&nbsp;2&nbsp;-&nbsp;RANGE_P&nbsp;and&nbsp;to_integer(oErrorVal)&nbsp;&lt;&nbsp;(RANGE_P&nbsp;+&nbsp;1)&nbsp;/&nbsp;2)&nbsp;<br>59:&nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"a9:&nbsp;Errval&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;&nbsp;</code><br><b>Count:</b> 626586<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 33:</h3><code>33:&nbsp;&nbsp;&nbsp;&nbsp;oErrorVal&nbsp;&lt;=&nbsp;<code class="cbg">resize(iErrorVal(BITNESS&nbsp;-&nbsp;1&nbsp;downto&nbsp;0),&nbsp;BITNESS&nbsp;+&nbsp;1)</code>;&nbsp;</code><br><b>Count:</b> 1373037<br><b>Threshold:</b> 1<hr/>
 <h3>Signal assignment statement on line 47:</h3><code>47:&nbsp;&nbsp;&nbsp;&nbsp;sExt&nbsp;&lt;=&nbsp;<code class="cbg">resize(iErrorVal,&nbsp;BITNESS&nbsp;+&nbsp;2)</code>;&nbsp;</code><br><b>Count:</b> 17436<br><b>Threshold:</b> 1<hr/>
 <h3>If statement on lines 49 to 50:</h3><code>49:&nbsp;&nbsp;&nbsp;&nbsp;sErrAdj&nbsp;&lt;=&nbsp;sExt&nbsp;+&nbsp;RANGE_S&nbsp;when&nbsp;iErrorVal&nbsp;&lt;&nbsp;0&nbsp;else&nbsp;<br>50:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sExt;&nbsp;</code><br><b>Count:</b> 34868<br><b>Threshold:</b> 1<hr/>
 <h3>Signal assignment statement on line 49:</h3><code>49:&nbsp;&nbsp;&nbsp;&nbsp;sErrAdj&nbsp;&lt;=&nbsp;<code class="cbg">sExt&nbsp;+&nbsp;RANGE_S</code>&nbsp;when&nbsp;iErrorVal&nbsp;&lt;&nbsp;0&nbsp;else&nbsp;</code><br><b>Count:</b> 17424<br><b>Threshold:</b> 1<hr/>
@@ -456,7 +456,7 @@ table, th, td {
    document.getElementById("defaultOpen").click();
 </script>
 <footer>   <p> NVC version: 1.23.0 </p>
-   <p> Generated on: Mon Oct 19 13:32:18 2026
+   <p> Generated on: Mon Oct 19 21:43:52 2026
  </p>
 </footer>
 </body>
