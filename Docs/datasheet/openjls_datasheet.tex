@@ -211,7 +211,8 @@ The architecture builds on Mert~[2]; RAM primitives come from open-logic~[4].
 
 End-of-image is derived internally from the dimensions provided at the ports \texttt{iImageWidth} and \texttt{iImageHeight}.
 The core never stalls at end of line or end of image, so images stream back-to-back.
-It stalls only when downstream backpressure fills the byte-stuffer buffer.
+It stalls only when downstream backpressure fills the byte-stuffer buffer, or, for
+back-to-back images of 8 pixels or fewer, while three images are in flight.
 In principle the byte stuffer's fixed 4-byte-per-clock drain could also stall the
 input if the code rate exceeded it for long enough, but none of the random,
 adversarial or worst-case natural images we measured caused a stall.

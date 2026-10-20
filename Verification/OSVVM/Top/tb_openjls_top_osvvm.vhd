@@ -54,6 +54,8 @@ architecture sim of tb_openjls_top_osvvm is
   constant BIG_H : natural := 48;
 
   constant HOLD_CYCLES : natural := 1200;
+  -- Past every per-image queue in openjls_top (deepest: jls_framer start queue, 4)
+  constant FLOOD_IMAGES : natural := 8;
 
   type pixel_array_t is array (natural range <>) of natural;
 
@@ -370,6 +372,8 @@ begin
     variable reqH3      : AlertLogIDType;
     variable reqB2B     : AlertLogIDType;
     variable reqRI      : AlertLogIDType;
+    variable reqFlood   : AlertLogIDType;
+    variable floodOk    : boolean;
 
     procedure do_reset is
     begin
@@ -537,9 +541,10 @@ begin
     end if;
 
     -- BackToBack: b2b x3, B5 and C
-    reqH3  := GetReqID("T87.H3", EXP_BYTES);
-    reqB2B := GetReqID("OJLS.BackToBack", 3);
-    reqRI  := GetReqID("OJLS.RIForward", RI_EXP_BYTES);
+    reqH3    := GetReqID("T87.H3", EXP_BYTES);
+    reqB2B   := GetReqID("OJLS.BackToBack", 3);
+    reqRI    := GetReqID("OJLS.RIForward", RI_EXP_BYTES);
+    reqFlood := GetReqID("OJLS.ImageFlood", 2 * (FLOOD_IMAGES + 1));
 
     do_reset;
 
@@ -750,6 +755,39 @@ begin
     end loop;
 
     ICover(covB2B, 2);
+
+    -- Flood: minimal images past every per-image queue, downstream ready then held ---
+    -- With iReady high only the in-flight cap can drop oReady
+    sNoStall <= false;
+    for held in boolean loop
+
+      vStallSnap := feedStallCnt;
+      base       := collectedCount;
+      baseL      := lastCount;
+      sBpMode    <= 2 when held else 0;
+      for n in 1 to FLOOD_IMAGES loop
+
+        feed(PIXELS, false, 4);
+
+      end loop;
+      wait_images(FLOOD_IMAGES);
+      sBpMode <= 0;
+      AffirmIf(reqFlood, feedStallCnt > vStallSnap, "flood held=" & boolean'image(held) & " stalled the input");
+
+      for n in 0 to FLOOD_IMAGES - 1 loop
+
+        floodOk := collectedCount - base = FLOOD_IMAGES * refLen;
+        for i in 0 to refLen - 1 loop
+
+          floodOk := floodOk and base + n * refLen + i < collectedCount and
+                     collected(base + n * refLen + i) = refBuf(i);
+
+        end loop;
+        AffirmIf(reqFlood, floodOk, "flood held=" & boolean'image(held) & " image " & integer'image(n) & " byte-exact");
+
+      end loop;
+
+    end loop;
 
     -- Phase D: below-minimum dims fall back to MAX ---
     -- Only the header's Y/X fields are checked; the image is then aborted
