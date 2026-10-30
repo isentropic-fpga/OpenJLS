@@ -8,6 +8,7 @@
 --
 -- Per-address init flags: after iEndOfImage, the first read of each context returns the initial values.
 -- The flag lookup selects on the merged A.4.1 Qi, skipping the A.4.2 adder; the flag clear lands a cycle late.
+-- Writes land a cycle late from a register; a read forwards from both writes still in flight.
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -77,9 +78,15 @@ architecture behavioral of context_ram is
   signal sClrKey       : std_logic_vector(12 downto 0);
   signal sBramRdData   : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
 
-  -- Same-address write forwarding: WBR on top of an RBW BRAM
-  signal sFwdSameReg   : std_logic;
-  signal sWrDataReg    : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+  signal sWrPendEn     : std_logic;
+  signal sWrPendAddr   : std_logic_vector(log2ceil(RAM_DEPTH) - 1 downto 0);
+  signal sWrPendData   : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+
+  -- Same-address write forwarding: WBR on top of an RBW BRAM. New: the write presented with the read; Old: the pending one
+  signal sFwdNew       : std_logic;
+  signal sFwdOld       : std_logic;
+  signal sFwdNewData   : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+  signal sFwdOldData   : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
   signal sRdAlt        : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
   signal sRdUseAlt     : std_logic;
 
@@ -102,10 +109,10 @@ begin
     )
     port map (
       Clk             => iClk,
-      Wr_Addr         => iWrAddr,
-      Wr_Ena          => iWrEn,
+      Wr_Addr         => sWrPendAddr,
+      Wr_Ena          => sWrPendEn,
       Wr_Be           => open,
-      Wr_Data         => iWrData,
+      Wr_Data         => sWrPendData,
       Rd_Clk          => open,
       Rd_Addr         => iRdAddr,
       Rd_Ena          => iRdEn,
@@ -180,24 +187,42 @@ begin
 
   end process p_init_tracker;
 
+  -- No reset: a write on the first reset cycle still lands, as with the unregistered port
+  p_wr_pend : process (iClk) is
+  begin
+
+    if rising_edge(iClk) then
+      sWrPendEn   <= iWrEn;
+      sWrPendAddr <= iWrAddr;
+      sWrPendData <= iWrData;
+    end if;
+
+  end process p_wr_pend;
+
+  -- Neither write is in the BRAM by the read; the newer wins at the output, so iWrData lands on a plain register
   p_fwd : process (iClk) is
   begin
 
     if rising_edge(iClk) then
       if (iRst = '1') then
-        sFwdSameReg <= '0';
-        sWrDataReg  <= (others => '0');
+        sFwdNew     <= '0';
+        sFwdOld     <= '0';
+        sFwdNewData <= (others => '0');
+        sFwdOldData <= (others => '0');
       elsif (iRdEn = '1') then
-        sFwdSameReg <= iWrEn and bool2bit(iWrAddr = iRdAddr);
-        sWrDataReg  <= iWrData;
+        sFwdNew     <= iWrEn and bool2bit(iWrAddr = iRdAddr);
+        sFwdOld     <= sWrPendEn and bool2bit(sWrPendAddr = iRdAddr);
+        sFwdNewData <= iWrData;
+        sFwdOldData <= sWrPendData;
       end if;
     end if;
 
   end process p_fwd;
 
   sRdAlt    <= CTX_INIT when sUseInitReg = '1' else
-               sWrDataReg;
-  sRdUseAlt <= sUseInitReg or sFwdSameReg;
+               sFwdNewData when sFwdNew = '1' else
+               sFwdOldData;
+  sRdUseAlt <= sUseInitReg or sFwdNew or sFwdOld;
 
   oRdData   <= sRdAlt when sRdUseAlt = '1' else
                sBramRdData;

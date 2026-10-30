@@ -7,8 +7,8 @@
 -- tb_context_ram_osvvm: context_ram against a behavioral model of its contract
 --
 -- The first read of an address since reset/EOI returns CTX_INIT; after that, a
--- same-cycle write to the read address forwards. A read on the EOI cycle uses
--- the ending image's flags. Accesses on the first reset cycle land in BRAM but
+-- same-cycle write to the read address forwards, as does the previous cycle's
+-- (still pending in the DUT). A read on the EOI cycle uses the ending image's flags. Accesses on the first reset cycle land in BRAM but
 -- stay masked by the re-arm; their read result is a don't-care.
 --
 -- Guidelines:
@@ -81,6 +81,9 @@ architecture sim of tb_context_ram_osvvm is
   signal oRdBram : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
   signal oRdAlt  : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
   signal oRdUse  : std_logic;
+  -- Write presented on the previous cycle: still pending in the DUT, landing this cycle
+  signal prevWrEn   : std_logic := '0';
+  signal prevWrAddr : std_logic_vector(ADDR_W - 1 downto 0);
 
   type mem_t is array (0 to RAM_DEPTH - 1) of std_logic_vector(TOTAL_WIDTH - 1 downto 0);
   type ini_t is array (0 to RAM_DEPTH - 1) of boolean;
@@ -127,6 +130,16 @@ begin
       oRdUseAlt   => oRdUse
     );
 
+  prev_wr : process (clk) is
+  begin
+
+    if rising_edge(clk) then
+      prevWrEn   <= iWrEn;
+      prevWrAddr <= iWrAddr;
+    end if;
+
+  end process prev_wr;
+
   -- The split outputs recombine to oRdData
   split_chk : process (clk) is
   begin
@@ -166,6 +179,7 @@ begin
     variable rv       : RandomPType;
     variable cov      : CoverageIDType;
     variable covEoiRd : CoverageIDType;
+    variable covPend  : CoverageIDType;
     variable mm       : CoverageIDType;
     variable rs       : CoverageIDType;
     variable req      : AlertLogIDType;
@@ -188,6 +202,7 @@ begin
       variable outcome : integer;
       variable held : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
       variable q    : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+      variable pend : boolean;
 
     begin
 
@@ -201,6 +216,7 @@ begin
 
       exp     := (others => '0');
       outcome := -1;
+      pend    := prevWrEn = '1' and prevWrAddr = std_logic_vector(to_unsigned(rdAddr, ADDR_W));
       if (rdEn = '1') then
         if (ini(rdAddr)) then
           exp     := CTX_INIT;
@@ -236,6 +252,9 @@ begin
         ICover(mm, (2, checked_integer(signed(q(B_LO - 1 downto C_LO)))));
         ICover(mm, (3, checked_integer(unsigned(q(C_LO - 1 downto 0)))));
         ICover(cov, outcome);
+        if (outcome = 1 and pend) then
+          ICover(covPend, 1);
+        end if;
         if (eoi = '1') then
           ICover(covEoiRd, outcome);
         end if;
@@ -324,6 +343,8 @@ begin
     AddBins(cov, "initial value", GenBin(0));
     AddBins(cov, "stored value", GenBin(1));
     AddBins(cov, "forwarded write", GenBin(2));
+    covPend := NewID("G4.Stream readOfPendingWrite");
+    AddBins(covPend, "stored value from the write landing this cycle", 20, GenBin(1));
     covEoiRd := NewID("G4.Stream readOnEoiCycle");
     SetFieldName(covEoiRd, "readOnEoiCycle");
     AddBins(covEoiRd, "initial on EOI", GenBin(0));
@@ -418,6 +439,10 @@ begin
         step('1', a, '1', a, d, "rand rmw a=" & integer'image(a));
       end if;
 
+      if (rv.DistValInt(((1, 1), (0, 4))) = 1) then
+        step('1', a, '0', 0, ZERO, "rand read of pending write a=" & integer'image(a));
+      end if;
+
       if (rv.DistValInt(((1, 1), (0, 60))) = 1) then
         pulse_eoi;
       elsif (rv.DistValInt(((1, 1), (0, 80))) = 1) then
@@ -427,14 +452,16 @@ begin
                          rv.RandInt(0, RAM_DEPTH - 1), rv.RandSlv(TOTAL_WIDTH));
       end if;
 
-      exit when IsCovered(cov) and IsCovered(covEoiRd) and i > 200;
+      exit when IsCovered(cov) and IsCovered(covEoiRd) and IsCovered(covPend) and i > 200;
 
     end loop;
 
     WriteBin(cov);
     WriteBin(covEoiRd);
+    WriteBin(covPend);
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "read-outcome coverage closed");
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covEoiRd), "read-on-EOI-cycle coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covPend), "pending-write coverage closed");
     affirm_covered(mm, "field min/max coverage closed");
     affirm_covered(rs, "reset phase coverage closed");
 
