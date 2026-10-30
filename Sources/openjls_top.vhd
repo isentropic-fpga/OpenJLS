@@ -811,6 +811,11 @@ begin
       iWrEn       => sCtxWrEn and sCE3,
       iWrData     => sCtxWrData,
       iRdAddr     => std_logic_vector(sS2Q),
+      iRdRegular  => bool2bit(sReg1.mode = token_regular),
+      iRdRiType   => sS2RItype,
+      iRdQ1       => sS2MQ1,
+      iRdQ2       => sS2MQ2,
+      iRdQ3       => sS2MQ3,
       iRdEn       => sReg1V and sCE1 and (bool2bit(sS2TokenMode = TOKEN_REGULAR) or
       bool2bit(sS2TokenMode = TOKEN_RUN_INTERRUPTION)),
       iEndOfImage => sReg1Eoi,

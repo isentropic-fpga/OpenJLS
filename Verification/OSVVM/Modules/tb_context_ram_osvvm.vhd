@@ -71,6 +71,11 @@ architecture sim of tb_context_ram_osvvm is
   signal iWrData : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
   signal iRdAddr : std_logic_vector(ADDR_W - 1 downto 0);
   signal iRdEn   : std_logic;
+  signal iRdReg  : std_logic;
+  signal iRdRi   : std_logic;
+  signal iRdQ1   : signed(3 downto 0);
+  signal iRdQ2   : signed(3 downto 0);
+  signal iRdQ3   : signed(3 downto 0);
   signal iEoi    : std_logic;
   signal oRdData : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
 
@@ -106,10 +111,35 @@ begin
       iWrEn       => iWrEn,
       iWrData     => iWrData,
       iRdAddr     => iRdAddr,
+      iRdRegular  => iRdReg,
+      iRdRiType   => iRdRi,
+      iRdQ1       => iRdQ1,
+      iRdQ2       => iRdQ2,
+      iRdQ3       => iRdQ3,
       iRdEn       => iRdEn,
       iEndOfImage => iEoi,
       oRdData     => oRdData
     );
+
+  -- Merged Qi of a regular address, as the top drives them (Q = 81 Q1 + 9 Q2 + Q3)
+  rd_q : process (iRdAddr) is
+
+    variable a, q1, q2, q3, r : integer;
+
+  begin
+
+    a      := to_integer(unsigned(iRdAddr));
+    q3     := (a + 4) mod 9 - 4;
+    r      := (a - q3) / 9;
+    q2     := (r + 4) mod 9 - 4;
+    q1     := (r - q2) / 9;
+    iRdReg <= '1' when a < 365 else '0';
+    iRdRi  <= '1' when a = 366 else '0';
+    iRdQ1  <= to_signed(q1, 4);
+    iRdQ2  <= to_signed(q2, 4);
+    iRdQ3  <= to_signed(q3, 4);
+
+  end process rd_q;
 
   stim : process is
 
