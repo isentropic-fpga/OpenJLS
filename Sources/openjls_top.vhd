@@ -300,6 +300,9 @@ architecture rtl of openjls_top is
 
   -- Q3 == Q4 forwarding, one flag per mode (regular and RI Q ranges are disjoint)
   signal sFwdRegHit                         : std_logic;
+  -- Context key: '1' & merged Qi for regular, '0' & RItype otherwise; equal keys iff equal Q
+  signal sS2Key                             : std_logic_vector(12 downto 0);
+  signal sReg2Key                           : std_logic_vector(12 downto 0);
   signal sFwdRiHit                          : std_logic;
 
   -- Speculation control (Cq only)
@@ -920,6 +923,7 @@ begin
         sReg2Eoi <= sReg1Eoi;
         sReg2Px  <= sS2Px;
         sReg2Par <= sReg1Par;
+        sReg2Key <= sS2Key;
       end if;
     end if;
 
@@ -929,20 +933,37 @@ begin
 
   sS3Px <= sReg2Px;
 
-  -- Forward on a Q match; same parity only, so a straggler from the previous image never forwards
-  sFwdRegHit <= '1' when sReg2V = '1' and sReg3V = '1'
-                         and sReg2Par = sReg3Par
-                         and sReg2.Q = sReg3.Q
-                         and sReg3.mode = token_regular else
-                '0';
+  sS2Key <= '1' & std_logic_vector(sS2MQ1 & sS2MQ2 & sS2MQ3) when sReg1.mode = token_regular else
+            (0 => sS2RItype, others => '0');
 
-  sFwdRiHit <= '1' when sReg2V = '1' and sReg3V = '1'
-                        and sReg2Par = sReg3Par
-                        and sReg2.Q = sReg3.Q
-                        and sReg3.mode = token_run_interruption else
-               '0';
+  -- Forward on a Q match, registered a cycle early from the stage 1/2 pair the stall advances together.
+  -- Same parity only, so a straggler from the previous image never forwards
+  p_fwd_hit : process (iClk) is
+    variable vMatch : boolean;
+  begin
+    if rising_edge(iClk) then
+      if (iRst = '1') then
+        sFwdRegHit <= '0';
+        sFwdRiHit  <= '0';
+      elsif (sStallLogic = '0') then
+        vMatch     := sReg1V = '1' and sS2TokenMode /= token_none and sReg2V = '1'
+                      and sReg1Par = sReg2Par and sS2Key = sReg2Key;
+        sFwdRegHit <= bool2bit(vMatch and sReg2.mode = token_regular);
+        sFwdRiHit  <= bool2bit(vMatch and sReg2.mode = token_run_interruption);
+      end if;
+    end if;
+  end process p_fwd_hit;
 
-  -- Hit: start from the pre-update Cq and let DeltaCq pick the candidate. Miss: the BRAM read is current
+  postponed assert is_x(sReg2.Q) or is_x(sReg3.Q) or is_x(sFwdRegHit) or
+    sFwdRegHit = bool2bit(sReg2V = '1' and sReg3V = '1' and sReg2Par = sReg3Par
+                          and sReg2.Q = sReg3.Q and sReg3.mode = token_regular)
+    report "openjls_top: registered regular hit disagrees with Q2 == Q3" severity error;
+  postponed assert is_x(sReg2.Q) or is_x(sReg3.Q) or is_x(sFwdRiHit) or
+    sFwdRiHit = bool2bit(sReg2V = '1' and sReg3V = '1' and sReg2Par = sReg3Par
+                         and sReg2.Q = sReg3.Q and sReg3.mode = token_run_interruption)
+    report "openjls_top: registered RI hit disagrees with Q2 == Q3" severity error;
+
+  -- Hit: start from the pre-update Cq and let the A.13 branch pick the candidate. Miss: the BRAM read is current
   sS3CqBase <= sReg3.Cq when sFwdRegHit = '1' else
                sS3Cq;
 
