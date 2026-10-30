@@ -66,6 +66,8 @@ architecture behavioral of jls_framer is
   constant N_H                  : natural := math_ceil_div(HEADER_LEN, BYTES_OUT);
   -- Unused bytes of the last header beat; math_min keeps term (d) natural for wide OUT_WIDTH
   constant H_SLACK              : natural := N_H * BYTES_OUT - HEADER_LEN;
+  -- Data bytes in the last header beat; the header advances BYTES_OUT per beat
+  constant HDR_DATA_BYTES       : natural := BYTES_OUT - HEADER_LEN mod BYTES_OUT;
   constant BUFFER_BYTES_NOMINAL : natural := math_max(
                                                       math_max(V_IEOI, D_DRAIN * BYTES_IN),
                                                       (D_DRAIN + N_H) * BYTES_IN - math_min(BYTES_IN, H_SLACK));
@@ -85,6 +87,9 @@ architecture behavioral of jls_framer is
   signal sFifoByteCount         : natural range 0 to BUFFER_BYTES;
   signal sEoiFifo               : eoi_offsets_t(0 to EOI_FIFO_DEPTH - 1);
   signal sEoiCount              : natural range 0 to EOI_FIFO_DEPTH;
+  -- Head footer falls in the next data / last-header beat, registered off the emit path
+  signal sEoiInData             : boolean;
+  signal sEoiInHdr              : boolean;
 
   signal sOutWord               : std_logic_vector(OUT_WIDTH - 1 downto 0);
   signal sOutValid              : std_logic;
@@ -329,6 +334,8 @@ begin
         sFifoByteCount <= 0;
         sEoiFifo       <= (others => 0);
         sEoiCount      <= 0;
+        sEoiInData     <= false;
+        sEoiInHdr      <= false;
         sOutWord       <= (others => '0');
         sOutValid      <= '0';
         sOutLast       <= '0';
@@ -391,16 +398,20 @@ begin
                 end if;
               else
                 -- Last header beat: fill the rest from the FIFO
-                vDataNeededBytes := BYTES_OUT - vHeaderBytesRemain;
+                assert vHeaderBytesRemain = HEADER_LEN mod BYTES_OUT
+                  report "jls_framer: last header beat off the BYTES_OUT grid"
+                  severity failure;
+                vDataNeededBytes := HDR_DATA_BYTES;
 
-                vEoiInBeat := vEoiCount > 0 and vEoiIdxFifo(0) < vDataNeededBytes;
+                vEoiInBeat := sEoiInHdr;
                 if (vEoiInBeat) then
                   vEmitDataBytes := vEoiIdxFifo(0) + 1;
                 else
                   vEmitDataBytes := vDataNeededBytes;
                 end if;
 
-                if (vFifoByteCount >= vEmitDataBytes) then
+                -- The head footer is already buffered, so its beat never waits on the count
+                if (vEoiInBeat or vFifoByteCount >= vDataNeededBytes) then
 
                   for i in 0 to BYTES_OUT - 1 loop
 
@@ -443,14 +454,14 @@ begin
           when data =>
 
             if (vCanEmit) then
-              vEoiInBeat := vEoiCount > 0 and vEoiIdxFifo(0) < BYTES_OUT;
+              vEoiInBeat := sEoiInData;
               if (vEoiInBeat) then
                 vEmitDataBytes := vEoiIdxFifo(0) + 1;
               else
                 vEmitDataBytes := BYTES_OUT;
               end if;
 
-              if (vFifoByteCount >= vEmitDataBytes) then
+              if (vEoiInBeat or vFifoByteCount >= BYTES_OUT) then
 
                 for i in 0 to BYTES_OUT - 1 loop
 
@@ -514,6 +525,10 @@ begin
           end if;
         end if;
 
+        assert vEoiCount = 0 or vEoiIdxFifo(0) < vFifoByteCount
+          report "jls_framer: head footer offset past the buffered bytes"
+          severity failure;
+
         assert vFifoByteCount <= BUFFER_BYTES
           report "jls_framer: payload FIFO overflow (vCount exceeds BUFFER_BYTES; check sizing assumptions or sustained backpressure)"
           severity failure;
@@ -522,6 +537,8 @@ begin
         sFifoByteCount <= vFifoByteCount;
         sEoiFifo       <= vEoiIdxFifo;
         sEoiCount      <= vEoiCount;
+        sEoiInData     <= vEoiCount > 0 and vEoiIdxFifo(0) < BYTES_OUT;
+        sEoiInHdr      <= vEoiCount > 0 and vEoiIdxFifo(0) < HDR_DATA_BYTES;
         sNextPending   <= vNextPending;
       end if;
     end if;
