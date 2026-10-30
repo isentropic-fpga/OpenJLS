@@ -208,6 +208,7 @@ architecture rtl of openjls_top is
   signal sReg1Par                           : std_logic;
   signal sReg2Par                           : std_logic;
   signal sReg3Par                           : std_logic;
+  signal sReg3Rescale                       : std_logic;
   signal sCtxOwnerPar                       : std_logic;
   signal sCtxRdPar                          : std_logic;
   signal sReg1ModeRun                       : std_logic;
@@ -302,7 +303,6 @@ architecture rtl of openjls_top is
   signal sFwdRiHit                          : std_logic;
 
   -- Speculation control (Cq only)
-  signal sDeltaCq                           : signed(C_WIDTH - 1 downto 0);                           -- [-1, 1] on sFwdRegHit, unused otherwise
   signal sSpecUseM                          : std_logic;
   signal sSpecUseP                          : std_logic;
 
@@ -319,6 +319,8 @@ architecture rtl of openjls_top is
   signal sS4NqNew                           : unsigned(N_WIDTH - 1 downto 0);                         -- [1, RESET]
   signal sS4BqNew                           : signed(B_WIDTH - 1 downto 0);                           -- [-(RESET - 1), 0]
   signal sS4CqNew                           : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
+  signal sS4CqDec                           : std_logic;
+  signal sS4CqInc                           : std_logic;
   signal sS4RiAqNew                         : unsigned(A_WIDTH - 1 downto 0);                         -- [0, 2^A_STORED - 1]
   signal sS4RiNqNew                         : unsigned(N_WIDTH - 1 downto 0);                         -- [1, RESET]
   signal sS4RiNnNew                         : unsigned(NN_WIDTH - 1 downto 0);                        -- [0, RESET - 1]
@@ -1016,17 +1018,9 @@ begin
       oErrorVal => sS3Err9M
     );
 
-  -- From the live stage 4 A.13; used only on a hit
-  sDeltaCq <= sS4CqNew - sReg3.Cq;
-
-  -- A.13 moves C by at most one step, the premise of the 3-way speculation
-  postponed assert sFwdRegHit /= '1' or is_x(sDeltaCq) or (sDeltaCq >= - 1 and sDeltaCq <= 1)
-    report "openjls_top: forwarded C moved by more than one" severity error;
-
-  sSpecUseM <= '1' when sFwdRegHit = '1' and sDeltaCq < 0 else
-               '0';
-  sSpecUseP <= '1' when sFwdRegHit = '1' and sDeltaCq > 0 else
-               '0';
+  -- The live stage 4 A.13 branch picks the chain; a clamped C lands on a saturated chain, equal to C
+  sSpecUseM <= sFwdRegHit and sS4CqDec;
+  sSpecUseP <= sFwdRegHit and sS4CqInc;
 
   sS3Err9Sel <= sS3Err9M when sSpecUseM = '1' else
                 sS3Err9P when sSpecUseP = '1' else
@@ -1068,10 +1062,11 @@ begin
 
     if rising_edge(iClk) then
       if (iRst = '1') then
-        sReg3    <= CO_TOKEN_NONE;
-        sReg3V   <= '0';
-        sReg3Eoi <= '0';
-        sReg3Par <= '0';
+        sReg3        <= CO_TOKEN_NONE;
+        sReg3V       <= '0';
+        sReg3Eoi     <= '0';
+        sReg3Par     <= '0';
+        sReg3Rescale <= '0';
       elsif (sCE3 = '1') then
         v      := sReg2;
         v.Aq   := sS3Aq;
@@ -1102,10 +1097,11 @@ begin
         if (sReg2V = '0') then
           v := CO_TOKEN_NONE;
         end if;
-        sReg3    <= v;
-        sReg3V   <= sReg2V;
-        sReg3Eoi <= sReg2Eoi;
-        sReg3Par <= sReg2Par;
+        sReg3        <= v;
+        sReg3V       <= sReg2V;
+        sReg3Eoi     <= sReg2Eoi;
+        sReg3Par     <= sReg2Par;
+        sReg3Rescale <= bool2bit(v.Nq = RESET);
       end if;
     end if;
 
@@ -1142,6 +1138,7 @@ begin
       iAq         => sReg3.Aq,
       iBq         => sReg3.Bq,
       iNq         => sReg3.Nq,
+      iRescale    => sReg3Rescale,
       oAq         => sS4AqNew,
       oBq         => sS4BqMid,
       oNq         => sS4NqNew
@@ -1160,7 +1157,9 @@ begin
       iNq     => sS4NqNew,
       iCq     => sReg3.Cq,
       oBq     => sS4BqNew,
-      oCq     => sS4CqNew
+      oCq     => sS4CqNew,
+      oDec    => sS4CqDec,
+      oInc    => sS4CqInc
     );
 
   u_a23 : entity work.a23_run_interruption_update(behavioral)

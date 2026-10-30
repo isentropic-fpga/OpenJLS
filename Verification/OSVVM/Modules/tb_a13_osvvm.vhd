@@ -40,6 +40,8 @@ architecture sim of tb_a13_osvvm is
   signal sCq  : signed(C_WIDTH - 1 downto 0);
   signal sBqO : signed(B_WIDTH - 1 downto 0);
   signal sCqO : signed(C_WIDTH - 1 downto 0);
+  signal sDec : std_logic;
+  signal sInc : std_logic;
 
 begin
 
@@ -56,7 +58,9 @@ begin
       iNq => sNq,
       iCq => sCq,
       oBq => sBqO,
-      oCq => sCqO
+      oCq => sCqO,
+      oDec => sDec,
+      oInc => sInc
     );
 
   stim : process is
@@ -126,6 +130,8 @@ begin
 
       AffirmIfEqual(req, checked_integer(sBqO), bNew, msg & " B");
       AffirmIfEqual(req, checked_integer(sCqO), cNew, msg & " C");
+      AffirmIfEqual(req, sDec, bool2bit(b <= -n), msg & " Dec");
+      AffirmIfEqual(req, sInc, bool2bit(b > 0), msg & " Inc");
       ICover(cov, ev);
       ICover(covC, cev);
       ICover(mm, (1, b));

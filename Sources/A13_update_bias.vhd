@@ -24,7 +24,10 @@ entity a13_update_bias is
     iNq     : in    unsigned (N_WIDTH - 1 downto 0);
     iCq     : in    signed (C_WIDTH - 1 downto 0);
     oBq     : out   signed (B_WIDTH - 1 downto 0);
-    oCq     : out   signed (C_WIDTH - 1 downto 0)
+    oCq     : out   signed (C_WIDTH - 1 downto 0);
+    -- Branch taken, set even when C is clamped
+    oDec    : out   std_logic;
+    oInc    : out   std_logic
   );
 end entity a13_update_bias;
 
@@ -71,6 +74,9 @@ begin
   oCq <= sCDec when sIsBNegBranch = '1' else
          sCInc when sIsBPosBranch = '1' else
          iCq;
+
+  oDec <= sIsBNegBranch;
+  oInc <= sIsBPosBranch and not sIsBNegBranch;
 
   postponed assert is_x(oCq) or iCq < MIN_C or iCq > MAX_C or (oCq >= MIN_C and oCq <= MAX_C)
     report "a13: C outside [MIN_C, MAX_C]" severity error;

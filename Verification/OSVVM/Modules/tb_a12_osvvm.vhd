@@ -46,6 +46,7 @@ architecture sim of tb_a12_osvvm is
   signal sAq   : unsigned(A_WIDTH - 1 downto 0);
   signal sBq   : signed(B_WIDTH - 1 downto 0);
   signal sNq   : unsigned(N_WIDTH - 1 downto 0);
+  signal sRsc  : std_logic;
   signal sAqO  : unsigned(A_WIDTH - 1 downto 0);
   signal sBqO  : signed(B_WIDTH - 1 downto 0);
   signal sNqO  : unsigned(N_WIDTH - 1 downto 0);
@@ -65,6 +66,7 @@ begin
       iAq       => sAq,
       iBq       => sBq,
       iNq       => sNq,
+      iRescale  => sRsc,
       oAq       => sAqO,
       oBq       => sBqO,
       oNq       => sNqO
@@ -100,6 +102,7 @@ begin
       sAq  <= to_unsigned(a, A_WIDTH);
       sBq  <= to_signed(b, B_WIDTH);
       sNq  <= to_unsigned(n, N_WIDTH);
+      sRsc <= bool2bit(n = RESET);
       wait for 1 ns;
 
       rescale := (n = RESET);

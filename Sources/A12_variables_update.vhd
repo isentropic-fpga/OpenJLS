@@ -24,6 +24,8 @@ entity a12_variables_update is
     iAq         : in    unsigned (A_WIDTH - 1 downto 0);
     iBq         : in    signed (B_WIDTH - 1 downto 0);
     iNq         : in    unsigned (N_WIDTH - 1 downto 0);
+    -- iNq = RESET, registered by the caller off the update path
+    iRescale    : in    std_logic;
 
     oAq         : out   unsigned (A_WIDTH - 1 downto 0);
     oBq         : out   signed (B_WIDTH - 1 downto 0);
@@ -44,8 +46,7 @@ architecture rtl of a12_variables_update is
 
 begin
 
-  sDoRescale <= '1' when (iNq = to_unsigned(RESET, iNq'length)) else
-                '0';
+  sDoRescale <= iRescale;
 
   sErrorAbsExtend <= resize(unsigned(abs(iErrorVal)), A_WIDTH);
 
@@ -64,6 +65,8 @@ begin
   oNq <= sNRescale when sDoRescale = '1' else
          sNqNew;
 
+  postponed assert is_x(iNq) or is_x(iRescale) or (iRescale = '1') = (iNq = RESET)
+    report "a12: iRescale disagrees with iNq" severity error;
   postponed assert is_x(sAqNew) or sAqNew >= iAq report "a12: A wrapped" severity error;
   postponed assert is_x(oNq) or iNq > RESET or (oNq >= 1 and oNq <= RESET) report "a12: N out of range" severity error;
 
