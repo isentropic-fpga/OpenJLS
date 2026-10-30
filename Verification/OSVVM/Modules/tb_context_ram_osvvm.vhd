@@ -78,6 +78,9 @@ architecture sim of tb_context_ram_osvvm is
   signal iRdQ3   : signed(3 downto 0);
   signal iEoi    : std_logic;
   signal oRdData : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+  signal oRdBram : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+  signal oRdAlt  : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+  signal oRdUse  : std_logic;
 
   type mem_t is array (0 to RAM_DEPTH - 1) of std_logic_vector(TOTAL_WIDTH - 1 downto 0);
   type ini_t is array (0 to RAM_DEPTH - 1) of boolean;
@@ -118,8 +121,25 @@ begin
       iRdQ3       => iRdQ3,
       iRdEn       => iRdEn,
       iEndOfImage => iEoi,
-      oRdData     => oRdData
+      oRdData     => oRdData,
+      oRdBram     => oRdBram,
+      oRdAlt      => oRdAlt,
+      oRdUseAlt   => oRdUse
     );
+
+  -- The split outputs recombine to oRdData
+  split_chk : process (clk) is
+  begin
+
+    if (falling_edge(clk) and rst = '0') then
+      if (oRdUse = '1') then
+        AffirmIfEqual(GetAlertLogID("ReadSplit"), oRdData, oRdAlt, "alternate");
+      else
+        AffirmIfEqual(GetAlertLogID("ReadSplit"), oRdData, oRdBram, "BRAM");
+      end if;
+    end if;
+
+  end process split_chk;
 
   -- Merged Qi of a regular address, as the top drives them (Q = 81 Q1 + 9 Q2 + Q3)
   rd_q : process (iRdAddr) is

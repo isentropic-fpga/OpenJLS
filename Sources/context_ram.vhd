@@ -42,7 +42,11 @@ entity context_ram is
     iRdQ3           : in    signed(3 downto 0);
     iRdEn           : in    std_logic;
     iEndOfImage     : in    std_logic;
-    oRdData         : out   std_logic_vector(TOTAL_WIDTH - 1 downto 0)
+    oRdData         : out   std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+    -- oRdData split: oRdAlt when oRdUseAlt else oRdBram. oRdAlt and oRdUseAlt come from registers
+    oRdBram         : out   std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+    oRdAlt          : out   std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+    oRdUseAlt       : out   std_logic
   );
 end entity context_ram;
 
@@ -76,6 +80,8 @@ architecture behavioral of context_ram is
   -- Same-address write forwarding: WBR on top of an RBW BRAM
   signal sFwdSameReg   : std_logic;
   signal sWrDataReg    : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+  signal sRdAlt        : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+  signal sRdUseAlt     : std_logic;
 
 begin
 
@@ -189,9 +195,15 @@ begin
 
   end process p_fwd;
 
-  oRdData <= CTX_INIT when sUseInitReg = '1' else
-             sWrDataReg when sFwdSameReg = '1' else
-             sBramRdData;
+  sRdAlt    <= CTX_INIT when sUseInitReg = '1' else
+               sWrDataReg;
+  sRdUseAlt <= sUseInitReg or sFwdSameReg;
+
+  oRdData   <= sRdAlt when sRdUseAlt = '1' else
+               sBramRdData;
+  oRdBram   <= sBramRdData;
+  oRdAlt    <= sRdAlt;
+  oRdUseAlt <= sRdUseAlt;
 
   postponed assert iRdEn /= '1' or is_x(iRdAddr) or unsigned(iRdAddr) < RAM_DEPTH
     report "context_ram: read address past depth" severity error;

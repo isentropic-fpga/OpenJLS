@@ -275,6 +275,9 @@ architecture rtl of openjls_top is
 
   -- context_ram packed I/O
   signal sCtxRdData                         : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+  signal sCtxRdBram                         : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+  signal sCtxRdAlt                          : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+  signal sCtxRdUseAlt                       : std_logic;
   signal sCtxWrData                         : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
   signal sCtxWrEn                           : std_logic;
 
@@ -287,16 +290,22 @@ architecture rtl of openjls_top is
 
   -- Stage 3 — regular prediction (speculative 3-chain)
   signal sS3Px                              : unsigned(BITNESS - 1 downto 0);                         -- [0, MAX_VAL]
-  signal sS3CqBase                          : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
+  signal sS3CqBram                          : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
+  signal sS3CqAlt                           : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
   signal sS3CqP1                            : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
   signal sS3CqM1                            : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
+  signal sS3Err7D                           : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
   signal sS3Err7C                           : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
   signal sS3Err7P                           : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
   signal sS3Err7M                           : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
+  signal sS3Err9D                           : signed(BITNESS downto 0);                               -- [-RANGE_P / 2, RANGE_P / 2 - 1]
   signal sS3Err9C                           : signed(BITNESS downto 0);                               -- [-RANGE_P / 2, RANGE_P / 2 - 1]
   signal sS3Err9P                           : signed(BITNESS downto 0);                               -- [-RANGE_P / 2, RANGE_P / 2 - 1]
   signal sS3Err9M                           : signed(BITNESS downto 0);                               -- [-RANGE_P / 2, RANGE_P / 2 - 1]
-  signal sS3Err9Sel                         : signed(BITNESS downto 0);                               -- [-RANGE_P / 2, RANGE_P / 2 - 1]
+  -- Errval into Reg3: the BRAM chain when sS3UseBram, else sS3ErrOther, built from registers only
+  signal sS3UseBram                         : std_logic;
+  signal sS3ErrOther                        : signed(ERROR_WIDTH - 1 downto 0);
+  signal sS3Errval                          : signed(ERROR_WIDTH - 1 downto 0);
 
   -- Q3 == Q4 forwarding, one flag per mode (regular and RI Q ranges are disjoint)
   signal sFwdRegHit                         : std_logic;
@@ -824,7 +833,10 @@ begin
       iRdEn       => sReg1V and sCE1 and (bool2bit(sS2TokenMode = TOKEN_REGULAR) or
       bool2bit(sS2TokenMode = TOKEN_RUN_INTERRUPTION)),
       iEndOfImage => sReg1Eoi,
-      oRdData     => sCtxRdData
+      oRdData     => sCtxRdData,
+      oRdBram     => sCtxRdBram,
+      oRdAlt      => sCtxRdAlt,
+      oRdUseAlt   => sCtxRdUseAlt
     );
 
   -- Read valid at stage 3. Q3 == Q4: the BRAM read is stale, use the live stage 4 update
@@ -836,7 +848,7 @@ begin
   sS3Bq <= sS4BqNew when sFwdRegHit = '1' else
            - resize(signed('0' & sCtxRdData(CTX_B_HI downto CTX_B_LO)), B_WIDTH);
 
-  -- Prediction forwards Cq through the speculative chains (sS3CqBase)
+  -- Prediction takes Cq through the chains (sS3CqBram, sS3CqAlt)
   sS3Cq <= sS4CqNew when sFwdRegHit = '1' else
            signed(sCtxRdData(CTX_C_HI downto CTX_C_LO));
 
@@ -963,17 +975,41 @@ begin
                          and sReg2.Q = sReg3.Q and sReg3.mode = token_run_interruption)
     report "openjls_top: registered RI hit disagrees with Q2 == Q3" severity error;
 
-  -- Hit: start from the pre-update Cq and let the A.13 branch pick the candidate. Miss: the BRAM read is current
-  sS3CqBase <= sReg3.Cq when sFwdRegHit = '1' else
-               sS3Cq;
+  -- Only chain D sees the raw BRAM word. Chains C, P, M start from registers: on a hit the pre-update Cq,
+  -- with the A.13 branch picking the candidate; otherwise the init or same-address forwarded word
+  sS3CqBram <= signed(sCtxRdBram(CTX_C_HI downto CTX_C_LO));
+  sS3CqAlt  <= sReg3.Cq when sFwdRegHit = '1' else
+               signed(sCtxRdAlt(CTX_C_HI downto CTX_C_LO));
 
-  sS3CqP1 <= to_signed(MAX_C, C_WIDTH) when sS3CqBase = to_signed(MAX_C, C_WIDTH) else
-             sS3CqBase + 1;
-  sS3CqM1 <= to_signed(MIN_C, C_WIDTH) when sS3CqBase = to_signed(MIN_C, C_WIDTH) else
-             sS3CqBase - 1;
+  sS3CqP1 <= to_signed(MAX_C, C_WIDTH) when sReg3.Cq = to_signed(MAX_C, C_WIDTH) else
+             sReg3.Cq + 1;
+  sS3CqM1 <= to_signed(MIN_C, C_WIDTH) when sReg3.Cq = to_signed(MIN_C, C_WIDTH) else
+             sReg3.Cq - 1;
 
   -- A.6 and A.7 fused per chain: the forwarded Cq skips the clip-then-subtract path
-  -- DeltaCq = 0
+  -- BRAM
+  u_a6a7_d : entity work.a6_a7_prediction_error(behavioral)
+    generic map (
+      BITNESS => BITNESS, MAX_VAL => MAX_VAL
+    )
+    port map (
+      iIx       => sReg2.Ix(BITNESS - 1 downto 0),
+      iPx       => sS3Px,
+      iSign     => sReg2.Sign,
+      iCq       => sS3CqBram,
+      oErrorVal => sS3Err7D
+    );
+
+  u_a9_d : entity work.a9_modulo_reduction(behavioral)
+    generic map (
+      BITNESS   => BITNESS, RANGE_P => RANGE_P
+    )
+    port map (
+      iErrorVal => sS3Err7D,
+      oErrorVal => sS3Err9D
+    );
+
+  -- Alternate, DeltaCq = 0
   u_a6a7_c : entity work.a6_a7_prediction_error(behavioral)
     generic map (
       BITNESS => BITNESS, MAX_VAL => MAX_VAL
@@ -982,7 +1018,7 @@ begin
       iIx       => sReg2.Ix(BITNESS - 1 downto 0),
       iPx       => sS3Px,
       iSign     => sReg2.Sign,
-      iCq       => sS3CqBase,
+      iCq       => sS3CqAlt,
       oErrorVal => sS3Err7C
     );
 
@@ -1043,9 +1079,18 @@ begin
   sSpecUseM <= sFwdRegHit and sS4CqDec;
   sSpecUseP <= sFwdRegHit and sS4CqInc;
 
-  sS3Err9Sel <= sS3Err9M when sSpecUseM = '1' else
-                sS3Err9P when sSpecUseP = '1' else
-                sS3Err9C;
+  sS3UseBram <= sReg2V and bool2bit(sReg2.mode = token_regular) and not sFwdRegHit and not sCtxRdUseAlt;
+
+  sS3ErrOther <= (others => '0') when sReg2V = '0' else
+                 resize(sS3Err9M, ERROR_WIDTH) when sReg2.mode = token_regular and sSpecUseM = '1' else
+                 resize(sS3Err9P, ERROR_WIDTH) when sReg2.mode = token_regular and sSpecUseP = '1' else
+                 resize(sS3Err9C, ERROR_WIDTH) when sReg2.mode = token_regular else
+                 resize(sS3RiErr19, ERROR_WIDTH) when sReg2.mode = token_run_interruption else
+                 sReg2.Errval;
+
+  -- The BRAM chain arrives last; keep it to one 2:1 select before Reg3
+  sS3Errval <= resize(sS3Err9D, ERROR_WIDTH) when sS3UseBram = '1' else
+               sS3ErrOther;
 
   -- Stage 3, RI: A.19, A.20 ---
   u_a19 : entity work.a19_run_interruption_error(behavioral)
@@ -1099,13 +1144,8 @@ begin
 
         case sReg2.mode is
 
-          when token_regular =>
-
-            v.Errval := resize(sS3Err9Sel, v.Errval'length);
-
           when token_run_interruption =>
 
-            v.Errval := resize(sS3RiErr19, v.Errval'length);
             v.Sign   := sS3RiSign;
             v.Temp   := sS3RiTemp;
 
@@ -1118,6 +1158,7 @@ begin
         if (sReg2V = '0') then
           v := CO_TOKEN_NONE;
         end if;
+        v.Errval     := sS3Errval;
         sReg3        <= v;
         sReg3V       <= sReg2V;
         sReg3Eoi     <= sReg2Eoi;
