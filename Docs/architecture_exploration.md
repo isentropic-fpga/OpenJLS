@@ -117,17 +117,20 @@ Same flow as the 0fb2554 baselines: non-project OOC, 4 strategies, 2 threads.
 | 26eee7c | chain select from the A.13 branch; A.12 rescale registered |
 | e49875c | forwarding hit registered a cycle early |
 | 8c32762 | one chain fed straight from the BRAM, C/P/M from registers |
+| cd35082 | BRAM write registered; reads forward both in-flight writes |
 
 Routed fmax, MHz (Default / Explore / NetDelay / SpreadLogic → best):
 
-| BITNESS | f2947f7 | 0fb2554 | 8c32762 |
-|---|---|---|---|
-| 8 | 299/299/295/295 → 299 | 294/307/282/292 → 307 | 318/322/329/311 → **329** |
-| 10 | 284/287/291/285 → 291 | 276/286/289/269 → 289 | 295/296/310/302 → **310** |
-| 12 | 279/274/266/269 → 279 | 253/257/268/261 → 268 | 276/294/278/281 → **294** |
-| 16 | 214/224/207/218 → 224 | 221/219/221/209 → 221 | 247/253/245/247 → **253** |
+| BITNESS | f2947f7 | 0fb2554 | 8c32762 | cd35082 |
+|---|---|---|---|---|
+| 8 | 299/299/295/295 → 299 | 294/307/282/292 → 307 | 318/322/329/311 → 329 | 333/332/327/≥336 → **≥336** |
+| 10 | 284/287/291/285 → 291 | 276/286/289/269 → 289 | 295/296/310/302 → 310 | 332/327/327/324 → **332** |
+| 12 | 279/274/266/269 → 279 | 253/257/268/261 → 268 | 276/294/278/281 → 294 | 299/304/307/300 → **307** |
+| 16 | 214/224/207/218 → 224 | 221/219/221/209 → 221 | 247/253/245/247 → 253 | 244/253/256/260 → **260** |
 
-Walls per point, Default run, fmax in MHz:
+At cd35082, 8 bit SpreadLogic meets 3.0 ns (WNS +0.027, hold met); 8 and 10 bit Default miss by ≤ 0.01 ns on 1–2 endpoints. The 3.0 ns overconstraint now caps 8–10 bit: next sweeps use 2.5 ns.
+
+Walls per point at 8c32762, Default run, fmax in MHz:
 
 | BITNESS | 1st | 2nd | 3rd | 4th | 5th |
 |---|---|---|---|---|---|
@@ -140,6 +143,19 @@ Walls per point, Default run, fmax in MHz:
 - What remains of the ctx loop is mostly the writeback, Errval → A.12/A.13 → BRAM din.
 - New co-wall: ctx read address, sReg1D2 → A.4 → A.4.1 → A.4.2 → BRAM address. At 16 bit the same cone feeds the init lookup.
 - 12 bit at Default alone is flat (279 → 276); ±10 MHz per point is placement noise.
+
+Walls per point at cd35082, Default run, fmax in MHz:
+
+| BITNESS | 1st | 2nd | 3rd | 4th | 5th |
+|---|---|---|---|---|---|
+| 8 | ctx read 333 | ctx loop 334 | stuffer 335 | framer 338 | dims 342 |
+| 10 | RI Aq → Temp 332 | run mode A.15/16 337 | stuffer 338 | framer 339 | ctx loop 339 |
+| 12 | RI Errval → Temp 299 | writeback (Bq → write word) 300 | init lookup 302 | framer 303 (49% TNS) | dims 309 |
+| 16 | ctx read address 244 | init lookup 244 | BRAM → Errval, RI Temp 248 | stuffer 254 (32% TNS) | stage 1 → 2 265 |
+
+- 8–10 bit are flat: every structure within ~3%, capped by the 3.0 ns constraint.
+- 12 bit: the RI path (A.23 then A.20 in one cycle) leads; it never got speculation.
+- 16 bit: the stage-2 quantization cone (A.4 → A.4.1 → A.4.2) limits both the read address and the init lookup.
 
 ## Open decisions
 1. Trimmed core: a separate top (`openjls_core`, Mert's interface, same stage entities) vs. feature generics on the current top. Leaning separate top: generics multiply the verified configurations.
