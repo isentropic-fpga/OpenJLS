@@ -157,6 +157,52 @@ Walls per point at cd35082, Default run, fmax in MHz:
 - 12 bit: the RI path (A.23 then A.20 in one cycle) leads; it never got speculation.
 - 16 bit: the stage-2 quantization cone (A.4 → A.4.1 → A.4.2) limits both the read address and the init lookup.
 
+### 8–10 bit ceiling at 2.5 ns (cd35082)
+Same flow, 2.5 ns constraint, 8 and 10 bit only.
+
+| BITNESS | Default / Explore / NetDelay / SpreadLogic | best | at 3.0 ns |
+|---|---|---|---|
+| 8 | 335/351/362/347 | **362** | ≥336 |
+| 10 | 326/336/316/328 | **336** | 332 |
+
+- 3.0 ns hid ~8% at 8 bit; 10 bit was already at its ceiling.
+- Hold is met in every run.
+
+Walls on the best run, fmax in MHz:
+
+| BITNESS | 1st | 2nd | 3rd | 4th | 5th |
+|---|---|---|---|---|---|
+| 8 (NetDelay) | stuffer 362 | ctx read address 362 | dims 363 | framer 369 (44% TNS) | writeback 370 |
+| 10 (Explore) | BRAM → Errval 336 | framer 338 (47% TNS) | ctx read address 338 | stuffer 342 | stage 1 → 2 343 |
+
+Weak points, by how many points they limit:
+1. **Ctx read address** (sReg1D2 → A.4 → A.4.1 → A.4.2 → BRAM address, 9–10 levels). It's a top-3 wall at 8, 10 and 16 bit, and also drives `sFwdOld` and the init lookup. Candidate: move the per-gradient quantization (A.4) into stage 1 so stage 2 only merges and indexes.
+2. **BRAM → Errval** (5–6 levels, but it starts from the BRAM clock-to-out). The direct chain spends the unregistered BRAM output in the same cycle as A.6/A.7/A.9. A registered output would add a cycle to the context loop, so this is the structural floor of a 1-cycle read.
+3. **Writeback** (Errval/Bq → A.12/A.13 → `sWrPendData`/`sFwdNewData`, 12–13 levels). It's now the deepest cone; the write register moved it but didn't shorten it.
+4. **Framer** (`sFifoByteCount` → `sBuffer` CE, 8–9 levels). It owns 44–61% of TNS on every run: one count drives the CE of the whole buffer. Candidate: register a per-lane CE decode one cycle ahead.
+5. **Stuffer** (`sStuffBufferBits` → buffer, 10 levels). This is the known carry-chain wall; representation rewrites regressed before.
+6. **Dims → stage 1** (`sImageWidth` compare → `sReg1.mode`, 10 levels). Candidate: precompute end-of-line flags from the column counter.
+
+None of these is bitness-specific except the widths. 1, 4 and 6 are cheap RTL changes; 2 is a latency trade; 3 needs the writeback split.
+
+### Weak points 1 and 6
+- A.4 moved into stage 1: stage 1 registers Q1–Q3 (4 bits) instead of D1–D3.
+- That made stage 1 the 16 bit wall (−1.40 post-synth) through the line buffer's `col = width − 1` compare. The first/last column and first row flags are now next-state registers; the width only loads in reset.
+
+Routed best-of-4 at 2.5 ns, MHz:
+
+| BITNESS | cd35082 | + A.4 in stage 1, registered flags |
+|---|---|---|
+| 8 | 362 | 352 |
+| 10 | 336 | 343 |
+| 12 | 309 | 310 |
+| 16 | 256 | 271 |
+
+- Post-synth, the lookup/read address cone goes from −1.17 to +0.34 ns at 16 bit; it's off the wall list at every point.
+- 8 bit: dims (363 → 378) and read address (362 → 365) both moved; BRAM → Errval (5 levels) now leads at 352, from 370. Placement of the BRAM path, not new logic.
+- 12 bit is still the RI Temp path.
+- Next: weak point 2 (BRAM output register, +1 cycle in the loop).
+
 ## Open decisions
 1. Trimmed core: a separate top (`openjls_core`, Mert's interface, same stage entities) vs. feature generics on the current top. Leaning separate top: generics multiply the verified configurations.
 2. Packer + stuffer merge: trimmed core only, or a main candidate.
