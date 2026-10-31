@@ -4,7 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
--- tb_a6_a7_osvvm: a6_a7_prediction_error against the T.87 A.6 + A.7 C code
+-- tb_a6_a7_osvvm: a6_clip_bounds, a6_clip_errors + a6_a7_prediction_error against the T.87 A.6 + A.7 C code
 --
 -- Guidelines:
 --   G2.Clamp    N/A: no accumulator
@@ -33,12 +33,21 @@ architecture sim of tb_a6_a7_osvvm is
   constant PIXEL_MAX : natural := 2 ** BITNESS - 1;
   signal sIx, sPx : unsigned(BITNESS - 1 downto 0);
   signal sSign : std_logic;
-  signal sCq : signed(CO_CQ_WIDTH - 1 downto 0);
+  signal sCq, sLo, sHi : signed(CO_CQ_WIDTH - 1 downto 0);
+  signal sAtLo, sAtHi : signed(BITNESS downto 0);
   signal sError : signed(BITNESS downto 0);
 begin
+  bounds : entity work.a6_clip_bounds(behavioral)
+    generic map (BITNESS => BITNESS, MAX_VAL => MAX_VAL)
+    port map (iPx => sPx, iSign => sSign, oLo => sLo, oHi => sHi);
+
+  errors : entity work.a6_clip_errors(behavioral)
+    generic map (BITNESS => BITNESS, MAX_VAL => MAX_VAL)
+    port map (iIx => sIx, iSign => sSign, oAtLo => sAtLo, oAtHi => sAtHi);
+
   dut : entity work.a6_a7_prediction_error(behavioral)
     generic map (BITNESS => BITNESS, MAX_VAL => MAX_VAL)
-    port map (iIx => sIx, iPx => sPx, iSign => sSign, iCq => sCq, oErrorVal => sError);
+    port map (iIx => sIx, iPx => sPx, iSign => sSign, iLo => sLo, iHi => sHi, iAtLo => sAtLo, iAtHi => sAtHi, iCq => sCq, oErrorVal => sError);
 
   stimulus : process is
     variable rv : RandomPType;

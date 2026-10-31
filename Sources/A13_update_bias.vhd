@@ -37,7 +37,12 @@ architecture rtl of a13_update_bias is
   signal sIsBPosBranch : std_logic;
   signal sNeedNegClp   : std_logic;
   signal sNeedPosClp   : std_logic;
-  signal sNqSig        : signed(iBq'range);
+  -- Two guard bits: the sums never wrap, for any iBq
+  signal sBqExt        : signed(B_WIDTH + 1 downto 0);
+  signal sNqSig        : signed(B_WIDTH + 1 downto 0);
+  signal sBPlusN       : signed(B_WIDTH + 1 downto 0);
+  signal sBPlus2N      : signed(B_WIDTH + 1 downto 0);
+  signal sBMinusN      : signed(B_WIDTH + 1 downto 0);
   signal sBNegFinal    : signed(iBq'range);
   signal sBPosFinal    : signed(iBq'range);
   signal sCDec         : signed(iCq'range);
@@ -45,9 +50,15 @@ architecture rtl of a13_update_bias is
 
 begin
 
-  sNqSig <= resize(signed('0' & iNq), B_WIDTH);
+  sBqExt <= resize(iBq, sBqExt'length);
+  sNqSig <= resize(signed('0' & iNq), sNqSig'length);
 
-  sIsBNegBranch <= '1' when iBq <= - sNqSig else
+  -- Every test is a sum against 0: one adder each, no negated operand in series
+  sBPlusN  <= sBqExt + sNqSig;
+  sBPlus2N <= sBqExt + shift_left(sNqSig, 1);
+  sBMinusN <= sBqExt - sNqSig;
+
+  sIsBNegBranch <= '1' when sBPlusN <= 0 else
                    '0';
   sIsBPosBranch <= '1' when iBq > 0 else
                    '0';
@@ -57,15 +68,15 @@ begin
   sCInc <= iCq + 1 when iCq < MAX_C else
            iCq;
 
-  sNeedNegClp <= '1' when iBq + sNqSig <= - sNqSig else
+  sNeedNegClp <= '1' when sBPlus2N <= 0 else
                  '0';
-  sNeedPosClp <= '1' when iBq - sNqSig > 0 else
+  sNeedPosClp <= '1' when sBMinusN > 0 else
                  '0';
 
-  sBNegFinal <= - sNqSig + 1 when sNeedNegClp = '1' else
-                iBq + sNqSig;
+  sBNegFinal <= resize(1 - sNqSig, B_WIDTH) when sNeedNegClp = '1' else
+                resize(sBPlusN, B_WIDTH);
   sBPosFinal <= to_signed(0, sBPosFinal'length) when sNeedPosClp = '1' else
-                iBq - sNqSig;
+                resize(sBMinusN, B_WIDTH);
 
   oBq <= sBNegFinal when sIsBNegBranch = '1' else
          sBPosFinal when sIsBPosBranch = '1' else

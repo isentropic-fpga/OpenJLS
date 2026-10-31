@@ -7,10 +7,10 @@
 -- openjls_top: T.87 lossless encoder top level
 --
 -- Stages are combinational with their registers here; the output IPs register internally.
---   Stage 1  A.1, A.3, A.8.1, line_buffer
---   Stage 2  regular A.4, A.4.1, A.4.2, A.5 | run A.14, A.15/A.16, A.17, A.18, A.20.1; context read
---   Stage 3  regular speculative A.6-A.9 chains | RI A.19, A.20; Q3 == Q4 forwarding
---   Stage 4  A.10 via A.20.2 | regular A.12, A.13 | RI A.23; context writeback
+--   Stage 1  A.1, A.3, A.4, A.8.1, line_buffer
+--   Stage 2  regular A.4.1, A.4.2, A.5 | run A.14, A.15/A.16, A.17, A.18, A.20.1; context read
+--   Stage 3  regular speculative A.6-A.9 chains | RI A.19; Q3 == Q4 forwarding
+--   Stage 4  A.20, A.10 via A.20.2 | regular A.12, A.13 | RI A.23; context writeback
 --   Stage 5  regular A.11 | RI A.21, A.22
 --   Stage 6  A.11.1
 --   Output   bit_packer, byte_stuffer, jls_framer
@@ -144,7 +144,6 @@ architecture rtl of openjls_top is
     Cq         : signed(C_WIDTH - 1 downto 0);
     Nq         : unsigned(N_WIDTH - 1 downto 0);
     Nn         : unsigned(NN_WIDTH - 1 downto 0);
-    Temp       : unsigned(A_WIDTH - 1 downto 0);
     Errval     : signed(ERROR_WIDTH - 1 downto 0);
     k          : unsigned(K_WIDTH - 1 downto 0);
     RawLen     : unsigned(SUFFIXLEN_WIDTH - 1 downto 0);
@@ -167,7 +166,6 @@ architecture rtl of openjls_top is
     Cq         => (others => '0'),
     Nq         => (others => '0'),
     Nn         => (others => '0'),
-    Temp       => (others => '0'),
     Errval     => (others => '0'),
     k          => (others => '0'),
     RawLen     => (others => '0'),
@@ -247,6 +245,7 @@ architecture rtl of openjls_top is
   signal sS2MQ2                             : signed(3 downto 0);                                     -- [-4, 4]
   signal sS2MQ3                             : signed(3 downto 0);                                     -- [-4, 4]
   signal sS2MSign                           : std_logic;
+  signal sS2Sign                            : std_logic;
   signal sS2QReg                            : unsigned(8 downto 0);                                   -- [0, 364]
   signal sS2RunQ                            : unsigned(8 downto 0);                                   -- [365, 366]
 
@@ -271,7 +270,13 @@ architecture rtl of openjls_top is
   signal sS2TokenMode                       : t_token_mode;
 
   signal sS2Px                              : unsigned(BITNESS - 1 downto 0);                         -- [0, MAX_VAL]
+  signal sS2AtLo                            : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
+  signal sS2AtHi                            : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
   signal sReg2Px                            : unsigned(BITNESS - 1 downto 0);                         -- [0, MAX_VAL]
+  signal sReg2AtLo                          : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
+  signal sReg2AtHi                          : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
+  signal sS3ClipLo                          : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, 0]
+  signal sS3ClipHi                          : signed(C_WIDTH - 1 downto 0);                           -- [0, MAX_C]
 
   -- context_ram packed I/O
   signal sCtxRdData                         : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
@@ -321,9 +326,9 @@ architecture rtl of openjls_top is
   -- Stage 3 — RI path
   signal sS3RiSign                          : std_logic;
   signal sS3RiErr19                         : signed(BITNESS downto 0);                               -- [-RANGE_P / 2, RANGE_P / 2 - 1]
-  signal sS3RiTemp                          : unsigned(A_WIDTH - 1 downto 0);                         -- [0, 2^A_WIDTH - 1]
 
   -- Stage 4
+  signal sS4RiTemp                          : unsigned(A_WIDTH - 1 downto 0);                         -- [0, 2^A_WIDTH - 1]
   signal sS4K                               : unsigned(K_WIDTH - 1 downto 0);                         -- [0, MAX_K]
   signal sS4RiMode                          : std_logic;
   signal sS4AqNew                           : unsigned(A_WIDTH - 1 downto 0);                         -- [0, 2^A_STORED - 1]
@@ -776,10 +781,11 @@ begin
               (bool2bit(sReg3.mode = token_regular) or
                bool2bit(sReg3.mode = token_run_interruption));
 
-  -- Murat BRAM encoding: A narrowed (the halving at N = RESET caps it), B as magnitude
-  -- (Bq <= 0 after A.13), N = RESET stored as 0
+  -- Murat BRAM encoding: A narrowed (the halving at N = RESET caps it), N = RESET stored as 0.
+  -- B keeps its low bits only: Bq is in [-(RESET - 1), 0] after A.13, so nonzero means negative
+  -- and no negation sits after the A.13 select
   sCtxWrData <= std_logic_vector(resize(sS4AqNew, A_STORED)) &
-                std_logic_vector(resize(unsigned(-sS4BqNew), B_STORED)) &
+                std_logic_vector(sS4BqNew(B_STORED - 1 downto 0)) &
                 std_logic_vector(sS4CqNew) &
                 std_logic_vector(sNqEncReg)
                 when sReg3.mode = token_regular else
@@ -846,7 +852,8 @@ begin
 
   -- RI: the B slot carries Nn
   sS3Bq <= sS4BqNew when sFwdRegHit = '1' else
-           - resize(signed('0' & sCtxRdData(CTX_B_HI downto CTX_B_LO)), B_WIDTH);
+           to_signed(0, B_WIDTH) when unsigned(sCtxRdData(CTX_B_HI downto CTX_B_LO)) = 0 else
+           resize(signed('1' & sCtxRdData(CTX_B_HI downto CTX_B_LO)), B_WIDTH);
 
   -- Prediction takes Cq through the chains (sS3CqBram, sS3CqAlt)
   sS3Cq <= sS4CqNew when sFwdRegHit = '1' else
@@ -862,7 +869,7 @@ begin
            (others => '0') when sReg2.mode = token_regular else
            unsigned(sCtxRdData(CTX_NN_HI downto CTX_NN_LO));
 
-  -- Stage 2, regular: A.5, registered as sReg2Px
+  -- Stage 2, regular: A.5 and the A.6 clip errors, registered as sReg2Px, sReg2At*
   u_a5 : entity work.a5_edge_detecting_predictor(behavioral)
     generic map (
       BITNESS => BITNESS
@@ -872,6 +879,21 @@ begin
       iB      => sReg1.Rb(BITNESS - 1 downto 0),
       iC      => sReg1.Rc(BITNESS - 1 downto 0),
       oPx     => sS2Px
+    );
+
+  -- The sign Reg2 keeps: other tokens carry '0', so the clip errors match iSign in every chain
+  sS2Sign <= sS2MSign when sReg1V = '1' and sS2TokenMode = token_regular else
+             '0';
+
+  u_a6_errors : entity work.a6_clip_errors(behavioral)
+    generic map (
+      BITNESS => BITNESS, MAX_VAL => MAX_VAL
+    )
+    port map (
+      iIx   => sReg1.Ix(BITNESS - 1 downto 0),
+      iSign => sS2Sign,
+      oAtLo => sS2AtLo,
+      oAtHi => sS2AtHi
     );
 
   -- Reg2 ---
@@ -887,6 +909,8 @@ begin
         sReg2V   <= '0';
         sReg2Eoi <= '0';
         sReg2Px  <= (others => '0');
+        sReg2AtLo <= (others => '0');
+        sReg2AtHi <= (others => '0');
         sReg2Par <= '0';
       elsif (sCE2 = '1') then
         -- Unused fields stay at CO_TOKEN_NONE: no stale values downstream
@@ -902,7 +926,7 @@ begin
             v.Ra   := sReg1.Ra;
             v.Rb   := sReg1.Rb;
             v.Rc   := sReg1.Rc;
-            v.Sign := sS2MSign;
+            v.Sign := sS2Sign;
 
           when token_run_interruption =>
 
@@ -934,6 +958,8 @@ begin
         sReg2V   <= sReg1V and bool2bit(sS2TokenMode /= token_none);
         sReg2Eoi <= sReg1Eoi;
         sReg2Px  <= sS2Px;
+        sReg2AtLo <= sS2AtLo;
+        sReg2AtHi <= sS2AtHi;
         sReg2Par <= sReg1Par;
         sReg2Key <= sS2Key;
       end if;
@@ -944,6 +970,18 @@ begin
   -- Stage 3, regular: A.6–A.9 speculative chains ---
 
   sS3Px <= sReg2Px;
+
+  -- From registers, settled before the BRAM word and the forwarded Cq
+  u_a6_bounds : entity work.a6_clip_bounds(behavioral)
+    generic map (
+      BITNESS => BITNESS, MAX_VAL => MAX_VAL
+    )
+    port map (
+      iPx   => sS3Px,
+      iSign => sReg2.Sign,
+      oLo   => sS3ClipLo,
+      oHi   => sS3ClipHi
+    );
 
   sS2Key <= '1' & std_logic_vector(sS2MQ1 & sS2MQ2 & sS2MQ3) when sReg1.mode = token_regular else
             (0 => sS2RItype, others => '0');
@@ -996,6 +1034,10 @@ begin
       iIx       => sReg2.Ix(BITNESS - 1 downto 0),
       iPx       => sS3Px,
       iSign     => sReg2.Sign,
+      iLo       => sS3ClipLo,
+      iHi       => sS3ClipHi,
+      iAtLo     => sReg2AtLo,
+      iAtHi     => sReg2AtHi,
       iCq       => sS3CqBram,
       oErrorVal => sS3Err7D
     );
@@ -1018,6 +1060,10 @@ begin
       iIx       => sReg2.Ix(BITNESS - 1 downto 0),
       iPx       => sS3Px,
       iSign     => sReg2.Sign,
+      iLo       => sS3ClipLo,
+      iHi       => sS3ClipHi,
+      iAtLo     => sReg2AtLo,
+      iAtHi     => sReg2AtHi,
       iCq       => sS3CqAlt,
       oErrorVal => sS3Err7C
     );
@@ -1040,6 +1086,10 @@ begin
       iIx       => sReg2.Ix(BITNESS - 1 downto 0),
       iPx       => sS3Px,
       iSign     => sReg2.Sign,
+      iLo       => sS3ClipLo,
+      iHi       => sS3ClipHi,
+      iAtLo     => sReg2AtLo,
+      iAtHi     => sReg2AtHi,
       iCq       => sS3CqP1,
       oErrorVal => sS3Err7P
     );
@@ -1062,6 +1112,10 @@ begin
       iIx       => sReg2.Ix(BITNESS - 1 downto 0),
       iPx       => sS3Px,
       iSign     => sReg2.Sign,
+      iLo       => sS3ClipLo,
+      iHi       => sS3ClipHi,
+      iAtLo     => sReg2AtLo,
+      iAtHi     => sReg2AtHi,
       iCq       => sS3CqM1,
       oErrorVal => sS3Err7M
     );
@@ -1092,7 +1146,7 @@ begin
   sS3Errval <= resize(sS3Err9D, ERROR_WIDTH) when sS3UseBram = '1' else
                sS3ErrOther;
 
-  -- Stage 3, RI: A.19, A.20 ---
+  -- Stage 3, RI: A.19 ---
   u_a19 : entity work.a19_run_interruption_error(behavioral)
     generic map (
       BITNESS => BITNESS,
@@ -1105,18 +1159,6 @@ begin
       iRb     => sReg2.Rb(BITNESS - 1 downto 0),
       oErrval => sS3RiErr19,
       oSign   => sS3RiSign
-    );
-
-  u_a20 : entity work.a20_compute_temp(behavioral)
-    generic map (
-      A_WIDTH => A_WIDTH,
-      N_WIDTH => N_WIDTH
-    )
-    port map (
-      iRItype => sReg2.RiType,
-      iAq     => sS3Aq,
-      iNq     => sS3Nq,
-      oTemp   => sS3RiTemp
     );
 
   -- Reg3 ---
@@ -1140,14 +1182,12 @@ begin
         v.Cq   := sS3Cq;
         v.Nq   := sS3Nq;
         v.Nn   := sS3Nn;
-        v.Temp := (others => '0');
 
         case sReg2.mode is
 
           when token_run_interruption =>
 
             v.Sign   := sS3RiSign;
-            v.Temp   := sS3RiTemp;
 
           when others =>
 
@@ -1169,9 +1209,22 @@ begin
 
   end process p_reg3;
 
-  -- Stage 4: A.10 shared via A.20.2, A.12, A.13, A.23 ---
+  -- Stage 4: A.20, A.10 shared via A.20.2, A.12, A.13, A.23 ---
   sS4RiMode <= '1' when sReg3.mode = token_run_interruption else
                '0';
+
+  -- A.20 here, not in stage 3: TEMP only feeds k, so it stays out of the context forwarding loop
+  u_a20 : entity work.a20_compute_temp(behavioral)
+    generic map (
+      A_WIDTH => A_WIDTH,
+      N_WIDTH => N_WIDTH
+    )
+    port map (
+      iRItype => sReg3.RiType,
+      iAq     => sReg3.Aq,
+      iNq     => sReg3.Nq,
+      oTemp   => sS4RiTemp
+    );
 
   u_a20_2 : entity work.a20_2_compute_k(behavioral)
     generic map (
@@ -1182,7 +1235,7 @@ begin
     port map (
       iRunInterruption => sS4RiMode,
       iAq              => sReg3.Aq,
-      iTemp            => sReg3.Temp,
+      iTemp            => sS4RiTemp,
       iNq              => sReg3.Nq,
       oK               => sS4K
     );
