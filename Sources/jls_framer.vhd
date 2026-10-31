@@ -90,6 +90,11 @@ architecture behavioral of jls_framer is
   -- Head footer falls in the next data / last-header beat, registered off the emit path
   signal sEoiInData             : boolean;
   signal sEoiInHdr              : boolean;
+  -- Beat decision precomputed from the next state, off the buffer CE/D cone
+  signal sDataFire              : boolean;
+  signal sHdrFire               : boolean;
+  signal sDataEmit              : natural range 1 to BYTES_OUT;
+  signal sHdrEmit               : natural range 1 to BYTES_OUT;
 
   signal sOutWord               : std_logic_vector(OUT_WIDTH - 1 downto 0);
   signal sOutValid              : std_logic;
@@ -97,6 +102,7 @@ architecture behavioral of jls_framer is
   signal sValidBytes            : unsigned(log2ceil(OUT_WIDTH / 8 + 1) - 1 downto 0); -- [0, BYTES_OUT]
 
   signal sHeaderByteIdx         : natural range 0 to HEADER_LEN;
+  signal sHdrLastBeat           : boolean := HEADER_LEN < BYTES_OUT; -- HEADER_LEN - sHeaderByteIdx < BYTES_OUT
   -- iStart pulses that arrive while earlier images are still being framed
   constant START_QUEUE_DEPTH    : natural := 4;
   signal   sNextPending         : natural range 0 to START_QUEUE_DEPTH;
@@ -318,7 +324,6 @@ begin
     variable vWidth             : unsigned(15 downto 0); -- [1, 65535] (T.87 SOF field)
     variable vHeight            : unsigned(15 downto 0); -- [1, 65535]
     variable vHeaderBytesRemain : natural range 0 to HEADER_LEN;
-    variable vDataNeededBytes   : natural range 0 to BYTES_OUT;
     variable vEmitDataBytes     : natural range 0 to BYTES_OUT;
     variable vCanEmit           : boolean;
     variable vEoiInBeat         : boolean;
@@ -336,11 +341,16 @@ begin
         sEoiCount      <= 0;
         sEoiInData     <= false;
         sEoiInHdr      <= false;
+        sDataFire      <= false;
+        sHdrFire       <= false;
+        sDataEmit      <= BYTES_OUT;
+        sHdrEmit       <= HDR_DATA_BYTES;
         sOutWord       <= (others => '0');
         sOutValid      <= '0';
         sOutLast       <= '0';
         sValidBytes    <= (others => '0');
         sHeaderByteIdx <= 0;
+        sHdrLastBeat   <= HEADER_LEN < BYTES_OUT;
         sNextPending   <= 0;
       else
         vBuffer        := sBuffer;
@@ -371,6 +381,7 @@ begin
             if (vNextPending > 0) then
               sFsmState      <= header;
               sHeaderByteIdx <= 0;
+              sHdrLastBeat   <= HEADER_LEN < BYTES_OUT;
               vNextPending   := vNextPending - 1;
             end if;
 
@@ -379,7 +390,7 @@ begin
             if (vCanEmit) then
               vHeaderBytesRemain := HEADER_LEN - sHeaderByteIdx;
 
-              if (vHeaderBytesRemain >= BYTES_OUT) then
+              if (not sHdrLastBeat) then
 
                 for i in 0 to BYTES_OUT - 1 loop
 
@@ -395,23 +406,17 @@ begin
                   sFsmState <= data;
                 else
                   sHeaderByteIdx <= sHeaderByteIdx + BYTES_OUT;
+                  sHdrLastBeat   <= HEADER_LEN - sHeaderByteIdx - BYTES_OUT < BYTES_OUT;
                 end if;
               else
                 -- Last header beat: fill the rest from the FIFO
                 assert vHeaderBytesRemain = HEADER_LEN mod BYTES_OUT
                   report "jls_framer: last header beat off the BYTES_OUT grid"
                   severity failure;
-                vDataNeededBytes := HDR_DATA_BYTES;
+                vEoiInBeat     := sEoiInHdr;
+                vEmitDataBytes := sHdrEmit;
 
-                vEoiInBeat := sEoiInHdr;
-                if (vEoiInBeat) then
-                  vEmitDataBytes := vEoiIdxFifo(0) + 1;
-                else
-                  vEmitDataBytes := vDataNeededBytes;
-                end if;
-
-                -- The head footer is already buffered, so its beat never waits on the count
-                if (vEoiInBeat or vFifoByteCount >= vDataNeededBytes) then
+                if (sHdrFire) then
 
                   for i in 0 to BYTES_OUT - 1 loop
 
@@ -438,6 +443,7 @@ begin
                     if (vNextPending > 0) then
                       sFsmState      <= header;
                       sHeaderByteIdx <= 0;
+                      sHdrLastBeat   <= HEADER_LEN < BYTES_OUT;
                       vNextPending   := vNextPending - 1;
                     else
                       sFsmState <= idle;
@@ -454,14 +460,10 @@ begin
           when data =>
 
             if (vCanEmit) then
-              vEoiInBeat := sEoiInData;
-              if (vEoiInBeat) then
-                vEmitDataBytes := vEoiIdxFifo(0) + 1;
-              else
-                vEmitDataBytes := BYTES_OUT;
-              end if;
+              vEoiInBeat     := sEoiInData;
+              vEmitDataBytes := sDataEmit;
 
-              if (vEoiInBeat or vFifoByteCount >= BYTES_OUT) then
+              if (sDataFire) then
 
                 for i in 0 to BYTES_OUT - 1 loop
 
@@ -485,6 +487,7 @@ begin
                   if (vNextPending > 0) then
                     sFsmState      <= header;
                     sHeaderByteIdx <= 0;
+                    sHdrLastBeat   <= HEADER_LEN < BYTES_OUT;
                     vNextPending   := vNextPending - 1;
                   else
                     sFsmState <= idle;
@@ -539,6 +542,23 @@ begin
         sEoiCount      <= vEoiCount;
         sEoiInData     <= vEoiCount > 0 and vEoiIdxFifo(0) < BYTES_OUT;
         sEoiInHdr      <= vEoiCount > 0 and vEoiIdxFifo(0) < HDR_DATA_BYTES;
+
+        -- The head footer is already buffered, so its beat never waits on the count
+        if (vEoiCount > 0 and vEoiIdxFifo(0) < BYTES_OUT) then
+          sDataFire <= true;
+          sDataEmit <= vEoiIdxFifo(0) + 1;
+        else
+          sDataFire <= vFifoByteCount >= BYTES_OUT;
+          sDataEmit <= BYTES_OUT;
+        end if;
+
+        if (vEoiCount > 0 and vEoiIdxFifo(0) < HDR_DATA_BYTES) then
+          sHdrFire <= true;
+          sHdrEmit <= vEoiIdxFifo(0) + 1;
+        else
+          sHdrFire <= vFifoByteCount >= HDR_DATA_BYTES;
+          sHdrEmit <= HDR_DATA_BYTES;
+        end if;
         sNextPending   <= vNextPending;
       end if;
     end if;
@@ -547,6 +567,8 @@ begin
 
   postponed assert iValid /= '1' or is_x(iByteEnable) or iByteEnable <= BYTES_IN
     report "jls_framer: input byte count past BYTES_IN" severity error;
+  postponed assert iRst = '1' or sHdrLastBeat = (HEADER_LEN - sHeaderByteIdx < BYTES_OUT)
+    report "jls_framer: last header beat flag disagrees with the header index" severity error;
   postponed assert is_x(sValidBytes) or sValidBytes <= BYTES_OUT
     report "jls_framer: output byte count past BYTES_OUT" severity error;
   postponed assert iStart /= '1' or is_x(iImageWidth) or iImageWidth < 2 ** 16
