@@ -212,9 +212,9 @@ architecture rtl of openjls_top is
   signal sCtxOwnerPar                       : std_logic;
   signal sCtxRdPar                          : std_logic;
   signal sReg1ModeRun                       : std_logic;
-  signal sReg1D1                            : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
-  signal sReg1D2                            : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
-  signal sReg1D3                            : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
+  signal sReg1Q1                            : signed(3 downto 0);                                     -- [-4, 4]
+  signal sReg1Q2                            : signed(3 downto 0);                                     -- [-4, 4]
+  signal sReg1Q3                            : signed(3 downto 0);                                     -- [-4, 4]
 
   -- Input stage
   signal sPixel                             : unsigned(BITNESS - 1 downto 0);                         -- [0, MAX_VAL]
@@ -234,15 +234,15 @@ architecture rtl of openjls_top is
   signal sS1D1                              : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
   signal sS1D2                              : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
   signal sS1D3                              : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
+  signal sS1Q1                              : signed(3 downto 0);                                     -- [-4, 4]
+  signal sS1Q2                              : signed(3 downto 0);                                     -- [-4, 4]
+  signal sS1Q3                              : signed(3 downto 0);                                     -- [-4, 4]
   signal sS1ModeRun                         : std_logic;
   -- A.15/A.16 next-state run flag: keeps the stage 1 pixel in run mode while its
   -- predecessor in stage 2 is still in a run; A.3 alone would break the run
   signal sS1InRunNext                       : std_logic;
 
   -- Stage 2 — regular
-  signal sS2Q1                              : signed(3 downto 0);                                     -- [-4, 4]
-  signal sS2Q2                              : signed(3 downto 0);                                     -- [-4, 4]
-  signal sS2Q3                              : signed(3 downto 0);                                     -- [-4, 4]
   signal sS2MQ1                             : signed(3 downto 0);                                     -- [0, 4]
   signal sS2MQ2                             : signed(3 downto 0);                                     -- [-4, 4]
   signal sS2MQ3                             : signed(3 downto 0);                                     -- [-4, 4]
@@ -511,7 +511,7 @@ begin
 
   end process p_input_reg;
 
-  -- Stage 1: A.8.1, line buffer, A.1, A.3 ---
+  -- Stage 1: A.8.1, line buffer, A.1, A.3, A.4 ---
   u_a8_1 : entity work.a8_1_reconstructed_value(behavioral)
     generic map (
       BITNESS => BITNESS
@@ -568,6 +568,20 @@ begin
       oModeRun => sS1ModeRun
     );
 
+  u_a4 : entity work.a4_quantization_gradients(behavioral)
+    generic map (
+      BITNESS => BITNESS,
+      MAX_VAL => MAX_VAL
+    )
+    port map (
+      iD1     => sS1D1,
+      iD2     => sS1D2,
+      iD3     => sS1D3,
+      oQ1     => sS1Q1,
+      oQ2     => sS1Q2,
+      oQ3     => sS1Q3
+    );
+
   -- Reg1 ---
   p_reg1 : process (iClk) is
 
@@ -581,9 +595,9 @@ begin
         sReg1V   <= '0';
         sReg1Eol <= '0';
         sReg1Eoi <= '0';
-        sReg1D1  <= (others => '0');
-        sReg1D2  <= (others => '0');
-        sReg1D3  <= (others => '0');
+        sReg1Q1  <= (others => '0');
+        sReg1Q2  <= (others => '0');
+        sReg1Q3  <= (others => '0');
         sGenPar  <= '0';
         sReg1Par <= '0';
       elsif (sCE1 = '1') then
@@ -610,34 +624,20 @@ begin
         if (sLbValid = '1' and sLbEoi = '1') then
           sGenPar <= not sGenPar;
         end if;
-        sReg1D1 <= sS1D1;
-        sReg1D2 <= sS1D2;
-        sReg1D3 <= sS1D3;
+        sReg1Q1 <= sS1Q1;
+        sReg1Q2 <= sS1Q2;
+        sReg1Q3 <= sS1Q3;
       end if;
     end if;
 
   end process p_reg1;
 
-  -- Stage 2, regular: A.4, A.4.1, A.4.2 ---
-  u_a4 : entity work.a4_quantization_gradients(behavioral)
-    generic map (
-      BITNESS => BITNESS,
-      MAX_VAL => MAX_VAL
-    )
-    port map (
-      iD1     => sReg1D1,
-      iD2     => sReg1D2,
-      iD3     => sReg1D3,
-      oQ1     => sS2Q1,
-      oQ2     => sS2Q2,
-      oQ3     => sS2Q3
-    );
-
+  -- Stage 2, regular: A.4.1, A.4.2 ---
   u_a4_1 : entity work.a4_1_quant_gradient_merging(behavioral)
     port map (
-      iQ1   => sS2Q1,
-      iQ2   => sS2Q2,
-      iQ3   => sS2Q3,
+      iQ1   => sReg1Q1,
+      iQ2   => sReg1Q2,
+      iQ3   => sReg1Q3,
       oQ1   => sS2MQ1,
       oQ2   => sS2MQ2,
       oQ3   => sS2MQ3,
