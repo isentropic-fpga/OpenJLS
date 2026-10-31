@@ -184,6 +184,10 @@ architecture rtl of openjls_top is
   signal sCE3                               : std_logic;
   signal sCE4                               : std_logic;
   signal sCE5,     sCE6                     : std_logic;
+  signal sStallNext                         : std_logic;
+  signal sReg1VNext, sReg2VNext             : std_logic;
+  signal sReg3VNext, sReg4VNext             : std_logic;
+  signal sReg5VNext, sReg6VNext             : std_logic;
 
   -- Pipeline tokens + sideband
   signal sReg1                              : t_pipeline_token;
@@ -411,11 +415,7 @@ begin
       else
         sBsAlmostFullReg <= sBsAlmostFull;
         sStallDelay      <= sStall;
-        if (sStallDelay = '1' and sStall = '1') then
-          sStallLogic <= '1';
-        else
-          sStallLogic <= '0';
-        end if;
+        sStallLogic      <= sStallNext;
       end if;
     end if;
 
@@ -430,18 +430,44 @@ begin
   -- A stage loads only when not stalled and it or its upstream holds a token:
   -- a bubble moves one hop, then the stage stops toggling
 
+  sStallNext <= sStallDelay and sStall;
+
   sCE1 <= '1' when sStallLogic = '0' and (sReg1V = '1' or sValid = '1') else
           '0';
-  sCE2 <= '1' when sStallLogic = '0' and (sReg2V = '1' or sReg1V = '1') else
-          '0';
-  sCE3 <= '1' when sStallLogic = '0' and (sReg3V = '1' or sReg2V = '1') else
-          '0';
-  sCE4 <= '1' when sStallLogic = '0' and (sReg4V = '1' or sReg3V = '1') else
-          '0';
-  sCE5 <= '1' when sStallLogic = '0' and (sReg5V = '1' or sReg4V = '1') else
-          '0';
-  sCE6 <= '1' when sStallLogic = '0' and (sReg6V = '1' or sReg5V = '1') else
-          '0';
+
+  -- CE2..CE6 are registered a cycle ahead from the next stall and valid bits: one local
+  -- flop per stage instead of the shared stall net through a LUT. CE1 would need iValid.
+  sReg1VNext <= sValid when sCE1 = '1' else sReg1V;
+  sReg2VNext <= sReg1V and bool2bit(sS2TokenMode /= token_none) when sCE2 = '1' else sReg2V;
+  sReg3VNext <= sReg2V when sCE3 = '1' else sReg3V;
+  sReg4VNext <= sReg3V when sCE4 = '1' else sReg4V;
+  sReg5VNext <= sReg4V when sCE5 = '1' else sReg5V;
+  sReg6VNext <= sReg5V when sCE6 = '1' else sReg6V;
+
+  p_ce : process (iClk) is
+  begin
+    if rising_edge(iClk) then
+      if (iRst = '1') then
+        sCE2 <= '0';
+        sCE3 <= '0';
+        sCE4 <= '0';
+        sCE5 <= '0';
+        sCE6 <= '0';
+      else
+        sCE2 <= not sStallNext and (sReg2VNext or sReg1VNext);
+        sCE3 <= not sStallNext and (sReg3VNext or sReg2VNext);
+        sCE4 <= not sStallNext and (sReg4VNext or sReg3VNext);
+        sCE5 <= not sStallNext and (sReg5VNext or sReg4VNext);
+        sCE6 <= not sStallNext and (sReg6VNext or sReg5VNext);
+      end if;
+    end if;
+  end process p_ce;
+
+  postponed assert iRst = '1' or is_x(sStallLogic) or
+    (sCE2 = (not sStallLogic and (sReg2V or sReg1V)) and sCE3 = (not sStallLogic and (sReg3V or sReg2V)) and
+     sCE4 = (not sStallLogic and (sReg4V or sReg3V)) and sCE5 = (not sStallLogic and (sReg5V or sReg4V)) and
+     sCE6 = (not sStallLogic and (sReg6V or sReg5V)))
+    report "openjls_top: registered stage CE disagrees with the stall and valid bits" severity error;
 
   sReadyOut <= not iRst and not sStallUpstream and not sInFlightStall;
   oReady    <= sReadyOut;
