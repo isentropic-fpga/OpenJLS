@@ -203,6 +203,29 @@ Routed best-of-4 at 2.5 ns, MHz:
 - 12 bit is still the RI Temp path.
 - Next: weak point 2 (BRAM output register, +1 cycle in the loop).
 
+### Context loop arithmetic (weak points 1–2)
+The BRAM output register would gain ~6 MHz at 16 bit: the register-sourced paths into Errval sat right behind the BRAM path. The depth on both sides of `sReg3.Errval` was the limit, so the arithmetic was flattened instead. No added latency.
+- **A.6 clip as narrow compares.** `a6_clip_bounds` gives the Cq range where Px doesn't clip, from Px and Sign; `a6_clip_errors` gives the clipped Errval, from Ix and Sign. The late Cq sees one 8-bit compare and one subtract, not Px ± Cq followed by a wide compare. Bounds are computed in stage 3 from registers (constant compares and 8-bit subtracts, settled before the BRAM word); clip errors are registered in stage 2, which also stops Vivado sharing the error adder behind the compare. Bounds registered in stage 2 made A.5 → bounds the wall (−1.15 post-synth at 12 bit).
+- **A.20 in stage 4.** TEMP only feeds k, so it left the forwarding loop (Errval → A.12 → forward → A.20 → `sReg3.Temp`).
+- **A.13 tests as sums against 0**, with two guard bits so they never wrap.
+- **B stored as its low bits.** Bq is in [−(RESET − 1), 0], so nonzero means negative; the negations after the A.13 select (write) and on the read go away, same BRAM width.
+- Tried, no gain: A.12 `A + |E|` as one add/subtract (reverted).
+
+Routed best-of-4 at 2.5 ns, MHz:
+
+| BITNESS | Default / Explore / NetDelay / SpreadLogic | best | before (7b5bc09) |
+|---|---|---|---|
+| 8 | 369/359/342/337 | **369** | 352 |
+| 10 | 348/332/357/345 | **357** | 343 |
+| 12 | 268/264/332/344 | **344** | 310 |
+| 16 | 301/300/295/307 | **307** | 271 |
+
+- Hold met in every run (worst +0.016 ns). Area flat post-synth: 8 bit 5990 → 5979 LUT, 1853 FF; 16 bit 8396 → 8343 LUT, 2327 → 2401 FF (the registered clip errors).
+- Walls on the best run: 8 bit, Cq → Errval, stuffer and stage 1 → 2 all within 3 MHz. 10 bit, framer CE then stuffer. 12 bit, Ra/Errval → Errval/Bq (10 levels), stuffer, framer. 16 bit, Errval → writeback / Errval / Aq, dims → stage 1 and stuffer within 8 MHz.
+- 12 bit is strategy-sensitive (268–344): Default and Explore land 75 MHz below SpreadLogic.
+- The context loop no longer stands alone at any point; the output side (stuffer, framer) is now co-limiting everywhere.
+- Verified: OSVVM 115/115, golden sample 906/906 (MAX_MP=0.01). A first registered-bounds version tripped the A.6/A.7 range assert on unused chains: non-regular tokens register Sign = '0', so the stage-2 sign must match (`sS2Sign`).
+
 ## Open decisions
 1. Trimmed core: a separate top (`openjls_core`, Mert's interface, same stage entities) vs. feature generics on the current top. Leaning separate top: generics multiply the verified configurations.
 2. Packer + stuffer merge: trimmed core only, or a main candidate.
