@@ -10,7 +10,6 @@ Requirements + status: [`verification_requirements.md`](../../Docs/verification_
 - `build_run.sh`: full regression + HTML reports + NVC code coverage. `build_reports.sh`: same, no coverage.
 - `build_osvvm.sh`: one-time compile of OSVVM into `./nvc-libs`, needed only by `Verification/Post synth`.
 - `cover_summary.py` / `cover_prune.py`: code-coverage misses and waivers.
-- `compare_byte_stuffer.sh <abs baseline.vhd>`: cycle-exact byte_stuffer equivalence vs a saved baseline (no OSVVM).
 - `publish_reports.sh`: rebuilds `Docs/Reports/` (OSVVM + coverage + golden/post-synth status). Run at milestones only, since the output is committed.
 
 ## Setup
