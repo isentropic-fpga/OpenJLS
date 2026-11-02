@@ -77,13 +77,13 @@
   TestCases:
   - TestName: tb_context_ram_osvvm
     Status: PASSED
-    Results: { Goal: 1322, Passed: 1326, Errors: 0, Checked: 1326, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
+    Results: { Goal: 1322, Passed: 1367, Errors: 0, Checked: 1367, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
   - TestName: tb_context_ram_osvvm
     Status: PASSED
-    Results: { Goal: 1322, Passed: 1326, Errors: 0, Checked: 1326, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
+    Results: { Goal: 1322, Passed: 1367, Errors: 0, Checked: 1367, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
   - TestName: tb_context_ram_osvvm
     Status: PASSED
-    Results: { Goal: 1322, Passed: 1326, Errors: 0, Checked: 1326, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
+    Results: { Goal: 1322, Passed: 1367, Errors: 0, Checked: 1367, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
 - Requirement: OJLS.Framer
   TestCases:
   - TestName: tb_jls_framer_osvvm
@@ -285,13 +285,13 @@
   TestCases:
   - TestName: tb_a13_osvvm
     Status: PASSED
-    Results: { Goal: 300, Passed: 393836, Errors: 0, Checked: 393836, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
+    Results: { Goal: 300, Passed: 787672, Errors: 0, Checked: 787672, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
   - TestName: tb_a13_osvvm
     Status: PASSED
-    Results: { Goal: 300, Passed: 393836, Errors: 0, Checked: 393836, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
+    Results: { Goal: 300, Passed: 787672, Errors: 0, Checked: 787672, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
   - TestName: tb_a13_osvvm
     Status: PASSED
-    Results: { Goal: 300, Passed: 393836, Errors: 0, Checked: 393836, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
+    Results: { Goal: 300, Passed: 787672, Errors: 0, Checked: 787672, AlertCount: {Failure: 0,  Error: 0,  Warning: 0}, DisabledAlertCount: {Failure: 0,  Error: 0,  Warning: 0}}
 - Requirement: T87.A14
   TestCases:
   - TestName: tb_a14_osvvm

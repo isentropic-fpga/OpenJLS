@@ -65,4 +65,4 @@ None.
 
 ## Not tracked
 - A.2, A.8 (and every NEAR > 0 path): lossy only, not implemented.
-- Frame sizes above 65535 (T.87 LSE ID = 4): deferred to v1.1.
+- Frame sizes above 65535 (T.87 LSE ID = 4): deferred.

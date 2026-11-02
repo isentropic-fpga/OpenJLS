@@ -36,16 +36,46 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 742
+        Count: 782
         AtLeast: 1
-        PercentCov: 74200.0000
+        PercentCov: 78200.0000
       - Name: "forwarded write"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
-        Count: 5
+        Count: 6
         AtLeast: 1
-        PercentCov: 500.0000
+        PercentCov: 600.0000
+
+  - Name: "G4.Stream readOfPendingWrite"
+    TestCases: 
+      - "tb_context_ram_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [183681784, 965785964]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 20
+      TotalCovGoal: 20
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "Bin1"
+      NumBins: 1
+    Bins: 
+      - Name: "stored value from the write landing this cycle"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 45
+        AtLeast: 20
+        PercentCov: 225.0000
 
   - Name: "G4.Stream readOnEoiCycle"
     TestCases: 
@@ -73,9 +103,9 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 9
+        Count: 5
         AtLeast: 1
-        PercentCov: 900.0000
+        PercentCov: 500.0000
       - Name: "stored on EOI"
         Type: "COUNT"
         Range: 
@@ -117,16 +147,16 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 6
+        Count: 1
         AtLeast: 1
-        PercentCov: 600.0000
+        PercentCov: 100.0000
       - Name: "read+write in flight"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 1
+        Count: 4
         AtLeast: 1
-        PercentCov: 100.0000
+        PercentCov: 400.0000
 
   - Name: "G2.MinMax field x value"
     TestCases: 

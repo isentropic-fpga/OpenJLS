@@ -36,12 +36,12 @@ PS_GOLDEN_TSV="$ROOT/Verification/Post synth/Output/ps_golden_image_results.tsv"
 HIL_TMP=""
 if [ -d "$DEST/hil" ]; then
   HIL_TMP="$(mktemp -d)"
-  cp -r "$DEST/hil" "$HIL_TMP/"
+  cp -rp "$DEST/hil" "$HIL_TMP/"
 fi
 rm -rf "$DEST"
 mkdir -p "$DEST"
 if [ -n "$HIL_TMP" ]; then
-  cp -r "$HIL_TMP/hil" "$DEST/hil"
+  cp -rp "$HIL_TMP/hil" "$DEST/hil"
   rm -rf "$HIL_TMP"
 fi
 
@@ -245,8 +245,8 @@ if [ -f "$DEST/hil/results.csv" ]; then
     hil_pct="$((100 * hil_pass / hil_total))%"
   fi
   hil_depths=$(awk -F, 'NR>1{if(min==""||$1+0<min)min=$1;if($1+0>max)max=$1} END{print min"&ndash;"max}' "$DEST/hil/results.csv")
-  hil_date=$(git -C "$ROOT" log -1 --format=%cs -- "Docs/Reports/hil" 2>/dev/null || true)
-  emit_row "Hardware-in-the-loop" "The whole corpus, including the full-size originals too large to simulate, encoded on a PYNQ-Z2 FPGA at depths $hil_depths (one bitstream per depth) by the OpenJLS-Demos EncodeOverEthernet sweep." "$hil_status" "$hil_pct" \
+  hil_date=$(date -r "$DEST/hil/results.csv" '+%Y-%m-%d')
+  emit_row "Hardware-in-the-loop" "The whole corpus, including the full-size originals too large to simulate, and the no-reset streams, encoded on a PYNQ-Z2 FPGA at depths $hil_depths (one bitstream per depth) by the OpenJLS-Demos EncodeOverEthernet sweep." "$hil_status" "$hil_pct" \
     "$hil_pass of $hil_total images byte-exact vs CharLS on PYNQ-Z2 silicon" \
     "https://github.com/isentropic-fpga/OpenJLS-Demos/blob/main/EncodeOverEthernet/Verification/out/report.md" "$hil_date"
 fi
