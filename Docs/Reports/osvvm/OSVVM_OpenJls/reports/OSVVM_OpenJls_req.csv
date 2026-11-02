@@ -3,10 +3,11 @@ OJLS.AxiApplyReconfig, 57, 171, 0, 0, 0, 0, 174
 OJLS.AxiLiteRegMap, 16, 48, 0, 0, 0, 0, 66
 OJLS.AxiStreamTransparent, 520, 1936, 0, 0, 0, 0, 1968
 OJLS.BackToBack, 3, 15, 0, 0, 0, 0, 35
-OJLS.ByteStuffer, 2900, 8700, 0, 0, 0, 0, 13144
+OJLS.ByteStuffer, 2900, 8700, 0, 0, 0, 0, 70891
 OJLS.CtxRam, 1322, 3966, 0, 0, 0, 0, 3978
 OJLS.Framer, 1600, 8000, 0, 0, 0, 0, 20603
 OJLS.ImageFlood, 18, 90, 0, 0, 0, 0, 90
+OJLS.ImageStream, 6, 66, 0, 0, 0, 0, 246
 OJLS.LineBuffer, 9908, 29724, 0, 0, 0, 0, 29724
 OJLS.NoStallCompress, 5000, 25000, 0, 0, 0, 0, 35430
 OJLS.NoStallEOL, 100, 500, 0, 0, 0, 0, 895

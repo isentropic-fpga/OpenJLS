@@ -115,7 +115,7 @@
 \pagestyle{fancy}
 \fancyhf{}
 \lhead{\raisebox{-0.5pt}{\isentropicmark{3.2mm}}}
-\rhead{{\color{muted}\kicker{OpenJLS \textperiodcentered{} Datasheet \textperiodcentered{} v1.3.2}}}
+\rhead{{\color{muted}\kicker{OpenJLS \textperiodcentered{} Datasheet \textperiodcentered{} v1.3.3}}}
 \lfoot{{\color{muted}\small isentropic.com.br}}
 \rfoot{{\color{muted}\small\thepage}}
 \renewcommand{\headrule}{{\color{divider}\hrule height 0.4pt}}
@@ -133,7 +133,7 @@
 \vspace{0.5mm}{\color{divider}\hrule height 0.4pt}
 
 \vspace*{58mm}
-{\color{accent}\kicker{JPEG-LS Encoder IP Core \textperiodcentered{} v1.3.2}}\par
+{\color{accent}\kicker{JPEG-LS Encoder IP Core \textperiodcentered{} v1.3.3}}\par
 \vspace{6mm}
 \openjlsmark{24mm}\par
 \vspace{8mm}
@@ -575,7 +575,8 @@ both RTL and post-synthesis (gate-level) stages:
         requirements tracking.
   \item \textbf{Coverage} --- OSVVM functional coverage with NVC structural code coverage.
   \item \textbf{Golden model} --- Byte-exact vs CharLS on all 5555
-        simulation-size images (up to 0.5\,MP, 8--16 bit) plus the ISO/IEC 14495-1 vectors.
+        simulation-size images (up to 0.5\,MP, 8--16 bit) from reset, 6000 same-size
+        images streamed with no reset between them, plus the ISO/IEC 14495-1 vectors.
   \item \textbf{Design contracts} --- Embedded PSL assertions (ready/valid handshake protocol, internal handshakes) on every run.
   \item \textbf{Post-synthesis} --- The stress test and a golden-model subset re-run on the synthesized netlist.
   \item \textbf{Hardware-in-the-loop} --- The golden-model comparison on silicon: the full 5639-image corpus, including the 84 full-size originals, encoded on a PYNQ-Z2 FPGA and byte-compared against CharLS. Run by the EncodeOverEthernet project in \href{https://github.com/isentropic-fpga/OpenJLS-Demos}{OpenJLS-Demos}.
@@ -620,8 +621,8 @@ simulation; their 84 full-size originals are part of the corpus but run on hardw
   \hd{Suite} & \hd{Status} & \hd{Test/Cov} & \hd{Summary} \\
   \midrule
   NVC code coverage       & info & 99.8\% & Statement coverage\footnotemark[9] \\
-  OSVVM suite             & PASS & 100\%  & 115 tests\footnotemark[10] \\
-  Golden model            & PASS & 100\%  & 5555/5555 images\footnotemark[11] \\
+  OSVVM suite             & PASS & 100\%  & 126 tests\footnotemark[10] \\
+  Golden model            & PASS & 100\%  & 11555/11555 images\footnotemark[11] \\
   Post-synth OSVVM        & PASS & 100\%  & Control-plane stress\footnotemark[12] \\
   Post-synth golden model & PASS & 100\%  & 167/167 images\footnotemark[13] \\
   HIL golden model        & PASS & 100\%  & 5639/5639 images\footnotemark[14] \\
@@ -629,11 +630,11 @@ simulation; their 84 full-size originals are part of the corpus but run on hardw
 \end{tabular}
 \end{table}
 \footnotetext[9]{Per-DUT-file breakdown.}
-\footnotetext[10]{7\,699\,071 affirmations (module + top + AXI wrappers).}
-\footnotetext[11]{Byte-exact vs CharLS.}
-\footnotetext[12]{133\,862 affirmations on the gate-level netlist.}
+\footnotetext[10]{7\,760\,711 affirmations (module + top + AXI wrappers).}
+\footnotetext[11]{Byte-exact vs CharLS: 5555 from reset, 6000 streamed with no reset.}
+\footnotetext[12]{153\,946 affirmations on the gate-level netlist.}
 \footnotetext[13]{8-bit images up to 0.05\,MP, byte-exact vs CharLS.}
-\footnotetext[14]{Byte-exact vs CharLS on PYNQ-Z2 silicon.}
+\footnotetext[14]{Byte-exact vs CharLS on PYNQ-Z2 silicon. Not rerun since v1.3.1.}
 \setcounter{footnote}{14}
 
 %======================================================================
@@ -656,6 +657,7 @@ simulation; their 84 full-size originals are part of the corpus but run on hardw
   change. \\
   1.3.2 & 2026-10 & Fix per-image queue overflow on back-to-back images of
   8 pixels or fewer. \\
+  1.3.3 & 2026-11 & Fix adjacent images merging in the byte stuffer. \\
   \bottomrule
 \end{tabular}
 \end{table}

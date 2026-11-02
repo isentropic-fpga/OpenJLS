@@ -2,4 +2,4 @@
   TestCases: 
   - TestName: "tb_byte_stuffer_osvvm"
     Status: PASSED
-    Results: {Goal: 2900, Passed: 3048, Errors: 0, Checked: 3048, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+    Results: {Goal: 2900, Passed: 15875, Errors: 0, Checked: 15875, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}

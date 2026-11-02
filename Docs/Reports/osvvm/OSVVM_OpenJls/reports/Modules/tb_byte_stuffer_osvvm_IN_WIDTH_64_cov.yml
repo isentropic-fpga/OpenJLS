@@ -29,37 +29,37 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 22
+        Count: 78
         AtLeast: 1
-        PercentCov: 2200.0000
+        PercentCov: 7800.0000
       - Name: "emitted bytes=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 311
+        Count: 1829
         AtLeast: 1
-        PercentCov: 31100.0000
+        PercentCov: 182900.0000
       - Name: "emitted bytes=2"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
-        Count: 46
+        Count: 206
         AtLeast: 1
-        PercentCov: 4600.0000
+        PercentCov: 20600.0000
       - Name: "emitted bytes=3"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
-        Count: 43
+        Count: 166
         AtLeast: 1
-        PercentCov: 4300.0000
+        PercentCov: 16600.0000
       - Name: "emitted bytes=4"
         Type: "COUNT"
         Range: 
           - {Min: 4, Max: 4}
-        Count: 1309
+        Count: 7173
         AtLeast: 1
-        PercentCov: 130900.0000
+        PercentCov: 717300.0000
 
   - Name: "G4.Stream flushType"
     TestCases: 
@@ -87,23 +87,23 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 23
+        Count: 80
         AtLeast: 1
-        PercentCov: 2300.0000
+        PercentCov: 8000.0000
       - Name: "padded residue"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
-        Count: 173
+        Count: 902
         AtLeast: 1
-        PercentCov: 17300.0000
+        PercentCov: 90200.0000
       - Name: "dangling FF"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
-        Count: 5
+        Count: 19
         AtLeast: 1
-        PercentCov: 500.0000
+        PercentCov: 1900.0000
 
   - Name: "G4.Stream data x almostFull"
     TestCases: 
@@ -133,17 +133,17 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 1643
+        Count: 9289
         AtLeast: 1
-        PercentCov: 164300.0000
+        PercentCov: 928900.0000
       - Name: "data beat / almostFull=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 66
+        Count: 85
         AtLeast: 1
-        PercentCov: 6600.0000
+        PercentCov: 8500.0000
 
   - Name: "G4.Branch stuffEvent"
     TestCases: 
@@ -171,23 +171,23 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 4482
+        Count: 21384
         AtLeast: 1
-        PercentCov: 448200.0000
+        PercentCov: 2138400.0000
       - Name: "firstStuff"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 123
+        Count: 897
         AtLeast: 1
-        PercentCov: 12300.0000
+        PercentCov: 89700.0000
       - Name: "runStuff"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
-        Count: 985
+        Count: 8229
         AtLeast: 1
-        PercentCov: 98500.0000
+        PercentCov: 822900.0000
 
   - Name: "G5.States resetPhase"
     TestCases: 
@@ -232,4 +232,34 @@ Models:
         Count: 1
         AtLeast: 1
         PercentCov: 100.0000
+
+  - Name: "G4.Stream nextImageWaiting"
+    TestCases: 
+      - "tb_byte_stuffer_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [311782244, 1552044935]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 1
+      TotalCovGoal: 1
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "Bin1"
+      NumBins: 1
+    Bins: 
+      - Name: "8 residue bits, next image in skid"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 43
+        AtLeast: 1
+        PercentCov: 4300.0000
 
