@@ -164,6 +164,17 @@ Test Top/tb_openjls_top_osvvm.vhd [generic MAX_W 320] [generic MAX_H 200]
 Test Top/tb_openjls_top_osvvm.vhd [generic MAX_W 48] [generic MAX_H 48]
 Test Top/tb_openjls_top_osvvm.vhd [generic OUT_WIDTH 48]
 Test Top/tb_openjls_top_osvvm.vhd [generic OUT_WIDTH 1024]
+Test Top/tb_openjls_top_stream_osvvm.vhd [generic BITNESS 8] [generic W 128] [generic H 16] [generic SEED 2] [generic VALID_PCT 100] [generic READY_PCT 100]
+Test Top/tb_openjls_top_stream_osvvm.vhd [generic BITNESS 8] [generic W 128] [generic H 16] [generic SEED 2] [generic VALID_PCT 95] [generic READY_PCT 30]
+Test Top/tb_openjls_top_stream_osvvm.vhd [generic BITNESS 10] [generic W 16] [generic H 16] [generic SEED 1] [generic VALID_PCT 100] [generic READY_PCT 100]
+Test Top/tb_openjls_top_stream_osvvm.vhd [generic BITNESS 12] [generic W 256] [generic H 64] [generic SEED 4] [generic VALID_PCT 100] [generic READY_PCT 100]
+Test Top/tb_openjls_top_stream_osvvm.vhd [generic BITNESS 16] [generic W 4] [generic H 4] [generic SEED 2] [generic VALID_PCT 100] [generic READY_PCT 100]
+Test Top/tb_openjls_top_stream_osvvm.vhd [generic BITNESS 16] [generic W 4] [generic H 4] [generic SEED 2] [generic VALID_PCT 95] [generic READY_PCT 30]
+Test Top/tb_openjls_top_stream_osvvm.vhd [generic BITNESS 9] [generic W 64] [generic H 32] [generic SEED 3] [generic VALID_PCT 100] [generic READY_PCT 10]
+Test Top/tb_openjls_top_stream_osvvm.vhd [generic BITNESS 11] [generic W 16] [generic H 16] [generic SEED 4] [generic VALID_PCT 100] [generic READY_PCT 10]
+Test Top/tb_openjls_top_stream_osvvm.vhd [generic BITNESS 13] [generic W 8] [generic H 8] [generic SEED 3] [generic VALID_PCT 100] [generic READY_PCT 10]
+Test Top/tb_openjls_top_stream_osvvm.vhd [generic BITNESS 14] [generic W 32] [generic H 8] [generic SEED 3] [generic VALID_PCT 100] [generic READY_PCT 100]
+Test Top/tb_openjls_top_stream_osvvm.vhd [generic BITNESS 15] [generic W 4] [generic H 1] [generic SEED 2] [generic VALID_PCT 95] [generic READY_PCT 30]
 
 TestSuite Xilinx
 Test Modules/tb_openjls_axis_osvvm.vhd

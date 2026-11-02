@@ -47,6 +47,7 @@ architecture sim of tb_byte_stuffer_osvvm is
   constant CLK_PERIOD      : time    := CLK_PERIOD_DEFAULT;
   constant N_RANDOM        : natural := 60;
   constant MAX_BEATS       : natural := 40;
+  constant N_PAIRS         : natural := 400;
 
   signal clk               : std_logic;
   signal rst               : std_logic;
@@ -68,6 +69,7 @@ architecture sim of tb_byte_stuffer_osvvm is
   shared variable covCross : CoverageIDType;
   shared variable covStuff : CoverageIDType;
   shared variable covRst   : CoverageIDType;
+  shared variable covMerge : CoverageIDType;
 
   -- Stuff events per image. FF x prev-FF can't be crossed: the byte after a
   -- stuff has a '0' MSB.
@@ -211,6 +213,22 @@ begin
     wait;
 
   end process ready_proc;
+
+  -- The refill-across-images window: only a skid hold keeps these two images apart
+  merge_window_proc : process is
+
+    alias skidValid is <<signal .tb_byte_stuffer_osvvm.dut.sSkidValid : std_logic>>;
+    alias bufLast   is <<signal .tb_byte_stuffer_osvvm.dut.sStuffBufferLast : std_logic>>;
+    alias bufBits   is <<signal .tb_byte_stuffer_osvvm.dut.sStuffBufferBits : unsigned>>;
+
+  begin
+
+    wait until rising_edge(clk);
+    if (rst = '0' and iReady = '1' and skidValid = '1' and bufLast = '1' and bufBits = 8) then
+      ICover(covMerge, 1);
+    end if;
+
+  end process merge_window_proc;
 
   -- Monitor ---
   -- A presented beat was already granted by an earlier iReady, so it is checked unconditionally
@@ -404,7 +422,7 @@ begin
 
     -- iFlush rides the last valid word, never an empty beat
 
-    procedure send_image (
+    procedure send_beats (
       beats : natural
     ) is
 
@@ -444,9 +462,52 @@ begin
       end loop;
 
       sImagesSent <= sImagesSent + 1;
+
+    end procedure send_beats;
+
+    procedure send_image (
+      beats : natural
+    ) is
+    begin
+
+      send_beats(beats);
       wait until sFlushDone = sImagesSent;
 
     end procedure send_image;
+
+    -- No wait between the images, within the top's limits: 3 in flight, and >= 4 words
+    -- per image so stage 1's flush clears. Merging loses a flush-done, so the wait is bounded.
+    -- All-ones first images: each stuffed word grows the residue, which is the only way
+    -- to reach 8 bits at IN_WIDTH 32.
+    procedure send_pair (
+      firstOnes : boolean
+    ) is
+
+      constant ONES_W : std_logic_vector(IN_WIDTH - 1 downto 0) := (others => '1');
+
+      variable beats  : natural;
+
+    begin
+
+      if (firstOnes) then
+        beats := rv.RandInt(4, 8);
+
+        for n in 1 to beats - 1 loop
+
+          send_beat(ONES_W, IN_WIDTH, '1', '0');
+
+        end loop;
+
+        send_beat(ONES_W, IN_WIDTH, '1', '1');
+        sImagesSent <= sImagesSent + 1;
+      else
+        send_beats(rv.RandInt(4, 8));
+      end if;
+      send_beats(rv.RandInt(4, 8));
+      wait until sFlushDone = sImagesSent for 2000 * CLK_PERIOD;
+      AffirmIfEqual(GetAlertLogID("ImagePair"), sFlushDone, sImagesSent, "one flush-done per back-to-back image");
+
+    end procedure send_pair;
 
     procedure directed (
       w   : std_logic_vector(IN_WIDTH - 1 downto 0);
@@ -565,6 +626,9 @@ begin
     AddBins(covRst, "mid-image", GenBin(1));
     AddBins(covRst, "flush draining", GenBin(2));
 
+    covMerge := NewID("G4.Stream nextImageWaiting");
+    AddBins(covMerge, "8 residue bits, next image in skid", GenBin(1));
+
     apply_reset(clk, rst, 6, '1');
     ones := (others => '1');
 
@@ -616,6 +680,13 @@ begin
 
     end loop;
 
+    -- Back-to-back pairs ---
+    for pair in 1 to N_PAIRS loop
+
+      send_pair(pair mod 2 = 0);
+
+    end loop;
+
     -- Mid-op reset: mid-image, idle, flush draining ---
     reset_mid(4, '0');
     reset_mid(0, '0');
@@ -636,6 +707,7 @@ begin
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covCross), "data x almostFull coverage closed");
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covStuff), "stuff-event coverage closed");
     affirm_covered(covRst, "reset phase coverage closed");
+    affirm_covered(covMerge, "next-image-waiting coverage closed");
 
     end_of_test("tb_byte_stuffer_osvvm");
     wait;

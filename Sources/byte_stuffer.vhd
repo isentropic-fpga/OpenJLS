@@ -383,10 +383,12 @@ begin
       Empty         => open
     );
 
+  -- Hold the next image until the last word has left as the final beat; sLastPending alone
+  -- misses a last word with exactly 8 bits left, which merges the two images
   sSkidTaken <= '1' when sSkidValid = '1'
                          and sStuffBufferBits <= to_unsigned(HOLD_BITS - FIFO_BITS, sStuffBufferBits'length)
                          and iReady = '1'
-                         and sLastPending = '0' else
+                         and sStuffBufferLast = '0' else
                 '0';
   sFifoOutReady <= '1' when sSkidValid = '0' or sSkidTaken = '1' else
                    '0';
@@ -646,6 +648,8 @@ begin
 
   end process stage3_proc;
 
+  postponed assert sLastPending /= '1' or sStuffBufferLast = '1'
+    report "byte_stuffer: final beat pending without a last word" severity error;
   postponed assert is_x(sWordValidLen) or sWordValidLen <= IN_WIDTH
     report "byte_stuffer: input valid length past IN_WIDTH" severity error;
   postponed assert is_x(sAccumCountBits) or sAccumCountBits <= ACCUM_BITS
