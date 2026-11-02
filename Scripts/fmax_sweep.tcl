@@ -11,7 +11,9 @@
 # fmax = 1000 / (period - WNS); nonnegative WNS is only a floor.
 set OUTDIR [pwd]
 set CLKPORT iClk
-set OVERCONSTRAIN_NS 3.000 ;# keep tighter than the real fmax
+# Must stay tighter than the real fmax, or WNS >= 0 and fmax is only a floor
+set OVERCONSTRAIN_NS 2.500
+if {[info exists ::env(FMAX_PERIOD_NS)]} { set OVERCONSTRAIN_NS $::env(FMAX_PERIOD_NS) }
 # Concurrent runs, each a ~5-6 GB Vivado process: this knob sets the RAM
 set MAX_PARALLEL 3
 if {[info exists ::env(FMAX_MAX_PARALLEL)]} { set MAX_PARALLEL $::env(FMAX_MAX_PARALLEL) }
@@ -53,7 +55,7 @@ set_property generic {OUT_WIDTH=64} $FS ;# BITNESS is set per synth run
 update_compile_order -fileset sources_1
 set XDC [file join [pwd] clock.xdc]
 set fp [open $XDC w]
-puts $fp {create_clock -period 3.000 -name iClk [get_ports iClk]}
+puts $fp "create_clock -period $OVERCONSTRAIN_NS -name $CLKPORT \[get_ports $CLKPORT\]"
 close $fp
 add_files -fileset constrs_1 $XDC
 # By name: impl_1 may have been left on another strategy
