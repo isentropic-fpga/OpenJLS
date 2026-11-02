@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>NVC code coverage report</title>
+  <style>
+:root {
+    --table-row-color: #e8e8e8;
+    --margin-left: 20%;
+}
+
+body {
+    background-color: #f0f0e0ff;
+}
+
+header {
+    padding: 0.5em;
+    text-align: center;
+    font-size: 14pt;
+}
+
+h1 {
+    text-align: center;
+}
+
+h2 {
+    word-wrap: break-word;
+}
+
+h3 {
+    word-wrap: break-word;
+    margin-bottom: 0px;
+}
+
+hr {
+    border:none;
+    height: 2px;
+    background: black;
+}
+
+footer {
+    display: table;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+nav {
+    float: left;
+    background-color: var(--table-row-color);
+    width: 17%;
+    overflow: auto;
+    padding: 10px;
+    margin-top: -2px;
+    border: 2px solid black;
+}
+nav details details {
+    margin-left: 1rem;
+}
+nav details > a {
+    padding-left: 1.9rem;
+    display: block;
+}
+nav summary {
+    display: inline-flex;
+    cursor: pointer;
+    align-items: center;
+}
+nav summary::before {
+    content: '▶';
+    font-size: 0.7em;
+    margin-right: 0.4em;
+}
+nav details[open] > summary::before {
+    transform: rotate(90deg);
+}
+
+table {
+    table-layout: fixed;
+}
+
+table, th, td {
+    border: 2px solid black;
+    border-collapse: collapse;
+    word-wrap: break-word;
+}
+
+.tabcontent {
+    display: none;
+    padding: 0px 0px;
+    border: 2px solid #ccc;
+    border-top: none;
+    word-wrap: break-word;
+}
+
+.tab {
+    overflow: hidden;
+    border: 2px solid;
+    margin-left: var(--margin-left);
+    margin-top: 10px;
+}
+
+.cbg:hover {
+    background-color: #dddddd;
+}
+.cbg {
+    background-color: #bbbbbb;
+    text-align: center;
+}
+
+.cbt {
+    margin-top: 8px;
+}
+.cbt th {
+    background-color: #bbbbbb;
+    text-align: center;
+}
+.cbt td, .cbt th {
+    width: 50px;
+    text-align: center;
+}
+.cbt td + td, .cbt th + th {
+    width: 150px;
+}
+.cbt td + td + td, .cbt th + th + th {
+    width: 150px;
+}
+.cbt td + td + td + td, .cbt th + th + th + th {
+    width: 150px;
+}
+
+.percent100 {
+    background-color: #00cc00;
+}
+.percent90 {
+    background-color: #e6e600;
+}
+.percent80 {
+    background-color: #ff9900;
+}
+.percent0 {
+    background-color: #ff0000;
+}
+.percentna {
+    background-color: #cccccc;
+}
+
+.nav-sel {
+    font-weight: bold;
+}
+  </style>
+</head>
+<body style="font-family: verdana">
+
+<header><h1 style="text-align: center;">NVC code coverage report
+</h1></header>
+
+<h2 style="text-align: left;">
+   File:&nbsp; Top/tb_openjls_top_stream_osvvm.vhd
+</h2><pre><code>     0: &nbsp; --&nbsp;Copyright&nbsp;(C)&nbsp;2026&nbsp;Vitor&nbsp;Mendes&nbsp;Camilo&nbsp;
+     1: &nbsp; --&nbsp;SPDX-License-Identifier:&nbsp;GPL-3.0-only&nbsp;
+     2: &nbsp; --&nbsp;
+     3: &nbsp; --&nbsp;This&nbsp;file&nbsp;is&nbsp;part&nbsp;of&nbsp;OpenJLS.&nbsp;Available&nbsp;under&nbsp;GPLv3&nbsp;or&nbsp;a&nbsp;
+     4: &nbsp; --&nbsp;commercial&nbsp;license.&nbsp;See&nbsp;LICENSE&nbsp;and&nbsp;README&nbsp;for&nbsp;details.&nbsp;
+     5: &nbsp; --&nbsp;
+     6: &nbsp; --&nbsp;tb_openjls_top_stream_osvvm:&nbsp;back-to-back&nbsp;images&nbsp;through&nbsp;openjls_top&nbsp;against&nbsp;CharLS&nbsp;
+     7: &nbsp; --&nbsp;
+     8: &nbsp; --&nbsp;Each&nbsp;variant&nbsp;fails&nbsp;on&nbsp;the&nbsp;byte_stuffer&nbsp;image-merge&nbsp;bug.&nbsp;REFS&nbsp;holds&nbsp;the&nbsp;CharLS&nbsp;length&nbsp;and&nbsp;
+     9: &nbsp; --&nbsp;CRC-32&nbsp;of&nbsp;each&nbsp;image,&nbsp;so&nbsp;the&nbsp;pixel&nbsp;generator&nbsp;must&nbsp;not&nbsp;change.&nbsp;
+    10: &nbsp; --&nbsp;
+    11: &nbsp; --&nbsp;Guidelines:&nbsp;
+    12: &nbsp; --&nbsp;&nbsp;&nbsp;G2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;N/A:&nbsp;owned&nbsp;by&nbsp;module&nbsp;TBs&nbsp;
+    13: &nbsp; --&nbsp;&nbsp;&nbsp;G3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;N/A:&nbsp;owned&nbsp;by&nbsp;module&nbsp;TBs&nbsp;
+    14: &nbsp; --&nbsp;&nbsp;&nbsp;G4&nbsp;other&nbsp;&nbsp;&nbsp;&nbsp;N/A:&nbsp;Edge/Run/Coding&nbsp;owned&nbsp;by&nbsp;module&nbsp;TBs&nbsp;+&nbsp;golden&nbsp;suite&nbsp;
+    15: &nbsp; --&nbsp;&nbsp;&nbsp;G5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;N/A:&nbsp;no&nbsp;reset,&nbsp;resets&nbsp;belong&nbsp;to&nbsp;tb_openjls_top_osvvm&nbsp;
+    16: &nbsp; &nbsp;
+    17: &nbsp; library&nbsp;ieee;&nbsp;
+    18: &nbsp; &nbsp;&nbsp;use&nbsp;ieee.std_logic_1164.all;&nbsp;
+    19: &nbsp; &nbsp;&nbsp;use&nbsp;ieee.numeric_std.all;&nbsp;
+    20: &nbsp; &nbsp;&nbsp;use&nbsp;ieee.math_real.all;&nbsp;
+    21: &nbsp; &nbsp;
+    22: &nbsp; library&nbsp;osvvm;&nbsp;
+    23: &nbsp; &nbsp;&nbsp;context&nbsp;osvvm.OsvvmContext;&nbsp;
+    24: &nbsp; &nbsp;
+    25: &nbsp; library&nbsp;tb_support;&nbsp;
+    26: &nbsp; &nbsp;&nbsp;use&nbsp;tb_support.tb_support_pkg.all;&nbsp;
+    27: &nbsp; &nbsp;
+    28: &nbsp; entity&nbsp;tb_openjls_top_stream_osvvm&nbsp;is&nbsp;
+    29: &nbsp; &nbsp;&nbsp;generic&nbsp;(&nbsp;
+    30: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;BITNESS&nbsp;&nbsp;&nbsp;:&nbsp;positive&nbsp;:=&nbsp;16;&nbsp;
+    31: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;W&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;positive&nbsp;:=&nbsp;4;&nbsp;
+    32: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;H&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;positive&nbsp;:=&nbsp;4;&nbsp;
+    33: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;SEED&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;positive&nbsp;:=&nbsp;2;&nbsp;
+    34: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;VALID_PCT&nbsp;:&nbsp;natural&nbsp;&nbsp;:=&nbsp;100;&nbsp;
+    35: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;READY_PCT&nbsp;:&nbsp;natural&nbsp;&nbsp;:=&nbsp;100&nbsp;
+    36: &nbsp; &nbsp;&nbsp;);&nbsp;
+    37: &nbsp; end&nbsp;entity&nbsp;tb_openjls_top_stream_osvvm;&nbsp;
+    38: &nbsp; &nbsp;
+    39: &nbsp; architecture&nbsp;sim&nbsp;of&nbsp;tb_openjls_top_stream_osvvm&nbsp;is&nbsp;
+    40: &nbsp; &nbsp;
+    41: &nbsp; &nbsp;&nbsp;constant&nbsp;OUT_WIDTH&nbsp;:&nbsp;positive&nbsp;:=&nbsp;64;&nbsp;
+    42: &nbsp; &nbsp;&nbsp;constant&nbsp;MAXV&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural&nbsp;&nbsp;:=&nbsp;2&nbsp;**&nbsp;BITNESS&nbsp;-&nbsp;1;&nbsp;
+    43: &nbsp; &nbsp;&nbsp;--&nbsp;Output&nbsp;idle&nbsp;this&nbsp;long&nbsp;after&nbsp;the&nbsp;last&nbsp;expected&nbsp;oLast,&nbsp;or&nbsp;mid-stream:&nbsp;a&nbsp;lost&nbsp;EOI&nbsp;hangs&nbsp;here&nbsp;
+    44: &nbsp; &nbsp;&nbsp;constant&nbsp;IDLE_LIMIT&nbsp;:&nbsp;natural&nbsp;:=&nbsp;20000;&nbsp;
+    45: &nbsp; &nbsp;
+    46: &nbsp; &nbsp;&nbsp;type&nbsp;ref_t&nbsp;is&nbsp;record&nbsp;
+    47: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;bitness,&nbsp;w,&nbsp;h,&nbsp;seed,&nbsp;image,&nbsp;length&nbsp;:&nbsp;natural;&nbsp;
+    48: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;crc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;std_logic_vector(31&nbsp;downto&nbsp;0);&nbsp;
+    49: &nbsp; &nbsp;&nbsp;end&nbsp;record&nbsp;ref_t;&nbsp;
+    50: &nbsp; &nbsp;
+    51: &nbsp; &nbsp;&nbsp;type&nbsp;refs_t&nbsp;is&nbsp;array&nbsp;(natural&nbsp;range&nbsp;&lt;&gt;)&nbsp;of&nbsp;ref_t;&nbsp;
+    52: &nbsp; &nbsp;
+    53: &nbsp; &nbsp;&nbsp;constant&nbsp;REFS&nbsp;:&nbsp;refs_t&nbsp;:=&nbsp;(&nbsp;
+    54: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(8,&nbsp;128,&nbsp;16,&nbsp;2,&nbsp;0,&nbsp;1214,&nbsp;x"34ED204F"),&nbsp;
+    55: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(8,&nbsp;128,&nbsp;16,&nbsp;2,&nbsp;1,&nbsp;1241,&nbsp;x"62AA0955"),&nbsp;
+    56: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(8,&nbsp;128,&nbsp;16,&nbsp;2,&nbsp;2,&nbsp;1246,&nbsp;x"673142A5"),&nbsp;
+    57: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(8,&nbsp;128,&nbsp;16,&nbsp;2,&nbsp;3,&nbsp;1308,&nbsp;x"998DDAB7"),&nbsp;
+    58: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(8,&nbsp;128,&nbsp;16,&nbsp;2,&nbsp;4,&nbsp;1283,&nbsp;x"740E708C"),&nbsp;
+    59: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(8,&nbsp;128,&nbsp;16,&nbsp;2,&nbsp;5,&nbsp;1234,&nbsp;x"C21E9DB3"),&nbsp;
+    60: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(8,&nbsp;128,&nbsp;16,&nbsp;2,&nbsp;6,&nbsp;1239,&nbsp;x"5E15AE50"),&nbsp;
+    61: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(8,&nbsp;128,&nbsp;16,&nbsp;2,&nbsp;7,&nbsp;1244,&nbsp;x"8745673E"),&nbsp;
+    62: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(8,&nbsp;128,&nbsp;16,&nbsp;2,&nbsp;8,&nbsp;1261,&nbsp;x"7B2F1F58"),&nbsp;
+    63: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(8,&nbsp;128,&nbsp;16,&nbsp;2,&nbsp;9,&nbsp;1243,&nbsp;x"5F66474A"),&nbsp;
+    64: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(10,&nbsp;16,&nbsp;16,&nbsp;1,&nbsp;0,&nbsp;242,&nbsp;x"A9B323B7"),&nbsp;
+    65: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(10,&nbsp;16,&nbsp;16,&nbsp;1,&nbsp;1,&nbsp;296,&nbsp;x"91B3FB0A"),&nbsp;
+    66: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(10,&nbsp;16,&nbsp;16,&nbsp;1,&nbsp;2,&nbsp;335,&nbsp;x"28BC1FC5"),&nbsp;
+    67: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(10,&nbsp;16,&nbsp;16,&nbsp;1,&nbsp;3,&nbsp;298,&nbsp;x"20FE8C49"),&nbsp;
+    68: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(10,&nbsp;16,&nbsp;16,&nbsp;1,&nbsp;4,&nbsp;240,&nbsp;x"302F7652"),&nbsp;
+    69: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(10,&nbsp;16,&nbsp;16,&nbsp;1,&nbsp;5,&nbsp;254,&nbsp;x"B1D7F6F5"),&nbsp;
+    70: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(10,&nbsp;16,&nbsp;16,&nbsp;1,&nbsp;6,&nbsp;312,&nbsp;x"4664B422"),&nbsp;
+    71: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(10,&nbsp;16,&nbsp;16,&nbsp;1,&nbsp;7,&nbsp;312,&nbsp;x"A8EC0ABC"),&nbsp;
+    72: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(10,&nbsp;16,&nbsp;16,&nbsp;1,&nbsp;8,&nbsp;304,&nbsp;x"26E6C913"),&nbsp;
+    73: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(10,&nbsp;16,&nbsp;16,&nbsp;1,&nbsp;9,&nbsp;241,&nbsp;x"78F968DB"),&nbsp;
+    74: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(12,&nbsp;256,&nbsp;64,&nbsp;4,&nbsp;0,&nbsp;12951,&nbsp;x"61BA5E70"),&nbsp;
+    75: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(12,&nbsp;256,&nbsp;64,&nbsp;4,&nbsp;1,&nbsp;13158,&nbsp;x"4DA8080C"),&nbsp;
+    76: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(12,&nbsp;256,&nbsp;64,&nbsp;4,&nbsp;2,&nbsp;13148,&nbsp;x"6F301543"),&nbsp;
+    77: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(16,&nbsp;4,&nbsp;4,&nbsp;2,&nbsp;0,&nbsp;29,&nbsp;x"E4D25484"),&nbsp;
+    78: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(16,&nbsp;4,&nbsp;4,&nbsp;2,&nbsp;1,&nbsp;64,&nbsp;x"D53CA489"),&nbsp;
+    79: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(16,&nbsp;4,&nbsp;4,&nbsp;2,&nbsp;2,&nbsp;80,&nbsp;x"A924EFEE"),&nbsp;
+    80: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(16,&nbsp;4,&nbsp;4,&nbsp;2,&nbsp;3,&nbsp;56,&nbsp;x"097361F3"),&nbsp;
+    81: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(16,&nbsp;4,&nbsp;4,&nbsp;2,&nbsp;4,&nbsp;47,&nbsp;x"A95A3691"),&nbsp;
+    82: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(16,&nbsp;4,&nbsp;4,&nbsp;2,&nbsp;5,&nbsp;35,&nbsp;x"D181511B"),&nbsp;
+    83: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(16,&nbsp;4,&nbsp;4,&nbsp;2,&nbsp;6,&nbsp;64,&nbsp;x"D53CA489"),&nbsp;
+    84: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(16,&nbsp;4,&nbsp;4,&nbsp;2,&nbsp;7,&nbsp;87,&nbsp;x"FBE0A509"),&nbsp;
+    85: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(16,&nbsp;4,&nbsp;4,&nbsp;2,&nbsp;8,&nbsp;56,&nbsp;x"D961BB8D"),&nbsp;
+    86: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(16,&nbsp;4,&nbsp;4,&nbsp;2,&nbsp;9,&nbsp;47,&nbsp;x"A95A3691"),&nbsp;
+    87: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(16,&nbsp;4,&nbsp;4,&nbsp;2,&nbsp;10,&nbsp;35,&nbsp;x"C7967A4A"),&nbsp;
+    88: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(16,&nbsp;4,&nbsp;4,&nbsp;2,&nbsp;11,&nbsp;64,&nbsp;x"D53CA489"),&nbsp;
+    89: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(16,&nbsp;4,&nbsp;4,&nbsp;2,&nbsp;12,&nbsp;87,&nbsp;x"F4839C1C"),&nbsp;
+    90: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(16,&nbsp;4,&nbsp;4,&nbsp;2,&nbsp;13,&nbsp;51,&nbsp;x"AD4981BF"),&nbsp;
+    91: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(16,&nbsp;4,&nbsp;4,&nbsp;2,&nbsp;14,&nbsp;47,&nbsp;x"A95A3691"),&nbsp;
+    92: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(16,&nbsp;4,&nbsp;4,&nbsp;2,&nbsp;15,&nbsp;35,&nbsp;x"613CABC6"),&nbsp;
+    93: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(16,&nbsp;4,&nbsp;4,&nbsp;2,&nbsp;16,&nbsp;64,&nbsp;x"D53CA489"),&nbsp;
+    94: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(16,&nbsp;4,&nbsp;4,&nbsp;2,&nbsp;17,&nbsp;89,&nbsp;x"CC202C4E"),&nbsp;
+    95: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(16,&nbsp;4,&nbsp;4,&nbsp;2,&nbsp;18,&nbsp;56,&nbsp;x"F3060B03"),&nbsp;
+    96: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(16,&nbsp;4,&nbsp;4,&nbsp;2,&nbsp;19,&nbsp;47,&nbsp;x"A95A3691"),&nbsp;
+    97: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(9,&nbsp;64,&nbsp;32,&nbsp;3,&nbsp;0,&nbsp;1467,&nbsp;x"C8A00DA3"),&nbsp;
+    98: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(9,&nbsp;64,&nbsp;32,&nbsp;3,&nbsp;1,&nbsp;1428,&nbsp;x"8CB68CB8"),&nbsp;
+    99: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(9,&nbsp;64,&nbsp;32,&nbsp;3,&nbsp;2,&nbsp;1402,&nbsp;x"85E57DD4"),&nbsp;
+   100: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(9,&nbsp;64,&nbsp;32,&nbsp;3,&nbsp;3,&nbsp;1368,&nbsp;x"CC281589"),&nbsp;
+   101: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(9,&nbsp;64,&nbsp;32,&nbsp;3,&nbsp;4,&nbsp;1407,&nbsp;x"CD060EA5"),&nbsp;
+   102: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(9,&nbsp;64,&nbsp;32,&nbsp;3,&nbsp;5,&nbsp;1403,&nbsp;x"68D2DD36"),&nbsp;
+   103: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(9,&nbsp;64,&nbsp;32,&nbsp;3,&nbsp;6,&nbsp;1420,&nbsp;x"6095FC8B"),&nbsp;
+   104: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(9,&nbsp;64,&nbsp;32,&nbsp;3,&nbsp;7,&nbsp;1457,&nbsp;x"9134CD2D"),&nbsp;
+   105: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(9,&nbsp;64,&nbsp;32,&nbsp;3,&nbsp;8,&nbsp;1361,&nbsp;x"90991B38"),&nbsp;
+   106: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(9,&nbsp;64,&nbsp;32,&nbsp;3,&nbsp;9,&nbsp;1387,&nbsp;x"1E6500B7"),&nbsp;
+   107: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(11,&nbsp;16,&nbsp;16,&nbsp;4,&nbsp;0,&nbsp;268,&nbsp;x"7C02173B"),&nbsp;
+   108: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(11,&nbsp;16,&nbsp;16,&nbsp;4,&nbsp;1,&nbsp;332,&nbsp;x"04C67336"),&nbsp;
+   109: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(11,&nbsp;16,&nbsp;16,&nbsp;4,&nbsp;2,&nbsp;361,&nbsp;x"E6B4D473"),&nbsp;
+   110: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(11,&nbsp;16,&nbsp;16,&nbsp;4,&nbsp;3,&nbsp;314,&nbsp;x"AB2DBB4C"),&nbsp;
+   111: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(11,&nbsp;16,&nbsp;16,&nbsp;4,&nbsp;4,&nbsp;268,&nbsp;x"44617C46"),&nbsp;
+   112: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(11,&nbsp;16,&nbsp;16,&nbsp;4,&nbsp;5,&nbsp;284,&nbsp;x"548EF81C"),&nbsp;
+   113: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(11,&nbsp;16,&nbsp;16,&nbsp;4,&nbsp;6,&nbsp;343,&nbsp;x"5A59195E"),&nbsp;
+   114: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(11,&nbsp;16,&nbsp;16,&nbsp;4,&nbsp;7,&nbsp;359,&nbsp;x"B9421607"),&nbsp;
+   115: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(11,&nbsp;16,&nbsp;16,&nbsp;4,&nbsp;8,&nbsp;352,&nbsp;x"A5C6AC98"),&nbsp;
+   116: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(11,&nbsp;16,&nbsp;16,&nbsp;4,&nbsp;9,&nbsp;275,&nbsp;x"2D71E1AD"),&nbsp;
+   117: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(13,&nbsp;8,&nbsp;8,&nbsp;3,&nbsp;0,&nbsp;59,&nbsp;x"85022744"),&nbsp;
+   118: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(13,&nbsp;8,&nbsp;8,&nbsp;3,&nbsp;1,&nbsp;104,&nbsp;x"2410F8D4"),&nbsp;
+   119: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(13,&nbsp;8,&nbsp;8,&nbsp;3,&nbsp;2,&nbsp;129,&nbsp;x"FBBBCA0A"),&nbsp;
+   120: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(13,&nbsp;8,&nbsp;8,&nbsp;3,&nbsp;3,&nbsp;110,&nbsp;x"4269EEC4"),&nbsp;
+   121: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(13,&nbsp;8,&nbsp;8,&nbsp;3,&nbsp;4,&nbsp;134,&nbsp;x"5C12C8BD"),&nbsp;
+   122: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(13,&nbsp;8,&nbsp;8,&nbsp;3,&nbsp;5,&nbsp;66,&nbsp;x"3C029DBF"),&nbsp;
+   123: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(13,&nbsp;8,&nbsp;8,&nbsp;3,&nbsp;6,&nbsp;104,&nbsp;x"2410F8D4"),&nbsp;
+   124: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(13,&nbsp;8,&nbsp;8,&nbsp;3,&nbsp;7,&nbsp;138,&nbsp;x"F6183DAE"),&nbsp;
+   125: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(13,&nbsp;8,&nbsp;8,&nbsp;3,&nbsp;8,&nbsp;110,&nbsp;x"E3400348"),&nbsp;
+   126: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(13,&nbsp;8,&nbsp;8,&nbsp;3,&nbsp;9,&nbsp;130,&nbsp;x"9ED40050"),&nbsp;
+   127: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(14,&nbsp;32,&nbsp;8,&nbsp;3,&nbsp;0,&nbsp;341,&nbsp;x"68F33A96"),&nbsp;
+   128: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(14,&nbsp;32,&nbsp;8,&nbsp;3,&nbsp;1,&nbsp;391,&nbsp;x"683204F8"),&nbsp;
+   129: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(14,&nbsp;32,&nbsp;8,&nbsp;3,&nbsp;2,&nbsp;389,&nbsp;x"1462D9A7"),&nbsp;
+   130: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(14,&nbsp;32,&nbsp;8,&nbsp;3,&nbsp;3,&nbsp;371,&nbsp;x"E9C187D2"),&nbsp;
+   131: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(14,&nbsp;32,&nbsp;8,&nbsp;3,&nbsp;4,&nbsp;355,&nbsp;x"73C45276"),&nbsp;
+   132: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(14,&nbsp;32,&nbsp;8,&nbsp;3,&nbsp;5,&nbsp;352,&nbsp;x"1D30D0DE"),&nbsp;
+   133: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(14,&nbsp;32,&nbsp;8,&nbsp;3,&nbsp;6,&nbsp;415,&nbsp;x"8F9B8B6F"),&nbsp;
+   134: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(14,&nbsp;32,&nbsp;8,&nbsp;3,&nbsp;7,&nbsp;381,&nbsp;x"85E12E71"),&nbsp;
+   135: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(14,&nbsp;32,&nbsp;8,&nbsp;3,&nbsp;8,&nbsp;369,&nbsp;x"90A2978D"),&nbsp;
+   136: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(14,&nbsp;32,&nbsp;8,&nbsp;3,&nbsp;9,&nbsp;396,&nbsp;x"B6E2CAFF"),&nbsp;
+   137: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(15,&nbsp;4,&nbsp;1,&nbsp;2,&nbsp;0,&nbsp;28,&nbsp;x"371A0DDA"),&nbsp;
+   138: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(15,&nbsp;4,&nbsp;1,&nbsp;2,&nbsp;1,&nbsp;38,&nbsp;x"23C37802"),&nbsp;
+   139: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(15,&nbsp;4,&nbsp;1,&nbsp;2,&nbsp;2,&nbsp;40,&nbsp;x"2B3911A0"),&nbsp;
+   140: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(15,&nbsp;4,&nbsp;1,&nbsp;2,&nbsp;3,&nbsp;36,&nbsp;x"28613D2B"),&nbsp;
+   141: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(15,&nbsp;4,&nbsp;1,&nbsp;2,&nbsp;4,&nbsp;32,&nbsp;x"63898F2A"),&nbsp;
+   142: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(15,&nbsp;4,&nbsp;1,&nbsp;2,&nbsp;5,&nbsp;32,&nbsp;x"80EB0F07"),&nbsp;
+   143: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(15,&nbsp;4,&nbsp;1,&nbsp;2,&nbsp;6,&nbsp;38,&nbsp;x"23C37802"),&nbsp;
+   144: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(15,&nbsp;4,&nbsp;1,&nbsp;2,&nbsp;7,&nbsp;45,&nbsp;x"BC2F26FB"),&nbsp;
+   145: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(15,&nbsp;4,&nbsp;1,&nbsp;2,&nbsp;8,&nbsp;39,&nbsp;x"964E58CE"),&nbsp;
+   146: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;(15,&nbsp;4,&nbsp;1,&nbsp;2,&nbsp;9,&nbsp;32,&nbsp;x"63898F2A")&nbsp;
+   147: &nbsp; &nbsp;&nbsp;);&nbsp;
+   148: &nbsp; &nbsp;
+   149: &nbsp; &nbsp;&nbsp;function&nbsp;image_count&nbsp;return&nbsp;natural&nbsp;is&nbsp;
+   150: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;n&nbsp;:&nbsp;natural&nbsp;:=&nbsp;0;&nbsp;
+   151: &nbsp; &nbsp;&nbsp;begin&nbsp;
+   152: &nbsp; &nbsp;
+   153: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;i&nbsp;in&nbsp;REFS'range&nbsp;loop&nbsp;
+   154: &nbsp; &nbsp;
+   155: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(REFS(i).bitness&nbsp;=&nbsp;BITNESS&nbsp;and&nbsp;REFS(i).w&nbsp;=&nbsp;W&nbsp;and&nbsp;REFS(i).h&nbsp;=&nbsp;H&nbsp;and&nbsp;REFS(i).seed&nbsp;=&nbsp;SEED)&nbsp;then&nbsp;
+   156: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;n&nbsp;:=&nbsp;n&nbsp;+&nbsp;1;&nbsp;
+   157: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;
+   158: &nbsp; &nbsp;
+   159: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   160: &nbsp; &nbsp;
+   161: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;n;&nbsp;
+   162: &nbsp; &nbsp;
+   163: &nbsp; &nbsp;&nbsp;end&nbsp;function&nbsp;image_count;&nbsp;
+   164: &nbsp; &nbsp;
+   165: &nbsp; &nbsp;&nbsp;function&nbsp;ref_of&nbsp;(image&nbsp;:&nbsp;natural)&nbsp;return&nbsp;ref_t&nbsp;is&nbsp;
+   166: &nbsp; &nbsp;&nbsp;begin&nbsp;
+   167: &nbsp; &nbsp;
+   168: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;i&nbsp;in&nbsp;REFS'range&nbsp;loop&nbsp;
+   169: &nbsp; &nbsp;
+   170: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(REFS(i).bitness&nbsp;=&nbsp;BITNESS&nbsp;and&nbsp;REFS(i).w&nbsp;=&nbsp;W&nbsp;and&nbsp;REFS(i).h&nbsp;=&nbsp;H&nbsp;and&nbsp;REFS(i).seed&nbsp;=&nbsp;SEED&nbsp;and&nbsp;
+   171: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;REFS(i).image&nbsp;=&nbsp;image)&nbsp;then&nbsp;
+   172: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;REFS(i);&nbsp;
+   173: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;
+   174: &nbsp; &nbsp;
+   175: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   176: &nbsp; &nbsp;
+   177: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;(0,&nbsp;0,&nbsp;0,&nbsp;0,&nbsp;0,&nbsp;0,&nbsp;(others&nbsp;=&gt;&nbsp;'0'));&nbsp;
+   178: &nbsp; &nbsp;
+   179: &nbsp; &nbsp;&nbsp;end&nbsp;function&nbsp;ref_of;&nbsp;
+   180: &nbsp; &nbsp;
+   181: &nbsp; &nbsp;&nbsp;function&nbsp;crc32_byte&nbsp;(&nbsp;
+   182: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;crc&nbsp;&nbsp;:&nbsp;std_logic_vector(31&nbsp;downto&nbsp;0);&nbsp;
+   183: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;data&nbsp;:&nbsp;std_logic_vector(7&nbsp;downto&nbsp;0)&nbsp;
+   184: &nbsp; &nbsp;&nbsp;)&nbsp;return&nbsp;std_logic_vector&nbsp;is&nbsp;
+   185: &nbsp; &nbsp;
+   186: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;c&nbsp;:&nbsp;std_logic_vector(31&nbsp;downto&nbsp;0)&nbsp;:=&nbsp;crc;&nbsp;
+   187: &nbsp; &nbsp;
+   188: &nbsp; &nbsp;&nbsp;begin&nbsp;
+   189: &nbsp; &nbsp;
+   190: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;i&nbsp;in&nbsp;0&nbsp;to&nbsp;7&nbsp;loop&nbsp;
+   191: &nbsp; &nbsp;
+   192: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;((c(0)&nbsp;xor&nbsp;data(i))&nbsp;=&nbsp;'1')&nbsp;then&nbsp;
+   193: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c&nbsp;:=&nbsp;('0'&nbsp;&amp;&nbsp;c(31&nbsp;downto&nbsp;1))&nbsp;xor&nbsp;x"EDB88320";&nbsp;
+   194: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;
+   195: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c&nbsp;:=&nbsp;'0'&nbsp;&amp;&nbsp;c(31&nbsp;downto&nbsp;1);&nbsp;
+   196: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;
+   197: &nbsp; &nbsp;
+   198: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   199: &nbsp; &nbsp;
+   200: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;c;&nbsp;
+   201: &nbsp; &nbsp;
+   202: &nbsp; &nbsp;&nbsp;end&nbsp;function&nbsp;crc32_byte;&nbsp;
+   203: &nbsp; &nbsp;
+   204: &nbsp; &nbsp;&nbsp;constant&nbsp;NIMG&nbsp;:&nbsp;natural&nbsp;:=&nbsp;image_count;&nbsp;
+   205: &nbsp; &nbsp;
+   206: &nbsp; &nbsp;&nbsp;signal&nbsp;clk&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;std_logic&nbsp;:=&nbsp;'1';&nbsp;
+   207: &nbsp; &nbsp;&nbsp;signal&nbsp;rst&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;std_logic&nbsp;:=&nbsp;'1';&nbsp;
+   208: &nbsp; &nbsp;&nbsp;signal&nbsp;iValid,&nbsp;iReady&nbsp;:&nbsp;std_logic&nbsp;:=&nbsp;'0';&nbsp;
+   209: &nbsp; &nbsp;&nbsp;signal&nbsp;iPixel&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;std_logic_vector(BITNESS&nbsp;-&nbsp;1&nbsp;downto&nbsp;0)&nbsp;:=&nbsp;(others&nbsp;=&gt;&nbsp;'0');&nbsp;
+   210: &nbsp; &nbsp;&nbsp;signal&nbsp;dimW,&nbsp;dimH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;std_logic_vector(15&nbsp;downto&nbsp;0);&nbsp;
+   211: &nbsp; &nbsp;&nbsp;signal&nbsp;oReady,&nbsp;oValid&nbsp;:&nbsp;std_logic;&nbsp;
+   212: &nbsp; &nbsp;&nbsp;signal&nbsp;oLast&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;std_logic;&nbsp;
+   213: &nbsp; &nbsp;&nbsp;signal&nbsp;oData&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;std_logic_vector(OUT_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+   214: &nbsp; &nbsp;&nbsp;signal&nbsp;oKeep&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;std_logic_vector(OUT_WIDTH&nbsp;/&nbsp;8&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+   215: &nbsp; &nbsp;
+   216: &nbsp; &nbsp;&nbsp;shared&nbsp;variable&nbsp;covMerge&nbsp;:&nbsp;CoverageIDType;&nbsp;
+   217: &nbsp; &nbsp;
+   218: &nbsp; begin&nbsp;
+   219: &nbsp; &nbsp;
+   220: &nbsp; &nbsp;&nbsp;dimW&nbsp;&lt;=&nbsp;std_logic_vector(to_unsigned(W,&nbsp;16));&nbsp;
+   221: &nbsp; &nbsp;&nbsp;dimH&nbsp;&lt;=&nbsp;std_logic_vector(to_unsigned(H,&nbsp;16));&nbsp;
+   222: &nbsp; &nbsp;&nbsp;clk&nbsp;&nbsp;&lt;=&nbsp;not&nbsp;clk&nbsp;after&nbsp;CLK_PERIOD_DEFAULT&nbsp;/&nbsp;2;&nbsp;
+   223: &nbsp; &nbsp;
+   224: &nbsp; &nbsp;&nbsp;dut&nbsp;:&nbsp;entity&nbsp;work.openjls_top&nbsp;
+   225: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;generic&nbsp;map&nbsp;(&nbsp;
+   226: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BITNESS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;BITNESS,&nbsp;
+   227: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MAX_IMAGE_WIDTH&nbsp;&nbsp;=&gt;&nbsp;4096,&nbsp;
+   228: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MAX_IMAGE_HEIGHT&nbsp;=&gt;&nbsp;4096,&nbsp;
+   229: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OUT_WIDTH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;OUT_WIDTH&nbsp;
+   230: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;)&nbsp;
+   231: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;port&nbsp;map&nbsp;(&nbsp;
+   232: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iClk&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;clk,&nbsp;
+   233: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iRst&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;rst,&nbsp;
+   234: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iValid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;iValid,&nbsp;
+   235: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iPixel&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;iPixel,&nbsp;
+   236: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;oReady&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;oReady,&nbsp;
+   237: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iImageWidth&nbsp;&nbsp;=&gt;&nbsp;dimW,&nbsp;
+   238: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iImageHeight&nbsp;=&gt;&nbsp;dimH,&nbsp;
+   239: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;oData&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;oData,&nbsp;
+   240: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;oValid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;oValid,&nbsp;
+   241: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;oKeep&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;oKeep,&nbsp;
+   242: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;oLast&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;oLast,&nbsp;
+   243: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iReady&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;iReady&nbsp;
+   244: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;);&nbsp;
+   245: &nbsp; &nbsp;
+   246: &nbsp; &nbsp;&nbsp;--&nbsp;Region&nbsp;mix&nbsp;per&nbsp;8x4&nbsp;tile:&nbsp;flat&nbsp;(run&nbsp;mode),&nbsp;ramp,&nbsp;full-range&nbsp;noise,&nbsp;small&nbsp;noise,&nbsp;0/MAX&nbsp;extremes&nbsp;
+   247: &nbsp; &nbsp;&nbsp;stim_proc&nbsp;:&nbsp;process&nbsp;is&nbsp;
+   248: &nbsp; &nbsp;
+   249: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;s1,&nbsp;s2&nbsp;:&nbsp;positive&nbsp;:=&nbsp;SEED;&nbsp;
+   250: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;s3,&nbsp;s4&nbsp;:&nbsp;positive&nbsp;:=&nbsp;SEED&nbsp;+&nbsp;7;&nbsp;
+   251: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;r&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;real;&nbsp;
+   252: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;px&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;integer;&nbsp;
+   253: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;lastv&nbsp;&nbsp;:&nbsp;integer&nbsp;:=&nbsp;MAXV&nbsp;/&nbsp;2;&nbsp;
+   254: &nbsp; &nbsp;
+   255: &nbsp; &nbsp;&nbsp;begin&nbsp;
+   256: &nbsp; &nbsp;
+   257: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;i&nbsp;in&nbsp;1&nbsp;to&nbsp;4&nbsp;loop&nbsp;
+   258: &nbsp; &nbsp;
+   259: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait&nbsp;until&nbsp;rising_edge(clk);&nbsp;
+   260: &nbsp; &nbsp;
+   261: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   262: &nbsp; &nbsp;
+   263: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;rst&nbsp;&lt;=&nbsp;'0';&nbsp;
+   264: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;wait&nbsp;until&nbsp;rising_edge(clk);&nbsp;
+   265: &nbsp; &nbsp;
+   266: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;k&nbsp;in&nbsp;0&nbsp;to&nbsp;NIMG&nbsp;-&nbsp;1&nbsp;loop&nbsp;
+   267: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;y&nbsp;in&nbsp;0&nbsp;to&nbsp;H&nbsp;-&nbsp;1&nbsp;loop&nbsp;
+   268: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;x&nbsp;in&nbsp;0&nbsp;to&nbsp;W&nbsp;-&nbsp;1&nbsp;loop&nbsp;
+   269: &nbsp; &nbsp;
+   270: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;uniform(s1,&nbsp;s2,&nbsp;r);&nbsp;
+   271: &nbsp; &nbsp;
+   272: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case&nbsp;((x&nbsp;/&nbsp;8)&nbsp;+&nbsp;(y&nbsp;/&nbsp;4)&nbsp;*&nbsp;3&nbsp;+&nbsp;k)&nbsp;mod&nbsp;5&nbsp;is&nbsp;
+   273: &nbsp; &nbsp;
+   274: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;0&nbsp;=&gt;&nbsp;
+   275: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;px&nbsp;:=&nbsp;(k&nbsp;*&nbsp;37)&nbsp;mod&nbsp;(MAXV&nbsp;+&nbsp;1);&nbsp;
+   276: &nbsp; &nbsp;
+   277: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;1&nbsp;=&gt;&nbsp;
+   278: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;px&nbsp;:=&nbsp;((x&nbsp;+&nbsp;y)&nbsp;*&nbsp;(MAXV&nbsp;/&nbsp;(W&nbsp;+&nbsp;H)))&nbsp;mod&nbsp;(MAXV&nbsp;+&nbsp;1);&nbsp;
+   279: &nbsp; &nbsp;
+   280: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;2&nbsp;=&gt;&nbsp;
+   281: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;px&nbsp;:=&nbsp;integer(floor(r&nbsp;*&nbsp;real(MAXV&nbsp;+&nbsp;1)));&nbsp;
+   282: &nbsp; &nbsp;
+   283: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;3&nbsp;=&gt;&nbsp;
+   284: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;px&nbsp;:=&nbsp;lastv&nbsp;+&nbsp;integer(floor(r&nbsp;*&nbsp;9.0))&nbsp;-&nbsp;4;&nbsp;
+   285: &nbsp; &nbsp;
+   286: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;others&nbsp;=&gt;&nbsp;
+   287: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;px&nbsp;:=&nbsp;MAXV&nbsp;*&nbsp;(x&nbsp;mod&nbsp;2);&nbsp;
+   288: &nbsp; &nbsp;
+   289: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;case;&nbsp;
+   290: &nbsp; &nbsp;
+   291: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;px&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:=&nbsp;maximum(0,&nbsp;minimum(MAXV,&nbsp;px));&nbsp;
+   292: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lastv&nbsp;&nbsp;:=&nbsp;px;&nbsp;
+   293: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iPixel&nbsp;&lt;=&nbsp;std_logic_vector(to_unsigned(px,&nbsp;BITNESS));&nbsp;
+   294: &nbsp; &nbsp;
+   295: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;loop&nbsp;
+   296: &nbsp; &nbsp;
+   297: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;uniform(s3,&nbsp;s4,&nbsp;r);&nbsp;
+   298: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(r&nbsp;*&nbsp;100.0&nbsp;&lt;&nbsp;real(VALID_PCT))&nbsp;then&nbsp;
+   299: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iValid&nbsp;&lt;=&nbsp;'1';&nbsp;
+   300: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait&nbsp;until&nbsp;rising_edge(clk);&nbsp;
+   301: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exit&nbsp;when&nbsp;oReady&nbsp;=&nbsp;'1';&nbsp;
+   302: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;
+   303: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iValid&nbsp;&lt;=&nbsp;'0';&nbsp;
+   304: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait&nbsp;until&nbsp;rising_edge(clk);&nbsp;
+   305: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;
+   306: &nbsp; &nbsp;
+   307: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   308: &nbsp; &nbsp;
+   309: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   310: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   311: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   312: &nbsp; &nbsp;
+   313: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;iValid&nbsp;&lt;=&nbsp;'0';&nbsp;
+   314: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;wait;&nbsp;
+   315: &nbsp; &nbsp;
+   316: &nbsp; &nbsp;&nbsp;end&nbsp;process&nbsp;stim_proc;&nbsp;
+   317: &nbsp; &nbsp;
+   318: &nbsp; &nbsp;&nbsp;ready_proc&nbsp;:&nbsp;process&nbsp;is&nbsp;
+   319: &nbsp; &nbsp;
+   320: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;s1,&nbsp;s2&nbsp;:&nbsp;positive&nbsp;:=&nbsp;SEED&nbsp;+&nbsp;101;&nbsp;
+   321: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;r&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;real;&nbsp;
+   322: &nbsp; &nbsp;
+   323: &nbsp; &nbsp;&nbsp;begin&nbsp;
+   324: &nbsp; &nbsp;
+   325: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;wait&nbsp;until&nbsp;rising_edge(clk);&nbsp;
+   326: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;uniform(s1,&nbsp;s2,&nbsp;r);&nbsp;
+   327: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(r&nbsp;*&nbsp;100.0&nbsp;&lt;&nbsp;real(READY_PCT))&nbsp;then&nbsp;
+   328: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iReady&nbsp;&lt;=&nbsp;'1';&nbsp;
+   329: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;
+   330: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iReady&nbsp;&lt;=&nbsp;'0';&nbsp;
+   331: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;
+   332: &nbsp; &nbsp;
+   333: &nbsp; &nbsp;&nbsp;end&nbsp;process&nbsp;ready_proc;&nbsp;
+   334: &nbsp; &nbsp;
+   335: &nbsp; &nbsp;&nbsp;--&nbsp;The&nbsp;refill-across-images&nbsp;window&nbsp;of&nbsp;the&nbsp;image-merge&nbsp;bug,&nbsp;independent&nbsp;of&nbsp;the&nbsp;skid&nbsp;hold&nbsp;
+   336: &nbsp; &nbsp;&nbsp;merge_window_proc&nbsp;:&nbsp;process&nbsp;is&nbsp;
+   337: &nbsp; &nbsp;
+   338: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;alias&nbsp;skidValid&nbsp;is&nbsp;&lt;&lt;signal&nbsp;.tb_openjls_top_stream_osvvm.dut.u_byte_stuffer.sSkidValid&nbsp;:&nbsp;std_logic&gt;&gt;;&nbsp;
+   339: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;alias&nbsp;bufLast&nbsp;&nbsp;&nbsp;is&nbsp;&lt;&lt;signal&nbsp;.tb_openjls_top_stream_osvvm.dut.u_byte_stuffer.sStuffBufferLast&nbsp;:&nbsp;std_logic&gt;&gt;;&nbsp;
+   340: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;alias&nbsp;bufBits&nbsp;&nbsp;&nbsp;is&nbsp;&lt;&lt;signal&nbsp;.tb_openjls_top_stream_osvvm.dut.u_byte_stuffer.sStuffBufferBits&nbsp;:&nbsp;unsigned&gt;&gt;;&nbsp;
+   341: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;--&nbsp;The&nbsp;framer's&nbsp;ready,&nbsp;not&nbsp;the&nbsp;top's:&nbsp;it&nbsp;can&nbsp;differ&nbsp;from&nbsp;the&nbsp;TB's&nbsp;iReady&nbsp;
+   342: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;alias&nbsp;bufReady&nbsp;&nbsp;is&nbsp;&lt;&lt;signal&nbsp;.tb_openjls_top_stream_osvvm.dut.u_byte_stuffer.iReady&nbsp;:&nbsp;std_logic&gt;&gt;;&nbsp;
+   343: &nbsp; &nbsp;
+   344: &nbsp; &nbsp;&nbsp;begin&nbsp;
+   345: &nbsp; &nbsp;
+   346: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;wait&nbsp;until&nbsp;rising_edge(clk);&nbsp;
+   347: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(rst&nbsp;=&nbsp;'0'&nbsp;and&nbsp;bufReady&nbsp;=&nbsp;'1'&nbsp;and&nbsp;skidValid&nbsp;=&nbsp;'1'&nbsp;and&nbsp;bufLast&nbsp;=&nbsp;'1'&nbsp;and&nbsp;bufBits&nbsp;=&nbsp;8)&nbsp;then&nbsp;
+   348: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ICover(covMerge,&nbsp;1);&nbsp;
+   349: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;
+   350: &nbsp; &nbsp;
+   351: &nbsp; &nbsp;&nbsp;end&nbsp;process&nbsp;merge_window_proc;&nbsp;
+   352: &nbsp; &nbsp;
+   353: &nbsp; &nbsp;&nbsp;check_proc&nbsp;:&nbsp;process&nbsp;is&nbsp;
+   354: &nbsp; &nbsp;
+   355: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;req&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;AlertLogIDType;&nbsp;
+   356: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;crc&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;std_logic_vector(31&nbsp;downto&nbsp;0)&nbsp;:=&nbsp;(others&nbsp;=&gt;&nbsp;'1');&nbsp;
+   357: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;length&nbsp;:&nbsp;natural&nbsp;:=&nbsp;0;&nbsp;
+   358: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;image&nbsp;&nbsp;:&nbsp;natural&nbsp;:=&nbsp;0;&nbsp;
+   359: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;idle&nbsp;&nbsp;&nbsp;:&nbsp;natural&nbsp;:=&nbsp;0;&nbsp;
+   360: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;expect&nbsp;:&nbsp;ref_t;&nbsp;
+   361: &nbsp; &nbsp;
+   362: &nbsp; &nbsp;&nbsp;begin&nbsp;
+   363: &nbsp; &nbsp;
+   364: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;SetAlertLogName("tb_openjls_top_stream_osvvm");&nbsp;
+   365: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;SetLogEnable(PASSED,&nbsp;FALSE);&nbsp;
+   366: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;--&nbsp;Floor&nbsp;under&nbsp;the&nbsp;smallest&nbsp;variant:&nbsp;3&nbsp;images,&nbsp;length&nbsp;and&nbsp;CRC&nbsp;each&nbsp;
+   367: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;req&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:=&nbsp;GetReqID("OJLS.ImageStream",&nbsp;6);&nbsp;
+   368: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;covMerge&nbsp;:=&nbsp;NewID("G4.Stream&nbsp;nextImageWaiting");&nbsp;
+   369: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;AddBins(covMerge,&nbsp;"8&nbsp;residue&nbsp;bits,&nbsp;next&nbsp;image&nbsp;in&nbsp;skid",&nbsp;GenBin(1));&nbsp;
+   370: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;AffirmIf(GetAlertLogID("Config"),&nbsp;NIMG&nbsp;&gt;&nbsp;0,&nbsp;"generics&nbsp;select&nbsp;a&nbsp;REFS&nbsp;case");&nbsp;
+   371: &nbsp; &nbsp;
+   372: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;wait&nbsp;until&nbsp;rst&nbsp;=&nbsp;'0';&nbsp;
+   373: &nbsp; &nbsp;
+   374: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;loop&nbsp;
+   375: &nbsp; &nbsp;
+   376: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait&nbsp;until&nbsp;rising_edge(clk);&nbsp;
+   377: &nbsp; &nbsp;
+   378: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(oValid&nbsp;=&nbsp;'1'&nbsp;and&nbsp;iReady&nbsp;=&nbsp;'1')&nbsp;then&nbsp;
+   379: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;idle&nbsp;:=&nbsp;0;&nbsp;
+   380: &nbsp; &nbsp;
+   381: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;i&nbsp;in&nbsp;0&nbsp;to&nbsp;OUT_WIDTH&nbsp;/&nbsp;8&nbsp;-&nbsp;1&nbsp;loop&nbsp;
+   382: &nbsp; &nbsp;
+   383: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(oKeep(OUT_WIDTH&nbsp;/&nbsp;8&nbsp;-&nbsp;1&nbsp;-&nbsp;i)&nbsp;=&nbsp;'1')&nbsp;then&nbsp;
+   384: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;crc&nbsp;&nbsp;&nbsp;&nbsp;:=&nbsp;crc32_byte(crc,&nbsp;oData(OUT_WIDTH&nbsp;-&nbsp;1&nbsp;-&nbsp;8&nbsp;*&nbsp;i&nbsp;downto&nbsp;OUT_WIDTH&nbsp;-&nbsp;8&nbsp;*&nbsp;(i&nbsp;+&nbsp;1)));&nbsp;
+   385: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;length&nbsp;:=&nbsp;length&nbsp;+&nbsp;1;&nbsp;
+   386: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;
+   387: &nbsp; &nbsp;
+   388: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   389: &nbsp; &nbsp;
+   390: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(oLast&nbsp;=&nbsp;'1')&nbsp;then&nbsp;
+   391: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;expect&nbsp;:=&nbsp;ref_of(image);&nbsp;
+   392: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AffirmIfEqual(req,&nbsp;length,&nbsp;expect.length,&nbsp;"image&nbsp;"&nbsp;&amp;&nbsp;to_string(image)&nbsp;&amp;&nbsp;"&nbsp;length");&nbsp;
+   393: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AffirmIfEqual(req,&nbsp;not&nbsp;crc,&nbsp;expect.crc,&nbsp;"image&nbsp;"&nbsp;&amp;&nbsp;to_string(image)&nbsp;&amp;&nbsp;"&nbsp;CRC-32");&nbsp;
+   394: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;image&nbsp;&nbsp;:=&nbsp;image&nbsp;+&nbsp;1;&nbsp;
+   395: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;crc&nbsp;&nbsp;&nbsp;&nbsp;:=&nbsp;(others&nbsp;=&gt;&nbsp;'1');&nbsp;
+   396: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;length&nbsp;:=&nbsp;0;&nbsp;
+   397: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;
+   398: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;
+   399: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;idle&nbsp;:=&nbsp;idle&nbsp;+&nbsp;1;&nbsp;
+   400: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;
+   401: &nbsp; &nbsp;
+   402: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exit&nbsp;when&nbsp;idle&nbsp;&gt;&nbsp;IDLE_LIMIT;&nbsp;
+   403: &nbsp; &nbsp;
+   404: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   405: &nbsp; &nbsp;
+   406: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;AffirmIfEqual(GetAlertLogID("Completion"),&nbsp;image,&nbsp;NIMG,&nbsp;"one&nbsp;oLast&nbsp;per&nbsp;image");&nbsp;
+   407: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;AffirmIfEqual(GetAlertLogID("Completion"),&nbsp;length,&nbsp;0,&nbsp;"no&nbsp;bytes&nbsp;after&nbsp;the&nbsp;last&nbsp;oLast");&nbsp;
+   408: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;affirm_covered(covMerge,&nbsp;"next-image-waiting&nbsp;coverage&nbsp;closed");&nbsp;
+   409: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end_of_test("tb_openjls_top_stream_osvvm");&nbsp;
+   410: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;wait;&nbsp;
+   411: &nbsp; &nbsp;
+   412: &nbsp; &nbsp;&nbsp;end&nbsp;process&nbsp;check_proc;&nbsp;
+   413: &nbsp; &nbsp;
+   414: &nbsp; end&nbsp;architecture&nbsp;sim;&nbsp;
+</code></pre>

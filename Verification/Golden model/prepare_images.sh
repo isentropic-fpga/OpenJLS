@@ -83,4 +83,9 @@ python3 "$PREP/gen_depth_tiles.py" "$FULL" "$IMAGES"
 echo "== noise probes =="
 python3 "$PREP/gen_noise_probes.py" "$IMAGES"
 
+# Same-size sets for the no-reset streams; kept apart from Images/
+echo "== stream sets =="
+rm -rf "$HERE/Images_stream"
+python3 "$PREP/gen_stream_set.py" "$FULL" "$HERE/Images_stream"
+
 echo "Images ready: $(find "$IMAGES" -name '*.pgm' | wc -l) PGM(s) in $IMAGES"

@@ -226,7 +226,7 @@ ps_golden_link=""
 [ -f "$PS_GOLDEN_ENV" ] && ps_golden_link="$(render_tsv_page "$PS_GOLDEN_TSV" post-synth-golden "Post-synth Golden Model — processed images")"
 
 env_row "$GOLDEN_ENV"    "Golden model" \
-  "RTL encode of the simulation corpus (images up to 0.5&nbsp;MP, depths 8&ndash;16) compared byte-for-byte with the CharLS reference encoder." \
+  "RTL encode of the simulation corpus (images up to 0.5&nbsp;MP, depths 8&ndash;16) compared byte-for-byte with the CharLS reference encoder, per image from reset and on same-size images streamed with no reset between them." \
   "$golden_link"
 env_row "$PS_OSVVM_ENV"  "Post-synth OSVVM" \
   "The top-level control-plane stress test re-run on the synthesized gate-level netlist (BITNESS=8, 4096x4096, OUT_WIDTH=64)." \
