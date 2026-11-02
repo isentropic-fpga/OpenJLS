@@ -47,9 +47,9 @@ ax2 = ax1.twinx()
 
 # Dash and marker keep the series apart in greyscale
 kw = dict(lw=1.6, ms=6, mfc="white", mew=1.4)
-l_lut,  = ax1.plot(xs, lut,  ls="-",  marker="o", color=SERIES[0], label="LUTs", **kw)
-l_ff,   = ax1.plot(xs, ff,   ls="--", marker="s", color=SERIES[1], label="Flip-flops", **kw)
-l_bram, = ax2.plot(xs, bram, ls="-.", marker="^", color=SERIES[2], label="Block RAM", **kw)
+l_lut,  = ax1.plot(xs, lut,  ls="-",  marker="o", color=SERIES[1], label="LUTs", **kw)
+l_ff,   = ax1.plot(xs, ff,   ls="--", marker="s", color=SERIES[2], label="Flip-flops", **kw)
+l_bram, = ax2.plot(xs, bram, ls="-.", marker="^", color=SERIES[3], label="Block RAM", **kw)
 
 # Linear x so the BRAM line (~proportional to width) reads straight
 ax1.set_xticks(xs)
