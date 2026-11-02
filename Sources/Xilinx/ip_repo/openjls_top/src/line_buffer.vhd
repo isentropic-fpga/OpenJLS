@@ -67,21 +67,20 @@ architecture behavioral of line_buffer is
   signal sIsEol              : boolean;
   signal sIsFifoOutHandshake : boolean;
   signal sIsFirstCol         : boolean;
+  signal sIsFirstRow         : boolean;
   signal sPreloadCounter     : unsigned(1 downto 0);
   signal sFifoInValid        : std_logic;
 
 begin
 
-  comb_proc : process (iValid, iImageWidth, iImageHeight, sFifoState,
-                       sFifoOutReady, sFifoOutValid, sColCounter, sRowCounter,
-                       sIsLastCol, sIsLastRow, sIsFirstCol, sIsEol, sIsEoi,
+  comb_proc : process (iValid, iImageHeight, sFifoState,
+                       sFifoOutReady, sFifoOutValid, sRowCounter,
+                       sIsLastCol, sIsLastRow, sIsFirstCol, sIsFirstRow, sIsEol, sIsEoi,
                        sA, sB, sC, sD, sBorderC) is
   begin
 
     oValid              <= iValid;
-    sIsLastCol          <= sColCounter = iImageWidth - 1;
     sIsLastRow          <= sRowCounter = iImageHeight - 1;
-    sIsFirstCol         <= sColCounter = 0;
     sIsEol              <= sIsLastCol and iValid = '1';
     sIsEoi              <= sIsLastCol and sIsLastRow and iValid = '1';
     oEoi                <= bool2bit(sIsEoi);
@@ -97,7 +96,7 @@ begin
     end if;
 
     -- T.87 A.2.1 borders
-    if (sRowCounter = 0) then
+    if (sIsFirstRow) then
       oB <= (others => '0');
       oC <= (others => '0');
       oD <= (others => '0');
@@ -134,6 +133,9 @@ begin
 
         sColCounter <= (others => '0');
         sRowCounter <= (others => '0');
+        sIsFirstCol <= true;
+        sIsLastCol  <= false;                              -- width >= 4
+        sIsFirstRow <= true;
 
         sB       <= (others => '0');
         sC       <= (others => '0');
@@ -175,13 +177,19 @@ begin
         if (iValid = '1') then
           if (sIsLastCol) then
             sColCounter <= (others => '0');
+            sIsFirstCol <= true;
+            sIsLastCol  <= false;
             if (sIsLastRow) then
               sRowCounter <= (others => '0');
+              sIsFirstRow <= true;
             else
               sRowCounter <= sRowCounter + 1;
+              sIsFirstRow <= false;
             end if;
           else
             sColCounter <= sColCounter + 1;
+            sIsFirstCol <= false;
+            sIsLastCol  <= sColCounter = iImageWidth - 2;
           end if;
         end if;
 
@@ -237,6 +245,9 @@ begin
 
   postponed assert is_x(iImageWidth) or is_x(sColCounter) or sColCounter < iImageWidth
     report "line_buffer: column counter past width" severity error;
+  postponed assert is_x(iImageWidth) or is_x(sColCounter) or iRst = '1'
+    or (sIsFirstCol = (sColCounter = 0) and sIsLastCol = (sColCounter = iImageWidth - 1) and sIsFirstRow = (sRowCounter = 0))
+    report "line_buffer: registered position flags disagree with the counters" severity error;
   postponed assert is_x(iImageHeight) or is_x(sRowCounter) or sRowCounter < iImageHeight
     report "line_buffer: row counter past height" severity error;
 

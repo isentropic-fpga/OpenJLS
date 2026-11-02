@@ -6,7 +6,82 @@
 --
 -- a6_a7_prediction_error: T.87 A.6 + A.7 fused, prediction correction and error
 --
--- The error is computed in parallel with the clipping, so the late C[Q] skips a serial adder chain.
+-- a6_clip_bounds gives the C[Q] range where A.6 doesn't clip and a6_clip_errors the error when it does.
+-- Both are off the C[Q] path, which leaves the late C[Q] one narrow compare and one subtract.
+
+library ieee;
+  use ieee.std_logic_1164.all;
+  use ieee.numeric_std.all;
+  use work.openjls_pkg.all;
+
+entity a6_clip_bounds is
+  generic (
+    BITNESS : natural range 8 to 16 := CO_BITNESS_STD;
+    MAX_VAL : natural := CO_MAX_VAL_STD
+  );
+  port (
+    iPx   : in    unsigned(BITNESS - 1 downto 0);
+    iSign : in    std_logic;
+    -- A.6 clips when Cq < oLo or Cq > oHi; oLo <= 0 <= oHi
+    oLo   : out   signed(CO_CQ_WIDTH - 1 downto 0);
+    oHi   : out   signed(CO_CQ_WIDTH - 1 downto 0)
+  );
+end entity a6_clip_bounds;
+
+architecture behavioral of a6_clip_bounds is
+  -- Unsaturated bounds lie in the Cq range, so the subtracts are Cq wide (mod 2 ** CO_CQ_WIDTH)
+  constant MAX_LO : unsigned(CO_CQ_WIDTH - 1 downto 0) := to_unsigned(MAX_VAL mod 2 ** CO_CQ_WIDTH, CO_CQ_WIDTH);
+
+  signal sPx            : unsigned(CO_CQ_WIDTH - 1 downto 0);
+  signal sLoVal, sHiVal : unsigned(CO_CQ_WIDTH - 1 downto 0);
+  signal sLoSat, sHiSat : boolean;
+begin
+  sPx <= iPx(CO_CQ_WIDTH - 1 downto 0);
+
+  -- Positive sign: lo = -Px, hi = MAX_VAL - Px. Negative: lo = Px - MAX_VAL, hi = Px.
+  -- Saturation compares Px with constants, in parallel with the subtracts.
+  sLoVal <= 0 - sPx when iSign = CO_SIGN_POS else
+            sPx - MAX_LO;
+  sHiVal <= MAX_LO - sPx when iSign = CO_SIGN_POS else
+            sPx;
+  sLoSat <= to_integer(iPx) > - CO_MIN_CQ when iSign = CO_SIGN_POS else
+            to_integer(iPx) < MAX_VAL + CO_MIN_CQ;
+  sHiSat <= to_integer(iPx) < MAX_VAL - CO_MAX_CQ when iSign = CO_SIGN_POS else
+            to_integer(iPx) > CO_MAX_CQ;
+
+  oLo <= to_signed(CO_MIN_CQ, oLo'length) when sLoSat else
+         signed(sLoVal);
+  oHi <= to_signed(CO_MAX_CQ, oHi'length) when sHiSat else
+         signed(sHiVal);
+end architecture behavioral;
+
+library ieee;
+  use ieee.std_logic_1164.all;
+  use ieee.numeric_std.all;
+  use work.openjls_pkg.all;
+
+entity a6_clip_errors is
+  generic (
+    BITNESS : natural range 8 to 16 := CO_BITNESS_STD;
+    MAX_VAL : natural := CO_MAX_VAL_STD
+  );
+  port (
+    iIx    : in    unsigned(BITNESS - 1 downto 0);
+    iSign  : in    std_logic;
+    -- Errval for Cq below / above the a6_clip_bounds range
+    oAtLo  : out   signed(BITNESS downto 0);
+    oAtHi  : out   signed(BITNESS downto 0)
+  );
+end entity a6_clip_errors;
+
+architecture behavioral of a6_clip_errors is
+begin
+  -- Below the range, Px clips to 0 (positive sign) or MAX_VAL; above it the other way
+  oAtLo <= signed('0' & iIx) when iSign = CO_SIGN_POS else
+           to_signed(MAX_VAL, oAtLo'length) - signed('0' & iIx);
+  oAtHi <= signed('0' & iIx) - to_signed(MAX_VAL, oAtHi'length) when iSign = CO_SIGN_POS else
+           - signed('0' & iIx);
+end architecture behavioral;
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -22,41 +97,31 @@ entity a6_a7_prediction_error is
     iIx       : in    unsigned(BITNESS - 1 downto 0);
     iPx       : in    unsigned(BITNESS - 1 downto 0);
     iSign     : in    std_logic;
+    -- a6_clip_bounds of iPx, iSign and a6_clip_errors of iIx, iSign
+    iLo       : in    signed(CO_CQ_WIDTH - 1 downto 0);
+    iHi       : in    signed(CO_CQ_WIDTH - 1 downto 0);
+    iAtLo     : in    signed(BITNESS downto 0);
+    iAtHi     : in    signed(BITNESS downto 0);
     iCq       : in    signed(CO_CQ_WIDTH - 1 downto 0);
     oErrorVal : out   signed(BITNESS downto 0)
   );
 end entity a6_a7_prediction_error;
 
 architecture behavioral of a6_a7_prediction_error is
-  constant EXT_WIDTH : natural := BITNESS + 2;
-  constant MAX_S : signed(EXT_WIDTH - 1 downto 0) := to_signed(MAX_VAL, EXT_WIDTH);
-
-  signal sPxPlusCq, sPxMinusCq, sCorrectedPx : signed(EXT_WIDTH - 1 downto 0);
-  signal sDeltaPos, sDeltaNeg, sDelta, sRawError : signed(BITNESS downto 0);
-  signal sAtZero, sAtMax : signed(BITNESS downto 0);
+  signal sDelta, sRawError : signed(BITNESS downto 0);
 begin
   assert MAX_VAL < 2 ** BITNESS
     report "a6_a7_prediction_error: MAX_VAL must fit BITNESS"
     severity failure;
 
-  -- A.6 clip decision only; off the error path
-  sPxPlusCq  <= resize(signed('0' & iPx), EXT_WIDTH) + resize(iCq, EXT_WIDTH);
-  sPxMinusCq <= resize(signed('0' & iPx), EXT_WIDTH) - resize(iCq, EXT_WIDTH);
-  sCorrectedPx <= sPxPlusCq when iSign = CO_SIGN_POS else sPxMinusCq;
-
   -- Error as (Ix - Px) - Cq so the pixel difference settles before the forwarded Cq
-  sDeltaPos <= signed('0' & iIx) - signed('0' & iPx);
-  sDeltaNeg <= signed('0' & iPx) - signed('0' & iIx);
-  sDelta <= sDeltaPos when iSign = CO_SIGN_POS else sDeltaNeg;
+  sDelta <= signed('0' & iIx) - signed('0' & iPx) when iSign = CO_SIGN_POS else
+            signed('0' & iPx) - signed('0' & iIx);
   sRawError <= sDelta - resize(iCq, sRawError'length);
 
-  sAtZero <= signed('0' & iIx) when iSign = CO_SIGN_POS else -signed('0' & iIx);
-  sAtMax <= signed('0' & iIx) - to_signed(MAX_VAL, sAtMax'length) when iSign = CO_SIGN_POS else
-            to_signed(MAX_VAL, sAtMax'length) - signed('0' & iIx);
-
   -- sRawError can only wrap when clipped, where a boundary error is selected
-  oErrorVal <= sAtZero when sCorrectedPx < 0 else
-               sAtMax when sCorrectedPx > MAX_S else
+  oErrorVal <= iAtLo when iCq < iLo else
+               iAtHi when iCq > iHi else
                sRawError;
 
   postponed assert is_x(oErrorVal) or iIx > MAX_VAL or iPx > MAX_VAL or abs(to_integer(oErrorVal)) <= MAX_VAL

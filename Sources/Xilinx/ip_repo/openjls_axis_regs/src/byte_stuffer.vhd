@@ -89,6 +89,7 @@ architecture behavioral of byte_stuffer is
   signal sWord                    : std_logic_vector(IN_WIDTH - 1 downto 0);
   signal sWordValidLen            : unsigned(log2ceil(IN_WIDTH + 1) - 1 downto 0);         -- [0, IN_WIDTH]
   signal sWordValid               : std_logic;
+  signal sWordMask                : std_logic_vector(IN_WIDTH - 1 downto 0);               -- MSB-first, bit i = i < len
   signal sFlush                   : std_logic;
 
   signal sAccumBuffer             : std_logic_vector(ACCUM_BITS - 1 downto 0);
@@ -96,6 +97,9 @@ architecture behavioral of byte_stuffer is
   signal sAccumCountBitsFlush     : unsigned(log2ceil(ACCUM_BITS + 1) - 1 downto 0);       -- [0, ACCUM_BITS]
   signal sFlushValidBits          : unsigned(LAST_BITS_WIDTH - 1 downto 0);                -- [0, FIFO_BITS]
   signal sFlushPending            : std_logic;
+  -- Drain test precomputed from the next count: count + len >= FIFO_BITS
+  signal sCountGeFifo             : boolean;
+  signal sNeedBits                : unsigned(log2ceil(FIFO_BITS + 1) - 1 downto 0);        -- [1, FIFO_BITS]
 
   signal sFifoInData              : std_logic_vector(FIFO_WIDTH - 1 downto 0);
   signal sFifoInValid             : std_logic;
@@ -164,11 +168,19 @@ begin
       if (iRst = '1') then
         sWord         <= (others => '0');
         sWordValidLen <= (others => '0');
+        sWordMask     <= (others => '0');
         sWordValid    <= '0';
         sFlush        <= '0';
       elsif (iStall = '0') then
         sWord         <= iWord;
         sWordValidLen <= iWordValidLen;
+
+        for i in 0 to IN_WIDTH - 1 loop
+
+          sWordMask(IN_WIDTH - 1 - i) <= bool2bit(i < to_integer(iWordValidLen));
+
+        end loop;
+
         sWordValid    <= iWordValid;
         sFlush        <= iFlush;
       end if;
@@ -191,6 +203,8 @@ begin
     variable vMaskTop             : std_logic_vector(ACCUM_BITS - 1 downto 0);
     variable vShifted             : std_logic_vector(ACCUM_BITS - 1 downto 0);
     variable vMask                : std_logic_vector(ACCUM_BITS - 1 downto 0);
+    variable vTake                : boolean;
+    variable vDrain               : boolean;
 
   begin
 
@@ -201,6 +215,8 @@ begin
         sAccumCountBitsFlush <= (others => '0');
         sFlushValidBits      <= (others => '0');
         sFlushPending        <= '0';
+        sCountGeFifo         <= false;
+        sNeedBits            <= to_unsigned(FIFO_BITS, sNeedBits'length);
         sFifoInValid         <= '0';
         sFifoInData          <= (others => '0');
         sBvQueueInValid      <= '0';
@@ -216,19 +232,14 @@ begin
         sFifoInValid    <= '0';
         sBvQueueInValid <= '0';
 
-        if (sWordValid = '1' and iStall = '0') then
-          vWide                                              := (others => '0');
-          vWide(ACCUM_BITS - 1 downto ACCUM_BITS - IN_WIDTH) := sWord;
-          vMaskTop                                           := (others => '0');
+        vTake  := sWordValid = '1' and iStall = '0';
+        vDrain := sCountGeFifo or (vTake and sWordValidLen >= sNeedBits);
 
-          for i in 0 to IN_WIDTH - 1 loop
-
-            if (i < vValidLenInt) then
-              vMaskTop(ACCUM_BITS - 1 - i) := '1';
-            end if;
-
-          end loop;
-
+        if (vTake) then
+          vWide                                                 := (others => '0');
+          vWide(ACCUM_BITS - 1 downto ACCUM_BITS - IN_WIDTH)    := sWord;
+          vMaskTop                                              := (others => '0');
+          vMaskTop(ACCUM_BITS - 1 downto ACCUM_BITS - IN_WIDTH) := sWordMask;
           vShifted        := std_logic_vector(shift_right(unsigned(vWide), vAccumCountBits));
           vMask           := std_logic_vector(shift_right(unsigned(vMaskTop), vAccumCountBits));
           vAccumBuffer    := (vAccumBuffer and not vMask) or (vShifted and vMask);
@@ -271,6 +282,10 @@ begin
           vFlushPending := '1';
         end if;
 
+        assert vFlushPending = '1' or vDrain = (vAccumCountBits >= FIFO_BITS)
+          report "byte_stuffer: precomputed drain test disagrees with the count"
+          severity failure;
+
         assert not (sFifoFull = '1' and (vFlushPending = '1' or vAccumCountBits >= FIFO_BITS))
           report "byte_stuffer: FIFO full but accumulator didn't stall"
           severity failure;
@@ -292,7 +307,7 @@ begin
             vAccumBuffer         := std_logic_vector(shift_left(unsigned(vAccumBuffer), FIFO_BITS));
             vAccumCountBits      := vAccumCountBits - FIFO_BITS;
             vAccumCountBitsFlush := vAccumCountBitsFlush - FIFO_BITS;
-          elsif (vAccumCountBits >= FIFO_BITS) then
+          elsif (vDrain) then
             sFifoInData  <= vAccumBuffer(ACCUM_BITS - 1 downto ACCUM_BITS - FIFO_BITS) & '0';
             sFifoInValid <= '1';
 
@@ -306,6 +321,13 @@ begin
         sAccumCountBitsFlush <= to_unsigned(vAccumCountBitsFlush, sAccumCountBitsFlush'length);
         sFlushValidBits      <= to_unsigned(vFlushValidBits, sFlushValidBits'length);
         sFlushPending        <= vFlushPending;
+        sCountGeFifo         <= vAccumCountBits >= FIFO_BITS;
+
+        if (vAccumCountBits < FIFO_BITS) then
+          sNeedBits <= to_unsigned(FIFO_BITS - vAccumCountBits, sNeedBits'length);
+        else
+          sNeedBits <= to_unsigned(1, sNeedBits'length);
+        end if;
 
         assert vAccumCountBits <= ACCUM_BITS
           report "byte_stuffer: stage 1 accumulator overflow"

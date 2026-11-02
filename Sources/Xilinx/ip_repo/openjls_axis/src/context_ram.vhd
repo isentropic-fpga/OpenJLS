@@ -7,6 +7,8 @@
 -- context_ram: context variables A, B, C, N for the 365 regular and 2 run-interruption contexts
 --
 -- Per-address init flags: after iEndOfImage, the first read of each context returns the initial values.
+-- The flag lookup selects on the merged A.4.1 Qi, skipping the A.4.2 adder; the flag clear lands a cycle late.
+-- Writes land a cycle late from a register; a read forwards from both writes still in flight.
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -33,9 +35,19 @@ entity context_ram is
     iWrEn           : in    std_logic;
     iWrData         : in    std_logic_vector(TOTAL_WIDTH - 1 downto 0);
     iRdAddr         : in    std_logic_vector(log2ceil(RAM_DEPTH) - 1 downto 0);
+    -- iRdAddr as merged Qi (iRdAddr = 81 Q1 + 9 Q2 + Q3) when iRdRegular, else 365 + iRdRiType
+    iRdRegular      : in    std_logic;
+    iRdRiType       : in    std_logic;
+    iRdQ1           : in    signed(3 downto 0);
+    iRdQ2           : in    signed(3 downto 0);
+    iRdQ3           : in    signed(3 downto 0);
     iRdEn           : in    std_logic;
     iEndOfImage     : in    std_logic;
-    oRdData         : out   std_logic_vector(TOTAL_WIDTH - 1 downto 0)
+    oRdData         : out   std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+    -- oRdData split: oRdAlt when oRdUseAlt else oRdBram. oRdAlt and oRdUseAlt come from registers
+    oRdBram         : out   std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+    oRdAlt          : out   std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+    oRdUseAlt       : out   std_logic
   );
 end entity context_ram;
 
@@ -46,6 +58,8 @@ architecture behavioral of context_ram is
   constant C_INIT      : integer := 0;
   constant N_INIT      : natural := 1;
 
+  constant REG_CONTEXTS : natural := 365;
+
   -- (A | B | C | N); run contexts reuse it as (A | Nn | 0 | N) with Nn = 0
   constant CTX_INIT    : std_logic_vector(TOTAL_WIDTH - 1 downto 0) :=
                                                                        std_logic_vector(to_unsigned(A_INIT, A_WIDTH)) &
@@ -55,11 +69,26 @@ architecture behavioral of context_ram is
 
   signal sUseInitValue : std_logic_vector(RAM_DEPTH - 1 downto 0); -- per address: next read returns CTX_INIT
   signal sUseInitReg   : std_logic;
+  signal sLookup       : std_logic;
+  -- Context key: '1' & Qi for regular, '0' & RItype for run; unique per context
+  signal sRdKey        : std_logic_vector(12 downto 0);
+  -- Last read, cleared next cycle; a back-to-back read of it bypasses the stale flag
+  signal sClrPend      : std_logic;
+  signal sClrAddr      : std_logic_vector(log2ceil(RAM_DEPTH) - 1 downto 0);
+  signal sClrKey       : std_logic_vector(12 downto 0);
   signal sBramRdData   : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
 
-  -- Same-address write forwarding: WBR on top of an RBW BRAM
-  signal sFwdSameReg   : std_logic;
-  signal sWrDataReg    : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+  signal sWrPendEn     : std_logic;
+  signal sWrPendAddr   : std_logic_vector(log2ceil(RAM_DEPTH) - 1 downto 0);
+  signal sWrPendData   : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+
+  -- Same-address write forwarding: WBR on top of an RBW BRAM. New: the write presented with the read; Old: the pending one
+  signal sFwdNew       : std_logic;
+  signal sFwdOld       : std_logic;
+  signal sFwdNewData   : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+  signal sFwdOldData   : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+  signal sRdAlt        : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+  signal sRdUseAlt     : std_logic;
 
 begin
 
@@ -80,15 +109,54 @@ begin
     )
     port map (
       Clk             => iClk,
-      Wr_Addr         => iWrAddr,
-      Wr_Ena          => iWrEn,
+      Wr_Addr         => sWrPendAddr,
+      Wr_Ena          => sWrPendEn,
       Wr_Be           => open,
-      Wr_Data         => iWrData,
+      Wr_Data         => sWrPendData,
       Rd_Clk          => open,
       Rd_Addr         => iRdAddr,
       Rd_Ena          => iRdEn,
       Rd_Data         => sBramRdData
     );
+
+  sRdKey <= '1' & std_logic_vector(iRdQ1 & iRdQ2 & iRdQ3) when iRdRegular = '1' else
+            (0 => iRdRiType, others => '0');
+
+  -- Select tree Q3, then Q2, then Q1; rows indexed by the raw 4-bit Qi
+  p_lookup : process (all) is
+
+    variable vRow : std_logic_vector(0 to 15);
+    variable vL2  : std_logic_vector(0 to 15);
+    variable vL1  : std_logic_vector(0 to 15);
+    variable vIdx : integer;
+
+  begin
+
+    vL1 := (others => '0');
+    for i1 in 0 to 4 loop
+      vL2 := (others => '0');
+      for i2 in -4 to 4 loop
+        vRow := (others => '0');
+        for i3 in -4 to 4 loop
+          vIdx := 81 * i1 + 9 * i2 + i3;
+          if (vIdx >= 0 and vIdx < REG_CONTEXTS) then
+            vRow(to_integer(unsigned(to_signed(i3, 4)))) := sUseInitValue(vIdx);
+          end if;
+        end loop;
+        vL2(to_integer(unsigned(to_signed(i2, 4)))) := vRow(to_integer(unsigned(iRdQ3)));
+      end loop;
+      vL1(i1) := vL2(to_integer(unsigned(iRdQ2)));
+    end loop;
+
+    if (iRdRegular = '1') then
+      sLookup <= vL1(to_integer(unsigned(iRdQ1)));
+    elsif (iRdRiType = '1') then
+      sLookup <= sUseInitValue(REG_CONTEXTS + 1);
+    else
+      sLookup <= sUseInitValue(REG_CONTEXTS);
+    end if;
+
+  end process p_lookup;
 
   p_init_tracker : process (iClk) is
   begin
@@ -96,10 +164,19 @@ begin
     if rising_edge(iClk) then
       if (iRst = '1') then
         sUseInitValue <= (others => '1');
+        sClrPend      <= '0';
       else
+        -- The EOI read's clear would hit the next image
+        sClrPend <= iRdEn and not iEndOfImage;
+
         if (iRdEn = '1') then
-          sUseInitReg                                  <= sUseInitValue(to_integer(unsigned(iRdAddr)));
-          sUseInitValue(to_integer(unsigned(iRdAddr))) <= '0';
+          sUseInitReg <= sLookup and not (sClrPend and bool2bit(sClrKey = sRdKey));
+          sClrAddr    <= iRdAddr;
+          sClrKey     <= sRdKey;
+        end if;
+
+        if (sClrPend = '1') then
+          sUseInitValue(to_integer(unsigned(sClrAddr))) <= '0';
         end if;
 
         if (iEndOfImage = '1') then
@@ -110,27 +187,57 @@ begin
 
   end process p_init_tracker;
 
+  -- No reset: a write on the first reset cycle still lands, as with the unregistered port
+  p_wr_pend : process (iClk) is
+  begin
+
+    if rising_edge(iClk) then
+      sWrPendEn   <= iWrEn;
+      sWrPendAddr <= iWrAddr;
+      sWrPendData <= iWrData;
+    end if;
+
+  end process p_wr_pend;
+
+  -- Neither write is in the BRAM by the read; the newer wins at the output, so iWrData lands on a plain register
   p_fwd : process (iClk) is
   begin
 
     if rising_edge(iClk) then
       if (iRst = '1') then
-        sFwdSameReg <= '0';
-        sWrDataReg  <= (others => '0');
+        sFwdNew     <= '0';
+        sFwdOld     <= '0';
+        sFwdNewData <= (others => '0');
+        sFwdOldData <= (others => '0');
       elsif (iRdEn = '1') then
-        sFwdSameReg <= iWrEn and bool2bit(iWrAddr = iRdAddr);
-        sWrDataReg  <= iWrData;
+        sFwdNew     <= iWrEn and bool2bit(iWrAddr = iRdAddr);
+        sFwdOld     <= sWrPendEn and bool2bit(sWrPendAddr = iRdAddr);
+        sFwdNewData <= iWrData;
+        sFwdOldData <= sWrPendData;
       end if;
     end if;
 
   end process p_fwd;
 
-  oRdData <= CTX_INIT when sUseInitReg = '1' else
-             sWrDataReg when sFwdSameReg = '1' else
-             sBramRdData;
+  sRdAlt    <= CTX_INIT when sUseInitReg = '1' else
+               sFwdNewData when sFwdNew = '1' else
+               sFwdOldData;
+  sRdUseAlt <= sUseInitReg or sFwdNew or sFwdOld;
+
+  oRdData   <= sRdAlt when sRdUseAlt = '1' else
+               sBramRdData;
+  oRdBram   <= sBramRdData;
+  oRdAlt    <= sRdAlt;
+  oRdUseAlt <= sRdUseAlt;
 
   postponed assert iRdEn /= '1' or is_x(iRdAddr) or unsigned(iRdAddr) < RAM_DEPTH
     report "context_ram: read address past depth" severity error;
+  postponed assert iRdEn /= '1' or iRdRegular /= '1' or is_x(iRdAddr) or is_x(sRdKey)
+    or 81 * to_integer(iRdQ1) + 9 * to_integer(iRdQ2) + to_integer(iRdQ3) = to_integer(unsigned(iRdAddr))
+    report "context_ram: read Qi disagree with the read address" severity error;
+  postponed assert iRdEn /= '1' or iRdRegular /= '0' or is_x(iRdAddr) or is_x(iRdRiType)
+    or to_integer(unsigned(iRdAddr)) = REG_CONTEXTS + to_integer(unsigned'('0' & iRdRiType))
+    report "context_ram: read RItype disagrees with the read address" severity error;
   postponed assert iWrEn /= '1' or is_x(iWrAddr) or unsigned(iWrAddr) < RAM_DEPTH
     report "context_ram: write address past depth" severity error;
 

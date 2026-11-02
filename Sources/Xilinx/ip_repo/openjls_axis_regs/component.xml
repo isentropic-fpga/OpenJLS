@@ -3,7 +3,7 @@
   <spirit:vendor>isentropic</spirit:vendor>
   <spirit:library>openjls</spirit:library>
   <spirit:name>openjls_axis_regs</spirit:name>
-  <spirit:version>1.3</spirit:version>
+  <spirit:version>1.4</spirit:version>
   <spirit:busInterfaces>
     <spirit:busInterface>
       <spirit:name>aclk</spirit:name>
@@ -332,7 +332,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>07a91acb</spirit:value>
+            <spirit:value>091ab1df</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -348,7 +348,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>07a91acb</spirit:value>
+            <spirit:value>091ab1df</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -1094,7 +1094,7 @@
       <spirit:file>
         <spirit:name>src/openjls_axis_regs.vhd</spirit:name>
         <spirit:userFileType>vhdlSource-2008</spirit:userFileType>
-        <spirit:userFileType>CHECKSUM_71aa560b</spirit:userFileType>
+        <spirit:userFileType>CHECKSUM_98482158</spirit:userFileType>
         <spirit:userFileType>IMPORTED_FILE</spirit:userFileType>
       </spirit:file>
     </spirit:fileSet>
@@ -1304,7 +1304,7 @@
     <spirit:fileSet>
       <spirit:name>xilinx_xpgui_view_fileset</spirit:name>
       <spirit:file>
-        <spirit:name>xgui/openjls_axis_regs_v1_3.tcl</spirit:name>
+        <spirit:name>xgui/openjls_axis_regs_v1_4.tcl</spirit:name>
         <spirit:fileType>tclSource</spirit:fileType>
         <spirit:userFileType>CHECKSUM_2e067d26</spirit:userFileType>
         <spirit:userFileType>XGUI_VERSION_2</spirit:userFileType>
@@ -1361,14 +1361,14 @@
       <xilinx:definitionSource>package_project</xilinx:definitionSource>
       <xilinx:vendorDisplayName>Isentropic</xilinx:vendorDisplayName>
       <xilinx:vendorURL>https://github.com/isentropic-fpga/OpenJLS</xilinx:vendorURL>
-      <xilinx:coreRevision>26110210</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2026-11-02T13:38:30Z</xilinx:coreCreationDateTime>
+      <xilinx:coreRevision>26110213</xilinx:coreRevision>
+      <xilinx:coreCreationDateTime>2026-11-02T16:20:49Z</xilinx:coreCreationDateTime>
     </xilinx:coreExtensions>
     <xilinx:packagingInfo>
       <xilinx:xilinxVersion>2025.2</xilinx:xilinxVersion>
       <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="e97bbc5d"/>
       <xilinx:checksum xilinx:scope="memoryMaps" xilinx:value="1912e5d4"/>
-      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="db084156"/>
+      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="0901ae79"/>
       <xilinx:checksum xilinx:scope="ports" xilinx:value="fefdd5ae"/>
       <xilinx:checksum xilinx:scope="hdlParameters" xilinx:value="b0b062b2"/>
       <xilinx:checksum xilinx:scope="parameters" xilinx:value="78111012"/>
