@@ -85,6 +85,7 @@ architecture behavioral of jls_framer is
 
   signal sBuffer                : std_logic_vector(BUFFER_WIDTH - 1 downto 0);
   signal sFifoByteCount         : natural range 0 to BUFFER_BYTES;
+  signal sReady                 : boolean := true;                 -- sFifoByteCount < BUFFER_BYTES_NOMINAL
   signal sEoiFifo               : eoi_offsets_t(0 to EOI_FIFO_DEPTH - 1);
   signal sEoiCount              : natural range 0 to EOI_FIFO_DEPTH;
   -- Head footer falls in the next data / last-header beat, registered off the emit path
@@ -312,8 +313,7 @@ begin
   oLast       <= sOutLast;
 
   -- Drops at the nominal level; STALL_MARGIN_BYTES absorbs what is in flight
-  oReady <= '1' when sFifoByteCount < BUFFER_BYTES_NOMINAL else
-            '0';
+  oReady <= bool2bit(sReady);
 
   sync_proc : process (iClk) is
 
@@ -337,6 +337,7 @@ begin
         sFsmState      <= idle;
         sBuffer        <= (others => '0');
         sFifoByteCount <= 0;
+        sReady         <= true;
         sEoiFifo       <= (others => 0);
         sEoiCount      <= 0;
         sEoiInData     <= false;
@@ -538,6 +539,7 @@ begin
 
         sBuffer        <= vBuffer;
         sFifoByteCount <= vFifoByteCount;
+        sReady         <= vFifoByteCount < BUFFER_BYTES_NOMINAL;
         sEoiFifo       <= vEoiIdxFifo;
         sEoiCount      <= vEoiCount;
         sEoiInData     <= vEoiCount > 0 and vEoiIdxFifo(0) < BYTES_OUT;
@@ -569,6 +571,8 @@ begin
     report "jls_framer: input byte count past BYTES_IN" severity error;
   postponed assert iRst = '1' or sHdrLastBeat = (HEADER_LEN - sHeaderByteIdx < BYTES_OUT)
     report "jls_framer: last header beat flag disagrees with the header index" severity error;
+  postponed assert iRst = '1' or sReady = (sFifoByteCount < BUFFER_BYTES_NOMINAL)
+    report "jls_framer: registered ready disagrees with the byte count" severity error;
   postponed assert is_x(sValidBytes) or sValidBytes <= BYTES_OUT
     report "jls_framer: output byte count past BYTES_OUT" severity error;
   postponed assert iStart /= '1' or is_x(iImageWidth) or iImageWidth < 2 ** 16
