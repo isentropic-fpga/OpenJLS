@@ -234,7 +234,7 @@ OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level
 
 - **OSVVM** — 32 module testbenches against independent T.87 reference models, a top-level control-plane stress test, and AXI wrapper tests, all with requirements tracking.
 - **Coverage** — OSVVM functional coverage plus NVC statement coverage.
-- **Golden model** — byte-exact against [CharLS](https://github.com/team-charls/charls) and the official ISO/IEC 14495-1 reference vectors.
+- **Golden model** — byte-exact against [CharLS](https://github.com/team-charls/charls) and the official ISO/IEC 14495-1 reference vectors, both per image from reset and on same-size images streamed with no reset between them.
 - **Design contracts** — PSL assertions on the handshakes, checked every run.
 - **Post-synthesis** — stress test and a golden subset re-run on the gate-level netlist.
 - **Hardware-in-the-loop** — full corpus encoded on a PYNQ-Z2 at depths 8–16, zero mismatches; reproducible via the [EncodeOverEthernet demo](https://github.com/isentropic-fpga/OpenJLS-Demos).

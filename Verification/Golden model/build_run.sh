@@ -6,9 +6,11 @@
 # commercial license. See LICENSE and README for details.
 #
 
-# Encode every image in Images/ with CharLS and OpenJLS and byte-compare.
-# Images that already passed on the same RTL hash are skipped; RERUN=1 runs all.
-# Knobs: MAX_MP (default 0.5), NUMBER_OF_THREADS (default 1), NVC_HEAP.
+# Encode every image in Images/ with CharLS and OpenJLS and byte-compare, then
+# stream the same-size sets in Images_stream/ through one core with no reset
+# between images. Runs that passed on the same RTL hash are skipped; RERUN=1 runs all.
+# Knobs: MAX_MP (default 0.5), NUMBER_OF_THREADS (default 1), NVC_HEAP,
+# STREAM=0 (skip the streams).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -20,6 +22,7 @@ REF_DIR="$ROOT/Verification/T87 conformance/Reference Images"
 CLI="$ROOT/ThirdParty/charls/build/cli/charls-cli"
 
 TB="tb_openjls_golden"
+STREAM_TB="tb_openjls_golden_stream"
 
 mkdir -p "$LIBS" "$GOLDEN" "$OUTPUT"
 
@@ -92,7 +95,7 @@ SRC_FILES=(
 "${NVC[@]}" --work=work:"$LIBS/work.08" -a "${A_FLAGS[@]}" \
   "${SRC_FILES[@]/#/$SRC/}"
 
-"${NVC[@]}" --work=work:"$LIBS/work.08" -a "${A_FLAGS[@]}" "$HERE/$TB.vhd"
+"${NVC[@]}" --work=work:"$LIBS/work.08" -a "${A_FLAGS[@]}" "$HERE/$TB.vhd" "$HERE/$STREAM_TB.vhd"
 
 # Generics are fixed at elaboration, so each image is its own -e --no-save -r;
 # the library stays read-only and images run in parallel.
@@ -108,6 +111,11 @@ PGMS=("$IMAGES_DIR"/*.pgm)
 shopt -u nullglob
 if [ "${#PGMS[@]}" -eq 0 ]; then
   echo "No images in $IMAGES_DIR — run ./prepare_images.sh first." >&2
+  exit 1
+fi
+SETS="$HERE/Images_stream"
+if [ "${STREAM:-1}" = 1 ] && [ ! -d "$SETS/8-r3" ]; then
+  echo "No stream sets in $SETS — run ./prepare_images.sh first, or STREAM=0." >&2
   exit 1
 fi
 
@@ -242,10 +250,117 @@ today="$(date +%F)"
   } | awk -F'\t' -v OFS='\t' -v imgs="$IMAGES_DIR" '
       BEGIN { while (("ls \"" imgs "\"" | getline f) > 0) if (f ~ /\.pgm$/) live[substr(f, 1, length(f) - 4)] = 1 }
       { k = $2; src = $1; sub(/^[^\t]*\t/, "")
-        if (!(k in live)) next
+        if (!(k in live) && k !~ /^stream[0-9]+-r[0-9]+-/) next
         if (src == "new" || !(k in row)) row[k] = $0 }
       END { for (k in row) print row[k] }' | sort
 } > "$TSV.tmp" && mv "$TSV.tmp" "$TSV" || true
+
+# Ready at 3% keeps the FIFO backed up: without a backlog the next image's word
+# rarely reaches the byte_stuffer skid before the last word has drained.
+# Each image is a row of the image table, named stream<bits>-r<ready>-<image>;
+# STREAM_TSV holds what only a whole run has: its cache key and window hits.
+STREAM_OUT="$HERE/Output/Stream"
+STREAM_TSV="$STREAM_OUT/runs.tsv"
+STREAM_LOGD="$STREAM_OUT/logs"
+
+# Raw pixels, one .jls and one length line per image, in file order
+concat_set() {
+  local run="$1" pgm stem
+  mkdir -p "$STREAM_OUT/Golden/$run"
+  python3 - "$SETS/$run" "$STREAM_OUT/$run.pix" <<'PY'
+import sys
+from pathlib import Path
+with open(sys.argv[2], "wb") as out:
+    for p in sorted(Path(sys.argv[1]).glob("*.pgm")):
+        out.write(p.read_bytes().split(b"\n", 3)[3])
+PY
+  : >"$STREAM_OUT/$run.jls"; : >"$STREAM_OUT/$run.len"
+  for pgm in "$SETS/$run"/*.pgm; do
+    stem="$(basename "${pgm%.pgm}")"
+    "$CLI" encode "$pgm" "$STREAM_OUT/Golden/$run/$stem.jls" >/dev/null
+    cat "$STREAM_OUT/Golden/$run/$stem.jls" >>"$STREAM_OUT/$run.jls"
+    stat -c%s "$STREAM_OUT/Golden/$run/$stem.jls" >>"$STREAM_OUT/$run.len"
+  done
+}
+
+run_stream() {
+  local b="$1" pct="$2" run="$1-r$2" n w h rel log res
+  log="$STREAM_LOGD/$run.log"
+  : >"$STREAM_OUT/$run.res"
+  n=$(wc -l <"$STREAM_OUT/$run.len")
+  read -r w h < <(sed -n 2p "$(ls "$SETS/$run"/*.pgm | head -1)")
+  rel="Verification/Golden model/Output/Stream/$run"
+  if "${NVC[@]}" --work=work:"$LIBS/work.08" -e --jit --no-save \
+      -g REPO_ROOT="$ROOT/" -g PIX_PATH="$rel.pix" -g JLS_PATH="$rel.jls" -g LEN_PATH="$rel.len" -g RES_PATH="$rel.res" \
+      -g BITNESS="$b" -g W="$w" -g H="$h" -g N_IMAGES="$n" -g READY_PCT="$pct" "$STREAM_TB" \
+      -r --exit-severity=error "$STREAM_TB" >"$log" 2>&1; then res=PASS; else res=FAIL; fi
+  echo "[stream] $res BITNESS=$b READY=$pct"
+  # An image with no result line never closed: its row is a FAIL
+  ls "$SETS/$run" | sed 's/\.pgm$//' | paste - "$STREAM_OUT/$run.len" |
+    awk -F'\t' -v OFS='\t' -v r="$STREAM_OUT/$run.res" -v b="$b" -v p="$pct" -v w="$w" -v h="$h" -v d="$(date +%F)" -v v="$STREAM_HASH" '
+      BEGIN { while ((getline l < r) > 0) { split(l, a, " "); m[a[1]] = a[2]; ok[a[1]] = a[3] } }
+      { i = FNR - 1
+        print "stream" b "-r" p "-" $1, w "x" h, sprintf("%.3f", w * h / 1e6), b, (m[i] + 0) "/" $2, (ok[i] == "true" ? "PASS" : "FAIL"), d, v }' \
+    >"$TMPD/image_rows_$run"
+  printf '%s\t%s\t%s\t%s\t%s\n' "$b" "$pct" "$res" "$(grep -ao 'stream: .*' "$log" || echo 'no summary')" "$STREAM_HASH" >>"$TMPD/stream_rows"
+}
+
+if [ "${STREAM:-1}" = 1 ]; then
+  STREAM_HASH="$(cat "${SRC_FILES[@]/#/$SRC/}" "$HERE/$STREAM_TB.vhd" | sha256sum | cut -c1-12)"
+  mkdir -p "$STREAM_LOGD"
+  declare -A STREAM_CACHED
+  if [ "${RERUN:-0}" != 1 ] && [ -f "$STREAM_TSV" ] && [ -z "$(find "$SETS" -name '*.pgm' -newer "$STREAM_TSV" -print -quit)" ]; then
+    while IFS=$'\t' read -r b pct r _ h; do
+      [ "$r" = PASS ] && [ "$h" = "$STREAM_HASH" ] && STREAM_CACHED["$b $pct"]=1
+    done < <(tail -n +2 "$STREAM_TSV")
+  fi
+
+  : >"$TMPD/stream_rows"; : >"$TMPD/stream_jobs"
+  for d in "$SETS"/*/; do
+    run="$(basename "$d")"; b="${run%-r*}"; pct="${run#*-r}"
+    if [ -n "${STREAM_CACHED["$b $pct"]:-}" ]; then
+      grep -P "^$b\t$pct\t" "$STREAM_TSV" >>"$TMPD/stream_rows"
+    else
+      echo "$b $pct" >>"$TMPD/stream_jobs"
+      while [ "$(jobs -rp | wc -l)" -ge "$NUMBER_OF_THREADS" ]; do wait -n; done
+      concat_set "$run" &
+    fi
+  done
+  wait
+
+  echo "Streaming $(wc -l <"$TMPD/stream_jobs") no-reset run(s), $(wc -l <"$TMPD/stream_rows") cached"
+  while read -r b pct; do
+    while [ "$(jobs -rp | wc -l)" -ge "$NUMBER_OF_THREADS" ]; do wait -n; done
+    run_stream "$b" "$pct" &
+  done <"$TMPD/stream_jobs"
+  wait
+
+  {
+    printf 'Bits\tReady%%\tResult\tSummary\tRTL\n'
+    sort -t$'\t' -k1,1n -k2,2nr "$TMPD/stream_rows"
+  } >"$STREAM_TSV"
+
+  # Rerun streams replace their rows; only cached runs keep theirs
+  cached_runs="$(for k in "${!STREAM_CACHED[@]}"; do set -- $k; echo "stream$1-r$2-"; done)"
+  {
+    head -1 "$TSV"
+    {
+      tail -n +2 "$TSV" | awk -F'\t' -v runs="$cached_runs" '
+        BEGIN { n = split(runs, a, "\n"); for (i = 1; i <= n; i++) c[a[i]] = 1 }
+        { if (match($1, /^stream[0-9]+-r[0-9]+-/) && !(substr($1, 1, RLENGTH) in c)) next; print }'
+      find "$TMPD" -name 'image_rows_*' -exec cat {} +
+    } | sort
+  } >"$TSV.tmp" && mv "$TSV.tmp" "$TSV"
+  awk -F'\t' 'NR > 1 { split($4, a, "window_hits="); print "  BITNESS=" $1, "READY=" $2, $3, "window_hits=" a[2] }' "$STREAM_TSV"
+fi
+
+# A depth that never reaches the merge window proves nothing about image boundaries
+sfail=0; vacuous=""
+if [ -f "$STREAM_TSV" ]; then
+  sfail=$(awk -F'\t' 'NR > 1 && $3 != "PASS"' "$STREAM_TSV" | wc -l)
+  vacuous="$(awk -F'\t' 'NR > 1 { split($4, a, "window_hits="); h[$1] += a[2] } END { for (b in h) if (h[b] == 0) print b }' "$STREAM_TSV" | sort -n | xargs)"
+  [ -z "$vacuous" ] || echo "No merge-window hits at BITNESS: $vacuous"
+fi
 
 # Status for publish_reports.sh, over the merged table so a capped run keeps
 # earlier full-sweep results
@@ -254,16 +369,20 @@ gpct=$(awk -v p="$tpass" -v t="$((tpass + tfail))" 'BEGIN{ if (t > 0) printf "%.
 {
   echo "NAME=\"Golden model\""
   echo "NOTE=\"CharLS byte-exact cross-check\""
-  echo "STATUS=$([ "$tfail" -eq 0 ] && echo PASS || echo FAIL)"
+  echo "STATUS=$([ "$tfail" -eq 0 ] && [ "$sfail" -eq 0 ] && [ -z "$vacuous" ] && echo PASS || echo FAIL)"
   echo "PCT=\"$gpct\""
-  echo "SUMMARY=\"$tpass of $((tpass + tfail)) images byte-exact vs CharLS$([ "$tskip" -gt 0 ] && echo " ($tskip never run)")\""
+  echo "SUMMARY=\"$tpass of $((tpass + tfail)) images byte-exact vs CharLS$([ "$tskip" -gt 0 ] && echo " ($tskip never run)")$([ -z "$vacuous" ] || echo ", no merge-window hits at BITNESS $vacuous")\""
   echo "DATE=\"$(date -Iseconds)\""
 } > "$HERE/Output/report_status.env"
 if [ -f "$TMPD/stalls" ]; then
   echo "Internal stalls (pipeline back-pressured with no downstream stall):"
   while IFS=$'\t' read -r s msg; do echo "  -- $s: $msg"; done < "$TMPD/stalls"
 fi
-if [ "$fail" -ne 0 ]; then
+if [ "$sfail" -ne 0 ] || [ -n "$vacuous" ]; then
+  echo "No-reset streams failed (logs under $STREAM_LOGD):"
+  awk -F'\t' 'NR > 1 && $3 != "PASS" { print "  -- BITNESS=" $1 " READY=" $2 ": " $4 }' "$STREAM_TSV"
+fi
+if [ "$fail" -ne 0 ] || [ "$sfail" -ne 0 ] || [ -n "$vacuous" ]; then
   if [ -f "$TMPD/failures" ]; then
     echo "Failing images (logs under $LOGD):"
     while IFS= read -r s; do
