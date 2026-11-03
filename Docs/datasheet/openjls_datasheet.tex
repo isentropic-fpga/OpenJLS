@@ -230,6 +230,13 @@ word is ready, so output beats are much rarer than input pixels.
 \noindent A \href{https://github.com/isentropic-fpga/OpenJLS/blob/main/Docs/Images/OpenJLS_arch.png}{full-resolution version} of this diagram is available in the
 repository.
 
+\noindent\textbf{Flow control} drives every stage's clock enable and starts the
+framer on each image's first pixel.
+
+\noindent\textbf{Context memory} holds A, B, C, N and Nn for each context. A token reads it in S2 and receives the data in S3, but the BRAM word is wrong if the context hasn't been used yet in this image, or if a token up to three positions ahead just updated it. Per-context init flags handle the first case, so the memory resets at end of image without rewriting the RAM. In the second, the memory forwards writes from tokens two and three positions ahead, while a token one position ahead is still in S4, so its update comes from there.
+
+\noindent\textbf{Regular-mode prediction} runs four parallel chains, because the correct C[Q] comes too late in the cycle to select first. Chain D takes the BRAM word. Chain C takes S4's C[Q] on a match with the token ahead, otherwise the memory's alternative (Alt.) word: the init value or a forwarded write. Chains P and M take S4's C[Q] + 1 and - 1, covering A.13's possible results. The final select picks one chain's result just before Reg3.
+
 %======================================================================
 \section{Generics}
 \begin{table}[H]

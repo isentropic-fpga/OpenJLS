@@ -71,6 +71,12 @@ OpenJLS follows the JPEG-LS encoding pipeline:
 4. **Encoding** — adaptive Golomb-Rice coding for regular mode, run-length encoding for uniform regions
 5. **Bitstream packing** — bit packing, byte stuffing and framing (header and markers) into an ISO/IEC 14495-1 stream
 
+**Flow control** drives every stage's clock enable, stalling the pipeline only when the byte stuffer's buffer fills. It also starts the framer on each image's first pixel and limits images in flight to three.
+
+**Context memory** holds A, B, C, N and Nn for each context. A token reads it in S2 and receives the data in S3, but the BRAM word is wrong if the context hasn't been used yet in this image, or if a token up to three positions ahead just updated it. Per-context init flags handle the first case, so the memory resets at end of image without rewriting the RAM. In the second, the memory forwards writes from tokens two and three positions ahead, while a token one position ahead is still in S4, so its update comes from there.
+
+**Regular-mode prediction** runs four parallel chains, because the correct C[Q] comes too late in the cycle to select first. Chain D takes the BRAM word. Chain C takes S4's C[Q] on a match with the token ahead, otherwise the memory's alternative (Alt.) word: the init value or a forwarded write. Chains P and M take S4's C[Q] + 1 and - 1, covering A.13's possible results. The final select picks one chain's result just before Reg3.
+
 The hardware architecture is based on the optimizations in Mert's [*Key Architectural Optimizations for Hardware Efficient JPEG-LS Encoder*](https://www.researchgate.net/publication/331795298_Key_Architectural_Optimizations_for_Hardware_Efficient_JPEG-LS_Encoder), reworked into a vendor-agnostic, fully pipelined VHDL core.
 
 [`Docs/Requirements.md`](Docs/Requirements.md) is the **source of truth** for the RTL: the code segments and written requirements taken **verbatim from ISO/IEC 14495-1 (ITU-T T.87)**. Source files under [`Sources/`](Sources/) are named after the segments they implement — some combine several, e.g. `A6_A7_prediction_error.vhd` — alongside the line buffer, context RAM, byte stuffer and framer.
