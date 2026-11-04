@@ -8,11 +8,12 @@
 --
 -- Stages are combinational with their registers here; the output IPs register internally.
 --   Stage 1  A.1, A.3, A.4, A.8.1, line_buffer
---   Stage 2  regular A.4.1, A.4.2, A.5 | run A.14, A.15/A.16, A.17, A.18, A.20.1; context read
---   Stage 3  regular speculative A.6-A.9 chains | RI A.19; Q3 == Q4 forwarding
---   Stage 4  A.20, A.10 via A.20.2 | regular A.12, A.13 | RI A.23; context writeback
---   Stage 5  regular A.11 | RI A.21, A.22
---   Stage 6  A.11.1
+--   Stage 2  regular A.4.1, A.4.2, A.5 | run A.14, A.15/A.16, A.17, A.18, A.20.1; context read address
+--   Stage 3  context read, into the BRAM output register | regular A.6 clip bounds and errors | RI A.19
+--   Stage 4  regular speculative A.6-A.9 chains; Q4 == Q5 forwarding
+--   Stage 5  A.20, A.10 via A.20.2 | regular A.12, A.13 | RI A.23; context writeback
+--   Stage 6  regular A.11 | RI A.21, A.22
+--   Stage 7  A.11.1
 --   Output   bit_packer, byte_stuffer, jls_framer
 
 library ieee;
@@ -182,27 +183,32 @@ architecture rtl of openjls_top is
   signal sCE1                               : std_logic;
   signal sCE2                               : std_logic;
   signal sCE3                               : std_logic;
+  signal sCtxAdvance                        : std_logic;
   signal sCE4                               : std_logic;
-  signal sCE5,     sCE6                     : std_logic;
+  signal sCE5                               : std_logic;
+  signal sCE6,     sCE7                     : std_logic;
   signal sStallNext                         : std_logic;
-  signal sReg1VNext, sReg2VNext             : std_logic;
-  signal sReg3VNext, sReg4VNext             : std_logic;
-  signal sReg5VNext, sReg6VNext             : std_logic;
+  signal sReg1VNext, sReg2VNext, sReg3VNext : std_logic;
+  signal sReg4VNext, sReg5VNext             : std_logic;
+  signal sReg6VNext, sReg7VNext             : std_logic;
 
   -- Pipeline tokens + sideband
   signal sReg1                              : t_pipeline_token;
   signal sReg2                              : t_pipeline_token;
   signal sReg3                              : t_pipeline_token;
   signal sReg4                              : t_pipeline_token;
+  signal sReg5                              : t_pipeline_token;
   signal sReg1V                             : std_logic;
   signal sReg2V                             : std_logic;
   signal sReg3V                             : std_logic;
   signal sReg4V                             : std_logic;
+  signal sReg5V                             : std_logic;
   signal sReg1Eol                           : std_logic;
   signal sReg1Eoi                           : std_logic;
   signal sReg2Eoi                           : std_logic;
   signal sReg3Eoi                           : std_logic;
   signal sReg4Eoi                           : std_logic;
+  signal sReg5Eoi                           : std_logic;
 
   -- Image parity, flipped at each EOI: a straggler writeback from the previous
   -- image must not corrupt the next image's contexts
@@ -211,9 +217,11 @@ architecture rtl of openjls_top is
   signal sReg2Par                           : std_logic;
   signal sReg2RiRaGtRb                      : std_logic;
   signal sReg3Par                           : std_logic;
-  signal sReg3Rescale                       : std_logic;
-  signal sReg3NqNew                         : unsigned(N_WIDTH - 1 downto 0);
-  signal sReg3RiAqDelta                     : unsigned(BITNESS - 1 downto 0);
+  signal sReg3RiSign                        : std_logic;
+  signal sReg4Par                           : std_logic;
+  signal sReg4Rescale                       : std_logic;
+  signal sReg4NqNew                         : unsigned(N_WIDTH - 1 downto 0);
+  signal sReg4RiAqDelta                     : unsigned(BITNESS - 1 downto 0);
   signal sCtxOwnerPar                       : std_logic;
   signal sCtxRdPar                          : std_logic;
   signal sReg1ModeRun                       : std_logic;
@@ -252,7 +260,6 @@ architecture rtl of openjls_top is
   signal sS2MQ2                             : signed(3 downto 0);                                     -- [-4, 4]
   signal sS2MQ3                             : signed(3 downto 0);                                     -- [-4, 4]
   signal sS2MSign                           : std_logic;
-  signal sS2Sign                            : std_logic;
   signal sS2QReg                            : unsigned(8 downto 0);                                   -- [0, 364]
   signal sS2RunQ                            : unsigned(8 downto 0);                                   -- [365, 366]
 
@@ -277,15 +284,14 @@ architecture rtl of openjls_top is
   signal sS2TokenMode                       : t_token_mode;
 
   signal sS2Px                              : unsigned(BITNESS - 1 downto 0);                         -- [0, MAX_VAL]
-  signal sS2AtLo                            : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
-  signal sS2AtHi                            : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
-  signal sS2LoSat, sS2HiSat                 : std_logic;
-  signal sReg2LoSat, sReg2HiSat             : std_logic;
+  signal sS3AtLo                            : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
+  signal sS3AtHi                            : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
+  signal sS3ClipLo, sS3ClipHi               : signed(C_WIDTH downto 0);
+  signal sReg3ClipLo, sReg3ClipHi           : signed(C_WIDTH downto 0);
   signal sReg2Px                            : unsigned(BITNESS - 1 downto 0);                         -- [0, MAX_VAL]
-  signal sReg2AtLo                          : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
-  signal sReg2AtHi                          : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
-  signal sS3ClipLo                          : signed(C_WIDTH downto 0);
-  signal sS3ClipHi                          : signed(C_WIDTH downto 0);
+  signal sReg3Px                            : unsigned(BITNESS - 1 downto 0);                         -- [0, MAX_VAL]
+  signal sReg3AtLo                          : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
+  signal sReg3AtHi                          : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
 
   -- context_ram packed I/O
   signal sCtxRdData                         : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
@@ -295,82 +301,83 @@ architecture rtl of openjls_top is
   signal sCtxWrData                         : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
   signal sCtxWrEn                           : std_logic;
 
-  -- Stage 3 — context read
-  signal sS3Aq                              : unsigned(A_WIDTH - 1 downto 0);                         -- [0, 2^A_STORED - 1]
-  signal sS3Bq                              : signed(B_WIDTH - 1 downto 0);                           -- [-(RESET - 1), 0]
-  signal sS3Cq                              : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
-  signal sS3Nq                              : unsigned(N_WIDTH - 1 downto 0);                         -- [1, RESET]
-  signal sS3Nn                              : unsigned(NN_WIDTH - 1 downto 0);                        -- [0, RESET - 1]
+  -- Stage 4 — context read
+  signal sS4Aq                              : unsigned(A_WIDTH - 1 downto 0);                         -- [0, 2^A_STORED - 1]
+  signal sS4Bq                              : signed(B_WIDTH - 1 downto 0);                           -- [-(RESET - 1), 0]
+  signal sS4Cq                              : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
+  signal sS4Nq                              : unsigned(N_WIDTH - 1 downto 0);                         -- [1, RESET]
+  signal sS4Nn                              : unsigned(NN_WIDTH - 1 downto 0);                        -- [0, RESET - 1]
 
-  -- Stage 3 — regular prediction (speculative 3-chain)
-  signal sS3Px                              : unsigned(BITNESS - 1 downto 0);                         -- [0, MAX_VAL]
-  signal sS3CqBram                          : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
-  signal sS3CqAlt                           : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
-  signal sS3CqP1                            : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
-  signal sS3CqM1                            : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
-  signal sS3Err7D                           : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
-  signal sS3Err7C                           : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
-  signal sS3Err7P                           : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
-  signal sS3Err7M                           : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
-  signal sS3Err9D                           : signed(BITNESS downto 0);                               -- [-RANGE_P / 2, RANGE_P / 2 - 1]
-  signal sS3Err9C                           : signed(BITNESS downto 0);                               -- [-RANGE_P / 2, RANGE_P / 2 - 1]
-  signal sS3Err9P                           : signed(BITNESS downto 0);                               -- [-RANGE_P / 2, RANGE_P / 2 - 1]
-  signal sS3Err9M                           : signed(BITNESS downto 0);                               -- [-RANGE_P / 2, RANGE_P / 2 - 1]
-  -- Errval into Reg3: the BRAM chain when sS3UseBram, else sS3ErrOther, built from registers only
-  signal sS3UseBram                         : std_logic;
-  signal sS3ErrOther                        : signed(ERROR_WIDTH - 1 downto 0);
-  signal sS3Errval                          : signed(ERROR_WIDTH - 1 downto 0);
+  -- Stage 4 — regular prediction (speculative 3-chain)
+  signal sS4Px                              : unsigned(BITNESS - 1 downto 0);                         -- [0, MAX_VAL]
+  signal sS4CqBram                          : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
+  signal sS4CqAlt                           : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
+  signal sS4CqP1                            : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
+  signal sS4CqM1                            : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
+  signal sS4Err7D                           : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
+  signal sS4Err7C                           : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
+  signal sS4Err7P                           : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
+  signal sS4Err7M                           : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
+  signal sS4Err9D                           : signed(BITNESS downto 0);                               -- [-RANGE_P / 2, RANGE_P / 2 - 1]
+  signal sS4Err9C                           : signed(BITNESS downto 0);                               -- [-RANGE_P / 2, RANGE_P / 2 - 1]
+  signal sS4Err9P                           : signed(BITNESS downto 0);                               -- [-RANGE_P / 2, RANGE_P / 2 - 1]
+  signal sS4Err9M                           : signed(BITNESS downto 0);                               -- [-RANGE_P / 2, RANGE_P / 2 - 1]
+  -- Errval into Reg4: the BRAM chain when sS4UseBram, else sS4ErrOther, built from registers only
+  signal sS4UseBram                         : std_logic;
+  signal sS4ErrOther                        : signed(ERROR_WIDTH - 1 downto 0);
+  signal sS4Errval                          : signed(ERROR_WIDTH - 1 downto 0);
 
-  -- Q3 == Q4 forwarding, one flag per mode (regular and RI Q ranges are disjoint)
+  -- Q4 == Q5 forwarding, one flag per mode (regular and RI Q ranges are disjoint)
   signal sFwdRegHit                         : std_logic;
   -- Context key: '1' & merged Qi for regular, '0' & RItype otherwise; equal keys iff equal Q
   signal sS2Key                             : std_logic_vector(12 downto 0);
   signal sReg2Key                           : std_logic_vector(12 downto 0);
+  signal sReg3Key                           : std_logic_vector(12 downto 0);
   signal sFwdRiHit                          : std_logic;
 
   -- Speculation control (Cq only)
   signal sSpecUseM                          : std_logic;
   signal sSpecUseP                          : std_logic;
 
-  -- Stage 3 — RI path
+  -- Stage 3 — RI A.19, then stage 4 — RI path
   signal sS3RiSign                          : std_logic;
   signal sS3RiErr19                         : signed(BITNESS downto 0);                               -- [-RANGE_P / 2, RANGE_P / 2 - 1]
-  signal sS3RiAqDelta                       : unsigned(BITNESS - 1 downto 0);                         -- [0, RANGE_P / 2]
+  signal sS4RiAqDelta                       : unsigned(BITNESS - 1 downto 0);                         -- [0, RANGE_P / 2]
 
-  -- Stage 4
-  signal sS4RiTemp                          : unsigned(A_WIDTH - 1 downto 0);                         -- [0, 2^A_WIDTH - 1]
-  signal sS4K                               : unsigned(K_WIDTH - 1 downto 0);                         -- [0, MAX_K]
-  signal sS4RiMode                          : std_logic;
-  signal sS4AqNew                           : unsigned(A_WIDTH - 1 downto 0);                         -- [0, 2^A_STORED - 1]
-  signal sS4NqNew                           : unsigned(N_WIDTH - 1 downto 0);                         -- [1, RESET]
-  signal sS4BqNew                           : signed(B_WIDTH - 1 downto 0);                           -- [-(RESET - 1), 0]
-  signal sS4CqNew                           : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
-  signal sS4CqDec                           : std_logic;
-  signal sS4CqInc                           : std_logic;
-  signal sS4RiAqNew                         : unsigned(A_WIDTH - 1 downto 0);                         -- [0, 2^A_STORED - 1]
-  signal sS4RiNqNew                         : unsigned(N_WIDTH - 1 downto 0);                         -- [1, RESET]
-  signal sS4RiNnNew                         : unsigned(NN_WIDTH - 1 downto 0);                        -- [0, RESET - 1]
+  -- Stage 5
+  signal sS5RiTemp                          : unsigned(A_WIDTH - 1 downto 0);                         -- [0, 2^A_WIDTH - 1]
+  signal sS5K                               : unsigned(K_WIDTH - 1 downto 0);                         -- [0, MAX_K]
+  signal sS5RiMode                          : std_logic;
+  signal sS5AqNew                           : unsigned(A_WIDTH - 1 downto 0);                         -- [0, 2^A_STORED - 1]
+  signal sS5NqNew                           : unsigned(N_WIDTH - 1 downto 0);                         -- [1, RESET]
+  signal sS5BqNew                           : signed(B_WIDTH - 1 downto 0);                           -- [-(RESET - 1), 0]
+  signal sS5CqNew                           : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
+  signal sS5CqDec                           : std_logic;
+  signal sS5CqInc                           : std_logic;
+  signal sS5RiAqNew                         : unsigned(A_WIDTH - 1 downto 0);                         -- [0, 2^A_STORED - 1]
+  signal sS5RiNqNew                         : unsigned(N_WIDTH - 1 downto 0);                         -- [1, RESET]
+  signal sS5RiNnNew                         : unsigned(NN_WIDTH - 1 downto 0);                        -- [0, RESET - 1]
   signal sNqEncReg                          : unsigned(N_STORED - 1 downto 0);                        -- [0, RESET - 1] (RESET stored as 0)
   signal sNqEncRi                           : unsigned(N_STORED - 1 downto 0);                        -- [0, RESET - 1] (RESET stored as 0)
 
-  -- Stage 5
-  signal sS5MErrval                         : unsigned(MAPPED_ERROR_VAL_WIDTH - 1 downto 0);          -- [0, MAX_VAL]
-  signal sS5RiMap                           : std_logic;
-  signal sS5RiEmErrval                      : unsigned(MAPPED_ERROR_VAL_WIDTH - 1 downto 0);          -- [0, RANGE_P]
-  signal sS5GolMErr                         : unsigned(MAPPED_ERROR_VAL_WIDTH - 1 downto 0);          -- [0, RANGE_P]
+  -- Stage 6
+  signal sS6MErrval                         : unsigned(MAPPED_ERROR_VAL_WIDTH - 1 downto 0);          -- [0, MAX_VAL]
+  signal sS6RiMap                           : std_logic;
+  signal sS6RiEmErrval                      : unsigned(MAPPED_ERROR_VAL_WIDTH - 1 downto 0);          -- [0, RANGE_P]
+  signal sS6GolMErr                         : unsigned(MAPPED_ERROR_VAL_WIDTH - 1 downto 0);          -- [0, RANGE_P]
 
-  signal sS5Unary                           : unsigned(UNARY_WIDTH - 1 downto 0);                     -- [0, LIMIT - QBPP - 1]
-  signal sS5SufLen                          : unsigned(SUFFIXLEN_WIDTH - 1 downto 0);                 -- [0, MAX_K]
-  signal sS5SufVal                          : unsigned(SUFFIX_WIDTH - 1 downto 0);
+  signal sS6Unary                           : unsigned(UNARY_WIDTH - 1 downto 0);                     -- [0, LIMIT - QBPP - 1]
+  signal sS6SufLen                          : unsigned(SUFFIXLEN_WIDTH - 1 downto 0);                 -- [0, MAX_K]
+  signal sS6SufVal                          : unsigned(SUFFIX_WIDTH - 1 downto 0);
 
-  -- Reg5 before A.11.1, Reg6 after
-  signal sReg5,    sReg6                    : t_pipeline_token;
-  signal sReg5V,   sReg6V                   : std_logic;
-  signal sReg5Eoi, sReg6Eoi                 : std_logic;
-  signal sReg5GolMErr                       : unsigned(MAPPED_ERROR_VAL_WIDTH - 1 downto 0);          -- [0, RANGE_P]
-  signal sReg6Unary                         : unsigned(UNARY_WIDTH - 1 downto 0);                     -- [0, LIMIT - QBPP - 1]
-  signal sReg6SufLen                        : unsigned(SUFFIXLEN_WIDTH - 1 downto 0);                 -- [0, MAX_K]
-  signal sReg6SufVal                        : unsigned(SUFFIX_WIDTH - 1 downto 0);
+  -- Reg6 before A.11.1, Reg7 after
+  signal sReg6,    sReg7                    : t_pipeline_token;
+  signal sReg6V,   sReg7V                   : std_logic;
+  signal sReg6Eoi, sReg7Eoi                 : std_logic;
+  signal sReg6GolMErr                       : unsigned(MAPPED_ERROR_VAL_WIDTH - 1 downto 0);          -- [0, RANGE_P]
+  signal sReg7Unary                         : unsigned(UNARY_WIDTH - 1 downto 0);                     -- [0, LIMIT - QBPP - 1]
+  signal sReg7SufLen                        : unsigned(SUFFIXLEN_WIDTH - 1 downto 0);                 -- [0, MAX_K]
+  signal sReg7SufVal                        : unsigned(SUFFIX_WIDTH - 1 downto 0);
 
   -- Output
   signal sBpRawV,  sBpGolV                  : std_logic;
@@ -440,7 +447,7 @@ begin
   sCE1 <= '1' when sStallLogic = '0' and (sReg1V = '1' or sValid = '1') else
           '0';
 
-  -- CE2..CE6 are registered a cycle ahead from the next stall and valid bits: one local
+  -- CE2..CE7 are registered a cycle ahead from the next stall and valid bits: one local
   -- flop per stage instead of the shared stall net through a LUT. CE1 would need iValid.
   sReg1VNext <= sValid when sCE1 = '1' else sReg1V;
   sReg2VNext <= sReg1V and bool2bit(sS2TokenMode /= token_none) when sCE2 = '1' else sReg2V;
@@ -448,6 +455,7 @@ begin
   sReg4VNext <= sReg3V when sCE4 = '1' else sReg4V;
   sReg5VNext <= sReg4V when sCE5 = '1' else sReg5V;
   sReg6VNext <= sReg5V when sCE6 = '1' else sReg6V;
+  sReg7VNext <= sReg6V when sCE7 = '1' else sReg7V;
 
   p_ce : process (iClk) is
   begin
@@ -455,23 +463,28 @@ begin
       if (iRst = '1') then
         sCE2 <= '0';
         sCE3 <= '0';
+        sCtxAdvance <= '1';
         sCE4 <= '0';
         sCE5 <= '0';
         sCE6 <= '0';
+        sCE7 <= '0';
       else
         sCE2 <= not sStallNext and (sReg2VNext or sReg1VNext);
         sCE3 <= not sStallNext and (sReg3VNext or sReg2VNext);
+        sCtxAdvance <= not sStallNext;
         sCE4 <= not sStallNext and (sReg4VNext or sReg3VNext);
         sCE5 <= not sStallNext and (sReg5VNext or sReg4VNext);
         sCE6 <= not sStallNext and (sReg6VNext or sReg5VNext);
+        sCE7 <= not sStallNext and (sReg7VNext or sReg6VNext);
       end if;
     end if;
   end process p_ce;
 
   postponed assert iRst = '1' or is_x(sStallLogic) or
     (sCE2 = (not sStallLogic and (sReg2V or sReg1V)) and sCE3 = (not sStallLogic and (sReg3V or sReg2V)) and
-     sCE4 = (not sStallLogic and (sReg4V or sReg3V)) and sCE5 = (not sStallLogic and (sReg5V or sReg4V)) and
-     sCE6 = (not sStallLogic and (sReg6V or sReg5V)))
+     sCtxAdvance = not sStallLogic and sCE4 = (not sStallLogic and (sReg4V or sReg3V)) and
+     sCE5 = (not sStallLogic and (sReg5V or sReg4V)) and sCE6 = (not sStallLogic and (sReg6V or sReg5V)) and
+     sCE7 = (not sStallLogic and (sReg7V or sReg6V)))
     report "openjls_top: registered stage CE disagrees with the stall and valid bits" severity error;
 
   sReadyOut <= not iRst and not sStallUpstream and not sInFlightStall;
@@ -796,53 +809,53 @@ begin
     if rising_edge(iClk) then
       if (iRst = '1') then
         sCtxOwnerPar <= '0';
-      elsif (sReg1V = '1') then
-        sCtxOwnerPar <= sReg1Par;
+      elsif (sReg2V = '1') then
+        sCtxOwnerPar <= sReg2Par;
       end if;
     end if;
 
   end process p_ctx_owner;
 
-  sCtxRdPar <= sReg1Par when sReg1V = '1' else
+  sCtxRdPar <= sReg2Par when sReg2V = '1' else
                sCtxOwnerPar;
 
-  -- Drop straggler writebacks from a finished image
-  sCtxWrEn <= sReg3V and
-              bool2bit(sReg3Par = sCtxRdPar) and
-              (bool2bit(sReg3.mode = token_regular) or
-               bool2bit(sReg3.mode = token_run_interruption));
+  -- Drop straggler writebacks from a finished image. Parity from stage 2, whose word load still forwards this write
+  sCtxWrEn <= sReg4V and
+              bool2bit(sReg4Par = sCtxRdPar) and
+              (bool2bit(sReg4.mode = token_regular) or
+               bool2bit(sReg4.mode = token_run_interruption));
 
   -- Murat BRAM encoding: A narrowed (the halving at N = RESET caps it), N = RESET stored as 0.
   -- B keeps its low bits only: Bq is in [-(RESET - 1), 0] after A.13, so nonzero means negative
   -- and no negation sits after the A.13 select
-  sCtxWrData <= std_logic_vector(resize(sS4AqNew, A_STORED)) &
-                std_logic_vector(sS4BqNew(B_STORED - 1 downto 0)) &
-                std_logic_vector(sS4CqNew) &
+  sCtxWrData <= std_logic_vector(resize(sS5AqNew, A_STORED)) &
+                std_logic_vector(sS5BqNew(B_STORED - 1 downto 0)) &
+                std_logic_vector(sS5CqNew) &
                 std_logic_vector(sNqEncReg)
-                when sReg3.mode = token_regular else
-                std_logic_vector(resize(sS4RiAqNew, A_STORED)) &
-                std_logic_vector(sS4RiNnNew) &
+                when sReg4.mode = token_regular else
+                std_logic_vector(resize(sS5RiAqNew, A_STORED)) &
+                std_logic_vector(sS5RiNnNew) &
                 std_logic_vector(to_signed(0, C_STORED)) &
                 std_logic_vector(sNqEncRi);
 
-  sNqEncReg <= (others => '0') when sS4NqNew = to_unsigned(RESET, N_WIDTH) else
-               resize(sS4NqNew, N_STORED);
+  sNqEncReg <= (others => '0') when sS5NqNew = to_unsigned(RESET, N_WIDTH) else
+               resize(sS5NqNew, N_STORED);
 
-  sNqEncRi <= (others => '0') when sS4RiNqNew = to_unsigned(RESET, N_WIDTH) else
-              resize(sS4RiNqNew, N_STORED);
+  sNqEncRi <= (others => '0') when sS5RiNqNew = to_unsigned(RESET, N_WIDTH) else
+              resize(sS5RiNqNew, N_STORED);
 
-  postponed assert sCtxWrEn /= '1' or sReg3.mode /= token_regular or is_x(sS4AqNew) or sS4AqNew < 2 ** A_STORED
+  postponed assert sCtxWrEn /= '1' or sReg4.mode /= token_regular or is_x(sS5AqNew) or sS5AqNew < 2 ** A_STORED
     report "openjls_top: A does not fit A_STORED" severity error;
-  postponed assert sCtxWrEn /= '1' or sReg3.mode /= token_regular or is_x(sS4BqNew) or
-                   (sS4BqNew <= 0 and sS4BqNew > - 2 ** B_STORED)
+  postponed assert sCtxWrEn /= '1' or sReg4.mode /= token_regular or is_x(sS5BqNew) or
+                   (sS5BqNew <= 0 and sS5BqNew > - 2 ** B_STORED)
     report "openjls_top: B does not fit B_STORED" severity error;
-  postponed assert sCtxWrEn /= '1' or sReg3.mode /= token_regular or is_x(sS4NqNew) or
-                   (sS4NqNew >= 1 and sS4NqNew <= RESET)
+  postponed assert sCtxWrEn /= '1' or sReg4.mode /= token_regular or is_x(sS5NqNew) or
+                   (sS5NqNew >= 1 and sS5NqNew <= RESET)
     report "openjls_top: N out of [1, RESET]" severity error;
-  postponed assert sCtxWrEn /= '1' or sReg3.mode /= token_run_interruption or is_x(sS4RiAqNew) or sS4RiAqNew < 2 ** A_STORED
+  postponed assert sCtxWrEn /= '1' or sReg4.mode /= token_run_interruption or is_x(sS5RiAqNew) or sS5RiAqNew < 2 ** A_STORED
     report "openjls_top: RI A does not fit A_STORED" severity error;
-  postponed assert sCtxWrEn /= '1' or sReg3.mode /= token_run_interruption or is_x(sS4RiNqNew) or
-                   (sS4RiNqNew >= 1 and sS4RiNqNew <= RESET)
+  postponed assert sCtxWrEn /= '1' or sReg4.mode /= token_run_interruption or is_x(sS5RiNqNew) or
+                   (sS5RiNqNew >= 1 and sS5RiNqNew <= RESET)
     report "openjls_top: RI N out of [1, RESET]" severity error;
 
   u_ctx_ram : entity work.context_ram(behavioral)
@@ -858,8 +871,8 @@ begin
     port map (
       iClk        => iClk,
       iRst        => iRst,
-      iWrAddr     => std_logic_vector(sReg3.Q),
-      iWrEn       => sCtxWrEn and sCE3,
+      iWrAddr     => std_logic_vector(sReg4.Q),
+      iWrEn       => sCtxWrEn and sCE4,
       iWrData     => sCtxWrData,
       iRdAddr     => std_logic_vector(sS2Q),
       iRdRegular  => bool2bit(sReg1.mode = token_regular),
@@ -870,37 +883,39 @@ begin
       iRdEn       => sReg1V and sCE1 and (bool2bit(sS2TokenMode = TOKEN_REGULAR) or
       bool2bit(sS2TokenMode = TOKEN_RUN_INTERRUPTION)),
       iEndOfImage => sReg1Eoi,
+      iAdvance    => sCtxAdvance,
+      iWordCE     => sCE3,
       oRdData     => sCtxRdData,
       oRdBram     => sCtxRdBram,
       oRdAlt      => sCtxRdAlt,
       oRdUseAlt   => sCtxRdUseAlt
     );
 
-  -- Read valid at stage 3. Q3 == Q4: the BRAM read is stale, use the live stage 4 update
-  sS3Aq <= sS4AqNew when sFwdRegHit = '1' else
-           sS4RiAqNew when sFwdRiHit = '1' else
+  -- Read valid at stage 4. Q4 == Q5: the BRAM read is stale, use the live stage 5 update
+  sS4Aq <= sS5AqNew when sFwdRegHit = '1' else
+           sS5RiAqNew when sFwdRiHit = '1' else
            resize(unsigned(sCtxRdData(CTX_A_HI downto CTX_A_LO)), A_WIDTH);
 
   -- RI: the B slot carries Nn
-  sS3Bq <= sS4BqNew when sFwdRegHit = '1' else
+  sS4Bq <= sS5BqNew when sFwdRegHit = '1' else
            to_signed(0, B_WIDTH) when unsigned(sCtxRdData(CTX_B_HI downto CTX_B_LO)) = 0 else
            resize(signed('1' & sCtxRdData(CTX_B_HI downto CTX_B_LO)), B_WIDTH);
 
-  -- Prediction takes Cq through the chains (sS3CqBram, sS3CqAlt)
-  sS3Cq <= sS4CqNew when sFwdRegHit = '1' else
+  -- Prediction takes Cq through the chains (sS4CqBram, sS4CqAlt)
+  sS4Cq <= sS5CqNew when sFwdRegHit = '1' else
            signed(sCtxRdData(CTX_C_HI downto CTX_C_LO));
 
-  sS3Nq <= sS4NqNew when sFwdRegHit = '1' else
-           sS4RiNqNew when sFwdRiHit = '1' else
+  sS4Nq <= sS5NqNew when sFwdRegHit = '1' else
+           sS5RiNqNew when sFwdRiHit = '1' else
            to_unsigned(RESET, N_WIDTH) when unsigned(sCtxRdData(CTX_N_HI downto CTX_N_LO)) = 0 else
            resize(unsigned(sCtxRdData(CTX_N_HI downto CTX_N_LO)), N_WIDTH);
 
   -- Regular: the slot holds B, not Nn
-  sS3Nn <= sS4RiNnNew when sFwdRiHit = '1' else
-           (others => '0') when sReg2.mode = token_regular else
+  sS4Nn <= sS5RiNnNew when sFwdRiHit = '1' else
+           (others => '0') when sReg3.mode = token_regular else
            unsigned(sCtxRdData(CTX_NN_HI downto CTX_NN_LO));
 
-  -- Stage 2, regular: A.5 and the A.6 clip errors, registered as sReg2Px, sReg2At*
+  -- Stage 2, regular: A.5 ---
   u_a5 : entity work.a5_edge_detecting_predictor(behavioral)
     generic map (
       BITNESS => BITNESS
@@ -912,33 +927,7 @@ begin
       oPx     => sS2Px
     );
 
-  -- The sign Reg2 keeps: other tokens carry '0', so the clip errors match iSign in every chain
-  sS2Sign <= sS2MSign when sReg1V = '1' and sS2TokenMode = token_regular else
-             '0';
-
-  u_a6_sat : entity work.a6_clip_sat(behavioral)
-    generic map (
-      BITNESS => BITNESS, MAX_VAL => MAX_VAL
-    )
-    port map (
-      iPx    => sS2Px,
-      iSign  => sS2Sign,
-      oLoSat => sS2LoSat,
-      oHiSat => sS2HiSat
-    );
-
-  u_a6_errors : entity work.a6_clip_errors(behavioral)
-    generic map (
-      BITNESS => BITNESS, MAX_VAL => MAX_VAL
-    )
-    port map (
-      iIx   => sReg1.Ix(BITNESS - 1 downto 0),
-      iSign => sS2Sign,
-      oAtLo => sS2AtLo,
-      oAtHi => sS2AtHi
-    );
-
-  -- Reg2 ---
+  -- Reg2: the context read address lands with it ---
   p_reg2 : process (iClk) is
 
     variable v : t_pipeline_token;
@@ -951,10 +940,6 @@ begin
         sReg2V   <= '0';
         sReg2Eoi <= '0';
         sReg2Px  <= (others => '0');
-        sReg2LoSat <= '0';
-        sReg2HiSat <= '0';
-        sReg2AtLo <= (others => '0');
-        sReg2AtHi <= (others => '0');
         sReg2Par <= '0';
         sReg2RiRaGtRb <= '0';
       elsif (sCE2 = '1') then
@@ -971,7 +956,7 @@ begin
             v.Ra   := sReg1.Ra;
             v.Rb   := sReg1.Rb;
             v.Rc   := sReg1.Rc;
-            v.Sign := sS2Sign;
+            v.Sign := sS2MSign;
 
           when token_run_interruption =>
 
@@ -1003,10 +988,6 @@ begin
         sReg2V   <= sReg1V and bool2bit(sS2TokenMode /= token_none);
         sReg2Eoi <= sReg1Eoi;
         sReg2Px  <= sS2Px;
-        sReg2LoSat <= sS2LoSat;
-        sReg2HiSat <= sS2HiSat;
-        sReg2AtLo <= sS2AtLo;
-        sReg2AtHi <= sS2AtHi;
         sReg2Par <= sReg1Par;
         sReg2RiRaGtRb <= bool2bit(sS2RiRa > sS2RiRb);
         sReg2Key <= sS2Key;
@@ -1015,188 +996,31 @@ begin
 
   end process p_reg2;
 
-  -- Stage 3, regular: A.6–A.9 speculative chains ---
+  -- Stage 3: A.6 clip bounds and errors, A.19; none reads a context, the BRAM output register loads with Reg3 ---
 
-  sS3Px <= sReg2Px;
-
-  -- From registers, settled before the BRAM word and the forwarded Cq
+  -- Tokens other than regular carry sign '0', so the clip errors match iSign in every chain
   u_a6_bounds : entity work.a6_clip_bounds(behavioral)
     generic map (
       BITNESS => BITNESS, MAX_VAL => MAX_VAL
     )
     port map (
-      iPx   => sS3Px,
+      iPx   => sReg2Px,
       iSign => sReg2.Sign,
-      iLoSat => sReg2LoSat,
-      iHiSat => sReg2HiSat,
       oLo   => sS3ClipLo,
       oHi   => sS3ClipHi
     );
 
-  sS2Key <= '1' & std_logic_vector(sS2MQ1 & sS2MQ2 & sS2MQ3) when sReg1.mode = token_regular else
-            (0 => sS2RItype, others => '0');
-
-  -- Forward on a Q match, registered a cycle early from the stage 1/2 pair the stall advances together.
-  -- Same parity only, so a straggler from the previous image never forwards
-  p_fwd_hit : process (iClk) is
-    variable vMatch : boolean;
-  begin
-    if rising_edge(iClk) then
-      if (iRst = '1') then
-        sFwdRegHit <= '0';
-        sFwdRiHit  <= '0';
-      elsif (sStallLogic = '0') then
-        vMatch     := sReg1V = '1' and sS2TokenMode /= token_none and sReg2V = '1'
-                      and sReg1Par = sReg2Par and sS2Key = sReg2Key;
-        sFwdRegHit <= bool2bit(vMatch and sReg2.mode = token_regular);
-        sFwdRiHit  <= bool2bit(vMatch and sReg2.mode = token_run_interruption);
-      end if;
-    end if;
-  end process p_fwd_hit;
-
-  postponed assert is_x(sReg2.Q) or is_x(sReg3.Q) or is_x(sFwdRegHit) or
-    sFwdRegHit = bool2bit(sReg2V = '1' and sReg3V = '1' and sReg2Par = sReg3Par
-                          and sReg2.Q = sReg3.Q and sReg3.mode = token_regular)
-    report "openjls_top: registered regular hit disagrees with Q2 == Q3" severity error;
-  postponed assert is_x(sReg2.Q) or is_x(sReg3.Q) or is_x(sFwdRiHit) or
-    sFwdRiHit = bool2bit(sReg2V = '1' and sReg3V = '1' and sReg2Par = sReg3Par
-                         and sReg2.Q = sReg3.Q and sReg3.mode = token_run_interruption)
-    report "openjls_top: registered RI hit disagrees with Q2 == Q3" severity error;
-
-  -- Only chain D sees the raw BRAM word. Chains C, P, M start from registers: on a hit the pre-update Cq,
-  -- with the A.13 branch picking the candidate; otherwise the init or same-address forwarded word
-  sS3CqBram <= signed(sCtxRdBram(CTX_C_HI downto CTX_C_LO));
-  sS3CqAlt  <= sReg3.Cq when sFwdRegHit = '1' else
-               signed(sCtxRdAlt(CTX_C_HI downto CTX_C_LO));
-
-  sS3CqP1 <= to_signed(MAX_C, C_WIDTH) when sReg3.Cq = to_signed(MAX_C, C_WIDTH) else
-             sReg3.Cq + 1;
-  sS3CqM1 <= to_signed(MIN_C, C_WIDTH) when sReg3.Cq = to_signed(MIN_C, C_WIDTH) else
-             sReg3.Cq - 1;
-
-  -- A.6 and A.7 fused per chain: the forwarded Cq skips the clip-then-subtract path
-  -- BRAM
-  u_a6a7_d : entity work.a6_a7_prediction_error(behavioral)
+  u_a6_errors : entity work.a6_clip_errors(behavioral)
     generic map (
       BITNESS => BITNESS, MAX_VAL => MAX_VAL
     )
     port map (
-      iIx       => sReg2.Ix(BITNESS - 1 downto 0),
-      iPx       => sS3Px,
-      iSign     => sReg2.Sign,
-      iLo       => sS3ClipLo,
-      iHi       => sS3ClipHi,
-      iAtLo     => sReg2AtLo,
-      iAtHi     => sReg2AtHi,
-      iCq       => sS3CqBram,
-      oErrorVal => sS3Err7D
+      iIx   => sReg2.Ix(BITNESS - 1 downto 0),
+      iSign => sReg2.Sign,
+      oAtLo => sS3AtLo,
+      oAtHi => sS3AtHi
     );
 
-  u_a9_d : entity work.a9_modulo_reduction(behavioral)
-    generic map (
-      BITNESS   => BITNESS, RANGE_P => RANGE_P
-    )
-    port map (
-      iErrorVal => sS3Err7D,
-      oErrorVal => sS3Err9D
-    );
-
-  -- Alternate, DeltaCq = 0
-  u_a6a7_c : entity work.a6_a7_prediction_error(behavioral)
-    generic map (
-      BITNESS => BITNESS, MAX_VAL => MAX_VAL
-    )
-    port map (
-      iIx       => sReg2.Ix(BITNESS - 1 downto 0),
-      iPx       => sS3Px,
-      iSign     => sReg2.Sign,
-      iLo       => sS3ClipLo,
-      iHi       => sS3ClipHi,
-      iAtLo     => sReg2AtLo,
-      iAtHi     => sReg2AtHi,
-      iCq       => sS3CqAlt,
-      oErrorVal => sS3Err7C
-    );
-
-  u_a9_c : entity work.a9_modulo_reduction(behavioral)
-    generic map (
-      BITNESS   => BITNESS, RANGE_P => RANGE_P
-    )
-    port map (
-      iErrorVal => sS3Err7C,
-      oErrorVal => sS3Err9C
-    );
-
-  -- DeltaCq = +1
-  u_a6a7_p : entity work.a6_a7_prediction_error(behavioral)
-    generic map (
-      BITNESS => BITNESS, MAX_VAL => MAX_VAL
-    )
-    port map (
-      iIx       => sReg2.Ix(BITNESS - 1 downto 0),
-      iPx       => sS3Px,
-      iSign     => sReg2.Sign,
-      iLo       => sS3ClipLo,
-      iHi       => sS3ClipHi,
-      iAtLo     => sReg2AtLo,
-      iAtHi     => sReg2AtHi,
-      iCq       => sS3CqP1,
-      oErrorVal => sS3Err7P
-    );
-
-  u_a9_p : entity work.a9_modulo_reduction(behavioral)
-    generic map (
-      BITNESS   => BITNESS, RANGE_P => RANGE_P
-    )
-    port map (
-      iErrorVal => sS3Err7P,
-      oErrorVal => sS3Err9P
-    );
-
-  -- DeltaCq = -1
-  u_a6a7_m : entity work.a6_a7_prediction_error(behavioral)
-    generic map (
-      BITNESS => BITNESS, MAX_VAL => MAX_VAL
-    )
-    port map (
-      iIx       => sReg2.Ix(BITNESS - 1 downto 0),
-      iPx       => sS3Px,
-      iSign     => sReg2.Sign,
-      iLo       => sS3ClipLo,
-      iHi       => sS3ClipHi,
-      iAtLo     => sReg2AtLo,
-      iAtHi     => sReg2AtHi,
-      iCq       => sS3CqM1,
-      oErrorVal => sS3Err7M
-    );
-
-  u_a9_m : entity work.a9_modulo_reduction(behavioral)
-    generic map (
-      BITNESS   => BITNESS, RANGE_P => RANGE_P
-    )
-    port map (
-      iErrorVal => sS3Err7M,
-      oErrorVal => sS3Err9M
-    );
-
-  -- The live stage 4 A.13 branch picks the chain; a clamped C lands on a saturated chain, equal to C
-  sSpecUseM <= sFwdRegHit and sS4CqDec;
-  sSpecUseP <= sFwdRegHit and sS4CqInc;
-
-  sS3UseBram <= sReg2V and bool2bit(sReg2.mode = token_regular) and not sFwdRegHit and not sCtxRdUseAlt;
-
-  sS3ErrOther <= (others => '0') when sReg2V = '0' else
-                 resize(sS3Err9M, ERROR_WIDTH) when sReg2.mode = token_regular and sSpecUseM = '1' else
-                 resize(sS3Err9P, ERROR_WIDTH) when sReg2.mode = token_regular and sSpecUseP = '1' else
-                 resize(sS3Err9C, ERROR_WIDTH) when sReg2.mode = token_regular else
-                 resize(sS3RiErr19, ERROR_WIDTH) when sReg2.mode = token_run_interruption else
-                 sReg2.Errval;
-
-  -- The BRAM chain arrives last; keep it to one 2:1 select before Reg3
-  sS3Errval <= resize(sS3Err9D, ERROR_WIDTH) when sS3UseBram = '1' else
-               sS3ErrOther;
-
-  -- Stage 3, RI: A.19 ---
   u_a19 : entity work.a19_run_interruption_error(behavioral)
     generic map (
       BITNESS => BITNESS,
@@ -1210,16 +1034,6 @@ begin
       oSign   => sS3RiSign
     );
 
-  u_a23_delta : entity work.a23_aq_delta(rtl)
-    generic map (
-      ERROR_WIDTH => BITNESS + 1
-    )
-    port map (
-      iErrVal => sS3RiErr19,
-      iRiType => sReg2.RiType,
-      oDelta  => sS3RiAqDelta
-    );
-
   -- Reg3 ---
   p_reg3 : process (iClk) is
 
@@ -1229,26 +1043,243 @@ begin
 
     if rising_edge(iClk) then
       if (iRst = '1') then
-        sReg3          <= CO_TOKEN_NONE;
-        sReg3V         <= '0';
-        sReg3Eoi       <= '0';
-        sReg3Par       <= '0';
-        sReg3Rescale   <= '0';
-        sReg3NqNew     <= (others => '0');
-        sReg3RiAqDelta <= (others => '0');
+        sReg3    <= CO_TOKEN_NONE;
+        sReg3V   <= '0';
+        sReg3Eoi <= '0';
+        sReg3Px  <= (others => '0');
+        sReg3ClipLo <= (others => '0');
+        sReg3ClipHi <= (others => '0');
+        sReg3AtLo <= (others => '0');
+        sReg3AtHi <= (others => '0');
+        sReg3Par <= '0';
+        sReg3RiSign <= '0';
       elsif (sCE3 = '1') then
-        v      := sReg2;
-        v.Aq   := sS3Aq;
-        v.Bq   := sS3Bq;
-        v.Cq   := sS3Cq;
-        v.Nq   := sS3Nq;
-        v.Nn   := sS3Nn;
+        v := sReg2;
+        if (sReg2.mode = token_run_interruption) then
+          v.Errval := resize(sS3RiErr19, v.Errval'length);
+        end if;
 
-        case sReg2.mode is
+        sReg3    <= v;
+        sReg3V   <= sReg2V;
+        sReg3Eoi <= sReg2Eoi;
+        sReg3Px  <= sReg2Px;
+        sReg3ClipLo <= sS3ClipLo;
+        sReg3ClipHi <= sS3ClipHi;
+        sReg3AtLo <= sS3AtLo;
+        sReg3AtHi <= sS3AtHi;
+        sReg3Par <= sReg2Par;
+        sReg3RiSign <= sS3RiSign;
+        sReg3Key <= sReg2Key;
+      end if;
+    end if;
+
+  end process p_reg3;
+
+  -- Stage 4, regular: A.6–A.9 speculative chains ---
+
+  sS4Px <= sReg3Px;
+
+  sS2Key <= '1' & std_logic_vector(sS2MQ1 & sS2MQ2 & sS2MQ3) when sReg1.mode = token_regular else
+            (0 => sS2RItype, others => '0');
+
+  -- Forward on a Q match, registered a cycle early from the stage 2/3 pair the stall advances together.
+  -- Same parity only, so a straggler from the previous image never forwards
+  p_fwd_hit : process (iClk) is
+    variable vMatch : boolean;
+  begin
+    if rising_edge(iClk) then
+      if (iRst = '1') then
+        sFwdRegHit <= '0';
+        sFwdRiHit  <= '0';
+      elsif (sStallLogic = '0') then
+        vMatch     := sReg2V = '1' and sReg3V = '1' and sReg2Par = sReg3Par and sReg2Key = sReg3Key;
+        sFwdRegHit <= bool2bit(vMatch and sReg3.mode = token_regular);
+        sFwdRiHit  <= bool2bit(vMatch and sReg3.mode = token_run_interruption);
+      end if;
+    end if;
+  end process p_fwd_hit;
+
+  postponed assert is_x(sReg3.Q) or is_x(sReg4.Q) or is_x(sFwdRegHit) or
+    sFwdRegHit = bool2bit(sReg3V = '1' and sReg4V = '1' and sReg3Par = sReg4Par
+                          and sReg3.Q = sReg4.Q and sReg4.mode = token_regular)
+    report "openjls_top: registered regular hit disagrees with Q3 == Q4" severity error;
+  postponed assert is_x(sReg3.Q) or is_x(sReg4.Q) or is_x(sFwdRiHit) or
+    sFwdRiHit = bool2bit(sReg3V = '1' and sReg4V = '1' and sReg3Par = sReg4Par
+                         and sReg3.Q = sReg4.Q and sReg4.mode = token_run_interruption)
+    report "openjls_top: registered RI hit disagrees with Q3 == Q4" severity error;
+
+  -- Only chain D sees the raw BRAM word. Chains C, P, M start from registers: on a hit the pre-update Cq,
+  -- with the A.13 branch picking the candidate; otherwise the init or same-address forwarded word
+  sS4CqBram <= signed(sCtxRdBram(CTX_C_HI downto CTX_C_LO));
+  sS4CqAlt  <= sReg4.Cq when sFwdRegHit = '1' else
+               signed(sCtxRdAlt(CTX_C_HI downto CTX_C_LO));
+
+  sS4CqP1 <= to_signed(MAX_C, C_WIDTH) when sReg4.Cq = to_signed(MAX_C, C_WIDTH) else
+             sReg4.Cq + 1;
+  sS4CqM1 <= to_signed(MIN_C, C_WIDTH) when sReg4.Cq = to_signed(MIN_C, C_WIDTH) else
+             sReg4.Cq - 1;
+
+  -- A.6 and A.7 fused per chain: the forwarded Cq skips the clip-then-subtract path
+  -- BRAM
+  u_a6a7_d : entity work.a6_a7_prediction_error(behavioral)
+    generic map (
+      BITNESS => BITNESS, MAX_VAL => MAX_VAL
+    )
+    port map (
+      iIx       => sReg3.Ix(BITNESS - 1 downto 0),
+      iPx       => sS4Px,
+      iSign     => sReg3.Sign,
+      iLo       => sReg3ClipLo,
+      iHi       => sReg3ClipHi,
+      iAtLo     => sReg3AtLo,
+      iAtHi     => sReg3AtHi,
+      iCq       => sS4CqBram,
+      oErrorVal => sS4Err7D
+    );
+
+  u_a9_d : entity work.a9_modulo_reduction(behavioral)
+    generic map (
+      BITNESS   => BITNESS, RANGE_P => RANGE_P
+    )
+    port map (
+      iErrorVal => sS4Err7D,
+      oErrorVal => sS4Err9D
+    );
+
+  -- Alternate, DeltaCq = 0
+  u_a6a7_c : entity work.a6_a7_prediction_error(behavioral)
+    generic map (
+      BITNESS => BITNESS, MAX_VAL => MAX_VAL
+    )
+    port map (
+      iIx       => sReg3.Ix(BITNESS - 1 downto 0),
+      iPx       => sS4Px,
+      iSign     => sReg3.Sign,
+      iLo       => sReg3ClipLo,
+      iHi       => sReg3ClipHi,
+      iAtLo     => sReg3AtLo,
+      iAtHi     => sReg3AtHi,
+      iCq       => sS4CqAlt,
+      oErrorVal => sS4Err7C
+    );
+
+  u_a9_c : entity work.a9_modulo_reduction(behavioral)
+    generic map (
+      BITNESS   => BITNESS, RANGE_P => RANGE_P
+    )
+    port map (
+      iErrorVal => sS4Err7C,
+      oErrorVal => sS4Err9C
+    );
+
+  -- DeltaCq = +1
+  u_a6a7_p : entity work.a6_a7_prediction_error(behavioral)
+    generic map (
+      BITNESS => BITNESS, MAX_VAL => MAX_VAL
+    )
+    port map (
+      iIx       => sReg3.Ix(BITNESS - 1 downto 0),
+      iPx       => sS4Px,
+      iSign     => sReg3.Sign,
+      iLo       => sReg3ClipLo,
+      iHi       => sReg3ClipHi,
+      iAtLo     => sReg3AtLo,
+      iAtHi     => sReg3AtHi,
+      iCq       => sS4CqP1,
+      oErrorVal => sS4Err7P
+    );
+
+  u_a9_p : entity work.a9_modulo_reduction(behavioral)
+    generic map (
+      BITNESS   => BITNESS, RANGE_P => RANGE_P
+    )
+    port map (
+      iErrorVal => sS4Err7P,
+      oErrorVal => sS4Err9P
+    );
+
+  -- DeltaCq = -1
+  u_a6a7_m : entity work.a6_a7_prediction_error(behavioral)
+    generic map (
+      BITNESS => BITNESS, MAX_VAL => MAX_VAL
+    )
+    port map (
+      iIx       => sReg3.Ix(BITNESS - 1 downto 0),
+      iPx       => sS4Px,
+      iSign     => sReg3.Sign,
+      iLo       => sReg3ClipLo,
+      iHi       => sReg3ClipHi,
+      iAtLo     => sReg3AtLo,
+      iAtHi     => sReg3AtHi,
+      iCq       => sS4CqM1,
+      oErrorVal => sS4Err7M
+    );
+
+  u_a9_m : entity work.a9_modulo_reduction(behavioral)
+    generic map (
+      BITNESS   => BITNESS, RANGE_P => RANGE_P
+    )
+    port map (
+      iErrorVal => sS4Err7M,
+      oErrorVal => sS4Err9M
+    );
+
+  -- The live stage 5 A.13 branch picks the chain; a clamped C lands on a saturated chain, equal to C
+  sSpecUseM <= sFwdRegHit and sS5CqDec;
+  sSpecUseP <= sFwdRegHit and sS5CqInc;
+
+  sS4UseBram <= sReg3V and bool2bit(sReg3.mode = token_regular) and not sFwdRegHit and not sCtxRdUseAlt;
+
+  sS4ErrOther <= (others => '0') when sReg3V = '0' else
+                 resize(sS4Err9M, ERROR_WIDTH) when sReg3.mode = token_regular and sSpecUseM = '1' else
+                 resize(sS4Err9P, ERROR_WIDTH) when sReg3.mode = token_regular and sSpecUseP = '1' else
+                 resize(sS4Err9C, ERROR_WIDTH) when sReg3.mode = token_regular else
+                 sReg3.Errval;
+
+  -- The BRAM chain arrives last; keep it to one 2:1 select before Reg4
+  sS4Errval <= resize(sS4Err9D, ERROR_WIDTH) when sS4UseBram = '1' else
+               sS4ErrOther;
+
+  -- Stage 4, RI: A.23 delta ---
+  u_a23_delta : entity work.a23_aq_delta(rtl)
+    generic map (
+      ERROR_WIDTH => BITNESS + 1
+    )
+    port map (
+      iErrVal => sReg3.Errval(BITNESS downto 0),
+      iRiType => sReg3.RiType,
+      oDelta  => sS4RiAqDelta
+    );
+
+  -- Reg4 ---
+  p_reg4 : process (iClk) is
+
+    variable v : t_pipeline_token;
+
+  begin
+
+    if rising_edge(iClk) then
+      if (iRst = '1') then
+        sReg4          <= CO_TOKEN_NONE;
+        sReg4V         <= '0';
+        sReg4Eoi       <= '0';
+        sReg4Par       <= '0';
+        sReg4Rescale   <= '0';
+        sReg4NqNew     <= (others => '0');
+        sReg4RiAqDelta <= (others => '0');
+      elsif (sCE4 = '1') then
+        v      := sReg3;
+        v.Aq   := sS4Aq;
+        v.Bq   := sS4Bq;
+        v.Cq   := sS4Cq;
+        v.Nq   := sS4Nq;
+        v.Nn   := sS4Nn;
+
+        case sReg3.mode is
 
           when token_run_interruption =>
 
-            v.Sign   := sS3RiSign;
+            v.Sign   := sReg3RiSign;
 
           when others =>
 
@@ -1256,41 +1287,41 @@ begin
 
         end case;
 
-        if (sReg2V = '0') then
+        if (sReg3V = '0') then
           v := CO_TOKEN_NONE;
         end if;
-        v.Errval     := sS3Errval;
-        sReg3          <= v;
-        sReg3V         <= sReg2V;
-        sReg3Eoi       <= sReg2Eoi;
-        sReg3Par       <= sReg2Par;
-        sReg3Rescale   <= bool2bit(v.Nq = RESET);
+        v.Errval     := sS4Errval;
+        sReg4          <= v;
+        sReg4V         <= sReg3V;
+        sReg4Eoi       <= sReg3Eoi;
+        sReg4Par       <= sReg3Par;
+        sReg4Rescale   <= bool2bit(v.Nq = RESET);
         if (v.Nq = RESET) then
-          sReg3NqNew <= to_unsigned(RESET / 2 + 1, N_WIDTH);
+          sReg4NqNew <= to_unsigned(RESET / 2 + 1, N_WIDTH);
         else
-          sReg3NqNew <= v.Nq + 1;
+          sReg4NqNew <= v.Nq + 1;
         end if;
-        sReg3RiAqDelta <= sS3RiAqDelta;
+        sReg4RiAqDelta <= sS4RiAqDelta;
       end if;
     end if;
 
-  end process p_reg3;
+  end process p_reg4;
 
-  -- Stage 4: A.20, A.10 shared via A.20.2, A.12, A.13, A.23 ---
-  sS4RiMode <= '1' when sReg3.mode = token_run_interruption else
+  -- Stage 5: A.20, A.10 shared via A.20.2, A.12, A.13, A.23 ---
+  sS5RiMode <= '1' when sReg4.mode = token_run_interruption else
                '0';
 
-  -- A.20 here, not in stage 3: TEMP only feeds k, so it stays out of the context forwarding loop
+  -- A.20 here, not in stage 4: TEMP only feeds k, so it stays out of the context forwarding loop
   u_a20 : entity work.a20_compute_temp(behavioral)
     generic map (
       A_WIDTH => A_WIDTH,
       N_WIDTH => N_WIDTH
     )
     port map (
-      iRItype => sReg3.RiType,
-      iAq     => sReg3.Aq,
-      iNq     => sReg3.Nq,
-      oTemp   => sS4RiTemp
+      iRItype => sReg4.RiType,
+      iAq     => sReg4.Aq,
+      iNq     => sReg4.Nq,
+      oTemp   => sS5RiTemp
     );
 
   u_a20_2 : entity work.a20_2_compute_k(behavioral)
@@ -1300,14 +1331,14 @@ begin
       N_WIDTH => N_WIDTH
     )
     port map (
-      iRunInterruption => sS4RiMode,
-      iAq              => sReg3.Aq,
-      iTemp            => sS4RiTemp,
-      iNq              => sReg3.Nq,
-      oK               => sS4K
+      iRunInterruption => sS5RiMode,
+      iAq              => sReg4.Aq,
+      iTemp            => sS5RiTemp,
+      iNq              => sReg4.Nq,
+      oK               => sS5K
     );
 
-  sS4NqNew <= sReg3NqNew;
+  sS5NqNew <= sReg4NqNew;
 
   u_a12_a13 : entity work.a12_a13_update(rtl)
     generic map (
@@ -1321,18 +1352,18 @@ begin
       RESET       => RESET
     )
     port map (
-      iErrorVal => sReg3.Errval(BITNESS downto 0),
-      iAq       => sReg3.Aq,
-      iBq       => sReg3.Bq,
-      iCq       => sReg3.Cq,
-      iNq       => sReg3.Nq,
-      iNqNew    => sReg3NqNew,
-      iRescale  => sReg3Rescale,
-      oAq       => sS4AqNew,
-      oBq       => sS4BqNew,
-      oCq       => sS4CqNew,
-      oDec      => sS4CqDec,
-      oInc      => sS4CqInc
+      iErrorVal => sReg4.Errval(BITNESS downto 0),
+      iAq       => sReg4.Aq,
+      iBq       => sReg4.Bq,
+      iCq       => sReg4.Cq,
+      iNq       => sReg4.Nq,
+      iNqNew    => sReg4NqNew,
+      iRescale  => sReg4Rescale,
+      oAq       => sS5AqNew,
+      oBq       => sS5BqNew,
+      oCq       => sS5CqNew,
+      oDec      => sS5CqDec,
+      oInc      => sS5CqInc
     );
 
   u_a23 : entity work.a23_run_interruption_update(behavioral)
@@ -1344,18 +1375,18 @@ begin
       RESET       => RESET
     )
     port map (
-      iErrVal     => sReg3.Errval(BITNESS downto 0),
-      iAqDelta    => sReg3RiAqDelta,
-      iAq         => sReg3.Aq,
-      iNq         => sReg3.Nq,
-      iNn         => sReg3.Nn,
-      oAq         => sS4RiAqNew,
-      oNq         => sS4RiNqNew,
-      oNn         => sS4RiNnNew
+      iErrVal     => sReg4.Errval(BITNESS downto 0),
+      iAqDelta    => sReg4RiAqDelta,
+      iAq         => sReg4.Aq,
+      iNq         => sReg4.Nq,
+      iNn         => sReg4.Nn,
+      oAq         => sS5RiAqNew,
+      oNq         => sS5RiNqNew,
+      oNn         => sS5RiNnNew
     );
 
-  -- Reg4 ---
-  p_reg4 : process (iClk) is
+  -- Reg5 ---
+  p_reg5 : process (iClk) is
 
     variable v : t_pipeline_token;
 
@@ -1363,24 +1394,24 @@ begin
 
     if rising_edge(iClk) then
       if (iRst = '1') then
-        sReg4    <= CO_TOKEN_NONE;
-        sReg4V   <= '0';
-        sReg4Eoi <= '0';
-      elsif (sCE4 = '1') then
-        v   := sReg3;
-        v.k := resize(sS4K, K_WIDTH);
-        if (sReg3V = '0') then
+        sReg5    <= CO_TOKEN_NONE;
+        sReg5V   <= '0';
+        sReg5Eoi <= '0';
+      elsif (sCE5 = '1') then
+        v   := sReg4;
+        v.k := resize(sS5K, K_WIDTH);
+        if (sReg4V = '0') then
           v := CO_TOKEN_NONE;
         end if;
-        sReg4    <= v;
-        sReg4V   <= sReg3V;
-        sReg4Eoi <= sReg3Eoi;
+        sReg5    <= v;
+        sReg5V   <= sReg4V;
+        sReg5Eoi <= sReg4Eoi;
       end if;
     end if;
 
-  end process p_reg4;
+  end process p_reg5;
 
-  -- Stage 5: A.11, A.21, A.22 ---
+  -- Stage 6: A.11, A.21, A.22 ---
   u_a11 : entity work.a11_error_mapping(behavioral)
     generic map (
       N_WIDTH                => N_WIDTH,
@@ -1390,11 +1421,11 @@ begin
       MAPPED_ERROR_VAL_WIDTH => MAPPED_ERROR_VAL_WIDTH
     )
     port map (
-      iK                     => sReg4.k,
-      iBq                    => sReg4.Bq,
-      iNq                    => sReg4.Nq,
-      iErrorVal              => sReg4.Errval(BITNESS downto 0),
-      oMappedErrorVal        => sS5MErrval
+      iK                     => sReg5.k,
+      iBq                    => sReg5.Bq,
+      iNq                    => sReg5.Nq,
+      iErrorVal              => sReg5.Errval(BITNESS downto 0),
+      oMappedErrorVal        => sS6MErrval
     );
 
   u_a21 : entity work.a21_compute_map(behavioral)
@@ -1404,11 +1435,11 @@ begin
       ERROR_WIDTH => ERROR_WIDTH
     )
     port map (
-      iK          => sReg4.k,
-      iErrval     => sReg4.Errval(BITNESS downto 0),
-      iNn         => resize(sReg4.Nn, N_WIDTH),
-      iNq         => sReg4.Nq,
-      oMap        => sS5RiMap
+      iK          => sReg5.k,
+      iErrval     => sReg5.Errval(BITNESS downto 0),
+      iNn         => resize(sReg5.Nn, N_WIDTH),
+      iNq         => sReg5.Nq,
+      oMap        => sS6RiMap
     );
 
   u_a22 : entity work.a22_errval_mapping(behavioral)
@@ -1417,17 +1448,17 @@ begin
       MAPPED_ERRVAL_WIDTH => MAPPED_ERROR_VAL_WIDTH
     )
     port map (
-      iErrval             => sReg4.Errval(BITNESS downto 0),
-      iRItype             => sReg4.RiType,
-      iMap                => sS5RiMap,
-      oEmErrVal           => sS5RiEmErrval
+      iErrval             => sReg5.Errval(BITNESS downto 0),
+      iRItype             => sReg5.RiType,
+      iMap                => sS6RiMap,
+      oEmErrVal           => sS6RiEmErrval
     );
 
-  sS5GolMErr <= sS5MErrval when sReg4.mode = token_regular else
-                sS5RiEmErrval;
+  sS6GolMErr <= sS6MErrval when sReg5.mode = token_regular else
+                sS6RiEmErrval;
 
-  -- Reg5, then A.11.1 ---
-  p_reg5 : process (iClk) is
+  -- Reg6, then A.11.1 ---
+  p_reg6 : process (iClk) is
 
     variable v : t_pipeline_token;
 
@@ -1435,23 +1466,23 @@ begin
 
     if rising_edge(iClk) then
       if (iRst = '1') then
-        sReg5        <= CO_TOKEN_NONE;
-        sReg5V       <= '0';
-        sReg5Eoi     <= '0';
-        sReg5GolMErr <= (others => '0');
-      elsif (sCE5 = '1') then
-        v := sReg4;
-        if (sReg4V = '0') then
+        sReg6        <= CO_TOKEN_NONE;
+        sReg6V       <= '0';
+        sReg6Eoi     <= '0';
+        sReg6GolMErr <= (others => '0');
+      elsif (sCE6 = '1') then
+        v := sReg5;
+        if (sReg5V = '0') then
           v := CO_TOKEN_NONE;
         end if;
-        sReg5        <= v;
-        sReg5V       <= sReg4V;
-        sReg5Eoi     <= sReg4Eoi;
-        sReg5GolMErr <= sS5GolMErr;
+        sReg6        <= v;
+        sReg6V       <= sReg5V;
+        sReg6Eoi     <= sReg5Eoi;
+        sReg6GolMErr <= sS6GolMErr;
       end if;
     end if;
 
-  end process p_reg5;
+  end process p_reg6;
 
   u_a11_1 : entity work.a11_1_golomb_encoder(behavioral)
     generic map (
@@ -1464,17 +1495,17 @@ begin
       MAPPED_ERROR_VAL_WIDTH => MAPPED_ERROR_VAL_WIDTH
     )
     port map (
-      iK                     => sReg5.k,
-      iMappedErrorVal        => sReg5GolMErr,
-      iRiMode                => bool2bit(sReg5.mode = TOKEN_RUN_INTERRUPTION),
-      iRunIndex              => sReg5.RiRunIndex,
-      oUnaryZeros            => sS5Unary,
-      oSuffixLen             => sS5SufLen,
-      oSuffixVal             => sS5SufVal
+      iK                     => sReg6.k,
+      iMappedErrorVal        => sReg6GolMErr,
+      iRiMode                => bool2bit(sReg6.mode = TOKEN_RUN_INTERRUPTION),
+      iRunIndex              => sReg6.RiRunIndex,
+      oUnaryZeros            => sS6Unary,
+      oSuffixLen             => sS6SufLen,
+      oSuffixVal             => sS6SufVal
     );
 
-  -- Reg6 ---
-  p_reg6 : process (iClk) is
+  -- Reg7 ---
+  p_reg7 : process (iClk) is
 
     variable v : t_pipeline_token;
 
@@ -1482,34 +1513,34 @@ begin
 
     if rising_edge(iClk) then
       if (iRst = '1') then
-        sReg6       <= CO_TOKEN_NONE;
-        sReg6V      <= '0';
-        sReg6Eoi    <= '0';
-        sReg6Unary  <= (others => '0');
-        sReg6SufLen <= (others => '0');
-        sReg6SufVal <= (others => '0');
-      elsif (sCE6 = '1') then
-        v := sReg5;
-        if (sReg5V = '0') then
+        sReg7       <= CO_TOKEN_NONE;
+        sReg7V      <= '0';
+        sReg7Eoi    <= '0';
+        sReg7Unary  <= (others => '0');
+        sReg7SufLen <= (others => '0');
+        sReg7SufVal <= (others => '0');
+      elsif (sCE7 = '1') then
+        v := sReg6;
+        if (sReg6V = '0') then
           v := CO_TOKEN_NONE;
         end if;
-        sReg6       <= v;
-        sReg6V      <= sReg5V;
-        sReg6Eoi    <= sReg5Eoi;
-        sReg6Unary  <= sS5Unary;
-        sReg6SufLen <= sS5SufLen;
-        sReg6SufVal <= sS5SufVal;
+        sReg7       <= v;
+        sReg7V      <= sReg6V;
+        sReg7Eoi    <= sReg6Eoi;
+        sReg7Unary  <= sS6Unary;
+        sReg7SufLen <= sS6SufLen;
+        sReg7SufVal <= sS6SufVal;
       end if;
     end if;
 
-  end process p_reg6;
+  end process p_reg7;
 
   -- Output: bit packer, byte stuffer, framer ---
-  sBpRawV <= '1' when sReg6V = '1' and sStallLogic = '0'
-                      and (sReg6.mode = token_run_interruption or sReg6.mode = token_raw) else
+  sBpRawV <= '1' when sReg7V = '1' and sStallLogic = '0'
+                      and (sReg7.mode = token_run_interruption or sReg7.mode = token_raw) else
              '0';
-  sBpGolV <= '1' when sReg6V = '1' and sStallLogic = '0'
-                      and (sReg6.mode = token_regular or sReg6.mode = token_run_interruption) else
+  sBpGolV <= '1' when sReg7V = '1' and sStallLogic = '0'
+                      and (sReg7.mode = token_regular or sReg7.mode = token_run_interruption) else
              '0';
 
   u_bit_packer : entity work.a11_2_bit_packer(behavioral)
@@ -1525,12 +1556,12 @@ begin
       iRst            => iRst,
       iStall          => sStallLogic,
       iRawValid       => sBpRawV,
-      iRawLen         => sReg6.RawLen,
-      iRawVal         => sReg6.RawVal,
+      iRawLen         => sReg7.RawLen,
+      iRawVal         => sReg7.RawVal,
       iGolombValid    => sBpGolV,
-      iUnaryZeros     => sReg6Unary,
-      iSuffixLen      => sReg6SufLen,
-      iSuffixVal      => sReg6SufVal,
+      iUnaryZeros     => sReg7Unary,
+      iSuffixLen      => sReg7SufLen,
+      iSuffixVal      => sReg7SufVal,
       oWord           => sBpWord,
       oWordValid      => sBpWordV,
       oValidLen       => sBpValidLen
@@ -1597,7 +1628,7 @@ begin
       if (iRst = '1') then
         sBsFlush <= '0';
       elsif (sStallLogic = '0') then
-        sBsFlush <= sReg6Eoi;
+        sBsFlush <= sReg7Eoi;
       end if;
     end if;
 

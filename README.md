@@ -39,7 +39,7 @@ The RTL is vendor-neutral by construction (plain VHDL-1993 on open-logic memory 
 | **Pixel depth** | 8–16 bit<sup>3</sup> |
 | **Image size** | Up to ~64k × 64k px<sup>4</sup> |
 | **Throughput** | 1 pixel / clock |
-| **Latency** | 14 cycles |
+| **Latency** | 15 cycles |
 | **f<sub>max</sub>** | ~340 MHz<sup>5</sup> |
 | **Interface** | Ready/valid stream<sup>6</sup> |
 | **Memory** | On-chip only<sup>7</sup> |
@@ -73,9 +73,9 @@ OpenJLS follows the JPEG-LS encoding pipeline:
 
 **Flow control** drives every stage's clock enable, stalling the pipeline only when the byte stuffer's buffer fills. It also starts the framer on each image's first pixel and limits images in flight to three.
 
-**Context memory** holds A, B, C, N and Nn for each context. A token reads it in S2 and receives the data in S3, but the BRAM word is wrong if the context hasn't been used yet in this image, or if a token up to three positions ahead just updated it. Per-context init flags handle the first case, so the memory resets at end of image without rewriting the RAM. In the second, the memory forwards writes from tokens two and three positions ahead, while a token one position ahead is still in S4, so its update comes from there.
+**Context memory** holds A, B, C, N and Nn for each context. A token reads it in S2 and receives the data in S4, but the BRAM word is wrong if the context hasn't been used yet in this image, or if a token up to four positions ahead just updated it. Per-context init flags handle the first case, so the memory resets at end of image without rewriting the RAM. In the second, the memory forwards writes from tokens two, three and four positions ahead, while a token one position ahead is still in S5, so its update comes from there.
 
-**Regular-mode prediction** runs four parallel chains, because the correct C[Q] comes too late in the cycle to select first. Chain D takes the BRAM word. Chain C takes S4's C[Q] on a match with the token ahead, otherwise the memory's alternative (Alt.) word: the init value or a forwarded write. Chains P and M take S4's C[Q] + 1 and - 1, covering A.13's possible results. The final select picks one chain's result just before Reg3.
+**Regular-mode prediction** runs four parallel chains, because the correct C[Q] comes too late in the cycle to select first. Chain D takes the BRAM word. Chain C takes S5's C[Q] on a match with the token ahead, otherwise the memory's alternative (Alt.) word: the init value or a forwarded write. Chains P and M take S5's C[Q] + 1 and - 1, covering A.13's possible results. The final select picks one chain's result just before Reg4.
 
 The hardware architecture is based on the optimizations in Mert's [*Key Architectural Optimizations for Hardware Efficient JPEG-LS Encoder*](https://www.researchgate.net/publication/331795298_Key_Architectural_Optimizations_for_Hardware_Efficient_JPEG-LS_Encoder), reworked into a vendor-agnostic, fully pipelined VHDL core.
 

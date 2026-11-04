@@ -6,10 +6,10 @@
 --
 -- tb_context_ram_osvvm: context_ram against a behavioral model of its contract
 --
--- The first read of an address since reset/EOI returns CTX_INIT; after that, a
--- same-cycle write to the read address forwards, as does the previous cycle's
--- (still pending in the DUT). A read on the EOI cycle uses the ending image's flags. Accesses on the first reset cycle land in BRAM but
--- stay masked by the re-arm; their read result is a don't-care.
+-- The first read of an address since reset/EOI returns CTX_INIT; after that, a read returns the latest write
+-- presented up to the cycle after it. The word appears two edges after the read and holds under iWordCE = '0';
+-- a stall holds the write history too. A read on the EOI cycle uses the ending image's flags. Accesses on the
+-- first reset cycle stay masked by the re-arm; their read result is a don't-care.
 --
 -- Guidelines:
 --   G2.Clamp    N/A: no accumulator
@@ -26,6 +26,7 @@ library work;
 
 library osvvm;
   context osvvm.OsvvmContext;
+  use std.textio.all;
 
 library tb_support;
   use tb_support.tb_support_pkg.all;
@@ -81,9 +82,8 @@ architecture sim of tb_context_ram_osvvm is
   signal oRdBram : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
   signal oRdAlt  : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
   signal oRdUse  : std_logic;
-  -- Write presented on the previous cycle: still pending in the DUT, landing this cycle
-  signal prevWrEn   : std_logic := '0';
-  signal prevWrAddr : std_logic_vector(ADDR_W - 1 downto 0);
+  signal iAdvance : std_logic := '1';
+  signal iWordCE  : std_logic := '1';
 
   type mem_t is array (0 to RAM_DEPTH - 1) of std_logic_vector(TOTAL_WIDTH - 1 downto 0);
   type ini_t is array (0 to RAM_DEPTH - 1) of boolean;
@@ -124,21 +124,13 @@ begin
       iRdQ3       => iRdQ3,
       iRdEn       => iRdEn,
       iEndOfImage => iEoi,
+      iAdvance    => iAdvance,
+      iWordCE     => iWordCE,
       oRdData     => oRdData,
       oRdBram     => oRdBram,
       oRdAlt      => oRdAlt,
       oRdUseAlt   => oRdUse
     );
-
-  prev_wr : process (clk) is
-  begin
-
-    if rising_edge(clk) then
-      prevWrEn   <= iWrEn;
-      prevWrAddr <= iWrAddr;
-    end if;
-
-  end process prev_wr;
 
   -- The split outputs recombine to oRdData
   split_chk : process (clk) is
@@ -180,12 +172,28 @@ begin
     variable cov      : CoverageIDType;
     variable covEoiRd : CoverageIDType;
     variable covPend  : CoverageIDType;
+    variable covStall : CoverageIDType;
     variable mm       : CoverageIDType;
     variable rs       : CoverageIDType;
     variable req      : AlertLogIDType;
     variable mem   : mem_t := (others => (others => '0'));
     variable ini   : ini_t := (others => true);
     variable touched : ini_t := (others => false);
+
+    -- Read of the previous step, resolved once the write a cycle after it is known
+    variable pRd     : boolean := false;
+    variable pAddr   : natural := 0;
+    variable pIni    : boolean := false;
+    variable pWith   : boolean := false;
+    variable pBefore : boolean := false;
+    variable pLanded : boolean := false;
+    variable pEoi    : boolean := false;
+    variable pMsg    : line;
+    -- Writes one and two cycles back, stalls not counted
+    variable h1En    : boolean := false;
+    variable h1Addr  : natural := 0;
+    variable h2En    : boolean := false;
+    variable h2Addr  : natural := 0;
 
     -- One access cycle; eoi = '1' asserts iEndOfImage on the same cycle
     procedure step (
@@ -200,13 +208,10 @@ begin
 
       variable exp     : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
       variable outcome : integer;
-      variable held : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
-      variable q    : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
-      variable pend : boolean;
+      variable q       : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
 
     begin
 
-      held := oRdData;
       iRdEn   <= rdEn;
       iRdAddr <= std_logic_vector(to_unsigned(rdAddr, ADDR_W));
       iWrEn   <= wrEn;
@@ -216,21 +221,60 @@ begin
 
       exp     := (others => '0');
       outcome := -1;
-      pend    := prevWrEn = '1' and prevWrAddr = std_logic_vector(to_unsigned(rdAddr, ADDR_W));
-      if (rdEn = '1') then
-        if (ini(rdAddr)) then
+      if (pRd) then
+        if (pIni) then
           exp     := CTX_INIT;
           outcome := 0;
-        elsif (wrEn = '1' and wrAddr = rdAddr) then
+        elsif (wrEn = '1' and wrAddr = pAddr) then
           exp     := wrData;
           outcome := 2;
         else
-          exp     := mem(rdAddr);
-          outcome := 1;
+          exp := mem(pAddr);
+          if (pWith) then
+            outcome := 3;
+          elsif (pBefore) then
+            outcome := 4;
+          else
+            outcome := 1;
+          end if;
         end if;
       end if;
 
       wait until rising_edge(clk);
+
+      wait for 1 ns;
+      iEoi <= '0';
+      if (outcome >= 0) then
+        q := oRdData;
+        AffirmIfEqual(req, q, exp, pMsg.all);
+        ICover(mm, (0, checked_integer(unsigned(q(TOTAL_WIDTH - 1 downto A_LO)))));
+        ICover(mm, (1, checked_integer(signed(q(A_LO - 1 downto B_LO)))));
+        ICover(mm, (2, checked_integer(signed(q(B_LO - 1 downto C_LO)))));
+        ICover(mm, (3, checked_integer(unsigned(q(C_LO - 1 downto 0)))));
+        ICover(cov, outcome);
+        if (outcome = 1 and pLanded) then
+          ICover(covPend, 1);
+        end if;
+        if (pEoi) then
+          ICover(covEoiRd, outcome);
+        end if;
+      end if;
+
+      pRd := rdEn = '1';
+      if (pRd) then
+        pAddr   := rdAddr;
+        pIni    := ini(rdAddr);
+        pWith   := wrEn = '1' and wrAddr = rdAddr;
+        pBefore := h1En and h1Addr = rdAddr;
+        pLanded := h2En and h2Addr = rdAddr;
+        pEoi    := eoi = '1';
+        deallocate(pMsg);
+        pMsg    := new string'(msg);
+      end if;
+      h2En   := h1En;
+      h2Addr := h1Addr;
+      h1En   := wrEn = '1';
+      h1Addr := wrAddr;
 
       if (eoi = '1') then
         ini := (others => true);
@@ -242,51 +286,62 @@ begin
         touched(wrAddr) := true;
       end if;
 
-      wait for 1 ns;
-      iEoi <= '0';
-      if (rdEn = '1') then
-        q := oRdData;
-        AffirmIfEqual(req, q, exp, msg);
-        ICover(mm, (0, checked_integer(unsigned(q(TOTAL_WIDTH - 1 downto A_LO)))));
-        ICover(mm, (1, checked_integer(signed(q(A_LO - 1 downto B_LO)))));
-        ICover(mm, (2, checked_integer(signed(q(B_LO - 1 downto C_LO)))));
-        ICover(mm, (3, checked_integer(unsigned(q(C_LO - 1 downto 0)))));
-        ICover(cov, outcome);
-        if (outcome = 1 and pend) then
-          ICover(covPend, 1);
-        end if;
-        if (eoi = '1') then
-          ICover(covEoiRd, outcome);
-        end if;
-      else
-        AffirmIfEqual(GetAlertLogID("ReadEnableHold"), oRdData, held, msg & " read disabled holds output");
-      end if;
-
     end procedure step;
+
+    constant ZERO_WORD : std_logic_vector(TOTAL_WIDTH - 1 downto 0) := (others => '0');
+
+    -- As the top stalls: no accesses, nothing advances, the word holds
+    procedure stall (cycles : positive) is
+
+      variable held : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+
+    begin
+
+      held     := oRdData;
+      iRdEn    <= '0';
+      iWrEn    <= '0';
+      iAdvance <= '0';
+      iWordCE  <= '0';
+      ICover(covStall, 1);
+      for i in 1 to cycles loop
+        wait until rising_edge(clk);
+        wait for 1 ns;
+        AffirmIfEqual(GetAlertLogID("StallHold"), oRdData, held, "stall holds the word");
+      end loop;
+      iAdvance <= '1';
+      iWordCE  <= '1';
+
+    end procedure stall;
 
     procedure pulse_eoi is
     begin
 
-      iRdEn <= '0';
-      iWrEn <= '0';
-      iEoi  <= '1';
-      wait until rising_edge(clk);
-      ini  := (others => true);
-      iEoi <= '0';
-      wait for 1 ns;
+      step('0', 0, '0', 0, ZERO_WORD, "EOI pulse", '1');
 
     end procedure pulse_eoi;
+
+    -- The reset starts with no read unresolved
+    procedure forget_history is
+    begin
+
+      pRd  := false;
+      h1En := false;
+      h2En := false;
+      ini  := (others => true);
+
+    end procedure forget_history;
 
     procedure pulse_rst is
     begin
 
+      step('0', 0, '0', 0, ZERO_WORD, "resolve before reset");
       iRdEn <= '0';
       iWrEn <= '0';
       rst   <= '1';
       ICover(rs, 0);
       clk_tick(clk, 2);
       rst   <= '0';
-      ini := (others => true);
+      forget_history;
       wait until rising_edge(clk);
       wait for 1 ns;
 
@@ -300,6 +355,7 @@ begin
     ) is
     begin
 
+      step('0', 0, '0', 0, ZERO_WORD, "resolve before reset");
       iRdEn   <= '1';
       iRdAddr <= std_logic_vector(to_unsigned(rdAddr, ADDR_W));
       iWrEn   <= '1';
@@ -314,7 +370,7 @@ begin
       iWrEn <= '0';
       clk_tick(clk, 1);
       rst <= '0';
-      ini := (others => true);
+      forget_history;
       wait until rising_edge(clk);
       wait for 1 ns;
 
@@ -342,14 +398,18 @@ begin
     SetFieldName(cov, "readOutcome");
     AddBins(cov, "initial value", GenBin(0));
     AddBins(cov, "stored value", GenBin(1));
-    AddBins(cov, "forwarded write", GenBin(2));
+    AddBins(cov, "forwarded write, cycle after the read", GenBin(2));
+    AddBins(cov, "forwarded write, read cycle", GenBin(3));
+    AddBins(cov, "forwarded write, cycle before the read", GenBin(4));
     covPend := NewID("G4.Stream readOfPendingWrite");
-    AddBins(covPend, "stored value from the write landing this cycle", 20, GenBin(1));
+    AddBins(covPend, "stored value from the write landing just before the read", 20, GenBin(1));
+    covStall := NewID("G4.Stream stall");
+    AddBins(covStall, "stall with accesses around it", 20, GenBin(1));
     covEoiRd := NewID("G4.Stream readOnEoiCycle");
     SetFieldName(covEoiRd, "readOnEoiCycle");
     AddBins(covEoiRd, "initial on EOI", GenBin(0));
     AddBins(covEoiRd, "stored on EOI", GenBin(1));
-    AddBins(covEoiRd, "forwarded on EOI", GenBin(2));
+    AddBins(covEoiRd, "forwarded on EOI", GenBin(2, 4, 1));
 
     rs := NewID("G5.States resetPhase");
     AddBins(rs, "idle", GenBin(0));
@@ -383,6 +443,17 @@ begin
     step('1', 7, '0', 0, ZERO, "addr7 after mid-op iRst = CTX_INIT");
     step('1', 13, '0', 0, ZERO, "addr13 after iRst = CTX_INIT");
 
+    -- A stall between the read and the word load keeps the write history
+    d := std_logic_vector(to_unsigned(4242, TOTAL_WIDTH));
+    step('1', 60, '1', 60, d, "addr60 init read + write");
+    step('0', 0, '0', 0, ZERO, "idle after addr60 init read");
+    step('0', 0, '0', 0, ZERO, "addr60 write settles");
+    step('0', 0, '1', 60, not d, "addr60 write before the read");
+    step('1', 60, '1', 60, d, "addr60 read forwards across a stall");
+    stall(3);
+    step('0', 0, '0', 0, ZERO, "word load after the stall");
+    step('1', 60, '0', 0, ZERO, "addr60 read after the stall");
+
     -- Accesses on the first reset cycle ---
     d := std_logic_vector(to_unsigned(7777, TOTAL_WIDTH));
     step('1', 40, '1', 40, d, "addr40 init read + write-back");
@@ -405,6 +476,7 @@ begin
     -- Field extremes through the BRAM and the forwarding path
     step('1', 50, '1', 50, W_MIN, "addr50 init read + write field minima");
     step('1', 50, '0', 0, ZERO, "addr50 read field minima");
+    step('0', 0, '0', 0, ZERO, "keep the maxima write out of the minima read");
     step('1', 50, '1', 50, W_MAX, "addr50 forward field maxima");
     step('1', 50, '0', 0, ZERO, "addr50 read field maxima");
 
@@ -439,9 +511,15 @@ begin
         step('1', a, '1', a, d, "rand rmw a=" & integer'image(a));
       end if;
 
-      if (rv.DistValInt(((1, 1), (0, 4))) = 1) then
-        step('1', a, '0', 0, ZERO, "rand read of pending write a=" & integer'image(a));
-      end if;
+      -- Burst on a few addresses: reads and writes land in every forwarding position, stalls between them
+      for j in 1 to rv.RandInt(0, 6) loop
+        step(rv.RandSlv(1)(1), (a + rv.RandInt(0, 2)) mod RAM_DEPTH,
+             rv.RandSlv(1)(1), (a + rv.RandInt(0, 2)) mod RAM_DEPTH, rv.RandSlv(TOTAL_WIDTH),
+             "rand burst a=" & integer'image(a));
+        if (rv.DistValInt(((1, 1), (0, 6))) = 1) then
+          stall(rv.RandInt(1, 3));
+        end if;
+      end loop;
 
       if (rv.DistValInt(((1, 1), (0, 60))) = 1) then
         pulse_eoi;
@@ -452,9 +530,11 @@ begin
                          rv.RandInt(0, RAM_DEPTH - 1), rv.RandSlv(TOTAL_WIDTH));
       end if;
 
-      exit when IsCovered(cov) and IsCovered(covEoiRd) and IsCovered(covPend) and i > 200;
+      exit when IsCovered(cov) and IsCovered(covEoiRd) and IsCovered(covPend) and IsCovered(covStall) and i > 200;
 
     end loop;
+
+    step('0', 0, '0', 0, ZERO, "resolve the last read");
 
     WriteBin(cov);
     WriteBin(covEoiRd);
@@ -462,6 +542,7 @@ begin
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(cov), "read-outcome coverage closed");
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covEoiRd), "read-on-EOI-cycle coverage closed");
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covPend), "pending-write coverage closed");
+    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covStall), "stall coverage closed");
     affirm_covered(mm, "field min/max coverage closed");
     affirm_covered(rs, "reset phase coverage closed");
 
