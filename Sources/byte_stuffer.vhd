@@ -126,6 +126,9 @@ architecture behavioral of byte_stuffer is
   signal sStuffBuffer             : std_logic_vector(HOLD_BITS - 1 downto 0);
   signal sStuffBufferBits         : unsigned(log2ceil(HOLD_BITS + 1) - 1 downto 0);        -- [0, HOLD_BITS]
   signal sStuffBufferLast         : std_logic;
+  -- Decoded count: the refill select drives every buffer bit, so it starts from a register
+  signal sSkidRoom                : std_logic;                                             -- count <= HOLD_BITS - FIFO_BITS
+  signal sCountIs                 : std_logic_vector(0 to HOLD_BITS - FIFO_BITS);          -- one-hot
   signal sPrevFF                  : std_logic;
   signal sOutWordReg              : std_logic_vector(OUT_WIDTH - 1 downto 0);
   signal sOutValidReg             : std_logic;
@@ -137,6 +140,10 @@ begin
 
   assert OUT_BYTES_PER_CYCLE = 4
     report "byte_stuffer: OUT_BYTES_PER_CYCLE must be 4 (stuffing arrays are hardcoded to 4 lanes)"
+    severity failure;
+
+  assert FIFO_BITS >= OUT_BYTES_PER_CYCLE * 8
+    report "byte_stuffer: a full refill must cover every lane threshold"
     severity failure;
 
   assert BURST_DEPTH > STALL_CUSHION_ENTRIES
@@ -194,10 +201,8 @@ begin
     variable vAccumCountBits      : natural range 0 to ACCUM_BITS;
     variable vAccumCountBitsFlush : natural range 0 to ACCUM_BITS;
     variable vFlushValidBits      : natural range 0 to FIFO_BITS;
-    variable vFlushRawBits        : natural range 0 to ACCUM_BITS;
     variable vValidLenInt         : natural; -- [0, IN_WIDTH]
     variable vFlushPending        : std_logic;
-    variable vPadBits             : natural; -- [1, FIFO_BITS]
     variable vLastFlag            : std_logic;
     variable vWide                : std_logic_vector(ACCUM_BITS - 1 downto 0);
     variable vMaskTop             : std_logic_vector(ACCUM_BITS - 1 downto 0);
@@ -252,32 +257,19 @@ begin
             report "byte_stuffer: iFlush asserted while a flush is already pending"
             severity failure;
 
-          vFlushRawBits := vAccumCountBits;
-
-          if ((vAccumCountBits mod 8) /= 0) then
-            vPadBits := 8 - (vAccumCountBits mod 8);
-
-            for j in 0 to 7 loop
-
-              if (j < vPadBits) then
-                vAccumBuffer(ACCUM_BITS - 1 - vAccumCountBits) := '0';
-                vAccumCountBits                                := vAccumCountBits + 1;
-              end if;
-
-            end loop;
-
-          end if;
-
-          -- Count-only pad: no bits written
-          if ((vAccumCountBits mod FIFO_BITS) /= 0) then
-            vPadBits        := FIFO_BITS - (vAccumCountBits mod FIFO_BITS);
-            vAccumCountBits := vAccumCountBits + vPadBits;
+          -- Round up to a FIFO_BITS multiple. Count-only: bits past the count are always zero, so
+          -- the stream is byte-padded too. Real bits in the last slice go in (0, FIFO_BITS].
+          if (vAccumCountBits = 0) then
+            vFlushValidBits := FIFO_BITS;
+          elsif (vAccumCountBits <= FIFO_BITS) then
+            vFlushValidBits := vAccumCountBits;
+            vAccumCountBits := FIFO_BITS;
+          else
+            vFlushValidBits := vAccumCountBits - FIFO_BITS;
+            vAccumCountBits := ACCUM_BITS;
           end if;
 
           vAccumCountBitsFlush := vAccumCountBits;
-
-          -- Real bits in the last FIFO_BITS slice, in (0, FIFO_BITS]
-          vFlushValidBits := vFlushRawBits + FIFO_BITS - vAccumCountBitsFlush;
 
           vFlushPending := '1';
         end if;
@@ -386,7 +378,7 @@ begin
   -- Hold the next image until the last word has left as the final beat; sLastPending alone
   -- misses a last word with exactly 8 bits left, which merges the two images
   sSkidTaken <= '1' when sSkidValid = '1'
-                         and sStuffBufferBits <= to_unsigned(HOLD_BITS - FIFO_BITS, sStuffBufferBits'length)
+                         and sSkidRoom = '1'
                          and iReady = '1'
                          and sStuffBufferLast = '0' else
                 '0';
@@ -423,7 +415,14 @@ begin
     variable vStuffBufferLast : std_logic;
     variable vPrevFF          : std_logic;
 
-    variable vValidBitsInt  : natural range 0 to FIFO_BITS;
+    -- The last word's length is added without emitting: decoding it would put an adder before
+    -- every lane threshold. Costs one cycle per image.
+    variable vRefillFull    : std_logic;
+    variable vRefillLast    : std_logic;
+    variable vCountGe       : std_logic_vector(0 to 32);
+    variable vCandidate     : unsigned(sStuffBufferBits'range);
+    variable vNextRoom      : std_logic;
+    variable vNextIs        : std_logic_vector(sCountIs'range);
     variable vRefillBuffer  : std_logic_vector(HOLD_BITS - 1 downto 0);
     variable vRefillWord    : std_logic_vector(HOLD_BITS - 1 downto 0);
     variable vRefillMask    : std_logic_vector(HOLD_BITS - 1 downto 0);
@@ -456,6 +455,8 @@ begin
       if (iRst = '1') then
         sStuffBuffer      <= (others => '0');
         sStuffBufferBits  <= (others => '0');
+        sSkidRoom         <= '1';
+        sCountIs          <= (0 => '1', others => '0');
         sStuffBufferLast  <= '0';
         sPrevFF           <= '0';
         sOutWordReg       <= (others => '0');
@@ -495,6 +496,8 @@ begin
           sPrevFF          <= '0';
           sStuffBuffer     <= (others => '0');
           sStuffBufferBits <= (others => '0');
+          sSkidRoom        <= '1';
+          sCountIs         <= (0 => '1', others => '0');
         else
           sOutValidReg <= '0';
           sFlushDone   <= '0';
@@ -521,19 +524,24 @@ begin
                 sStuffBuffer(HOLD_BITS - 1 downto HOLD_BITS - offset);
             end if;
             vRefillWord(HOLD_BITS - 1 - offset downto HOLD_BITS - offset - FIFO_BITS) := sSkidData;
-            vRefillMask := (others => bool2bit(vStuffBufferBits = offset));
+            vRefillMask := (others => sCountIs(offset));
             vRefillBuffer := vRefillBuffer or (vRefillWord and vRefillMask);
 
           end loop;
           vStuffBuffer := vRefillBuffer;
-          if (sSkidLast = '0') then
-            vValidBitsInt := FIFO_BITS;
-          else
-            vValidBitsInt := to_integer(unsigned(sBvQueueOutData));
+          if (sSkidLast = '1') then
             vStuffBufferLast := '1';
           end if;
-          vStuffBufferBits := vStuffBufferBits + vValidBitsInt;
         end if;
+
+        vRefillFull := sSkidTaken and not sSkidLast;
+        vRefillLast := sSkidTaken and sSkidLast;
+
+        for t in vCountGe'range loop
+
+          vCountGe(t) := vRefillFull or bool2bit(sStuffBufferBits >= t);
+
+        end loop;
 
         -- (2) FF flags at fixed windows
         ff0  := bool2bit(vStuffBuffer(HOLD_BITS - 1 downto HOLD_BITS - 8) = x"FF");
@@ -574,11 +582,9 @@ begin
             vCandidateWord(OUT_WIDTH - 1 - lane * 8 downto OUT_WIDTH - (lane + 1) * 8) := vCandidateByte;
 
             -- Last complete lane; end thresholds rise strictly, so one lane wins
-            vLaneSelected := vPath(p) and iReady and
-                             bool2bit(vStuffBufferBits >= LANE_END(p, lane));
+            vLaneSelected := vPath(p) and iReady and not vRefillLast and vCountGe(LANE_END(p, lane));
             if (lane < OUT_BYTES_PER_CYCLE - 1) then
-              vLaneSelected := vLaneSelected and
-                               bool2bit(vStuffBufferBits < LANE_END(p, lane + 1));
+              vLaneSelected := vLaneSelected and not vCountGe(LANE_END(p, lane + 1));
             end if;
             vBytesMask     := (others => vLaneSelected);
             vEmitBytesBits := vEmitBytesBits or (to_unsigned(lane + 1, vEmitBytesBits'length) and vBytesMask);
@@ -601,10 +607,12 @@ begin
         -- (4) One-hot fixed shifts and count decrements, no barrel shifter
         vEmitBytes := to_integer(vEmitBytesBits);
         -- No complete first byte (or stalled): keep every bit, independent of the decoder
-        vTakeShift(0) := not iReady or bool2bit(vStuffBufferBits < 7) or
-                         (not vPrevFF and bool2bit(vStuffBufferBits = 7));
+        vTakeShift(0) := not iReady or vRefillLast or not vCountGe(7) or
+                         (not vPrevFF and not vCountGe(8));
         vNextBuffer := (others => '0');
         vNextCount  := (others => '0');
+        vNextRoom   := '0';
+        vNextIs     := (others => '0');
 
         for k in CONSUME_BITS'range loop
 
@@ -613,8 +621,22 @@ begin
           vNextBuffer := vNextBuffer or
                          (std_logic_vector(shift_left(unsigned(vStuffBuffer), CONSUME_BITS(k))) and vBufferMask);
           -- Unselected candidates may wrap; their mask is zero
-          vNextCount := vNextCount or
-                        ((to_unsigned(vStuffBufferBits, vNextCount'length) - CONSUME_BITS(k)) and vCountMask);
+          if (vRefillLast = '1' and k = 0) then
+            vCandidate := sStuffBufferBits + resize(unsigned(sBvQueueOutData), vCandidate'length);
+          elsif (vRefillFull = '1') then
+            vCandidate := sStuffBufferBits + to_unsigned(FIFO_BITS - CONSUME_BITS(k), vCandidate'length);
+          else
+            vCandidate := sStuffBufferBits - CONSUME_BITS(k);
+          end if;
+          vNextCount := vNextCount or (vCandidate and vCountMask);
+          vNextRoom  := vNextRoom or (vTakeShift(k) and bool2bit(vCandidate <= HOLD_BITS - FIFO_BITS));
+
+          for i in vNextIs'range loop
+
+            vNextIs(i) := vNextIs(i) or (vTakeShift(k) and bool2bit(vCandidate = i));
+
+          end loop;
+
 
         end loop;
 
@@ -641,6 +663,8 @@ begin
 
         sStuffBuffer     <= vStuffBuffer;
         sStuffBufferBits <= to_unsigned(vStuffBufferBits, sStuffBufferBits'length);
+        sSkidRoom        <= vNextRoom;
+        sCountIs         <= vNextIs;
         sStuffBufferLast <= vStuffBufferLast;
         sPrevFF          <= vPrevFF;
       end if;
@@ -662,6 +686,9 @@ begin
     report "byte_stuffer: queued valid bits past FIFO_BITS" severity error;
   postponed assert is_x(sStuffBufferBits) or sStuffBufferBits <= HOLD_BITS
     report "byte_stuffer: stuff buffer count past HOLD_BITS" severity error;
+  postponed assert is_x(sStuffBufferBits) or iRst = '1'
+                   or (sSkidRoom = '1') = (sStuffBufferBits <= HOLD_BITS - FIFO_BITS)
+    report "byte_stuffer: decoded count disagrees with the count" severity error;
   postponed assert is_x(sOutBytesValidReg) or sOutBytesValidReg <= OUT_BYTES_PER_CYCLE
     report "byte_stuffer: output byte count past OUT_BYTES_PER_CYCLE" severity error;
 
