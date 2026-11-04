@@ -51,8 +51,7 @@ begin
     port map (
       iErrval => sErrIn,
       iRItype => sRItype,
-      iRa     => sRaPix,
-      iRb     => sRbPix,
+      iRaGtRb => bool2bit(sRaPix > sRbPix),
       oErrval => sErrOut,
       oSign   => sSign
     );

@@ -209,8 +209,11 @@ architecture rtl of openjls_top is
   signal sGenPar                            : std_logic;
   signal sReg1Par                           : std_logic;
   signal sReg2Par                           : std_logic;
+  signal sReg2RiRaGtRb                      : std_logic;
   signal sReg3Par                           : std_logic;
   signal sReg3Rescale                       : std_logic;
+  signal sReg3NqNew                         : unsigned(N_WIDTH - 1 downto 0);
+  signal sReg3RiAqDelta                     : unsigned(BITNESS - 1 downto 0);
   signal sCtxOwnerPar                       : std_logic;
   signal sCtxRdPar                          : std_logic;
   signal sReg1ModeRun                       : std_logic;
@@ -276,11 +279,13 @@ architecture rtl of openjls_top is
   signal sS2Px                              : unsigned(BITNESS - 1 downto 0);                         -- [0, MAX_VAL]
   signal sS2AtLo                            : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
   signal sS2AtHi                            : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
+  signal sS2LoSat, sS2HiSat                 : std_logic;
+  signal sReg2LoSat, sReg2HiSat             : std_logic;
   signal sReg2Px                            : unsigned(BITNESS - 1 downto 0);                         -- [0, MAX_VAL]
   signal sReg2AtLo                          : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
   signal sReg2AtHi                          : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
-  signal sS3ClipLo                          : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, 0]
-  signal sS3ClipHi                          : signed(C_WIDTH - 1 downto 0);                           -- [0, MAX_C]
+  signal sS3ClipLo                          : signed(C_WIDTH downto 0);
+  signal sS3ClipHi                          : signed(C_WIDTH downto 0);
 
   -- context_ram packed I/O
   signal sCtxRdData                         : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
@@ -330,13 +335,13 @@ architecture rtl of openjls_top is
   -- Stage 3 — RI path
   signal sS3RiSign                          : std_logic;
   signal sS3RiErr19                         : signed(BITNESS downto 0);                               -- [-RANGE_P / 2, RANGE_P / 2 - 1]
+  signal sS3RiAqDelta                       : unsigned(BITNESS - 1 downto 0);                         -- [0, RANGE_P / 2]
 
   -- Stage 4
   signal sS4RiTemp                          : unsigned(A_WIDTH - 1 downto 0);                         -- [0, 2^A_WIDTH - 1]
   signal sS4K                               : unsigned(K_WIDTH - 1 downto 0);                         -- [0, MAX_K]
   signal sS4RiMode                          : std_logic;
   signal sS4AqNew                           : unsigned(A_WIDTH - 1 downto 0);                         -- [0, 2^A_STORED - 1]
-  signal sS4BqMid                           : signed(B_WIDTH - 1 downto 0);                           -- [-(RESET - 1) - RANGE_P / 2, RANGE_P / 2 - 1] (A.12, before A.13)
   signal sS4NqNew                           : unsigned(N_WIDTH - 1 downto 0);                         -- [1, RESET]
   signal sS4BqNew                           : signed(B_WIDTH - 1 downto 0);                           -- [-(RESET - 1), 0]
   signal sS4CqNew                           : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
@@ -911,6 +916,17 @@ begin
   sS2Sign <= sS2MSign when sReg1V = '1' and sS2TokenMode = token_regular else
              '0';
 
+  u_a6_sat : entity work.a6_clip_sat(behavioral)
+    generic map (
+      BITNESS => BITNESS, MAX_VAL => MAX_VAL
+    )
+    port map (
+      iPx    => sS2Px,
+      iSign  => sS2Sign,
+      oLoSat => sS2LoSat,
+      oHiSat => sS2HiSat
+    );
+
   u_a6_errors : entity work.a6_clip_errors(behavioral)
     generic map (
       BITNESS => BITNESS, MAX_VAL => MAX_VAL
@@ -935,9 +951,12 @@ begin
         sReg2V   <= '0';
         sReg2Eoi <= '0';
         sReg2Px  <= (others => '0');
+        sReg2LoSat <= '0';
+        sReg2HiSat <= '0';
         sReg2AtLo <= (others => '0');
         sReg2AtHi <= (others => '0');
         sReg2Par <= '0';
+        sReg2RiRaGtRb <= '0';
       elsif (sCE2 = '1') then
         -- Unused fields stay at CO_TOKEN_NONE: no stale values downstream
         v      := CO_TOKEN_NONE;
@@ -984,9 +1003,12 @@ begin
         sReg2V   <= sReg1V and bool2bit(sS2TokenMode /= token_none);
         sReg2Eoi <= sReg1Eoi;
         sReg2Px  <= sS2Px;
+        sReg2LoSat <= sS2LoSat;
+        sReg2HiSat <= sS2HiSat;
         sReg2AtLo <= sS2AtLo;
         sReg2AtHi <= sS2AtHi;
         sReg2Par <= sReg1Par;
+        sReg2RiRaGtRb <= bool2bit(sS2RiRa > sS2RiRb);
         sReg2Key <= sS2Key;
       end if;
     end if;
@@ -1005,6 +1027,8 @@ begin
     port map (
       iPx   => sS3Px,
       iSign => sReg2.Sign,
+      iLoSat => sReg2LoSat,
+      iHiSat => sReg2HiSat,
       oLo   => sS3ClipLo,
       oHi   => sS3ClipHi
     );
@@ -1181,10 +1205,19 @@ begin
     port map (
       iErrval => sReg2.Errval(BITNESS downto 0),
       iRItype => sReg2.RiType,
-      iRa     => sReg2.Ra(BITNESS - 1 downto 0),
-      iRb     => sReg2.Rb(BITNESS - 1 downto 0),
+      iRaGtRb => sReg2RiRaGtRb,
       oErrval => sS3RiErr19,
       oSign   => sS3RiSign
+    );
+
+  u_a23_delta : entity work.a23_aq_delta(rtl)
+    generic map (
+      ERROR_WIDTH => BITNESS + 1
+    )
+    port map (
+      iErrVal => sS3RiErr19,
+      iRiType => sReg2.RiType,
+      oDelta  => sS3RiAqDelta
     );
 
   -- Reg3 ---
@@ -1196,11 +1229,13 @@ begin
 
     if rising_edge(iClk) then
       if (iRst = '1') then
-        sReg3        <= CO_TOKEN_NONE;
-        sReg3V       <= '0';
-        sReg3Eoi     <= '0';
-        sReg3Par     <= '0';
-        sReg3Rescale <= '0';
+        sReg3          <= CO_TOKEN_NONE;
+        sReg3V         <= '0';
+        sReg3Eoi       <= '0';
+        sReg3Par       <= '0';
+        sReg3Rescale   <= '0';
+        sReg3NqNew     <= (others => '0');
+        sReg3RiAqDelta <= (others => '0');
       elsif (sCE3 = '1') then
         v      := sReg2;
         v.Aq   := sS3Aq;
@@ -1225,11 +1260,17 @@ begin
           v := CO_TOKEN_NONE;
         end if;
         v.Errval     := sS3Errval;
-        sReg3        <= v;
-        sReg3V       <= sReg2V;
-        sReg3Eoi     <= sReg2Eoi;
-        sReg3Par     <= sReg2Par;
-        sReg3Rescale <= bool2bit(v.Nq = RESET);
+        sReg3          <= v;
+        sReg3V         <= sReg2V;
+        sReg3Eoi       <= sReg2Eoi;
+        sReg3Par       <= sReg2Par;
+        sReg3Rescale   <= bool2bit(v.Nq = RESET);
+        if (v.Nq = RESET) then
+          sReg3NqNew <= to_unsigned(RESET / 2 + 1, N_WIDTH);
+        else
+          sReg3NqNew <= v.Nq + 1;
+        end if;
+        sReg3RiAqDelta <= sS3RiAqDelta;
       end if;
     end if;
 
@@ -1266,41 +1307,32 @@ begin
       oK               => sS4K
     );
 
-  u_a12 : entity work.a12_variables_update(rtl)
+  sS4NqNew <= sReg3NqNew;
+
+  u_a12_a13 : entity work.a12_a13_update(rtl)
     generic map (
-      ERROR_WIDTH => ERROR_WIDTH,
+      ERROR_WIDTH => BITNESS + 1,
       A_WIDTH     => A_WIDTH,
       B_WIDTH     => B_WIDTH,
       N_WIDTH     => N_WIDTH,
+      C_WIDTH     => C_WIDTH,
+      MIN_C       => MIN_C,
+      MAX_C       => MAX_C,
       RESET       => RESET
     )
     port map (
-      iErrorVal   => sReg3.Errval(BITNESS downto 0),
-      iAq         => sReg3.Aq,
-      iBq         => sReg3.Bq,
-      iNq         => sReg3.Nq,
-      iRescale    => sReg3Rescale,
-      oAq         => sS4AqNew,
-      oBq         => sS4BqMid,
-      oNq         => sS4NqNew
-    );
-
-  u_a13 : entity work.a13_update_bias(rtl)
-    generic map (
-      B_WIDTH => B_WIDTH,
-      N_WIDTH => N_WIDTH,
-      C_WIDTH => C_WIDTH,
-      MIN_C   => MIN_C,
-      MAX_C   => MAX_C
-    )
-    port map (
-      iBq     => sS4BqMid,
-      iNq     => sS4NqNew,
-      iCq     => sReg3.Cq,
-      oBq     => sS4BqNew,
-      oCq     => sS4CqNew,
-      oDec    => sS4CqDec,
-      oInc    => sS4CqInc
+      iErrorVal => sReg3.Errval(BITNESS downto 0),
+      iAq       => sReg3.Aq,
+      iBq       => sReg3.Bq,
+      iCq       => sReg3.Cq,
+      iNq       => sReg3.Nq,
+      iNqNew    => sReg3NqNew,
+      iRescale  => sReg3Rescale,
+      oAq       => sS4AqNew,
+      oBq       => sS4BqNew,
+      oCq       => sS4CqNew,
+      oDec      => sS4CqDec,
+      oInc      => sS4CqInc
     );
 
   u_a23 : entity work.a23_run_interruption_update(behavioral)
@@ -1313,7 +1345,7 @@ begin
     )
     port map (
       iErrVal     => sReg3.Errval(BITNESS downto 0),
-      iRItype     => sReg3.RiType,
+      iAqDelta    => sReg3RiAqDelta,
       iAq         => sReg3.Aq,
       iNq         => sReg3.Nq,
       iNn         => sReg3.Nn,

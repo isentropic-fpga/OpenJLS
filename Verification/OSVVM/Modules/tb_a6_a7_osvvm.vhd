@@ -4,7 +4,7 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
--- tb_a6_a7_osvvm: a6_clip_bounds, a6_clip_errors + a6_a7_prediction_error against the T.87 A.6 + A.7 C code
+-- tb_a6_a7_osvvm: a6_clip_sat, a6_clip_bounds, a6_clip_errors + a6_a7_prediction_error against the T.87 A.6 + A.7 C code
 --
 -- Guidelines:
 --   G2.Clamp    N/A: no accumulator
@@ -33,13 +33,19 @@ architecture sim of tb_a6_a7_osvvm is
   constant PIXEL_MAX : natural := 2 ** BITNESS - 1;
   signal sIx, sPx : unsigned(BITNESS - 1 downto 0);
   signal sSign : std_logic;
-  signal sCq, sLo, sHi : signed(CO_CQ_WIDTH - 1 downto 0);
+  signal sCq : signed(CO_CQ_WIDTH - 1 downto 0);
+  signal sLo, sHi : signed(CO_CQ_WIDTH downto 0);
+  signal sLoSat, sHiSat : std_logic;
   signal sAtLo, sAtHi : signed(BITNESS downto 0);
   signal sError : signed(BITNESS downto 0);
 begin
+  sat : entity work.a6_clip_sat(behavioral)
+    generic map (BITNESS => BITNESS, MAX_VAL => MAX_VAL)
+    port map (iPx => sPx, iSign => sSign, oLoSat => sLoSat, oHiSat => sHiSat);
+
   bounds : entity work.a6_clip_bounds(behavioral)
     generic map (BITNESS => BITNESS, MAX_VAL => MAX_VAL)
-    port map (iPx => sPx, iSign => sSign, oLo => sLo, oHi => sHi);
+    port map (iPx => sPx, iSign => sSign, iLoSat => sLoSat, iHiSat => sHiSat, oLo => sLo, oHi => sHi);
 
   errors : entity work.a6_clip_errors(behavioral)
     generic map (BITNESS => BITNESS, MAX_VAL => MAX_VAL)

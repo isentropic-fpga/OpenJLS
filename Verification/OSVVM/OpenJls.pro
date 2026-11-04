@@ -78,6 +78,7 @@ analyze ../../Sources/A11_1_golomb_encoder.vhd
 analyze ../../Sources/A11_2_bit_packer.vhd
 analyze ../../Sources/A12_variables_update.vhd
 analyze ../../Sources/A13_update_bias.vhd
+analyze ../../Sources/A12_A13_update.vhd
 analyze ../../Sources/A14_run_length_determination.vhd
 analyze ../../Sources/A15_A16_encode_run.vhd
 analyze ../../Sources/A17_run_interruption_index.vhd
@@ -127,6 +128,9 @@ Test Modules/tb_a11_1_osvvm.vhd
 Test Modules/tb_a11_2_osvvm.vhd
 Test Modules/tb_a12_osvvm.vhd
 Test Modules/tb_a13_osvvm.vhd
+Test Modules/tb_a12_a13_osvvm.vhd
+Test Modules/tb_a12_a13_osvvm.vhd [generic BITNESS 8]
+Test Modules/tb_a12_a13_osvvm.vhd [generic BITNESS 16]
 Test Modules/tb_a14_osvvm.vhd
 Test Modules/tb_a15_a16_osvvm.vhd
 Test Modules/tb_a17_osvvm.vhd

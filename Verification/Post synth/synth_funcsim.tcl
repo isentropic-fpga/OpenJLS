@@ -50,6 +50,7 @@ foreach f {
   A11_2_bit_packer.vhd
   A12_variables_update.vhd
   A13_update_bias.vhd
+  A12_A13_update.vhd
   A14_run_length_determination.vhd
   A15_A16_encode_run.vhd
   A17_run_interruption_index.vhd
