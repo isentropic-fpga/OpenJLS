@@ -226,6 +226,49 @@ Routed best-of-4 at 2.5 ns, MHz:
 - The context loop no longer stands alone at any point; the output side (stuffer, framer) is now co-limiting everywhere.
 - Verified: OSVVM 115/115, golden sample 906/906 (MAX_MP=0.01). A first registered-bounds version tripped the A.6/A.7 range assert on unused chains: non-regular tokens register Sign = '0', so the stage-2 sign must match (`sS2Sign`).
 
+### Context RAM output register (d5abf30, 2026-11-04)
+
+Own enabled register on the BRAM output in a new stage 3; everything after it moves down one, for seven stages. Clock-to-out 0.90 → 0.23 ns, read forwards from a third in-flight write. `olo_base_ram_sdp` RDLATENCY > 1 ignores `Rd_Ena`, so its pipe breaks under stall. Write-gate parity must come from stage 2, or a new image in stage 1 drops a write the old image's last token still forwards.
+
+Routed means, 4 strategies, 2.5 ns unless noted, size 12288, noise about ±7.5 MHz:
+
+| Step | 8 bit MHz | 12 bit MHz | 8 bit LUT / FF | 12 bit LUT / FF |
+|---|---|---|---|---|
+| 4cb0d3c | 378.4 | 359.1 | | |
+| RAM output register | 391.2 | 382.5 | 5430 / 2103 | 6299 / 2385 |
+| + A.6 clip errors, sat and A.19 in stage 3 | 384.9 | 383.8 | 5429 / 2093 | 6326 / 2374 |
+| + A.6 clip bounds in stage 3, sat merged (d5abf30) | 387.8 | 383.9 | 5436 / 2100 | 6242 / 2383 |
+| d5abf30 at 2.2 ns | 381.2 | 381.3 | 5568 / 2130 | 6453 / 2406 |
+
+- The moves into stage 3 simplify the architecture and don't change fmax.
+- A false-path "ceiling" on RAM paths (384.5/374.7) had predicted less than this: it bounds only the excluded paths, while the new stage also registered the hit and forward compares.
+- 2.2 ns doesn't help, LUT +2–3%. The target isn't what bunches the paths; keep 2.5 ns.
+- No single wall left. Worst path moves with placement:
+
+| Worst path in | a6/a19 step | d5abf30 | d5abf30, 2.2 ns |
+|---|---|---|---|
+| Framer | 1 | 4 | 6 |
+| Stuffer | 4 | 1 | 0 |
+| `sReg4` → `sReg5` | 3 | 0 | 2 |
+| Other | 0 | 3 | 0 |
+
+Mean per-run floor at 2.2 ns: framer 383.3, pipeline 385.4, stuffer 385.5, `sNextBound` 390.9, context RAM 394.5, line buffer 404.2.
+
+Timing-report bound with blocks excluded, 8/12 bit MHz:
+
+| Excluded | 2.5 ns | 2.2 ns |
+|---|---|---|
+| Nothing | 387.8 / 383.9 | 381.2 / 381.3 |
+| Stuffer | 388.7 / 383.9 | 381.2 / 381.3 |
+| Framer | 388.5 / 384.7 | 384.7 / 382.5 |
+| Framer, stuffer | 391.4 / 385.0 | 386.9 / 382.7 |
+| + pipeline | 393.0 / 386.9 | 388.5 / 390.8 |
+| + `sNextBound` | 397.0 / 389.1 | 392.5 / 393.4 |
+
+Framer is the most persistent limit, yet alone gains under 4 MHz. Untested options: on the short end-of-image beat, take one more cycle so the normal path only picks shift by `BYTES_OUT` or hold; or a ring buffer with no shift, a rewrite that moves the mux to the output. `sDataEmit` → `sBuffer` is 73% routing, fanout 102 after replication. Recommendation: stop here, since several blocks would have to change together for about 3%. Not yet decided.
+
+Verified on d5abf30: OSVVM 129/129, T.87, golden sample 2,683 (MAX_MP=0.05), streams 18/18. Not yet run: post-synth, full golden, 40-run characterization. Latency 15 is derived, not measured.
+
 ## Open decisions
 1. Trimmed core: a separate top (`openjls_core`, Mert's interface, same stage entities) vs. feature generics on the current top. Leaning separate top: generics multiply the verified configurations.
 2. Packer + stuffer merge: trimmed core only, or a main candidate.
