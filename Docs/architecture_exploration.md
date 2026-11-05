@@ -269,6 +269,36 @@ Framer is the most persistent limit, yet alone gains under 4 MHz. Untested optio
 
 Verified on d5abf30: OSVVM 129/129, T.87, golden sample 2,683 (MAX_MP=0.05), streams 18/18. Not yet run: post-synth, full golden, 40-run characterization. Latency 15 is derived, not measured.
 
+### Chain D folded into chain C
+
+Chain C takes `oRdData` on a miss, which removes one A.6/A.7 + A.9 chain and the 2:1 select before Reg4.
+
+Post-synth, Default, 2.5 ns, size 12288:
+
+| BITNESS | LUT | `sReg4.Errval` slack, ns |
+|---|---|---|
+| 8 | 5009 → 4964 | −0.330 → −0.101 |
+| 10 | 5574 → 5553 | −0.367 → −0.138 |
+| 12 | 5845 → 5792 | −0.339 → −0.056 |
+| 16 | 6879 → 6811 | −0.300 → −0.251 |
+
+Routed, 4 strategies, size 12288, mean / best MHz:
+
+| Target | BITNESS | d5abf30 | Chain D folded |
+|---|---|---|---|
+| 2.5 ns | 8 | 387.8 / 402.6 | 372.3 / 380.1 |
+| 2.5 ns | 12 | 383.9 / 397.5 | 364.4 / 384.6 |
+| 2.45 ns | 8 | 381.3 / 394.3 | 382.2 / 400.3 |
+| 2.45 ns | 12 | 390.2 / 398.9 | 385.4 / 397.0 |
+| 2.4 ns | 8 | 388.1 / 397.1 | 382.9 / 387.9 |
+| 2.4 ns | 12 | 391.4 / 399.0 | 384.9 / 386.6 |
+
+- Mean change over the three targets: 8 bit −6.6, 12 bit −10.3 MHz; lower in five of six rows, so a small real loss is likely.
+- The −15 to −20 MHz at 2.5 ns doesn't repeat; the same folded RTL gains 21 MHz at 12 bit from 2.5 → 2.45 ns alone. ±7.5 MHz understates the noise of a netlist or target change.
+- At 2.5 ns, untouched blocks fell with the context path (stuffer 388.4 → 366.0 at 12 bit). Same logic depth, more routing.
+
+Verified: OSVVM 129/129, golden sample 906/906 (MAX_MP=0.01), streams.
+
 ## Open decisions
 1. Trimmed core: a separate top (`openjls_core`, Mert's interface, same stage entities) vs. feature generics on the current top. Leaning separate top: generics multiply the verified configurations.
 2. Packer + stuffer merge: trimmed core only, or a main candidate.
