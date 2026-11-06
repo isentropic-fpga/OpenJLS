@@ -87,6 +87,18 @@ architecture behavioral of jls_framer is
 
   type ring_t is array(natural range <>) of std_logic_vector(7 downto 0);
 
+  -- Next-beat flags for one emit case; signed arithmetic, so unselected cases may go negative
+  type beat_flags_t is record
+    data_fire : boolean;
+    data_emit : natural range 1 to BYTES_OUT;
+    hdr_fire  : boolean;
+    hdr_emit  : natural range 1 to BYTES_OUT;
+    in_data   : boolean;
+    in_hdr    : boolean;
+  end record beat_flags_t;
+
+  type beat_flags_arr_t is array(0 to 2) of beat_flags_t;
+
   signal sRing                  : ring_t(0 to RING_BYTES - 1);
   signal sRdPtr                 : unsigned(RING_AW - 1 downto 0);
   signal sWrPtr                 : unsigned(RING_AW - 1 downto 0);
@@ -365,6 +377,15 @@ begin
     variable vEoiInBeat         : boolean;
     variable vOffsetI           : natural range 0 to BYTES_OUT;
     variable vNextPending       : natural range 0 to START_QUEUE_DEPTH;
+    variable vCase              : natural range 0 to 2;           -- 0 no emit, 1 data beat, 2 last header beat
+    variable vCand              : beat_flags_arr_t;
+    variable vRef               : beat_flags_t;
+    variable vE                 : integer range 0 to BYTES_OUT;
+    variable vPop               : boolean;
+    variable vIn                : integer range 0 to BYTES_IN + 2;
+    variable vBytes             : integer range -BYTES_OUT to BUFFER_BYTES + BYTES_IN + 2;
+    variable vHead              : integer range -BYTES_OUT to BUFFER_BYTES + BYTES_IN + 2;
+    variable vHasHead           : boolean;
 
   begin
 
@@ -406,6 +427,7 @@ begin
         vHeight        := resize(iImageHeight, 16);
         vCanEmit       := sAxiHandshake or sOutValid = '0';
         vNextPending   := sNextPending;
+        vCase          := 0;
 
         if (iStart = '1') then
           assert vNextPending < START_QUEUE_DEPTH
@@ -462,6 +484,7 @@ begin
                 vEmitDataBytes := sHdrEmit;
 
                 if (sHdrFire) then
+                  vCase := 2;
 
                   for i in 0 to BYTES_OUT - 1 loop
 
@@ -509,6 +532,7 @@ begin
               vEmitDataBytes := sDataEmit;
 
               if (sDataFire) then
+                vCase := 1;
 
                 for i in 0 to BYTES_OUT - 1 loop
 
@@ -578,25 +602,80 @@ begin
         sReady         <= vFifoByteCount < BUFFER_BYTES_NOMINAL;
         sEoiFifo       <= vEoiIdxFifo;
         sEoiCount      <= vEoiCount;
-        sEoiInData     <= vEoiCount > 0 and vEoiIdxFifo(0) < BYTES_OUT;
-        sEoiInHdr      <= vEoiCount > 0 and vEoiIdxFifo(0) < HDR_DATA_BYTES;
-
-        -- The head footer is already buffered, so its beat never waits on the count
-        if (vEoiCount > 0 and vEoiIdxFifo(0) < BYTES_OUT) then
-          sDataFire <= true;
-          sDataEmit <= vEoiIdxFifo(0) + 1;
-        else
-          sDataFire <= vFifoByteCount >= BYTES_OUT;
-          sDataEmit <= BYTES_OUT;
+        -- Next-beat flags per emit case from registers and inputs only; the FSM's vCase picks one last
+        vIn := 0;
+        if (iValid = '1') then
+          vIn := to_integer(iByteEnable);
+          if (iEoi = '1') then
+            vIn := vIn + 2;
+          end if;
         end if;
 
-        if (vEoiCount > 0 and vEoiIdxFifo(0) < HDR_DATA_BYTES) then
-          sHdrFire <= true;
-          sHdrEmit <= vEoiIdxFifo(0) + 1;
-        else
-          sHdrFire <= vFifoByteCount >= HDR_DATA_BYTES;
-          sHdrEmit <= HDR_DATA_BYTES;
+        for c in 0 to 2 loop
+
+          case c is
+            when 1 =>
+              vE   := sDataEmit;
+              vPop := sEoiInData;
+            when 2 =>
+              vE   := sHdrEmit;
+              vPop := sEoiInHdr;
+            when others =>
+              vE   := 0;
+              vPop := false;
+          end case;
+
+          vBytes   := sFifoByteCount - vE + vIn;
+          vHasHead := true;
+          if (vPop and sEoiCount > 1) then
+            vHead := sEoiFifo(1) - vE;
+          elsif (not vPop and sEoiCount > 0) then
+            vHead := sEoiFifo(0) - vE;
+          elsif (iValid = '1' and iEoi = '1') then
+            vHead := vBytes - 1;
+          else
+            vHead    := BUFFER_BYTES;
+            vHasHead := false;
+          end if;
+
+          -- The head footer is already buffered, so its beat never waits on the count
+          vCand(c).in_data   := vHasHead and vHead >= 0 and vHead < BYTES_OUT;
+          vCand(c).in_hdr    := vHasHead and vHead >= 0 and vHead < HDR_DATA_BYTES;
+          vCand(c).data_fire := vCand(c).in_data or vBytes >= BYTES_OUT;
+          vCand(c).hdr_fire  := vCand(c).in_hdr or vBytes >= HDR_DATA_BYTES;
+          vCand(c).data_emit := BYTES_OUT;
+          vCand(c).hdr_emit  := HDR_DATA_BYTES;
+          if (vCand(c).in_data) then
+            vCand(c).data_emit := vHead + 1;
+          end if;
+          if (vCand(c).in_hdr) then
+            vCand(c).hdr_emit := vHead + 1;
+          end if;
+
+        end loop;
+
+        -- Reference: the flags from the updated FIFO state
+        vRef.in_data   := vEoiCount > 0 and vEoiIdxFifo(0) < BYTES_OUT;
+        vRef.in_hdr    := vEoiCount > 0 and vEoiIdxFifo(0) < HDR_DATA_BYTES;
+        vRef.data_fire := vRef.in_data or vFifoByteCount >= BYTES_OUT;
+        vRef.hdr_fire  := vRef.in_hdr or vFifoByteCount >= HDR_DATA_BYTES;
+        vRef.data_emit := BYTES_OUT;
+        vRef.hdr_emit  := HDR_DATA_BYTES;
+        if (vRef.in_data) then
+          vRef.data_emit := vEoiIdxFifo(0) + 1;
         end if;
+        if (vRef.in_hdr) then
+          vRef.hdr_emit := vEoiIdxFifo(0) + 1;
+        end if;
+        assert vCand(vCase) = vRef
+          report "jls_framer: precomputed beat flags disagree with the FIFO state" severity failure;
+
+        sEoiInData <= vCand(vCase).in_data;
+        sEoiInHdr  <= vCand(vCase).in_hdr;
+        sDataFire  <= vCand(vCase).data_fire;
+        sDataEmit  <= vCand(vCase).data_emit;
+        sHdrFire   <= vCand(vCase).hdr_fire;
+        sHdrEmit   <= vCand(vCase).hdr_emit;
         sNextPending   <= vNextPending;
       end if;
     end if;

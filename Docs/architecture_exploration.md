@@ -368,6 +368,22 @@ Routed, 2.35 ns, 4 strategies, size 12288, mean / best MHz:
 
 Verified: OSVVM 128/128 (A.6/A.7 offsets ±1 added), golden sample 906/906 (MAX_MP=0.01), streams. Dropping the C = MAX_C guard fails 117 golden images (OSVVM misses it); dropping the height-1 wrap fails 6 top TBs.
 
+### Framer next-beat flags per emit case
+
+The fire/emit/footer flags are computed for each emit case (none, data beat, last header beat) from registers and inputs; the FSM picks one at the end, so the EOI FIFO pop and rebase leave the path. A simulation assert checks the pick against the updated FIFO.
+
+Routed, 2.2 ns, 4 strategies, size 12288, mean / best MHz:
+
+| BITNESS | ± 1 folded | Framer flags |
+|---|---|---|
+| 8 | 427.7 / 442.5 | 442.3 / 449.4 |
+| 12 | 405.2 / 443.9 | 435.6 / 438.8 |
+
+- Part of the gain is placement noise (the baseline 12b had a 373 MHz run); the strategy spread drops from 71 to 7 MHz at 12b.
+- Worst slacks now sit within 0.06 ns of each other across S1, S2, S4, ctx RAM, framer, packer and stuffer.
+
+Verified: OSVVM 128/128, golden sample 906/906 (MAX_MP=0.01), streams; offsetting the pushed footer head fails 28 TBs through the assert.
+
 ## Open decisions
 1. Trimmed core: a separate top (`openjls_core`, Mert's interface, same stage entities) vs. feature generics on the current top. Leaning separate top: generics multiply the verified configurations.
 2. Packer + stuffer merge: trimmed core only, or a main candidate.
