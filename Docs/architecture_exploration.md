@@ -300,6 +300,23 @@ Routed, 4 strategies, size 12288, mean / best MHz:
 
 Verified: OSVVM 129/129, golden sample 906/906 (MAX_MP=0.01), streams.
 
+### Framer ring buffer
+
+The framer's 30-byte shift FIFO became a 32-byte ring: writes decode from the write pointer only, reads rotate 8 bytes from the read pointer.
+
+Routed, 2.5 ns, 4 strategies, size 12288, mean / best MHz:
+
+| BITNESS | LUT | Chain D restored | Ring |
+|---|---|---|---|
+| 8 | 5441 → 5057 | 387.8 / 402.6 | 379.4 / 397.0 |
+| 12 | 6267 → 5895 | 383.9 / 397.5 | 363.1 / 389.6 |
+
+- The framer drops out of the top-20 paths (92 → 3 of 160). The stuffer, A.15/16 and compute-k were right behind it.
+- The 12 bit mean carries one 310 MHz outlier on the untouched compute-k path; within the noise above.
+- Kept for −7% LUT and one wall fewer.
+
+Verified: OSVVM 129/129, golden sample 906/906 (MAX_MP=0.01), streams.
+
 ## Open decisions
 1. Trimmed core: a separate top (`openjls_core`, Mert's interface, same stage entities) vs. feature generics on the current top. Leaning separate top: generics multiply the verified configurations.
 2. Packer + stuffer merge: trimmed core only, or a main candidate.
