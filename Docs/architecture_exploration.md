@@ -269,7 +269,7 @@ Framer is the most persistent limit, yet alone gains under 4 MHz. Untested optio
 
 Verified on d5abf30: OSVVM 129/129, T.87, golden sample 2,683 (MAX_MP=0.05), streams 18/18. Not yet run: post-synth, full golden, 40-run characterization. Latency 15 is derived, not measured.
 
-### Chain D folded into chain C
+### Chain D folded into chain C (05d3762, reverted)
 
 Chain C takes `oRdData` on a miss, which removes one A.6/A.7 + A.9 chain and the 2:1 select before Reg4.
 
@@ -296,6 +296,7 @@ Routed, 4 strategies, size 12288, mean / best MHz:
 - Mean change over the three targets: 8 bit −6.6, 12 bit −10.3 MHz; lower in five of six rows, so a small real loss is likely.
 - The −15 to −20 MHz at 2.5 ns doesn't repeat; the same folded RTL gains 21 MHz at 12 bit from 2.5 → 2.45 ns alone. ±7.5 MHz understates the noise of a netlist or target change.
 - At 2.5 ns, untouched blocks fell with the context path (stuffer 388.4 → 366.0 at 12 bit). Same logic depth, more routing.
+- Reverted: the simpler architecture isn't worth 5–8 MHz.
 
 Verified: OSVVM 129/129, golden sample 906/906 (MAX_MP=0.01), streams.
 

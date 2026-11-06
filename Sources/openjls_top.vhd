@@ -295,6 +295,9 @@ architecture rtl of openjls_top is
 
   -- context_ram packed I/O
   signal sCtxRdData                         : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+  signal sCtxRdBram                         : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+  signal sCtxRdAlt                          : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+  signal sCtxRdUseAlt                       : std_logic;
   signal sCtxWrData                         : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
   signal sCtxWrEn                           : std_logic;
 
@@ -307,15 +310,21 @@ architecture rtl of openjls_top is
 
   -- Stage 4 — regular prediction (speculative 3-chain)
   signal sS4Px                              : unsigned(BITNESS - 1 downto 0);                         -- [0, MAX_VAL]
-  signal sS4CqC                             : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
+  signal sS4CqBram                          : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
+  signal sS4CqAlt                           : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
   signal sS4CqP1                            : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
   signal sS4CqM1                            : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
+  signal sS4Err7D                           : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
   signal sS4Err7C                           : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
   signal sS4Err7P                           : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
   signal sS4Err7M                           : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
+  signal sS4Err9D                           : signed(BITNESS downto 0);                               -- [-RANGE_P / 2, RANGE_P / 2 - 1]
   signal sS4Err9C                           : signed(BITNESS downto 0);                               -- [-RANGE_P / 2, RANGE_P / 2 - 1]
   signal sS4Err9P                           : signed(BITNESS downto 0);                               -- [-RANGE_P / 2, RANGE_P / 2 - 1]
   signal sS4Err9M                           : signed(BITNESS downto 0);                               -- [-RANGE_P / 2, RANGE_P / 2 - 1]
+  -- Errval into Reg4: the BRAM chain when sS4UseBram, else sS4ErrOther, built from registers only
+  signal sS4UseBram                         : std_logic;
+  signal sS4ErrOther                        : signed(ERROR_WIDTH - 1 downto 0);
   signal sS4Errval                          : signed(ERROR_WIDTH - 1 downto 0);
 
   -- Q4 == Q5 forwarding, one flag per mode (regular and RI Q ranges are disjoint)
@@ -876,7 +885,10 @@ begin
       iEndOfImage => sReg1Eoi,
       iAdvance    => sCtxAdvance,
       iWordCE     => sCE3,
-      oRdData     => sCtxRdData
+      oRdData     => sCtxRdData,
+      oRdBram     => sCtxRdBram,
+      oRdAlt      => sCtxRdAlt,
+      oRdUseAlt   => sCtxRdUseAlt
     );
 
   -- Read valid at stage 4. Q4 == Q5: the BRAM read is stale, use the live stage 5 update
@@ -889,7 +901,7 @@ begin
            to_signed(0, B_WIDTH) when unsigned(sCtxRdData(CTX_B_HI downto CTX_B_LO)) = 0 else
            resize(signed('1' & sCtxRdData(CTX_B_HI downto CTX_B_LO)), B_WIDTH);
 
-  -- Prediction takes Cq through the chains (sS4CqC)
+  -- Prediction takes Cq through the chains (sS4CqBram, sS4CqAlt)
   sS4Cq <= sS5CqNew when sFwdRegHit = '1' else
            signed(sCtxRdData(CTX_C_HI downto CTX_C_LO));
 
@@ -1096,9 +1108,11 @@ begin
                          and sReg3.Q = sReg4.Q and sReg4.mode = token_run_interruption)
     report "openjls_top: registered RI hit disagrees with Q3 == Q4" severity error;
 
-  -- On a hit the chains start from the pre-update Cq, with the A.13 branch picking the candidate
-  sS4CqC <= sReg4.Cq when sFwdRegHit = '1' else
-            signed(sCtxRdData(CTX_C_HI downto CTX_C_LO));
+  -- Only chain D sees the raw BRAM word. Chains C, P, M start from registers: on a hit the pre-update Cq,
+  -- with the A.13 branch picking the candidate; otherwise the init or same-address forwarded word
+  sS4CqBram <= signed(sCtxRdBram(CTX_C_HI downto CTX_C_LO));
+  sS4CqAlt  <= sReg4.Cq when sFwdRegHit = '1' else
+               signed(sCtxRdAlt(CTX_C_HI downto CTX_C_LO));
 
   sS4CqP1 <= to_signed(MAX_C, C_WIDTH) when sReg4.Cq = to_signed(MAX_C, C_WIDTH) else
              sReg4.Cq + 1;
@@ -1106,7 +1120,33 @@ begin
              sReg4.Cq - 1;
 
   -- A.6 and A.7 fused per chain: the forwarded Cq skips the clip-then-subtract path
-  -- DeltaCq = 0
+  -- BRAM
+  u_a6a7_d : entity work.a6_a7_prediction_error(behavioral)
+    generic map (
+      BITNESS => BITNESS, MAX_VAL => MAX_VAL
+    )
+    port map (
+      iIx       => sReg3.Ix(BITNESS - 1 downto 0),
+      iPx       => sS4Px,
+      iSign     => sReg3.Sign,
+      iLo       => sReg3ClipLo,
+      iHi       => sReg3ClipHi,
+      iAtLo     => sReg3AtLo,
+      iAtHi     => sReg3AtHi,
+      iCq       => sS4CqBram,
+      oErrorVal => sS4Err7D
+    );
+
+  u_a9_d : entity work.a9_modulo_reduction(behavioral)
+    generic map (
+      BITNESS   => BITNESS, RANGE_P => RANGE_P
+    )
+    port map (
+      iErrorVal => sS4Err7D,
+      oErrorVal => sS4Err9D
+    );
+
+  -- Alternate, DeltaCq = 0
   u_a6a7_c : entity work.a6_a7_prediction_error(behavioral)
     generic map (
       BITNESS => BITNESS, MAX_VAL => MAX_VAL
@@ -1119,7 +1159,7 @@ begin
       iHi       => sReg3ClipHi,
       iAtLo     => sReg3AtLo,
       iAtHi     => sReg3AtHi,
-      iCq       => sS4CqC,
+      iCq       => sS4CqAlt,
       oErrorVal => sS4Err7C
     );
 
@@ -1188,11 +1228,17 @@ begin
   sSpecUseM <= sFwdRegHit and sS5CqDec;
   sSpecUseP <= sFwdRegHit and sS5CqInc;
 
-  sS4Errval <= (others => '0') when sReg3V = '0' else
-               resize(sS4Err9M, ERROR_WIDTH) when sReg3.mode = token_regular and sSpecUseM = '1' else
-               resize(sS4Err9P, ERROR_WIDTH) when sReg3.mode = token_regular and sSpecUseP = '1' else
-               resize(sS4Err9C, ERROR_WIDTH) when sReg3.mode = token_regular else
-               sReg3.Errval;
+  sS4UseBram <= sReg3V and bool2bit(sReg3.mode = token_regular) and not sFwdRegHit and not sCtxRdUseAlt;
+
+  sS4ErrOther <= (others => '0') when sReg3V = '0' else
+                 resize(sS4Err9M, ERROR_WIDTH) when sReg3.mode = token_regular and sSpecUseM = '1' else
+                 resize(sS4Err9P, ERROR_WIDTH) when sReg3.mode = token_regular and sSpecUseP = '1' else
+                 resize(sS4Err9C, ERROR_WIDTH) when sReg3.mode = token_regular else
+                 sReg3.Errval;
+
+  -- The BRAM chain arrives last; keep it to one 2:1 select before Reg4
+  sS4Errval <= resize(sS4Err9D, ERROR_WIDTH) when sS4UseBram = '1' else
+               sS4ErrOther;
 
   -- Stage 4, RI: A.23 delta ---
   u_a23_delta : entity work.a23_aq_delta(rtl)

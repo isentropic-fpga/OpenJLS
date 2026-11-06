@@ -48,7 +48,11 @@ entity context_ram is
     iAdvance        : in    std_logic;
     -- Loads the output word; high the cycle after iRdEn unless stalled
     iWordCE         : in    std_logic;
-    oRdData         : out   std_logic_vector(TOTAL_WIDTH - 1 downto 0)
+    oRdData         : out   std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+    -- oRdData split: oRdAlt when oRdUseAlt else oRdBram. oRdAlt and oRdUseAlt come from registers
+    oRdBram         : out   std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+    oRdAlt          : out   std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+    oRdUseAlt       : out   std_logic
   );
 end entity context_ram;
 
@@ -263,6 +267,9 @@ begin
 
   oRdData   <= sRdAlt when sRdUseAlt = '1' else
                sBramWord;
+  oRdBram   <= sBramWord;
+  oRdAlt    <= sRdAlt;
+  oRdUseAlt <= sRdUseAlt;
 
   postponed assert iRdEn /= '1' or is_x(iRdAddr) or unsigned(iRdAddr) < RAM_DEPTH
     report "context_ram: read address past depth" severity error;
