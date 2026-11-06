@@ -27,6 +27,7 @@ entity line_buffer is
     iClk             : in    std_logic;
     iRst             : in    std_logic;
     iImageWidth      : in    unsigned(log2ceil(MAX_IMAGE_WIDTH + 1) - 1 downto 0);
+    -- Stable from a cycle before an image's first iValid to its last
     iImageHeight     : in    unsigned(log2ceil(MAX_IMAGE_HEIGHT + 1) - 1 downto 0);
     iValid           : in    std_logic;
     iPixel           : in    unsigned(BITNESS - 1 downto 0);
@@ -73,14 +74,13 @@ architecture behavioral of line_buffer is
 
 begin
 
-  comb_proc : process (iValid, iImageHeight, sFifoState,
+  comb_proc : process (iValid, sFifoState,
                        sFifoOutReady, sFifoOutValid, sRowCounter,
                        sIsLastCol, sIsLastRow, sIsFirstCol, sIsFirstRow, sIsEol, sIsEoi,
                        sA, sB, sC, sD, sBorderC) is
   begin
 
     oValid              <= iValid;
-    sIsLastRow          <= sRowCounter = iImageHeight - 1;
     sIsEol              <= sIsLastCol and iValid = '1';
     sIsEoi              <= sIsLastCol and sIsLastRow and iValid = '1';
     oEoi                <= bool2bit(sIsEoi);
@@ -136,6 +136,7 @@ begin
         sIsFirstCol <= true;
         sIsLastCol  <= false;                              -- width >= 4
         sIsFirstRow <= true;
+        sIsLastRow  <= false;
 
         sB       <= (others => '0');
         sC       <= (others => '0');
@@ -174,6 +175,9 @@ begin
 
         end case;
 
+        -- Dimensions only load in reset, and iValid is low the cycle after, so the hold term settles it
+        sIsLastRow <= sRowCounter = iImageHeight - 1;
+
         if (iValid = '1') then
           if (sIsLastCol) then
             sColCounter <= (others => '0');
@@ -182,9 +186,11 @@ begin
             if (sIsLastRow) then
               sRowCounter <= (others => '0');
               sIsFirstRow <= true;
+              sIsLastRow  <= iImageHeight = 1;
             else
               sRowCounter <= sRowCounter + 1;
               sIsFirstRow <= false;
+              sIsLastRow  <= sRowCounter = iImageHeight - 2;
             end if;
           else
             sColCounter <= sColCounter + 1;
@@ -248,6 +254,8 @@ begin
   postponed assert is_x(iImageWidth) or is_x(sColCounter) or iRst = '1'
     or (sIsFirstCol = (sColCounter = 0) and sIsLastCol = (sColCounter = iImageWidth - 1) and sIsFirstRow = (sRowCounter = 0))
     report "line_buffer: registered position flags disagree with the counters" severity error;
+  postponed assert is_x(iImageHeight) or is_x(sRowCounter) or iValid /= '1' or sIsLastRow = (sRowCounter = iImageHeight - 1)
+    report "line_buffer: registered last-row flag disagrees with the row counter" severity error;
   postponed assert is_x(iImageHeight) or is_x(sRowCounter) or sRowCounter < iImageHeight
     report "line_buffer: row counter past height" severity error;
 

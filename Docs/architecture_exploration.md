@@ -352,6 +352,22 @@ Routed, 2.35 ns, 4 strategies, size 12288, mean / best MHz:
 
 Verified: OSVVM 126/126, golden sample 906/906 (MAX_MP=0.01), streams; dropping the straddle term from the refill flags fails tb_byte_stuffer and the flag assert.
 
+### C[Q] ± 1 folded into the P/M chains, registered last-row flag
+
+- Chains P and M take the registered C[Q] directly; the ±1 moves into the register-side terms (`Ix − Px ∓ 1`, clip bounds ∓ 1). A clamped C selects chain C instead. Two LUT levels leave the S4 loop.
+- line_buffer: `sIsLastRow` is a register like `sIsLastCol`, off the FIFO write/ready cone.
+
+Routed, 2.35 ns, 4 strategies, size 12288, mean / best MHz:
+
+| BITNESS | FF flags | ± 1 folded |
+|---|---|---|
+| 8 | 404.9 / 430.9 | 428.0 / 430.1 |
+| 12 | 404.1 / 418.1 | 422.8 / 426.3 |
+
+- 5 of 8 runs meet 2.35 ns (capped); the worst slacks spread over S2, S4, S5, ctx RAM, framer and stuffer within ±0.05 ns. Sweeps move to 2.2 ns.
+
+Verified: OSVVM 128/128 (A.6/A.7 offsets ±1 added), golden sample 906/906 (MAX_MP=0.01), streams. Dropping the C = MAX_C guard fails 117 golden images (OSVVM misses it); dropping the height-1 wrap fails 6 top TBs.
+
 ## Open decisions
 1. Trimmed core: a separate top (`openjls_core`, Mert's interface, same stage entities) vs. feature generics on the current top. Leaning separate top: generics multiply the verified configurations.
 2. Packer + stuffer merge: trimmed core only, or a main candidate.

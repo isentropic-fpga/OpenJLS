@@ -110,6 +110,8 @@ Test Modules/tb_a6_a7_osvvm.vhd
 Test Modules/tb_a6_a7_osvvm.vhd [generic BITNESS 8]
 Test Modules/tb_a6_a7_osvvm.vhd [generic BITNESS 16]
 Test Modules/tb_a6_a7_osvvm.vhd [generic BITNESS 8] [generic MAX_VAL 200]
+Test Modules/tb_a6_a7_osvvm.vhd [generic BITNESS 8] [generic CQ_OFFSET 1]
+Test Modules/tb_a6_a7_osvvm.vhd [generic BITNESS 12] [generic CQ_OFFSET -1]
 Test Modules/tb_a8_1_osvvm.vhd
 Test Modules/tb_a9_osvvm.vhd
 # Binary-range shortcut at every width

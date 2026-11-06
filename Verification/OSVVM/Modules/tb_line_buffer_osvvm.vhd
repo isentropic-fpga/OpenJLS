@@ -176,8 +176,13 @@ begin
 
       end loop;
 
-      iWidth  <= to_unsigned(w, W_W);
-      iHeight <= to_unsigned(h, H_W);
+      -- New dimensions settle a cycle before the first pixel (line_buffer contract)
+      if (iWidth /= w or iHeight /= h) then
+        iValid  <= '0';
+        iWidth  <= to_unsigned(w, W_W);
+        iHeight <= to_unsigned(h, H_W);
+        wait until rising_edge(clk);
+      end if;
 
       for r in 0 to h - 1 loop
 
@@ -251,8 +256,10 @@ begin
     ) is
     begin
 
+      iValid  <= '0';
       iWidth  <= to_unsigned(w, W_W);
       iHeight <= to_unsigned(h, H_W);
+      wait until rising_edge(clk);
       for k in 1 to n loop
         iPixel <= to_unsigned(rv.RandInt(0, PX_MAX), BITNESS);
         iValid <= '1';

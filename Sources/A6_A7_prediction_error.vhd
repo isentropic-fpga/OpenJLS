@@ -111,8 +111,10 @@ library ieee;
 
 entity a6_a7_prediction_error is
   generic (
-    BITNESS : natural range 8 to 16 := CO_BITNESS_STD;
-    MAX_VAL : natural := CO_MAX_VAL_STD
+    BITNESS   : natural range 8 to 16 := CO_BITNESS_STD;
+    MAX_VAL   : natural := CO_MAX_VAL_STD;
+    -- Error for C[Q] + CQ_OFFSET, unsaturated; the offset folds into the register-side terms
+    CQ_OFFSET : integer range -1 to 1 := 0
   );
   port (
     iIx       : in    unsigned(BITNESS - 1 downto 0);
@@ -130,19 +132,22 @@ end entity a6_a7_prediction_error;
 
 architecture behavioral of a6_a7_prediction_error is
   signal sDelta, sRawError : signed(BITNESS downto 0);
+  signal sLo, sHi          : signed(CO_CQ_WIDTH + 1 downto 0);
 begin
   assert MAX_VAL < 2 ** BITNESS
     report "a6_a7_prediction_error: MAX_VAL must fit BITNESS"
     severity failure;
 
   -- Error as (Ix - Px) - Cq so the pixel difference settles before the forwarded Cq
-  sDelta <= signed('0' & iIx) - signed('0' & iPx) when iSign = CO_SIGN_POS else
-            signed('0' & iPx) - signed('0' & iIx);
+  sDelta <= signed('0' & iIx) - signed('0' & iPx) - CQ_OFFSET when iSign = CO_SIGN_POS else
+            signed('0' & iPx) - signed('0' & iIx) - CQ_OFFSET;
+  sLo    <= resize(iLo, sLo'length) - CQ_OFFSET;
+  sHi    <= resize(iHi, sHi'length) - CQ_OFFSET;
   sRawError <= sDelta - resize(iCq, sRawError'length);
 
   -- sRawError can only wrap when clipped, where a boundary error is selected
-  oErrorVal <= iAtLo when iCq < iLo else
-               iAtHi when iCq > iHi else
+  oErrorVal <= iAtLo when iCq < sLo else
+               iAtHi when iCq > sHi else
                sRawError;
 
   postponed assert is_x(oErrorVal) or iIx > MAX_VAL or iPx > MAX_VAL or abs(to_integer(oErrorVal)) <= MAX_VAL

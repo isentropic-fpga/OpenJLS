@@ -312,8 +312,6 @@ architecture rtl of openjls_top is
   signal sS4Px                              : unsigned(BITNESS - 1 downto 0);                         -- [0, MAX_VAL]
   signal sS4CqBram                          : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
   signal sS4CqAlt                           : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
-  signal sS4CqP1                            : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
-  signal sS4CqM1                            : signed(C_WIDTH - 1 downto 0);                           -- [MIN_C, MAX_C]
   signal sS4Err7D                           : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
   signal sS4Err7C                           : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
   signal sS4Err7P                           : signed(BITNESS downto 0);                               -- [-MAX_VAL, MAX_VAL]
@@ -1114,10 +1112,6 @@ begin
   sS4CqAlt  <= sReg4.Cq when sFwdRegHit = '1' else
                signed(sCtxRdAlt(CTX_C_HI downto CTX_C_LO));
 
-  sS4CqP1 <= to_signed(MAX_C, C_WIDTH) when sReg4.Cq = to_signed(MAX_C, C_WIDTH) else
-             sReg4.Cq + 1;
-  sS4CqM1 <= to_signed(MIN_C, C_WIDTH) when sReg4.Cq = to_signed(MIN_C, C_WIDTH) else
-             sReg4.Cq - 1;
 
   -- A.6 and A.7 fused per chain: the forwarded Cq skips the clip-then-subtract path
   -- BRAM
@@ -1175,7 +1169,7 @@ begin
   -- DeltaCq = +1
   u_a6a7_p : entity work.a6_a7_prediction_error(behavioral)
     generic map (
-      BITNESS => BITNESS, MAX_VAL => MAX_VAL
+      BITNESS => BITNESS, MAX_VAL => MAX_VAL, CQ_OFFSET => 1
     )
     port map (
       iIx       => sReg3.Ix(BITNESS - 1 downto 0),
@@ -1185,7 +1179,7 @@ begin
       iHi       => sReg3ClipHi,
       iAtLo     => sReg3AtLo,
       iAtHi     => sReg3AtHi,
-      iCq       => sS4CqP1,
+      iCq       => sReg4.Cq,
       oErrorVal => sS4Err7P
     );
 
@@ -1201,7 +1195,7 @@ begin
   -- DeltaCq = -1
   u_a6a7_m : entity work.a6_a7_prediction_error(behavioral)
     generic map (
-      BITNESS => BITNESS, MAX_VAL => MAX_VAL
+      BITNESS => BITNESS, MAX_VAL => MAX_VAL, CQ_OFFSET => -1
     )
     port map (
       iIx       => sReg3.Ix(BITNESS - 1 downto 0),
@@ -1211,7 +1205,7 @@ begin
       iHi       => sReg3ClipHi,
       iAtLo     => sReg3AtLo,
       iAtHi     => sReg3AtHi,
-      iCq       => sS4CqM1,
+      iCq       => sReg4.Cq,
       oErrorVal => sS4Err7M
     );
 
@@ -1224,9 +1218,9 @@ begin
       oErrorVal => sS4Err9M
     );
 
-  -- The live stage 5 A.13 branch picks the chain; a clamped C lands on a saturated chain, equal to C
-  sSpecUseM <= sFwdRegHit and sS5CqDec;
-  sSpecUseP <= sFwdRegHit and sS5CqInc;
+  -- The live stage 5 A.13 branch picks the chain; a clamped C stays on chain C
+  sSpecUseM <= sFwdRegHit and sS5CqDec and not bool2bit(sReg4.Cq = to_signed(MIN_C, C_WIDTH));
+  sSpecUseP <= sFwdRegHit and sS5CqInc and not bool2bit(sReg4.Cq = to_signed(MAX_C, C_WIDTH));
 
   sS4UseBram <= sReg3V and bool2bit(sReg3.mode = token_regular) and not sFwdRegHit and not sCtxRdUseAlt;
 
