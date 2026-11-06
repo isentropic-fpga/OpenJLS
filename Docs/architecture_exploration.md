@@ -317,6 +317,25 @@ Routed, 2.5 ns, 4 strategies, size 12288, mean / best MHz:
 
 Verified: OSVVM 129/129, golden sample 906/906 (MAX_MP=0.01), streams.
 
+### Compute-k and A.15/16 off the routed walls
+
+- A.15/16: every next bound (index +1, same, −1, bound + step) comes from the registered RUNindex; the hit compares the registered count against `sNextBoundM1`, so the J lookup leaves the path.
+- Compute-k: A.20 TEMP folds into A.10's compare as `N·2^k − A − N/2 ≥ 0`; no adder in series with the comparators. A.20 is removed, A.20.2 takes RItype.
+
+Routed, 4 strategies, size 12288, mean / best MHz:
+
+| Target | BITNESS | Ring | k + A.15/16 |
+|---|---|---|---|
+| 2.5 ns | 8 | 379.4 / 397.0 | 400.5 / 407.2 |
+| 2.5 ns | 12 | 363.1 / 389.6 | 402.4 / 404.0 |
+| 2.35 ns | 8 | | 388.4 / 395.7 |
+| 2.35 ns | 12 | | 396.8 / 428.1 |
+
+- 7 of 8 runs meet 2.5 ns; k and A.15/16 leave the top-20 paths.
+- At 2.35 ns the stuffer is worst in 6 of 8 runs (107 of 160 paths), the S4 context loop in the other 2.
+
+Verified: OSVVM 126/126, golden sample 906/906 (MAX_MP=0.01), streams; mutations of the A.20.2 select and the A.15 step both fail their TBs.
+
 ## Open decisions
 1. Trimmed core: a separate top (`openjls_core`, Mert's interface, same stage entities) vs. feature generics on the current top. Leaning separate top: generics multiply the verified configurations.
 2. Packer + stuffer merge: trimmed core only, or a main candidate.

@@ -345,7 +345,6 @@ architecture rtl of openjls_top is
   signal sS4RiAqDelta                       : unsigned(BITNESS - 1 downto 0);                         -- [0, RANGE_P / 2]
 
   -- Stage 5
-  signal sS5RiTemp                          : unsigned(A_WIDTH - 1 downto 0);                         -- [0, 2^A_WIDTH - 1]
   signal sS5K                               : unsigned(K_WIDTH - 1 downto 0);                         -- [0, MAX_K]
   signal sS5RiMode                          : std_logic;
   signal sS5AqNew                           : unsigned(A_WIDTH - 1 downto 0);                         -- [0, 2^A_STORED - 1]
@@ -731,6 +730,7 @@ begin
       iCE           => not sStallLogic,
       iEoi          => sReg1Eoi,
       iRunCnt       => sS2RunCnt,
+      iRunCntPrev   => sRunCntReg,
       iRunHit       => sS2RunHit,
       iRunContinue  => sS2RunContinue,
       iModeIsRun    => sReg1ModeRun,
@@ -1311,19 +1311,6 @@ begin
   sS5RiMode <= '1' when sReg4.mode = token_run_interruption else
                '0';
 
-  -- A.20 here, not in stage 4: TEMP only feeds k, so it stays out of the context forwarding loop
-  u_a20 : entity work.a20_compute_temp(behavioral)
-    generic map (
-      A_WIDTH => A_WIDTH,
-      N_WIDTH => N_WIDTH
-    )
-    port map (
-      iRItype => sReg4.RiType,
-      iAq     => sReg4.Aq,
-      iNq     => sReg4.Nq,
-      oTemp   => sS5RiTemp
-    );
-
   u_a20_2 : entity work.a20_2_compute_k(behavioral)
     generic map (
       A_WIDTH => A_WIDTH,
@@ -1332,8 +1319,8 @@ begin
     )
     port map (
       iRunInterruption => sS5RiMode,
+      iRItype          => sReg4.RiType,
       iAq              => sReg4.Aq,
-      iTemp            => sS5RiTemp,
       iNq              => sReg4.Nq,
       oK               => sS5K
     );

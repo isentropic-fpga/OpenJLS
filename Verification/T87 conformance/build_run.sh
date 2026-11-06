@@ -59,7 +59,6 @@ SRC_FILES=(
   A17_run_interruption_index.vhd
   A18_run_interruption_prediction_error.vhd
   A19_run_interruption_error.vhd
-  A20_compute_temp.vhd
   A20_1_run_context_index.vhd
   A20_2_compute_k.vhd
   A21_compute_map.vhd

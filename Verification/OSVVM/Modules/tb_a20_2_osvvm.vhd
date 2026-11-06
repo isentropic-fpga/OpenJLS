@@ -4,9 +4,10 @@
 -- This file is part of OpenJLS. Available under GPLv3 or a
 -- commercial license. See LICENSE and README for details.
 --
--- tb_a20_2_osvvm: a20_2_compute_k against the T.87 A.10 loop on the A.20.2 operand
+-- tb_a20_2_osvvm: a20_2_compute_k against the T.87 A.10 loop on the A.20 / A.20.2 operand
 --
--- Aq and TEMP always differ, so a wrong select cannot pass.
+-- Every N * 2^k edge is swept on the selected operand for all mode x RItype pairs, so adding N/2
+-- outside RI RItype 1 (or missing it inside) crosses an edge.
 --
 -- Guidelines:
 --   G2.Clamp    N/A: no accumulator
@@ -39,8 +40,8 @@ architecture sim of tb_a20_2_osvvm is
   constant N_MAX   : integer := (2 ** N_WIDTH) - 1;
 
   signal sRi   : std_logic;
+  signal sRt   : std_logic;
   signal sAq   : unsigned(A_WIDTH - 1 downto 0);
-  signal sTemp : unsigned(A_WIDTH - 1 downto 0);
   signal sNq   : unsigned(N_WIDTH - 1 downto 0);
   signal sK    : unsigned(K_WIDTH - 1 downto 0);
 
@@ -89,8 +90,8 @@ begin
     )
     port map (
       iRunInterruption => sRi,
+      iRItype          => sRt,
       iAq              => sAq,
-      iTemp            => sTemp,
       iNq              => sNq,
       oK               => sK
     );
@@ -101,26 +102,30 @@ begin
     variable cov    : CoverageIDType;
     variable req    : AlertLogIDType;
     variable a      : integer;
-    variable t      : integer;
+    variable n      : integer;
+    variable rt     : integer;
     constant N_RAND : natural := 6000;
     variable mm, st : CoverageIDType;
 
+    -- T.87 A.20: TEMP = A[Q] + (N[Q] >> 1) * RItype
     procedure drive_check (
       ri  : integer;
+      rt  : integer;
       n   : integer;
       av  : integer;
-      tv  : integer;
       msg : string
     ) is
 
-      variable e : integer;
+      variable e  : integer;
+      variable tv : integer;
 
     begin
 
-      sRi   <= bool2bit(ri = 1);
-      sNq   <= to_unsigned(n, N_WIDTH);
-      sAq   <= to_unsigned(av, A_WIDTH);
-      sTemp <= to_unsigned(tv, A_WIDTH);
+      tv  := av + (n / 2) * rt;
+      sRi <= bool2bit(ri = 1);
+      sRt <= bool2bit(rt = 1);
+      sNq <= to_unsigned(n, N_WIDTH);
+      sAq <= to_unsigned(av, A_WIDTH);
       wait for 1 ns;
       if (ri = 1) then
         e := ref_k(n, tv);
@@ -128,7 +133,7 @@ begin
         e := ref_k(n, av);
       end if;
       AffirmIfEqual(req, checked_integer(sK), e,
-                    msg & " RI=" & integer'image(ri) & " N=" & integer'image(n) &
+                    msg & " RI=" & integer'image(ri) & " RItype=" & integer'image(rt) & " N=" & integer'image(n) &
                     " A=" & integer'image(av) & " TEMP=" & integer'image(tv));
       ICover(cov, (ri, k_class(e)));
       ICover(mm, (1, n));
@@ -167,26 +172,26 @@ begin
     add_value_bin(st, 1, "N MSB", 2 ** (N_WIDTH - 1), N_MAX);
     add_value_bin(st, 2, "A MSB", 2 ** (A_WIDTH - 1), A_MAX);
     add_value_bin(st, 3, "TEMP MSB", 2 ** (A_WIDTH - 1), A_MAX);
-    drive_check(0, N_MAX, A_MAX, A_MAX, "max N/A/TEMP regular");
-    drive_check(1, N_MAX, A_MAX, A_MAX, "max N/A/TEMP RI");
-    drive_check(0, 1, 0, A_MAX, "regular k=0, TEMP max");
-    drive_check(0, 1, A_MAX, 0, "regular k max, TEMP 0");
-    drive_check(1, 1, 0, A_MAX, "RI k max, A 0");
-    drive_check(1, 1, A_MAX, 0, "RI k=0, A max");
+    drive_check(0, 0, N_MAX, A_MAX, "max N/A regular");
+    drive_check(1, 0, N_MAX, A_MAX, "max N/A RI type 0");
+    drive_check(1, 1, N_MAX, A_MAX - N_MAX / 2, "max TEMP RI type 1");
+    drive_check(0, 1, N_MAX, A_MAX - N_MAX / 2, "regular ignores RItype");
+    drive_check(0, 0, 1, 0, "regular k=0");
+    drive_check(0, 0, 1, A_MAX, "regular k max");
+    drive_check(1, 1, 1, 0, "RI k=0, TEMP 0");
+    drive_check(1, 1, 1, A_MAX, "RI k max, TEMP max");
 
-    -- Every N * 2^k threshold, +-1; the unselected operand is its complement
+    -- Every N * 2^k threshold, +-1, on the selected operand
     for ri in 0 to 1 loop
-      for n in 1 to N_MAX loop
-        for k in 0 to MAX_K loop
-          for delta in -1 to 1 loop
-            a := n * (2 ** k) + delta;
-            if a >= 0 and a <= A_MAX then
-              if ri = 1 then
-                drive_check(ri, n, A_MAX - a, a, "TEMP threshold");
-              else
-                drive_check(ri, n, a, A_MAX - a, "A threshold");
+      for rt in 0 to 1 loop
+        for n in 1 to N_MAX loop
+          for k in 0 to MAX_K loop
+            for delta in -1 to 1 loop
+              a := n * (2 ** k) + delta - (n / 2) * ri * rt;
+              if a >= 0 and a + (n / 2) * rt <= A_MAX then
+                drive_check(ri, rt, n, a, "threshold");
               end if;
-            end if;
+            end loop;
           end loop;
         end loop;
       end loop;
@@ -194,9 +199,10 @@ begin
 
     for i in 1 to N_RAND loop
 
-      a := rv.RandInt(0, A_MAX);
-      t := rv.RandInt(0, A_MAX);
-      drive_check(rv.RandInt(0, 1), rv.RandInt(1, N_MAX), a, t, "rand");
+      rt := rv.RandInt(0, 1);
+      n  := rv.RandInt(1, N_MAX);
+      a  := rv.RandInt(0, A_MAX - (n / 2) * rt);
+      drive_check(rv.RandInt(0, 1), rt, n, a, "rand");
       exit when IsCovered(cov) and i > 400;
 
     end loop;
