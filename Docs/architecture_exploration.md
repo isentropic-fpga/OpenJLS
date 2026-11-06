@@ -336,6 +336,22 @@ Routed, 4 strategies, size 12288, mean / best MHz:
 
 Verified: OSVVM 126/126, golden sample 906/906 (MAX_MP=0.01), streams; mutations of the A.20.2 select and the A.15 step both fail their TBs.
 
+### Stuffer 0xFF flags registered
+
+Each 8-bit all-ones window of the stuffer buffer is a registered flag that shifts with the buffer; the skid register precomputes the flags for the incoming word. The 0xFF compares leave the stage 3 loop.
+
+Routed, 2.35 ns, 4 strategies, size 12288, mean / best MHz:
+
+| BITNESS | k + A.15/16 | FF flags |
+|---|---|---|
+| 8 | 388.4 / 395.7 | 404.9 / 430.9 |
+| 12 | 396.8 / 428.1 | 404.1 / 418.1 |
+
+- The stuffer leaves the top paths in 6 of 8 runs; the wall spreads over the framer emit FSM, the S4 Cq→Errval/Bq loop, the line-buffer BRAM→Q1 path and ctx RAM addressing.
+- LUT/FF within ±1%.
+
+Verified: OSVVM 126/126, golden sample 906/906 (MAX_MP=0.01), streams; dropping the straddle term from the refill flags fails tb_byte_stuffer and the flag assert.
+
 ## Open decisions
 1. Trimmed core: a separate top (`openjls_core`, Mert's interface, same stage entities) vs. feature generics on the current top. Leaning separate top: generics multiply the verified configurations.
 2. Packer + stuffer merge: trimmed core only, or a main candidate.

@@ -8,6 +8,7 @@
 --
 -- Stage 1 packs bits into fixed FIFO_BITS words, stage 2 is a BRAM FIFO, and stage 3 stuffs up to
 -- 4 bytes per cycle by decoding all eight stuffing layouts in parallel.
+-- The 0xFF window flags are registered and shift with the buffer, so no compare sits in the loop.
 -- iFlush arrives with the image's last word; oFlushDone pulses with oWordValid on the final beat.
 
 library ieee;
@@ -112,6 +113,10 @@ architecture behavioral of byte_stuffer is
 
   -- FIFO-to-stage-3 skid: breaks the BRAM output route
   signal sSkidWord                : std_logic_vector(FIFO_WIDTH - 1 downto 0);
+  -- Skid window flags, MSB-first: sSkidFF(i) = bits [i, min(i + 8, FIFO_BITS)) all ones,
+  -- sSkidPre(m) = bits [0, m) all ones
+  signal sSkidFF                  : std_logic_vector(0 to FIFO_BITS - 1);
+  signal sSkidPre                 : std_logic_vector(0 to 7);
   signal sSkidData                : std_logic_vector(FIFO_BITS - 1 downto 0);
   signal sSkidValid               : std_logic;
   signal sSkidTaken               : std_logic;
@@ -130,11 +135,54 @@ architecture behavioral of byte_stuffer is
   signal sSkidRoom                : std_logic;                                             -- count <= HOLD_BITS - FIFO_BITS
   signal sCountIs                 : std_logic_vector(0 to HOLD_BITS - FIFO_BITS);          -- one-hot
   signal sPrevFF                  : std_logic;
+  -- sFF(j) = buffer bits [j, min(j + 8, count)) all ones, MSB-first; '1' past the count
+  signal sFF                      : std_logic_vector(0 to HOLD_BITS - 1);
   signal sOutWordReg              : std_logic_vector(OUT_WIDTH - 1 downto 0);
   signal sOutValidReg             : std_logic;
   signal sOutBytesValidReg        : unsigned(log2ceil(OUT_BYTES_PER_CYCLE + 1) - 1 downto 0); -- [0, OUT_BYTES_PER_CYCLE]
   signal sFlushDone               : std_logic;
   signal sLastPending             : std_logic;
+
+  -- MSB-first bits [lo, hi) of v all ones; empty is '1'
+  function ones_window (
+    v  : std_logic_vector;
+    lo : natural;
+    hi : natural
+  ) return std_logic is
+  begin
+
+    for i in lo to hi - 1 loop
+
+      if (v(v'high - i) /= '1') then
+        return '0';
+      end if;
+
+    end loop;
+
+    return '1';
+
+  end function ones_window;
+
+  -- Simulation check of the sFF invariant; windows reaching past a last word's pad are exempt
+  function ff_flags_ok (
+    buf  : std_logic_vector;
+    cnt  : natural;
+    ff   : std_logic_vector;
+    last : std_logic
+  ) return boolean is
+  begin
+
+    for j in ff'range loop
+
+      if ((j + 8 <= cnt or last = '0') and ff(j) /= ones_window(buf, j, math_min(j + 8, math_max(cnt, j)))) then
+        return false;
+      end if;
+
+    end loop;
+
+    return true;
+
+  end function ff_flags_ok;
 
 begin
 
@@ -395,6 +443,8 @@ begin
       if (iRst = '1') then
         sSkidValid <= '0';
         sSkidWord  <= (others => '0');
+        sSkidFF    <= (others => '0');
+        sSkidPre   <= (others => '0');
       else
         if (sSkidTaken = '1') then
           sSkidValid <= '0';
@@ -402,6 +452,19 @@ begin
         if (sFifoOutValid = '1' and sFifoOutReady = '1') then
           sSkidWord  <= sFifoOutData;
           sSkidValid <= '1';
+
+          for i in 0 to FIFO_BITS - 1 loop
+
+            sSkidFF(i) <= ones_window(sFifoOutData(FIFO_WIDTH - 1 downto DATA_LSB), i, math_min(i + 8, FIFO_BITS));
+
+          end loop;
+
+          for m in 0 to 7 loop
+
+            sSkidPre(m) <= ones_window(sFifoOutData(FIFO_WIDTH - 1 downto DATA_LSB), 0, m);
+
+          end loop;
+
         end if;
       end if;
     end if;
@@ -449,6 +512,11 @@ begin
     variable vEmitLastFF : std_logic;
     variable vPadByte    : std_logic_vector(7 downto 0);
 
+    variable vF          : std_logic_vector(0 to HOLD_BITS - 1);
+    variable vRefillFF   : std_logic_vector(0 to HOLD_BITS - 1);
+    variable vNextFF     : std_logic_vector(0 to HOLD_BITS - 1);
+    variable vFFBit      : std_logic;
+
   begin
 
     if rising_edge(iClk) then
@@ -459,6 +527,7 @@ begin
         sCountIs          <= (0 => '1', others => '0');
         sStuffBufferLast  <= '0';
         sPrevFF           <= '0';
+        sFF               <= (others => '1');
         sOutWordReg       <= (others => '0');
         sOutValidReg      <= '0';
         sOutBytesValidReg <= (others => '0');
@@ -494,6 +563,7 @@ begin
           sLastPending     <= '0';
           sStuffBufferLast <= '0';
           sPrevFF          <= '0';
+          sFF              <= (others => '1');
           sStuffBuffer     <= (others => '0');
           sStuffBufferBits <= (others => '0');
           sSkidRoom        <= '1';
@@ -511,7 +581,33 @@ begin
         vEmitData        := (others => '0');
         sFlushDone       <= '0';
 
-        -- (1) Refill from the skid; only the last word may be partial
+        -- (1) Refill from the skid; only the last word may be partial. Flags of windows that start
+        -- in the old bits join the old flag with the skid prefix; the rest are the skid's own.
+        vRefillFF := (others => '0');
+
+        for offset in 0 to HOLD_BITS - FIFO_BITS loop
+
+          for j in 0 to HOLD_BITS - 1 loop
+
+            if (j < offset) then
+              vFFBit := sFF(j) and sSkidPre(j + 8 - offset);
+            elsif (j - offset < FIFO_BITS) then
+              vFFBit := sSkidFF(j - offset);
+            else
+              vFFBit := '1';
+            end if;
+            vRefillFF(j) := vRefillFF(j) or (vFFBit and sCountIs(offset));
+
+          end loop;
+
+        end loop;
+
+        if (sSkidTaken = '1') then
+          vF := vRefillFF;
+        else
+          vF := sFF;
+        end if;
+
         if (sSkidTaken = '1') then
           -- At most 8 old bits: the 9 alignments are fixed wiring. Stale trailing bits
           -- are copied but never emitted, and the next refill overwrites them.
@@ -544,11 +640,11 @@ begin
         end loop;
 
         -- (2) FF flags at fixed windows
-        ff0  := bool2bit(vStuffBuffer(HOLD_BITS - 1 downto HOLD_BITS - 8) = x"FF");
-        ff1a := bool2bit(vStuffBuffer(HOLD_BITS - 8 downto HOLD_BITS - 15) = x"FF");
-        ff1b := bool2bit(vStuffBuffer(HOLD_BITS - 9 downto HOLD_BITS - 16) = x"FF");
-        ff2a := bool2bit(vStuffBuffer(HOLD_BITS - 16 downto HOLD_BITS - 23) = x"FF");
-        ff2b := bool2bit(vStuffBuffer(HOLD_BITS - 17 downto HOLD_BITS - 24) = x"FF");
+        ff0  := vF(0);
+        ff1a := vF(7);
+        ff1b := vF(8);
+        ff2a := vF(15);
+        ff2b := vF(16);
 
         -- (3) Decode all layouts in parallel from sPrevFF and the fixed windows only
         vPath(0) := not vPrevFF and not ff0 and not ff1b and not ff2b;
@@ -588,7 +684,10 @@ begin
             end if;
             vBytesMask     := (others => vLaneSelected);
             vEmitBytesBits := vEmitBytesBits or (to_unsigned(lane + 1, vEmitBytesBits'length) and vBytesMask);
-            vEmitLastFF    := vEmitLastFF or (vLaneSelected and bool2bit(vCandidateByte = x"FF"));
+            -- A stuffed lane leads with '0'; an unstuffed one is the 8-bit window at its start
+            if (STUFF_LAYOUT(p)(lane) = '0') then
+              vEmitLastFF := vEmitLastFF or (vLaneSelected and vF(LANE_START(p, lane)));
+            end if;
 
             for k in CONSUME_BITS'range loop
 
@@ -610,6 +709,7 @@ begin
         vTakeShift(0) := not iReady or vRefillLast or not vCountGe(7) or
                          (not vPrevFF and not vCountGe(8));
         vNextBuffer := (others => '0');
+        vNextFF     := (others => '0');
         vNextCount  := (others => '0');
         vNextRoom   := '0';
         vNextIs     := (others => '0');
@@ -620,6 +720,16 @@ begin
           vCountMask  := (others => vTakeShift(k));
           vNextBuffer := vNextBuffer or
                          (std_logic_vector(shift_left(unsigned(vStuffBuffer), CONSUME_BITS(k))) and vBufferMask);
+
+          for j in 0 to HOLD_BITS - 1 loop
+
+            if (j + CONSUME_BITS(k) < HOLD_BITS) then
+              vNextFF(j) := vNextFF(j) or (vTakeShift(k) and vF(j + CONSUME_BITS(k)));
+            else
+              vNextFF(j) := vNextFF(j) or vTakeShift(k);
+            end if;
+
+          end loop;
           -- Unselected candidates may wrap; their mask is zero
           if (vRefillLast = '1' and k = 0) then
             vCandidate := sStuffBufferBits + resize(unsigned(sBvQueueOutData), vCandidate'length);
@@ -665,6 +775,7 @@ begin
         sStuffBufferBits <= to_unsigned(vStuffBufferBits, sStuffBufferBits'length);
         sSkidRoom        <= vNextRoom;
         sCountIs         <= vNextIs;
+        sFF              <= vNextFF;
         sStuffBufferLast <= vStuffBufferLast;
         sPrevFF          <= vPrevFF;
       end if;
@@ -689,6 +800,9 @@ begin
   postponed assert is_x(sStuffBufferBits) or iRst = '1'
                    or (sSkidRoom = '1') = (sStuffBufferBits <= HOLD_BITS - FIFO_BITS)
     report "byte_stuffer: decoded count disagrees with the count" severity error;
+  postponed assert iRst = '1' or is_x(sStuffBuffer) or is_x(sStuffBufferBits) or
+                   ff_flags_ok(sStuffBuffer, to_integer(sStuffBufferBits), sFF, sStuffBufferLast)
+    report "byte_stuffer: registered FF flags disagree with the buffer" severity error;
   postponed assert is_x(sOutBytesValidReg) or sOutBytesValidReg <= OUT_BYTES_PER_CYCLE
     report "byte_stuffer: output byte count past OUT_BYTES_PER_CYCLE" severity error;
 
