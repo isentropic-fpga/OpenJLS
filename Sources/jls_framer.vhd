@@ -87,7 +87,7 @@ architecture behavioral of jls_framer is
 
   type ring_t is array(natural range <>) of std_logic_vector(7 downto 0);
 
-  -- Next-beat flags for one emit case; signed arithmetic, so unselected cases may go negative
+  -- Next-beat flags for one emit case
   type beat_flags_t is record
     data_fire : boolean;
     data_emit : natural range 1 to BYTES_OUT;
@@ -602,7 +602,7 @@ begin
         sReady         <= vFifoByteCount < BUFFER_BYTES_NOMINAL;
         sEoiFifo       <= vEoiIdxFifo;
         sEoiCount      <= vEoiCount;
-        -- Next-beat flags per emit case from registers and inputs only; the FSM's vCase picks one last
+        -- Flags for each emit case from registers and inputs, off the FSM path; vCase selects one
         vIn := 0;
         if (iValid = '1') then
           vIn := to_integer(iByteEnable);
@@ -654,7 +654,6 @@ begin
 
         end loop;
 
-        -- Reference: the flags from the updated FIFO state
         vRef.in_data   := vEoiCount > 0 and vEoiIdxFifo(0) < BYTES_OUT;
         vRef.in_hdr    := vEoiCount > 0 and vEoiIdxFifo(0) < HDR_DATA_BYTES;
         vRef.data_fire := vRef.in_data or vFifoByteCount >= BYTES_OUT;

@@ -91,9 +91,7 @@ architecture sim of tb_openjls_top_osvvm is
      x"A9", x"ED", x"CA", x"4E", x"00", x"FF", x"D9");
   constant RI_EXP_BYTES : natural := RI_EXPECTED'length;
 
-  -- Back-to-back same-context updates with C[Q] saturated: the speculative
-  -- C+1 (P) and C-1 (M) chains must not be used past MAX_C/MIN_C. Row 0 keeps
-  -- every pixel in one context. Expected bytes are the CharLS golden.
+  -- C[Q] at MAX_C/MIN_C under forwarding must stay off chains P/M; row 0 keeps one context
   constant CSAT_W : natural := 136;
 
   constant CSAT_P_PIXELS : pixel_array_t(0 to CSAT_W - 1) :=
@@ -695,7 +693,6 @@ begin
     run_golden(RI_PIXELS, RI_EXPECTED, reqRI, "RI-forward");
 
     -- Regular context forwarding with C[Q] saturated ---
-    -- Wider than the 48x48 variant's MAX
     if (MAX_W >= CSAT_W) then
       reqCSat := GetReqID("OJLS.CSatForward", CSAT_P_EXPECTED'length + CSAT_M_EXPECTED'length);
       sImgW   <= CSAT_W;
