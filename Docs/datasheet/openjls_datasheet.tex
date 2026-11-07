@@ -145,7 +145,7 @@ Lossless JPEG-LS encoder for FPGAs.\\One pixel per clock, no external memory.\pa
 \vfill
 {\color{divider}\hrule height 0.4pt}\vspace{6mm}
 \noindent
-\covermetric{340\,MPx/s}{Throughput, 12-bit}\hfill
+\covermetric{440\,MPx/s}{Throughput, 12-bit}\hfill
 \covermetric{1.6:1}{Compression}\hfill
 \covermetric{8--16\,bit}{Pixel depth}\hfill
 \covermetric*{11639/11639}{Byte-exact images}
@@ -458,7 +458,7 @@ the default strategy and near-identical across strategies.
 
 \subsection{Image width sweep}
 \texttt{BITNESS = 12}, \texttt{MAX\_IMAGE\_WIDTH} from 4096 to 65535. The design is
-congestion-bound, so the winning strategy shifts with image size and with netlist
+not congestion-bound (no run reports a congested region), but the critical paths are spread across blocks, so the winning strategy shifts with image size and with netlist
 changes; the best-of band (\about405--439\,MHz) is the headline figure.
 Strategies differ by 7--74\,MHz per size, and a default run lands up to
 \about45\,MHz below it.
