@@ -11,7 +11,7 @@ OpenJLS is an open, verification-signed JPEG-LS encoder IP core for FPGAs - the 
 
 It implements the JPEG-LS standard (ISO/IEC 14495-1 / ITU-T T.87), a low-complexity lossless image codec reaching ~1.6:1 on natural photographs. Every release is checked byte-exact against an independent reference encoder across 11639 images at 8–16 bits on silicon, 11555 of them also at RTL, and on a post-synthesis subset.
 
-OpenJLS reaches ~340 MHz with 12-bit pixels on a Xilinx UltraScale+ ZU7EG (the MPSoC family used in onboard processors such as the Xiphos Q8), processing one pixel per clock (~340 Mpixel/s) for ~6.3k LUTs and no external memory; 8-bit reaches ~360 MHz and 16-bit ~325 MHz. It handles single-component (grayscale) data, so a multi-band sensor instantiates one compressor per band - resource usage is low enough that all bands run in parallel cheaply.
+OpenJLS reaches ~440 MHz with 12-bit pixels on a Xilinx UltraScale+ ZU7EG (the MPSoC family used in onboard processors such as the Xiphos Q8), processing one pixel per clock (~440 Mpixel/s) for ~6.6k LUTs and no external memory; 8-bit reaches ~450 MHz and 16-bit ~375 MHz. It handles single-component (grayscale) data, so a multi-band sensor instantiates one compressor per band - resource usage is low enough that all bands run in parallel cheaply.
 
 The RTL is vendor-neutral by construction (plain VHDL-1993 on open-logic memory primitives, which are VHDL-2008) and builds in any synthesis tool; the figures above were characterized on Xilinx.
 
@@ -40,10 +40,10 @@ The RTL is vendor-neutral by construction (plain VHDL-1993 on open-logic memory 
 | **Image size** | Up to ~64k × 64k px<sup>4</sup> |
 | **Throughput** | 1 pixel / clock |
 | **Latency** | 15 cycles |
-| **f<sub>max</sub>** | ~340 MHz<sup>5</sup> |
+| **f<sub>max</sub>** | ~440 MHz<sup>5</sup> |
 | **Interface** | Ready/valid stream<sup>6</sup> |
 | **Memory** | On-chip only<sup>7</sup> |
-| **Resources** | 5.4–7.7k LUT, 1.9–2.4k FF<sup>8</sup> |
+| **Resources** | 5.5–8.0k LUT, 2.2–2.8k FF<sup>8</sup> |
 | **Portability** | Vendor-agnostic VHDL |
 
 <sub>
@@ -75,7 +75,7 @@ OpenJLS follows the JPEG-LS encoding pipeline:
 
 **Context memory** holds A, B, C, N and Nn for each context. A token reads it in S2 and receives the data in S4, but the BRAM word is wrong if the context hasn't been used yet in this image, or if a token up to four positions ahead just updated it. Per-context init flags handle the first case, so the memory resets at end of image without rewriting the RAM. In the second, the memory forwards writes from tokens two, three and four positions ahead, while a token one position ahead is still in S5, so its update comes from there.
 
-**Regular-mode prediction** runs four parallel chains, because the correct C[Q] comes too late in the cycle to select first. Chain D takes the BRAM word. Chain C takes S5's C[Q] on a match with the token ahead, otherwise the memory's alternative (Alt.) word: the init value or a forwarded write. Chains P and M take S5's C[Q] + 1 and - 1, covering A.13's possible results. The final select picks one chain's result just before Reg4.
+**Regular-mode prediction** runs four parallel chains, because the correct C[Q] comes too late in the cycle to select first. Chain D takes the BRAM word. Chain C takes S5's C[Q] on a match with the token ahead, otherwise the memory's alternative (Alt.) word: the init value or a forwarded write. Chains P and M take S5's C[Q] + 1 and - 1, covering A.13's possible results; the ±1 is folded into their clip bounds, and a C[Q] already at MAX_C or MIN_C stays on chain C. The final select picks one chain's result just before Reg4.
 
 The hardware architecture is based on the optimizations in Mert's [*Key Architectural Optimizations for Hardware Efficient JPEG-LS Encoder*](https://www.researchgate.net/publication/331795298_Key_Architectural_Optimizations_for_Hardware_Efficient_JPEG-LS_Encoder), reworked into a vendor-agnostic, fully pipelined VHDL core.
 
@@ -167,12 +167,12 @@ Each configuration is implemented with four Vivado strategies. fmax tables in MH
 
 | `MAX_IMAGE_WIDTH` | Default | ExplorePostRoutePhysOpt | NetDelay_high | Congestion_SpreadLogic_high |
 |------------------:|--------:|------------------------:|--------------:|----------------------------:|
-| 4096 | 331.2 | 330.4 | **358.6** | 331.2 |
-| 8192 | 340.0 | 331.4 | **341.5** | 337.4 |
-| 12288 | **340.4** | 338.3 | 325.7 | 327.3 |
-| 16384 | 321.8 | 336.1 | **339.9** | 319.0 |
-| 32768 | 340.6 | 336.9 | **345.3** | 330.1 |
-| 65535 | 310.9 | 319.8 | 302.9 | **334.9** |
+| 4096 | 424.1 | 404.5 | **436.3** | 430.7 |
+| 8192 | 401.0 | **432.9** | 430.5 | 398.9 |
+| 12288 | 434.6 | 436.7 | 432.1 | **438.8** |
+| 16384 | 389.9 | 414.2 | **434.8** | 409.8 |
+| 32768 | 385.5 | 341.9 | **416.0** | 401.3 |
+| 65535 | 379.4 | **404.7** | 360.5 | 393.6 |
 
 ### Resource usage vs `MAX_IMAGE_WIDTH`
 
@@ -181,12 +181,12 @@ Each configuration is implemented with four Vivado strategies. fmax tables in MH
 
 | `MAX_IMAGE_WIDTH` | LUTs | FFs | BRAM tiles |
 |------------------:|-----:|----:|-----------:|
-| 4096 | 6322 | 2172 | 2.5 |
-| 8192 | 6380 | 2176 | 4.0 |
-| 12288 | 6320 | 2178 | 5.5 |
-| 16384 | 6437 | 2195 | 6.5 |
-| 32768 | 6366 | 2218 | 13.0 |
-| 65535 | 6392 | 2227 | 25.0 |
+| 4096 | 6540 | 2507 | 2.5 |
+| 8192 | 6564 | 2464 | 4.0 |
+| 12288 | 6609 | 2517 | 5.5 |
+| 16384 | 6632 | 2493 | 6.5 |
+| 32768 | 6621 | 2539 | 13.0 |
+| 65535 | 6644 | 2515 | 25.0 |
 
 ### Maximum frequency vs `BITNESS`
 
@@ -195,11 +195,11 @@ Each configuration is implemented with four Vivado strategies. fmax tables in MH
 
 | `BITNESS` | Default | ExplorePostRoutePhysOpt | NetDelay_high | Congestion_SpreadLogic_high |
 |----------:|--------:|------------------------:|--------------:|----------------------------:|
-| 8 | 347.1 | **358.7** | 350.1 | 354.2 |
-| 10 | 347.1 | 314.9 | 354.9 | **364.8** |
-| 12 | **340.4** | 338.3 | 325.7 | 327.3 |
-| 14 | 321.3 | 322.7 | 313.7 | **325.9** |
-| 16 | 320.7 | **323.1** | 300.1 | 312.5 |
+| 8 | 433.3 | **449.4** | 445.4 | 440.9 |
+| 10 | 411.0 | 440.7 | **447.2** | 417.4 |
+| 12 | 434.6 | 436.7 | 432.1 | **438.8** |
+| 14 | 405.5 | 413.9 | **421.2** | 402.6 |
+| 16 | 334.1 | **377.1** | 348.3 | 338.1 |
 
 ### Resource usage vs `BITNESS`
 
@@ -208,11 +208,11 @@ Each configuration is implemented with four Vivado strategies. fmax tables in MH
 
 | `BITNESS` | LUTs | FFs | BRAM tiles |
 |----------:|-----:|----:|-----------:|
-| 8 | 5408 | 1924 | 3.5 |
-| 10 | 5914 | 2055 | 4.0 |
-| 12 | 6320 | 2178 | 5.5 |
-| 14 | 6741 | 2307 | 6.5 |
-| 16 | 7700 | 2444 | 7.5 |
+| 8 | 5506 | 2208 | 3.5 |
+| 10 | 6123 | 2371 | 4.0 |
+| 12 | 6609 | 2517 | 5.5 |
+| 14 | 7275 | 2669 | 6.5 |
+| 16 | 8019 | 2782 | 7.5 |
 
 ---
 
@@ -222,8 +222,8 @@ OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level
 
 | Suite | Status | Test/Cov | Summary |
 |---|---|---|---|
-| NVC code coverage | info | 99.8% | Statement coverage<sup>1</sup> |
-| OSVVM suite | PASS | 100% | 126 tests<sup>2</sup> |
+| NVC code coverage | info | 99.7% | Statement coverage<sup>1</sup> |
+| OSVVM suite | PASS | 100% | 128 tests<sup>2</sup> |
 | Golden model | PASS | 100% | 11555/11555 images<sup>3</sup> |
 | Post-synth OSVVM | PASS | 100% | Control-plane stress<sup>4</sup> |
 | Post-synth golden model | PASS | 100% | 167/167 images<sup>5</sup> |
@@ -231,9 +231,9 @@ OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level
 
 <sub>
 <sup>1</sup> Per-DUT-file breakdown.<br>
-<sup>2</sup> 8,948,681 affirmations (module + top + AXI wrappers).<br>
+<sup>2</sup> 10,984,893 affirmations (module + top + AXI wrappers).<br>
 <sup>3</sup> Byte-exact vs CharLS: 5555 from reset, 6000 same-size images streamed with no reset between them.<br>
-<sup>4</sup> 153,946 affirmations on the gate-level netlist.<br>
+<sup>4</sup> 155,469 affirmations on the gate-level netlist.<br>
 <sup>5</sup> 8-bit images up to 0.05 MP, byte-exact vs CharLS.<br>
 <sup>6</sup> Byte-exact vs CharLS on PYNQ-Z2 silicon at 71.43 MHz: 5639 from reset, 6000 same-size images streamed with no reset between them.
 </sub>

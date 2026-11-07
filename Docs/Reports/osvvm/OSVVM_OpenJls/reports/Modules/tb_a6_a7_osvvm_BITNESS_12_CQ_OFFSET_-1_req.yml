@@ -1,0 +1,5 @@
+- Requirement: "T87.A6-A7"
+  TestCases: 
+  - TestName: "tb_a6_a7_osvvm"
+    Status: PASSED
+    Results: {Goal: 20000, Passed: 54870, Errors: 0, Checked: 54870, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}

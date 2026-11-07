@@ -163,7 +163,7 @@ table, th, td {
      3: &nbsp; --&nbsp;This&nbsp;file&nbsp;is&nbsp;part&nbsp;of&nbsp;OpenJLS.&nbsp;Available&nbsp;under&nbsp;GPLv3&nbsp;or&nbsp;a&nbsp;
      4: &nbsp; --&nbsp;commercial&nbsp;license.&nbsp;See&nbsp;LICENSE&nbsp;and&nbsp;README&nbsp;for&nbsp;details.&nbsp;
      5: &nbsp; --&nbsp;
-     6: &nbsp; --&nbsp;a20_2_compute_k:&nbsp;T.87&nbsp;A.20.2,&nbsp;A.10&nbsp;shared&nbsp;by&nbsp;both&nbsp;modes,&nbsp;from&nbsp;A[Q]&nbsp;or&nbsp;TEMP&nbsp;
+     6: &nbsp; --&nbsp;a20_2_compute_k:&nbsp;T.87&nbsp;A.20&nbsp;+&nbsp;A.20.2,&nbsp;A.10&nbsp;shared&nbsp;by&nbsp;both&nbsp;modes,&nbsp;from&nbsp;A[Q]&nbsp;or&nbsp;TEMP&nbsp;=&nbsp;A[Q]&nbsp;+&nbsp;N[Q]/2&nbsp;
      7: &nbsp; &nbsp;
      8: &nbsp; library&nbsp;ieee;&nbsp;
      9: &nbsp; &nbsp;&nbsp;use&nbsp;ieee.std_logic_1164.all;&nbsp;
@@ -178,8 +178,8 @@ table, th, td {
     18: &nbsp; &nbsp;&nbsp;);&nbsp;
     19: &nbsp; &nbsp;&nbsp;port&nbsp;(&nbsp;
     20: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;iRunInterruption&nbsp;:&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;std_logic;&nbsp;
-    21: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;iAq&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;unsigned&nbsp;(A_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
-    22: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;iTemp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;unsigned&nbsp;(A_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+    21: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;iRItype&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;std_logic;&nbsp;
+    22: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;iAq&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;unsigned&nbsp;(A_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
     23: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;iNq&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;unsigned&nbsp;(N_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
     24: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;oK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;out&nbsp;&nbsp;&nbsp;unsigned&nbsp;(K_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0)&nbsp;
     25: &nbsp; &nbsp;&nbsp;);&nbsp;
@@ -187,12 +187,12 @@ table, th, td {
     27: &nbsp; &nbsp;
     28: &nbsp; architecture&nbsp;behavioral&nbsp;of&nbsp;a20_2_compute_k&nbsp;is&nbsp;
     29: &nbsp; &nbsp;
-    30: &nbsp; &nbsp;&nbsp;signal&nbsp;sAqSel&nbsp;:&nbsp;unsigned(A_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+    30: &nbsp; &nbsp;&nbsp;signal&nbsp;sAddHalfN&nbsp;:&nbsp;std_logic;&nbsp;
     31: &nbsp; &nbsp;
     32: &nbsp; begin&nbsp;
     33: &nbsp; &nbsp;
-    34: &nbsp; &nbsp;&nbsp;sAqSel&nbsp;&lt;=&nbsp;iTemp&nbsp;when&nbsp;iRunInterruption&nbsp;=&nbsp;'1'&nbsp;else&nbsp;
-    35: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iAq;&nbsp;
+    34: &nbsp; &nbsp;&nbsp;--&nbsp;TEMP&nbsp;=&nbsp;A[Q]&nbsp;only&nbsp;for&nbsp;RItype&nbsp;0,&nbsp;same&nbsp;as&nbsp;regular&nbsp;mode&nbsp;
+    35: &nbsp; &nbsp;&nbsp;sAddHalfN&nbsp;&lt;=&nbsp;iRunInterruption&nbsp;and&nbsp;iRItype;&nbsp;
     36: &nbsp; &nbsp;
     37: &nbsp; &nbsp;&nbsp;u_a10&nbsp;:&nbsp;entity&nbsp;work.a10_compute_k(behavioral)&nbsp;
     38: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;generic&nbsp;map&nbsp;(&nbsp;
@@ -201,10 +201,15 @@ table, th, td {
     41: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;N_WIDTH&nbsp;=&gt;&nbsp;N_WIDTH&nbsp;
     42: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;)&nbsp;
     43: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;port&nbsp;map&nbsp;(&nbsp;
-    44: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iNq&nbsp;=&gt;&nbsp;iNq,&nbsp;
-    45: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iAq&nbsp;=&gt;&nbsp;sAqSel,&nbsp;
-    46: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;oK&nbsp;&nbsp;=&gt;&nbsp;oK&nbsp;
-    47: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;);&nbsp;
-    48: &nbsp; &nbsp;
-    49: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
+    44: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iNq&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;iNq,&nbsp;
+    45: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iAq&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;iAq,&nbsp;
+    46: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iAddHalfN&nbsp;=&gt;&nbsp;sAddHalfN,&nbsp;
+    47: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;oK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;oK&nbsp;
+    48: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;);&nbsp;
+    49: &nbsp; &nbsp;
+    50: &nbsp; &nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(iAq)&nbsp;or&nbsp;is_x(iNq)&nbsp;or&nbsp;sAddHalfN&nbsp;/=&nbsp;'1'&nbsp;or&nbsp;
+    51: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to_integer(iAq)&nbsp;+&nbsp;to_integer(iNq)&nbsp;/&nbsp;2&nbsp;&lt;&nbsp;2&nbsp;**&nbsp;A_WIDTH&nbsp;
+    52: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"a20_2:&nbsp;TEMP&nbsp;past&nbsp;A_WIDTH"&nbsp;severity&nbsp;error;&nbsp;
+    53: &nbsp; &nbsp;
+    54: &nbsp; end&nbsp;architecture&nbsp;behavioral;&nbsp;
 </code></pre>

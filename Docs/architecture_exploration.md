@@ -366,7 +366,7 @@ Routed, 2.35 ns, 4 strategies, size 12288, mean / best MHz:
 
 - 5 of 8 runs meet 2.35 ns (capped); the worst slacks spread over S2, S4, S5, ctx RAM, framer and stuffer within ±0.05 ns. Sweeps move to 2.2 ns.
 
-Verified: OSVVM 128/128 (A.6/A.7 offsets ±1 added), golden sample 906/906 (MAX_MP=0.01), streams. Dropping the C = MAX_C guard fails 117 golden images (OSVVM misses it); dropping the height-1 wrap fails 6 top TBs.
+Verified: OSVVM 128/128 (A.6/A.7 offsets ±1 added), golden sample 906/906 (MAX_MP=0.01), streams. Dropping the C = MAX_C guard fails 117 golden images (OSVVM missed it, and the MIN_C guard too, until `OJLS.CSatForward`); dropping the height-1 wrap fails 6 top TBs.
 
 ### Framer next-beat flags per emit case
 
@@ -402,6 +402,23 @@ Routed, 2.2 ns, 4 strategies, size 12288, mean / best MHz:
 ### Wall
 
 At 2.2 ns the worst path per block (S1, S2, S4, S5, ctx RAM, framer, packer, stuffer, A.15/16) sits within ~0.1 ns of the others in every run, at 6–8 logic levels. A single fix now moves less than the ±0.4 ns placement noise; the remaining structural loop is the S4 B/C recurrence (A.12/A.13 already fused). Stopped at 2270f05.
+
+### Full characterization (80c3c98, 2026-11-07)
+
+40 routed runs at 2.2 ns, none met. Best MHz, vs the v1.4 README:
+
+| Sweep | 8b | 10b | 12b | 14b | 16b |
+|---|---|---|---|---|---|
+| 12288, by BITNESS | 449.4 (358.7) | 447.2 (364.8) | 438.8 (340.4) | 421.2 (325.9) | 377.1 (323.1) |
+
+| Sweep | 4096 | 8192 | 12288 | 16384 | 32768 | 65535 |
+|---|---|---|---|---|---|---|
+| 12b, by width | 436.3 (358.6) | 432.9 (341.5) | 438.8 (340.4) | 434.8 (339.9) | 416.0 (345.3) | 404.7 (334.9) |
+
+- 12b/12288 vs v1.4: LUT 6320 → 6609 (+4.6%), FF 2178 → 2517 (+16%).
+- 16b is the outlier: three strategies at 334–348 MHz. Worst path: line-buffer BRAM → S1 gradients (3 CARRY8, 17-bit) → `sReg1Q1`/`sReg1Q3`, 8–9 levels. Next candidate: a line-buffer output register, with neighbour re-timing.
+- Strategy spread grows with width (32768: 342–416 MHz).
+- Verified on 80c3c98: OSVVM 128/128, golden 5555/5555 + streams 18/18, T.87, post-synth OSVVM and golden 167/167.
 
 ## Open decisions
 1. Trimmed core: a separate top (`openjls_core`, Mert's interface, same stage entities) vs. feature generics on the current top. Leaning separate top: generics multiply the verified configurations.
