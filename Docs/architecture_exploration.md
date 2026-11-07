@@ -384,6 +384,25 @@ Routed, 2.2 ns, 4 strategies, size 12288, mean / best MHz:
 
 Verified: OSVVM 128/128, golden sample 906/906 (MAX_MP=0.01), streams; offsetting the pushed footer head fails 28 TBs through the assert.
 
+### Raw suffix from the registered count, signed A.4 compares (reverted)
+
+- A.15/16: on a break iRunCnt = iRunCntPrev, so the suffix used the register, taking A.14 off the S1→S2 RawVal path (−0.48 ns in one 2.2 ns run).
+- A.4: signed gradient against ±T in parallel instead of abs() then compare, for the line-buffer→Q1 path (−0.43 ns).
+
+Routed, 2.2 ns, 4 strategies, size 12288, mean / best MHz:
+
+| BITNESS | Framer flags | Raw + A.4 |
+|---|---|---|
+| 8 | 442.3 / 449.4 | 429.1 / 450.4 |
+| 12 | 435.6 / 438.8 | 403.7 / 422.1 |
+
+- Neither changed path appears in the top 20 of either sweep; the loss sits in untouched paths: ctx RAM address from Q1/Q2 (−0.45 ns), S4 Errval→Bq (−0.28 ns), framer `sWrPtr`→ring (−0.32 ns), packer from `sStallLogic` (−0.22 ns). Placement noise from a small netlist change, no upside in the hot paths; reverted.
+- Verified before the sweep: OSVVM 128/128, golden sample 906/906; an A.4 boundary mutation fails 9 TBs.
+
+### Wall
+
+At 2.2 ns the worst path per block (S1, S2, S4, S5, ctx RAM, framer, packer, stuffer, A.15/16) sits within ~0.1 ns of the others in every run, at 6–8 logic levels. A single fix now moves less than the ±0.4 ns placement noise; the remaining structural loop is the S4 B/C recurrence (A.12/A.13 already fused). Stopped at 2270f05.
+
 ## Open decisions
 1. Trimmed core: a separate top (`openjls_core`, Mert's interface, same stage entities) vs. feature generics on the current top. Leaning separate top: generics multiply the verified configurations.
 2. Packer + stuffer merge: trimmed core only, or a main candidate.
