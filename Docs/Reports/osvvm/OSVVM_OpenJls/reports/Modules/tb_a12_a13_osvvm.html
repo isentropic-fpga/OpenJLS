@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <link rel="stylesheet" href="../../reports/CssOsvvmStyle.css">
-  <title>tb_a20_osvvm Test Case Report</title>
+  <title>tb_a12_a13_osvvm Test Case Report</title>
 </head>
 <body>
 <header>
-  <h1>tb_a20_osvvm Test Case Report</h1>
+  <h1>tb_a12_a13_osvvm Test Case Report</h1>
 </header>
 <main>
   <div class="summary-parent">
@@ -18,8 +18,8 @@
         <tbody>
           <tr><td><a href="#AlertSummary">Alert Report</a></td></tr>
           <tr><td><a href="#FunctionalCoverage">Functional Coverage Report(s)</a></td></tr>
-          <tr><td><a href="../../logs/OSVVM_OpenJls_log.html#Modules_tb_a20_osvvm">Link to Simulation Results</a></td></tr>
-          <tr><td><a href="../../../Modules/tb_a20_osvvm.vhd">tb_a20_osvvm.vhd</a></td></tr>
+          <tr><td><a href="../../logs/OSVVM_OpenJls_log.html#Modules_tb_a12_a13_osvvm">Link to Simulation Results</a></td></tr>
+          <tr><td><a href="../../../Modules/tb_a12_a13_osvvm.vhd">tb_a12_a13_osvvm.vhd</a></td></tr>
           <tr><td><a href="../../OSVVM_OpenJls.html">OSVVM_OpenJls Build Summary</a></td></tr>
         </tbody>
       </table>
@@ -30,9 +30,9 @@
   </div>
   <hr />
   <div class="AlertSummary">
-    <h2 id="AlertSummary">tb_a20_osvvm Alert Report</h2>
+    <h2 id="AlertSummary">tb_a12_a13_osvvm Alert Report</h2>
     <div class="AlertSettings">
-      <details open><summary class="subtitle">tb_a20_osvvm Alert Settings</summary>
+      <details open><summary class="subtitle">tb_a12_a13_osvvm Alert Settings</summary>
         <table class="AlertSettings">
           <thead>
             <tr>
@@ -90,7 +90,7 @@
       </details>
     </div>
     <div class="AlertResults">
-      <details open><summary class="subtitle">tb_a20_osvvm Alert Results</summary>
+      <details open><summary class="subtitle">tb_a12_a13_osvvm Alert Results</summary>
         <table class="AlertResults">
           <thead>
             <tr>
@@ -117,10 +117,10 @@
           </thead>
           <tbody>
             <tr>
-              <td>tb_a20_osvvm</td>
+              <td>tb_a12_a13_osvvm</td>
               <td class="passed">PASSED</td>
-              <td class="passed">442</td>
-              <td class="passed">442</td>
+              <td class="passed">259224</td>
+              <td class="passed">259224</td>
               <td class="passed">0</td>
               <td >1</td>
               <td >1</td>
@@ -162,7 +162,22 @@
               <td >0</td>
             </tr>
             <tr>
-              <td>&emsp; &emsp; G4.Run RItype</td>
+              <td>&emsp; &emsp; G2.Rescale x clamp event</td>
+              <td class="passed">PASSED</td>
+              <td class="passed">0</td>
+              <td class="passed">0</td>
+              <td class="passed">0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+              <td >0</td>
+            </tr>
+            <tr>
+              <td>&emsp; &emsp; G4.Coding cUpdate</td>
               <td class="passed">PASSED</td>
               <td class="passed">0</td>
               <td class="passed">0</td>
@@ -222,13 +237,13 @@
               <td >0</td>
             </tr>
             <tr>
-              <td>&emsp; &emsp; T87.A20</td>
+              <td>&emsp; &emsp; T87.A12A13</td>
               <td class="passed">PASSED</td>
-              <td class="passed">439</td>
-              <td class="passed">439</td>
+              <td class="passed">259220</td>
+              <td class="passed">259220</td>
               <td class="passed">0</td>
-              <td >50</td>
-              <td >439</td>
+              <td >300</td>
+              <td >259220</td>
               <td >0</td>
               <td >0</td>
               <td >0</td>
@@ -254,8 +269,8 @@
             <tr>
               <td>&emsp; CoverageClosure</td>
               <td class="passed">PASSED</td>
-              <td class="passed">3</td>
-              <td class="passed">3</td>
+              <td class="passed">4</td>
+              <td class="passed">4</td>
               <td class="passed">0</td>
               <td >0</td>
               <td >0</td>
@@ -273,11 +288,11 @@
   </div>
   <hr />
   <div class="FunctionalCoverage">
-    <h2 id="FunctionalCoverage">tb_a20_osvvm Coverage Report</h2>
+    <h2 id="FunctionalCoverage">tb_a12_a13_osvvm Coverage Report</h2>
     <p>Total Coverage: 100.00</p>
-    <details open><summary class="subtitle">G4.Run RItype Coverage Model &emsp; &emsp; Coverage: 100.0</summary>
+    <details open><summary class="subtitle">G2.Rescale x clamp event Coverage Model &emsp; &emsp; Coverage: 100.0</summary>
       <div class="CoverageSettings">
-        <details><summary class="subindented">G4.Run RItype Coverage Settings</summary>
+        <details><summary class="subindented">G2.Rescale x clamp event Coverage Settings</summary>
           <table class="CoverageSettings">
             <thead>
               <tr>
@@ -289,26 +304,27 @@
               <tr><td>CovWeight</td><td>1</td></tr>
               <tr><td>Goal</td><td>100.0</td></tr>
               <tr><td>WeightMode</td><td>REMAIN</td></tr>
-              <tr><td>Seeds</td><td>1113734692, &nbsp;314965683</td></tr>
+              <tr><td>Seeds</td><td>1386741975, &nbsp;140129950</td></tr>
               <tr><td>CountMode</td><td>COUNT_FIRST</td></tr>
               <tr><td>IllegalMode</td><td>ILLEGAL_ON</td></tr>
               <tr><td>Threshold</td><td>45.0</td></tr>
               <tr><td>ThresholdEnable</td><td>FALSE</td></tr>
               <tr><td>IsRequirement</td><td>FALSE</td></tr>
-              <tr><td>TotalCovCount</td><td>2</td></tr>
-              <tr><td>TotalCovGoal</td><td>2</td></tr>
+              <tr><td>TotalCovCount</td><td>10</td></tr>
+              <tr><td>TotalCovGoal</td><td>10</td></tr>
             </tbody>
           </table>
         </details>
       </div>
       <div class="CoverageTable">
-        <details open><summary class="subindented">G4.Run RItype Coverage Bins</summary>
+        <details open><summary class="subindented">G2.Rescale x clamp event Coverage Bins</summary>
           <table class="CoverageTable">
             <thead>
               <tr>
                 <th rowspan="2">Name</th>
                 <th rowspan="2">Type</th>
-                <th rowspan="2">RItype</th>
+                <th rowspan="2">rescale</th>
+                <th rowspan="2">event</th>
                 <th rowspan="2">Count</th>
                 <th rowspan="2">AtLeast</th>
                 <th rowspan="2">Percent<br>Coverage</th>
@@ -316,20 +332,174 @@
             </thead>
             <tbody>
               <tr>
-                <td>A only</td>
+                <td>rescale=0 / negative adjust</td>
                 <td>COUNT</td>
                 <td>0</td>
-                <td>150</td>
+                <td>0</td>
+                <td>8866</td>
                 <td>1</td>
-                <td>15000.0</td>
+                <td>886600.0</td>
               </tr>
               <tr>
-                <td>A plus floor N/2</td>
+                <td>rescale=0 / negative clamp</td>
+                <td>COUNT</td>
+                <td>0</td>
+                <td>1</td>
+                <td>8914</td>
+                <td>1</td>
+                <td>891400.0</td>
+              </tr>
+              <tr>
+                <td>rescale=0 / positive adjust</td>
+                <td>COUNT</td>
+                <td>0</td>
+                <td>2</td>
+                <td>8824</td>
+                <td>1</td>
+                <td>882400.0</td>
+              </tr>
+              <tr>
+                <td>rescale=0 / positive clamp</td>
+                <td>COUNT</td>
+                <td>0</td>
+                <td>3</td>
+                <td>7645</td>
+                <td>1</td>
+                <td>764500.0</td>
+              </tr>
+              <tr>
+                <td>rescale=0 / unchanged</td>
+                <td>COUNT</td>
+                <td>0</td>
+                <td>4</td>
+                <td>8888</td>
+                <td>1</td>
+                <td>888800.0</td>
+              </tr>
+              <tr>
+                <td>rescale=1 / negative adjust</td>
                 <td>COUNT</td>
                 <td>1</td>
-                <td>289</td>
+                <td>0</td>
+                <td>1403</td>
                 <td>1</td>
-                <td>28900.0</td>
+                <td>140300.0</td>
+              </tr>
+              <tr>
+                <td>rescale=1 / negative clamp</td>
+                <td>COUNT</td>
+                <td>1</td>
+                <td>1</td>
+                <td>1564</td>
+                <td>1</td>
+                <td>156400.0</td>
+              </tr>
+              <tr>
+                <td>rescale=1 / positive adjust</td>
+                <td>COUNT</td>
+                <td>1</td>
+                <td>2</td>
+                <td>1458</td>
+                <td>1</td>
+                <td>145800.0</td>
+              </tr>
+              <tr>
+                <td>rescale=1 / positive clamp</td>
+                <td>COUNT</td>
+                <td>1</td>
+                <td>3</td>
+                <td>2779</td>
+                <td>1</td>
+                <td>277900.0</td>
+              </tr>
+              <tr>
+                <td>rescale=1 / unchanged</td>
+                <td>COUNT</td>
+                <td>1</td>
+                <td>4</td>
+                <td>1503</td>
+                <td>1</td>
+                <td>150300.0</td>
+              </tr>
+              <tr>
+                <td style="text-align: left" colspan="7"><strong>Total Percent Coverage:</strong> &emsp; 100.0</td>
+              </tr>
+            </tbody>
+          </table>
+        </details>
+      </div>
+    </details>
+    <details open><summary class="subtitle">G4.Coding cUpdate Coverage Model &emsp; &emsp; Coverage: 100.0</summary>
+      <div class="CoverageSettings">
+        <details><summary class="subindented">G4.Coding cUpdate Coverage Settings</summary>
+          <table class="CoverageSettings">
+            <thead>
+              <tr>
+                  <th>Settings</th>
+                  <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>CovWeight</td><td>1</td></tr>
+              <tr><td>Goal</td><td>100.0</td></tr>
+              <tr><td>WeightMode</td><td>REMAIN</td></tr>
+              <tr><td>Seeds</td><td>45180462, &nbsp;839641851</td></tr>
+              <tr><td>CountMode</td><td>COUNT_FIRST</td></tr>
+              <tr><td>IllegalMode</td><td>ILLEGAL_ON</td></tr>
+              <tr><td>Threshold</td><td>45.0</td></tr>
+              <tr><td>ThresholdEnable</td><td>FALSE</td></tr>
+              <tr><td>IsRequirement</td><td>FALSE</td></tr>
+              <tr><td>TotalCovCount</td><td>4</td></tr>
+              <tr><td>TotalCovGoal</td><td>4</td></tr>
+            </tbody>
+          </table>
+        </details>
+      </div>
+      <div class="CoverageTable">
+        <details open><summary class="subindented">G4.Coding cUpdate Coverage Bins</summary>
+          <table class="CoverageTable">
+            <thead>
+              <tr>
+                <th rowspan="2">Name</th>
+                <th rowspan="2">Type</th>
+                <th rowspan="2">cUpdate</th>
+                <th rowspan="2">Count</th>
+                <th rowspan="2">AtLeast</th>
+                <th rowspan="2">Percent<br>Coverage</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>held</td>
+                <td>COUNT</td>
+                <td>0</td>
+                <td>10391</td>
+                <td>1</td>
+                <td>1039100.0</td>
+              </tr>
+              <tr>
+                <td>moved</td>
+                <td>COUNT</td>
+                <td>1</td>
+                <td>36016</td>
+                <td>1</td>
+                <td>3601600.0</td>
+              </tr>
+              <tr>
+                <td>clampMin</td>
+                <td>COUNT</td>
+                <td>2</td>
+                <td>2860</td>
+                <td>1</td>
+                <td>286000.0</td>
+              </tr>
+              <tr>
+                <td>clampMax</td>
+                <td>COUNT</td>
+                <td>3</td>
+                <td>2577</td>
+                <td>1</td>
+                <td>257700.0</td>
               </tr>
               <tr>
                 <td style="text-align: left" colspan="6"><strong>Total Percent Coverage:</strong> &emsp; 100.0</td>
@@ -359,8 +529,8 @@
               <tr><td>Threshold</td><td>45.0</td></tr>
               <tr><td>ThresholdEnable</td><td>FALSE</td></tr>
               <tr><td>IsRequirement</td><td>FALSE</td></tr>
-              <tr><td>TotalCovCount</td><td>6</td></tr>
-              <tr><td>TotalCovGoal</td><td>6</td></tr>
+              <tr><td>TotalCovCount</td><td>10</td></tr>
+              <tr><td>TotalCovGoal</td><td>10</td></tr>
             </tbody>
           </table>
         </details>
@@ -381,58 +551,94 @@
             </thead>
             <tbody>
               <tr>
-                <td>A=0</td>
+                <td>Errval=-2048</td>
                 <td>COUNT</td>
                 <td>1</td>
-                <td>0</td>
-                <td>130</td>
-                <td>1</td>
-                <td>13000.0</td>
-              </tr>
-              <tr>
-                <td>A=262143</td>
-                <td>COUNT</td>
-                <td>1</td>
-                <td>262143</td>
-                <td>131</td>
-                <td>1</td>
-                <td>13100.0</td>
-              </tr>
-              <tr>
-                <td>N=0</td>
-                <td>COUNT</td>
-                <td>2</td>
-                <td>0</td>
+                <td>-2048</td>
                 <td>5</td>
                 <td>1</td>
                 <td>500.0</td>
               </tr>
               <tr>
-                <td>N=127</td>
+                <td>Errval=2048</td>
+                <td>COUNT</td>
+                <td>1</td>
+                <td>2048</td>
+                <td>4</td>
+                <td>1</td>
+                <td>400.0</td>
+              </tr>
+              <tr>
+                <td>A=0</td>
                 <td>COUNT</td>
                 <td>2</td>
-                <td>127</td>
-                <td>7</td>
-                <td>1</td>
-                <td>700.0</td>
-              </tr>
-              <tr>
-                <td>TEMP=0</td>
-                <td>COUNT</td>
-                <td>3</td>
                 <td>0</td>
-                <td>3</td>
+                <td>2</td>
                 <td>1</td>
-                <td>300.0</td>
+                <td>200.0</td>
               </tr>
               <tr>
-                <td>TEMP=262143</td>
+                <td>A=129024</td>
+                <td>COUNT</td>
+                <td>2</td>
+                <td>129024</td>
+                <td>2</td>
+                <td>1</td>
+                <td>200.0</td>
+              </tr>
+              <tr>
+                <td>B=-63</td>
                 <td>COUNT</td>
                 <td>3</td>
-                <td>262143</td>
-                <td>258</td>
+                <td>-63</td>
+                <td>9104</td>
                 <td>1</td>
-                <td>25800.0</td>
+                <td>910400.0</td>
+              </tr>
+              <tr>
+                <td>B=63</td>
+                <td>COUNT</td>
+                <td>3</td>
+                <td>63</td>
+                <td>9095</td>
+                <td>1</td>
+                <td>909500.0</td>
+              </tr>
+              <tr>
+                <td>N=1</td>
+                <td>COUNT</td>
+                <td>4</td>
+                <td>1</td>
+                <td>662</td>
+                <td>1</td>
+                <td>66200.0</td>
+              </tr>
+              <tr>
+                <td>N=64</td>
+                <td>COUNT</td>
+                <td>4</td>
+                <td>64</td>
+                <td>8707</td>
+                <td>1</td>
+                <td>870700.0</td>
+              </tr>
+              <tr>
+                <td>C out=-128</td>
+                <td>COUNT</td>
+                <td>5</td>
+                <td>-128</td>
+                <td>7518</td>
+                <td>1</td>
+                <td>751800.0</td>
+              </tr>
+              <tr>
+                <td>C out=127</td>
+                <td>COUNT</td>
+                <td>5</td>
+                <td>127</td>
+                <td>6958</td>
+                <td>1</td>
+                <td>695800.0</td>
               </tr>
               <tr>
                 <td style="text-align: left" colspan="7"><strong>Total Percent Coverage:</strong> &emsp; 100.0</td>
@@ -462,8 +668,8 @@
               <tr><td>Threshold</td><td>45.0</td></tr>
               <tr><td>ThresholdEnable</td><td>FALSE</td></tr>
               <tr><td>IsRequirement</td><td>FALSE</td></tr>
-              <tr><td>TotalCovCount</td><td>2</td></tr>
-              <tr><td>TotalCovGoal</td><td>2</td></tr>
+              <tr><td>TotalCovCount</td><td>3</td></tr>
+              <tr><td>TotalCovGoal</td><td>3</td></tr>
             </tbody>
           </table>
         </details>
@@ -484,22 +690,31 @@
             </thead>
             <tbody>
               <tr>
-                <td>A MSB=131072..262143</td>
+                <td>Errval=-2048</td>
                 <td>COUNT</td>
                 <td>1</td>
-                <td>131072 to 262143</td>
-                <td>289</td>
+                <td>-2048</td>
+                <td>5</td>
                 <td>1</td>
-                <td>28900.0</td>
+                <td>500.0</td>
               </tr>
               <tr>
-                <td>N MSB=64..127</td>
+                <td>B=-63</td>
                 <td>COUNT</td>
                 <td>2</td>
-                <td>64 to 127</td>
-                <td>217</td>
+                <td>-63</td>
+                <td>9104</td>
                 <td>1</td>
-                <td>21700.0</td>
+                <td>910400.0</td>
+              </tr>
+              <tr>
+                <td>N MSB=64..64</td>
+                <td>COUNT</td>
+                <td>3</td>
+                <td>64</td>
+                <td>8707</td>
+                <td>1</td>
+                <td>870700.0</td>
               </tr>
               <tr>
                 <td style="text-align: left" colspan="7"><strong>Total Percent Coverage:</strong> &emsp; 100.0</td>
@@ -513,7 +728,7 @@
 </main>
 <footer>
   <hr />
-  <p class="generated-by-osvvm">Generated by OSVVM-Scripts 2026.01 on 2026-11-02 - 13:23:44 (-03).</p>
+  <p class="generated-by-osvvm">Generated by OSVVM-Scripts 2026.01 on 2026-11-07 - 18:40:01 (-03).</p>
 </footer>
 </body>
 </html>

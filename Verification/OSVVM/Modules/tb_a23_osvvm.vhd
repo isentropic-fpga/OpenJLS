@@ -47,6 +47,7 @@ architecture sim of tb_a23_osvvm is
 
   signal sErr  : signed(ERROR_WIDTH - 1 downto 0);
   signal sRi   : std_logic;
+  signal sDelta : unsigned(ERROR_WIDTH - 2 downto 0);
   signal sAq   : unsigned(A_WIDTH - 1 downto 0);
   signal sNq   : unsigned(N_WIDTH - 1 downto 0);
   signal sNn   : unsigned(NN_WIDTH - 1 downto 0);
@@ -70,6 +71,16 @@ architecture sim of tb_a23_osvvm is
 
 begin
 
+  dut_delta : entity work.a23_aq_delta(rtl)
+    generic map (
+      ERROR_WIDTH => ERROR_WIDTH
+    )
+    port map (
+      iErrVal => sErr,
+      iRiType => sRi,
+      oDelta  => sDelta
+    );
+
   dut : entity work.a23_run_interruption_update(behavioral)
     generic map (
       A_WIDTH     => A_WIDTH,
@@ -79,8 +90,8 @@ begin
       RESET       => RESET
     )
     port map (
-      iErrVal => sErr,
-      iRiType => sRi,
+      iErrVal  => sErr,
+      iAqDelta => sDelta,
       iAq     => sAq,
       iNq     => sNq,
       iNn     => sNn,

@@ -115,7 +115,7 @@
 \pagestyle{fancy}
 \fancyhf{}
 \lhead{\raisebox{-0.5pt}{\isentropicmark{3.2mm}}}
-\rhead{{\color{muted}\kicker{OpenJLS \textperiodcentered{} Datasheet \textperiodcentered{} v1.4}}}
+\rhead{{\color{muted}\kicker{OpenJLS \textperiodcentered{} Datasheet \textperiodcentered{} v1.5}}}
 \lfoot{{\color{muted}\small isentropic.com.br}}
 \rfoot{{\color{muted}\small\thepage}}
 \renewcommand{\headrule}{{\color{divider}\hrule height 0.4pt}}
@@ -133,7 +133,7 @@
 \vspace{0.5mm}{\color{divider}\hrule height 0.4pt}
 
 \vspace*{58mm}
-{\color{accent}\kicker{JPEG-LS Encoder IP Core \textperiodcentered{} v1.4}}\par
+{\color{accent}\kicker{JPEG-LS Encoder IP Core \textperiodcentered{} v1.5}}\par
 \vspace{6mm}
 \openjlsmark{24mm}\par
 \vspace{8mm}
@@ -182,11 +182,11 @@ Demo projects: \url{https://github.com/isentropic-fpga/OpenJLS-Demos}
   Pixel depth   & 8--16 bit\footnotemark[3] \\
   Image size    & Up to \about64k\,×\,64k px\footnotemark[4] \\
   Throughput    & 1 pixel / clock \\
-  Latency       & 14 cycles \\
-  \fmax{}       & \about340\,MHz\footnotemark[5] \\
+  Latency       & 15 cycles \\
+  \fmax{}       & \about440\,MHz\footnotemark[5] \\
   Interface     & Ready/valid stream\footnotemark[6] \\
   Memory        & On-chip only\footnotemark[7] \\
-  Resources     & 5.4--7.7k LUT, 1.9--2.4k FF\footnotemark[8] \\
+  Resources     & 5.5--8.0k LUT, 2.2--2.8k FF\footnotemark[8] \\
   Portability   & Vendor-agnostic VHDL \\
   \bottomrule
 \end{tabularx}
@@ -203,8 +203,8 @@ Demo projects: \url{https://github.com/isentropic-fpga/OpenJLS-Demos}
 
 %======================================================================
 \section{Functional description}
-The core is a fully pipelined encoder with a latency of 14 clock cycles: an
-input register, six processing stages (gradient computation, context modeling,
+The core is a fully pipelined encoder with a latency of 15 clock cycles: an
+input register, seven processing stages (gradient computation, context modeling,
 MED prediction with bias correction, Golomb--Rice / run-length coding) and
 seven internally registered output stages (bit packer, byte stuffer, framer).
 The architecture builds on Mert~[2]; RAM primitives come from open-logic~[4].
@@ -233,9 +233,9 @@ repository.
 \noindent\textbf{Flow control} drives every stage's clock enable and starts the
 framer on each image's first pixel.
 
-\noindent\textbf{Context memory} holds A, B, C, N and Nn for each context. A token reads it in S2 and receives the data in S3, but the BRAM word is wrong if the context hasn't been used yet in this image, or if a token up to three positions ahead just updated it. Per-context init flags handle the first case, so the memory resets at end of image without rewriting the RAM. In the second, the memory forwards writes from tokens two and three positions ahead, while a token one position ahead is still in S4, so its update comes from there.
+\noindent\textbf{Context memory} holds A, B, C, N and Nn for each context. A token reads it in S2 and receives the data in S4, but the BRAM word is wrong if the context hasn't been used yet in this image, or if a token up to four positions ahead just updated it. Per-context init flags handle the first case, so the memory resets at end of image without rewriting the RAM. In the second, the memory forwards writes from tokens two, three and four positions ahead, while a token one position ahead is still in S5, so its update comes from there.
 
-\noindent\textbf{Regular-mode prediction} runs four parallel chains, because the correct C[Q] comes too late in the cycle to select first. Chain D takes the BRAM word. Chain C takes S4's C[Q] on a match with the token ahead, otherwise the memory's alternative (Alt.) word: the init value or a forwarded write. Chains P and M take S4's C[Q] + 1 and - 1, covering A.13's possible results. The final select picks one chain's result just before Reg3.
+\noindent\textbf{Regular-mode prediction} runs four parallel chains, because the correct C[Q] comes too late in the cycle to select first. Chain D takes the BRAM word. Chain C takes S5's C[Q] on a match with the token ahead, otherwise the memory's alternative (Alt.) word: the init value or a forwarded write. Chains P and M take S5's C[Q] + 1 and - 1, covering A.13's possible results; the $\pm$1 is folded into their clip bounds, and a C[Q] already at MAX\_C or MIN\_C stays on chain C. The final select picks one chain's result just before Reg4.
 
 %======================================================================
 \section{Generics}
@@ -445,7 +445,7 @@ acknowledged (OKAY) and dropped; unmapped reads return zero.
 Characterized on Xilinx Zynq UltraScale+ \texttt{xczu7eg-fbvb900-1-e},
 Vivado 2025.2, with \texttt{OUT\_WIDTH = 64}, RTL-only with no floorplanning.
 \fmax{} is the true maximum, found by over-constraining the clock until timing fails.
-At one pixel per clock, \about340\,MHz is \about340\,Mpixel/s.
+At one pixel per clock, \about440\,MHz is \about440\,Mpixel/s.
 
 \begin{sloppypar}
 \noindent Every configuration is implemented with four strategies: the Vivado
@@ -459,9 +459,9 @@ the default strategy and near-identical across strategies.
 \subsection{Image width sweep}
 \texttt{BITNESS = 12}, \texttt{MAX\_IMAGE\_WIDTH} from 4096 to 65535. The design is
 congestion-bound, so the winning strategy shifts with image size and with netlist
-changes; the best-of band (\about335--359\,MHz) is the headline figure.
-Strategies differ by 10--32\,MHz per size, and a default run lands up to
-\about27\,MHz below it.
+changes; the best-of band (\about405--439\,MHz) is the headline figure.
+Strategies differ by 7--74\,MHz per size, and a default run lands up to
+\about45\,MHz below it.
 Logic is essentially constant with image size; only the line-buffer BRAM scales
 with width.
 
@@ -480,12 +480,12 @@ with width.
   \toprule
   \hd{MAX\_IMAGE\_WIDTH} & \hd{Default} & \hd{EPRPO} & \hd{NetDelay} & \hd{Congestion} \\
   \midrule
-  4096  & 331.2          & 330.4 & \textbf{358.6} & 331.2          \\
-  8192  & 340.0          & 331.4 & \textbf{341.5} & 337.4          \\
-  12288 & \textbf{340.4} & 338.3 & 325.7          & 327.3          \\
-  16384 & 321.8          & 336.1 & \textbf{339.9} & 319.0          \\
-  32768 & 340.6          & 336.9 & \textbf{345.3} & 330.1          \\
-  65535 & 310.9          & 319.8 & 302.9          & \textbf{334.9} \\
+  4096 & 424.1 & 404.5 & \textbf{436.3} & 430.7 \\
+  8192 & 401.0 & \textbf{432.9} & 430.5 & 398.9 \\
+  12288 & 434.6 & 436.7 & 432.1 & \textbf{438.8} \\
+  16384 & 389.9 & 414.2 & \textbf{434.8} & 409.8 \\
+  32768 & 385.5 & 341.9 & \textbf{416.0} & 401.3 \\
+  65535 & 379.4 & \textbf{404.7} & 360.5 & 393.6 \\
   \bottomrule
 \end{tabular}
 \end{table}
@@ -505,22 +505,22 @@ with width.
   \toprule
   \hd{MAX\_IMAGE\_WIDTH} & \hd{LUT} & \hd{FF} & \hd{BRAM} \\
   \midrule
-  4096  & 6322 & 2172 & 2.5  \\
-  8192  & 6380 & 2176 & 4.0  \\
-  12288 & 6320 & 2178 & 5.5  \\
-  16384 & 6437 & 2195 & 6.5  \\
-  32768 & 6366 & 2218 & 13.0 \\
-  65535 & 6392 & 2227 & 25.0 \\
+  4096 & 6540 & 2507 & 2.5 \\
+  8192 & 6564 & 2464 & 4.0 \\
+  12288 & 6609 & 2517 & 5.5 \\
+  16384 & 6632 & 2493 & 6.5 \\
+  32768 & 6621 & 2539 & 13.0 \\
+  65535 & 6644 & 2515 & 25.0 \\
   \bottomrule
 \end{tabular}
 \end{table}
 
 \subsection{Pixel depth sweep}
 \texttt{MAX\_IMAGE\_WIDTH = 12288}, \texttt{BITNESS} from 8 to 16. Best-of \fmax{}
-falls from \about360\,MHz at 8 and 10 bits to \about325\,MHz at 14 and 16 bits.
-The limit is the context update loop and the context RAM read into the
-prediction-error register, whose carry chains widen with pixel depth; at 8 bits
-the byte stuffer limits too. Logic and line-buffer BRAM both grow with depth.
+falls from \about450\,MHz at 8 and 10 bits to \about420\,MHz at 14 bits and
+\about375\,MHz at 16 bits. At 8 and 12 bits the worst paths of all blocks lie within
+\about0.1\,ns of each other; at 16 bits the line-buffer read through the
+gradient carry chains into the quantized-gradient register limits. Logic and line-buffer BRAM both grow with depth.
 
 \begin{figure}[H]
   \centering
@@ -537,11 +537,11 @@ the byte stuffer limits too. Logic and line-buffer BRAM both grow with depth.
   \toprule
   \hd{BITNESS} & \hd{Default} & \hd{EPRPO} & \hd{NetDelay} & \hd{Congestion} \\
   \midrule
-  8  & 347.1          & \textbf{358.7} & 350.1 & 354.2          \\
-  10 & 347.1          & 314.9          & 354.9 & \textbf{364.8} \\
-  12 & \textbf{340.4} & 338.3          & 325.7 & 327.3          \\
-  14 & 321.3          & 322.7          & 313.7 & \textbf{325.9} \\
-  16 & 320.7          & \textbf{323.1} & 300.1 & 312.5          \\
+  8 & 433.3 & \textbf{449.4} & 445.4 & 440.9 \\
+  10 & 411.0 & 440.7 & \textbf{447.2} & 417.4 \\
+  12 & 434.6 & 436.7 & 432.1 & \textbf{438.8} \\
+  14 & 405.5 & 413.9 & \textbf{421.2} & 402.6 \\
+  16 & 334.1 & \textbf{377.1} & 348.3 & 338.1 \\
   \bottomrule
 \end{tabular}
 \end{table}
@@ -561,11 +561,11 @@ the byte stuffer limits too. Logic and line-buffer BRAM both grow with depth.
   \toprule
   \hd{BITNESS} & \hd{LUT} & \hd{FF} & \hd{BRAM} \\
   \midrule
-  8  & 5408 & 1924 & 3.5 \\
-  10 & 5914 & 2055 & 4.0 \\
-  12 & 6320 & 2178 & 5.5 \\
-  14 & 6741 & 2307 & 6.5 \\
-  16 & 7700 & 2444 & 7.5 \\
+  8 & 5506 & 2208 & 3.5 \\
+  10 & 6123 & 2371 & 4.0 \\
+  12 & 6609 & 2517 & 5.5 \\
+  14 & 7275 & 2669 & 6.5 \\
+  16 & 8019 & 2782 & 7.5 \\
   \bottomrule
 \end{tabular}
 \end{table}
@@ -628,8 +628,8 @@ simulation; their 84 full-size originals are part of the corpus but run on hardw
   \toprule
   \hd{Suite} & \hd{Status} & \hd{Test/Cov} & \hd{Summary} \\
   \midrule
-  NVC code coverage       & info & 99.8\% & Statement coverage\footnotemark[9] \\
-  OSVVM suite             & PASS & 100\%  & 126 tests\footnotemark[10] \\
+  NVC code coverage       & info & 99.7\% & Statement coverage\footnotemark[9] \\
+  OSVVM suite             & PASS & 100\%  & 128 tests\footnotemark[10] \\
   Golden model            & PASS & 100\%  & 11555/11555 images\footnotemark[11] \\
   Post-synth OSVVM        & PASS & 100\%  & Control-plane stress\footnotemark[12] \\
   Post-synth golden model & PASS & 100\%  & 167/167 images\footnotemark[13] \\
@@ -638,11 +638,11 @@ simulation; their 84 full-size originals are part of the corpus but run on hardw
 \end{tabular}
 \end{table}
 \footnotetext[9]{Per-DUT-file breakdown.}
-\footnotetext[10]{8\,948\,681 affirmations (module + top + AXI wrappers).}
+\footnotetext[10]{10\,984\,893 affirmations (module + top + AXI wrappers).}
 \footnotetext[11]{Byte-exact vs CharLS: 5555 from reset, 6000 streamed with no reset.}
-\footnotetext[12]{153\,946 affirmations on the gate-level netlist.}
+\footnotetext[12]{155\,469 affirmations on the gate-level netlist.}
 \footnotetext[13]{8-bit images up to 0.05\,MP, byte-exact vs CharLS.}
-\footnotetext[14]{Byte-exact vs CharLS on PYNQ-Z2 silicon at 71.43\,MHz: 5639 from reset, 6000 streamed with no reset.}
+\footnotetext[14]{Byte-exact vs CharLS on PYNQ-Z2 silicon at 100\,MHz: 5639 from reset, 6000 streamed with no reset.}
 \setcounter{footnote}{14}
 
 %======================================================================
@@ -668,6 +668,7 @@ simulation; their 84 full-size originals are part of the corpus but run on hardw
   1.3.3 & 2026-11 & Fix adjacent images merging in the byte stuffer. \\
   1.4 & 2026-11 & Frequency up 18--44\%, FF up \about7\%, BRAM up 1--2 tiles
   at widths from 32k. \\
+  1.5 & 2026-11 & Frequency up 17--29\%, LUT up 2--8\%, FF up 13--16\%. \\
   \bottomrule
 \end{tabular}
 \end{table}

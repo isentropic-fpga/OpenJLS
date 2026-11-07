@@ -226,6 +226,200 @@ Routed best-of-4 at 2.5 ns, MHz:
 - The context loop no longer stands alone at any point; the output side (stuffer, framer) is now co-limiting everywhere.
 - Verified: OSVVM 115/115, golden sample 906/906 (MAX_MP=0.01). A first registered-bounds version tripped the A.6/A.7 range assert on unused chains: non-regular tokens register Sign = '0', so the stage-2 sign must match (`sS2Sign`).
 
+### Context RAM output register (d5abf30, 2026-11-04)
+
+Own enabled register on the BRAM output in a new stage 3; everything after it moves down one, for seven stages. Clock-to-out 0.90 → 0.23 ns, read forwards from a third in-flight write. `olo_base_ram_sdp` RDLATENCY > 1 ignores `Rd_Ena`, so its pipe breaks under stall. Write-gate parity must come from stage 2, or a new image in stage 1 drops a write the old image's last token still forwards.
+
+Routed means, 4 strategies, 2.5 ns unless noted, size 12288, noise about ±7.5 MHz:
+
+| Step | 8 bit MHz | 12 bit MHz | 8 bit LUT / FF | 12 bit LUT / FF |
+|---|---|---|---|---|
+| 4cb0d3c | 378.4 | 359.1 | | |
+| RAM output register | 391.2 | 382.5 | 5430 / 2103 | 6299 / 2385 |
+| + A.6 clip errors, sat and A.19 in stage 3 | 384.9 | 383.8 | 5429 / 2093 | 6326 / 2374 |
+| + A.6 clip bounds in stage 3, sat merged (d5abf30) | 387.8 | 383.9 | 5436 / 2100 | 6242 / 2383 |
+| d5abf30 at 2.2 ns | 381.2 | 381.3 | 5568 / 2130 | 6453 / 2406 |
+
+- The moves into stage 3 simplify the architecture and don't change fmax.
+- A false-path "ceiling" on RAM paths (384.5/374.7) had predicted less than this: it bounds only the excluded paths, while the new stage also registered the hit and forward compares.
+- 2.2 ns doesn't help, LUT +2–3%. The target isn't what bunches the paths; keep 2.5 ns.
+- No single wall left. Worst path moves with placement:
+
+| Worst path in | a6/a19 step | d5abf30 | d5abf30, 2.2 ns |
+|---|---|---|---|
+| Framer | 1 | 4 | 6 |
+| Stuffer | 4 | 1 | 0 |
+| `sReg4` → `sReg5` | 3 | 0 | 2 |
+| Other | 0 | 3 | 0 |
+
+Mean per-run floor at 2.2 ns: framer 383.3, pipeline 385.4, stuffer 385.5, `sNextBound` 390.9, context RAM 394.5, line buffer 404.2.
+
+Timing-report bound with blocks excluded, 8/12 bit MHz:
+
+| Excluded | 2.5 ns | 2.2 ns |
+|---|---|---|
+| Nothing | 387.8 / 383.9 | 381.2 / 381.3 |
+| Stuffer | 388.7 / 383.9 | 381.2 / 381.3 |
+| Framer | 388.5 / 384.7 | 384.7 / 382.5 |
+| Framer, stuffer | 391.4 / 385.0 | 386.9 / 382.7 |
+| + pipeline | 393.0 / 386.9 | 388.5 / 390.8 |
+| + `sNextBound` | 397.0 / 389.1 | 392.5 / 393.4 |
+
+Framer is the most persistent limit, yet alone gains under 4 MHz. Untested options: on the short end-of-image beat, take one more cycle so the normal path only picks shift by `BYTES_OUT` or hold; or a ring buffer with no shift, a rewrite that moves the mux to the output. `sDataEmit` → `sBuffer` is 73% routing, fanout 102 after replication. Recommendation: stop here, since several blocks would have to change together for about 3%. Not yet decided.
+
+Verified on d5abf30: OSVVM 129/129, T.87, golden sample 2,683 (MAX_MP=0.05), streams 18/18. Not yet run: post-synth, full golden, 40-run characterization. Latency 15 is derived, not measured.
+
+### Chain D folded into chain C (05d3762, reverted)
+
+Chain C takes `oRdData` on a miss, which removes one A.6/A.7 + A.9 chain and the 2:1 select before Reg4.
+
+Post-synth, Default, 2.5 ns, size 12288:
+
+| BITNESS | LUT | `sReg4.Errval` slack, ns |
+|---|---|---|
+| 8 | 5009 → 4964 | −0.330 → −0.101 |
+| 10 | 5574 → 5553 | −0.367 → −0.138 |
+| 12 | 5845 → 5792 | −0.339 → −0.056 |
+| 16 | 6879 → 6811 | −0.300 → −0.251 |
+
+Routed, 4 strategies, size 12288, mean / best MHz:
+
+| Target | BITNESS | d5abf30 | Chain D folded |
+|---|---|---|---|
+| 2.5 ns | 8 | 387.8 / 402.6 | 372.3 / 380.1 |
+| 2.5 ns | 12 | 383.9 / 397.5 | 364.4 / 384.6 |
+| 2.45 ns | 8 | 381.3 / 394.3 | 382.2 / 400.3 |
+| 2.45 ns | 12 | 390.2 / 398.9 | 385.4 / 397.0 |
+| 2.4 ns | 8 | 388.1 / 397.1 | 382.9 / 387.9 |
+| 2.4 ns | 12 | 391.4 / 399.0 | 384.9 / 386.6 |
+
+- Mean change over the three targets: 8 bit −6.6, 12 bit −10.3 MHz; lower in five of six rows, so a small real loss is likely.
+- The −15 to −20 MHz at 2.5 ns doesn't repeat; the same folded RTL gains 21 MHz at 12 bit from 2.5 → 2.45 ns alone. ±7.5 MHz understates the noise of a netlist or target change.
+- At 2.5 ns, untouched blocks fell with the context path (stuffer 388.4 → 366.0 at 12 bit). Same logic depth, more routing.
+- Reverted: the simpler architecture isn't worth 5–8 MHz.
+
+Verified: OSVVM 129/129, golden sample 906/906 (MAX_MP=0.01), streams.
+
+### Framer ring buffer
+
+The framer's 30-byte shift FIFO became a 32-byte ring: writes decode from the write pointer only, reads rotate 8 bytes from the read pointer.
+
+Routed, 2.5 ns, 4 strategies, size 12288, mean / best MHz:
+
+| BITNESS | LUT | Chain D restored | Ring |
+|---|---|---|---|
+| 8 | 5441 → 5057 | 387.8 / 402.6 | 379.4 / 397.0 |
+| 12 | 6267 → 5895 | 383.9 / 397.5 | 363.1 / 389.6 |
+
+- The framer drops out of the top-20 paths (92 → 3 of 160). The stuffer, A.15/16 and compute-k were right behind it.
+- The 12 bit mean carries one 310 MHz outlier on the untouched compute-k path; within the noise above.
+- Kept for −7% LUT and one wall fewer.
+
+Verified: OSVVM 129/129, golden sample 906/906 (MAX_MP=0.01), streams.
+
+### Compute-k and A.15/16 off the routed walls
+
+- A.15/16: every next bound (index +1, same, −1, bound + step) comes from the registered RUNindex; the hit compares the registered count against `sNextBoundM1`, so the J lookup leaves the path.
+- Compute-k: A.20 TEMP folds into A.10's compare as `N·2^k − A − N/2 ≥ 0`; no adder in series with the comparators. A.20 is removed, A.20.2 takes RItype.
+
+Routed, 4 strategies, size 12288, mean / best MHz:
+
+| Target | BITNESS | Ring | k + A.15/16 |
+|---|---|---|---|
+| 2.5 ns | 8 | 379.4 / 397.0 | 400.5 / 407.2 |
+| 2.5 ns | 12 | 363.1 / 389.6 | 402.4 / 404.0 |
+| 2.35 ns | 8 | | 388.4 / 395.7 |
+| 2.35 ns | 12 | | 396.8 / 428.1 |
+
+- 7 of 8 runs meet 2.5 ns; k and A.15/16 leave the top-20 paths.
+- At 2.35 ns the stuffer is worst in 6 of 8 runs (107 of 160 paths), the S4 context loop in the other 2.
+
+Verified: OSVVM 126/126, golden sample 906/906 (MAX_MP=0.01), streams; mutations of the A.20.2 select and the A.15 step both fail their TBs.
+
+### Stuffer 0xFF flags registered
+
+Each 8-bit all-ones window of the stuffer buffer is a registered flag that shifts with the buffer; the skid register precomputes the flags for the incoming word. The 0xFF compares leave the stage 3 loop.
+
+Routed, 2.35 ns, 4 strategies, size 12288, mean / best MHz:
+
+| BITNESS | k + A.15/16 | FF flags |
+|---|---|---|
+| 8 | 388.4 / 395.7 | 404.9 / 430.9 |
+| 12 | 396.8 / 428.1 | 404.1 / 418.1 |
+
+- The stuffer leaves the top paths in 6 of 8 runs; the wall spreads over the framer emit FSM, the S4 Cq→Errval/Bq loop, the line-buffer BRAM→Q1 path and ctx RAM addressing.
+- LUT/FF within ±1%.
+
+Verified: OSVVM 126/126, golden sample 906/906 (MAX_MP=0.01), streams; dropping the straddle term from the refill flags fails tb_byte_stuffer and the flag assert.
+
+### C[Q] ± 1 folded into the P/M chains, registered last-row flag
+
+- Chains P and M take the registered C[Q] directly; the ±1 moves into the register-side terms (`Ix − Px ∓ 1`, clip bounds ∓ 1). A clamped C selects chain C instead. Two LUT levels leave the S4 loop.
+- line_buffer: `sIsLastRow` is a register like `sIsLastCol`, off the FIFO write/ready cone.
+
+Routed, 2.35 ns, 4 strategies, size 12288, mean / best MHz:
+
+| BITNESS | FF flags | ± 1 folded |
+|---|---|---|
+| 8 | 404.9 / 430.9 | 428.0 / 430.1 |
+| 12 | 404.1 / 418.1 | 422.8 / 426.3 |
+
+- 5 of 8 runs meet 2.35 ns (capped); the worst slacks spread over S2, S4, S5, ctx RAM, framer and stuffer within ±0.05 ns. Sweeps move to 2.2 ns.
+
+Verified: OSVVM 128/128 (A.6/A.7 offsets ±1 added), golden sample 906/906 (MAX_MP=0.01), streams. Dropping the C = MAX_C guard fails 117 golden images (OSVVM missed it, and the MIN_C guard too, until `OJLS.CSatForward`); dropping the height-1 wrap fails 6 top TBs.
+
+### Framer next-beat flags per emit case
+
+The fire/emit/footer flags are computed for each emit case (none, data beat, last header beat) from registers and inputs; the FSM picks one at the end, so the EOI FIFO pop and rebase leave the path. A simulation assert checks the pick against the updated FIFO.
+
+Routed, 2.2 ns, 4 strategies, size 12288, mean / best MHz:
+
+| BITNESS | ± 1 folded | Framer flags |
+|---|---|---|
+| 8 | 427.7 / 442.5 | 442.3 / 449.4 |
+| 12 | 405.2 / 443.9 | 435.6 / 438.8 |
+
+- Part of the gain is placement noise (the baseline 12b had a 373 MHz run); the strategy spread drops from 71 to 7 MHz at 12b.
+- Worst slacks now sit within 0.06 ns of each other across S1, S2, S4, ctx RAM, framer, packer and stuffer.
+
+Verified: OSVVM 128/128, golden sample 906/906 (MAX_MP=0.01), streams; offsetting the pushed footer head fails 28 TBs through the assert.
+
+### Raw suffix from the registered count, signed A.4 compares (reverted)
+
+- A.15/16: on a break iRunCnt = iRunCntPrev, so the suffix used the register, taking A.14 off the S1→S2 RawVal path (−0.48 ns in one 2.2 ns run).
+- A.4: signed gradient against ±T in parallel instead of abs() then compare, for the line-buffer→Q1 path (−0.43 ns).
+
+Routed, 2.2 ns, 4 strategies, size 12288, mean / best MHz:
+
+| BITNESS | Framer flags | Raw + A.4 |
+|---|---|---|
+| 8 | 442.3 / 449.4 | 429.1 / 450.4 |
+| 12 | 435.6 / 438.8 | 403.7 / 422.1 |
+
+- Neither changed path appears in the top 20 of either sweep; the loss sits in untouched paths: ctx RAM address from Q1/Q2 (−0.45 ns), S4 Errval→Bq (−0.28 ns), framer `sWrPtr`→ring (−0.32 ns), packer from `sStallLogic` (−0.22 ns). Placement noise from a small netlist change, no upside in the hot paths; reverted.
+- Verified before the sweep: OSVVM 128/128, golden sample 906/906; an A.4 boundary mutation fails 9 TBs.
+
+### Wall
+
+At 2.2 ns the worst path per block (S1, S2, S4, S5, ctx RAM, framer, packer, stuffer, A.15/16) sits within ~0.1 ns of the others in every run, at 6–8 logic levels. A single fix now moves less than the ±0.4 ns placement noise; the remaining structural loop is the S4 B/C recurrence (A.12/A.13 already fused). Stopped at 2270f05.
+
+### Full characterization (80c3c98, 2026-11-07)
+
+40 routed runs at 2.2 ns, none met. Best MHz, vs the v1.4 README:
+
+| Sweep | 8b | 10b | 12b | 14b | 16b |
+|---|---|---|---|---|---|
+| 12288, by BITNESS | 449.4 (358.7) | 447.2 (364.8) | 438.8 (340.4) | 421.2 (325.9) | 377.1 (323.1) |
+
+| Sweep | 4096 | 8192 | 12288 | 16384 | 32768 | 65535 |
+|---|---|---|---|---|---|---|
+| 12b, by width | 436.3 (358.6) | 432.9 (341.5) | 438.8 (340.4) | 434.8 (339.9) | 416.0 (345.3) | 404.7 (334.9) |
+
+- 12b/12288 vs v1.4: LUT 6320 → 6609 (+4.6%), FF 2178 → 2517 (+16%).
+- 16b is the outlier: three strategies at 334–348 MHz. Worst path: line-buffer BRAM → S1 gradients (3 CARRY8, 17-bit) → `sReg1Q1`/`sReg1Q3`, 8–9 levels. Next candidate: a line-buffer output register, with neighbour re-timing.
+- Strategy spread grows with width (32768: 342–416 MHz).
+- Verified on 80c3c98: OSVVM 128/128, golden 5555/5555 + streams 18/18, T.87, post-synth OSVVM and golden 167/167.
+
 ## Open decisions
 1. Trimmed core: a separate top (`openjls_core`, Mert's interface, same stage entities) vs. feature generics on the current top. Leaning separate top: generics multiply the verified configurations.
 2. Packer + stuffer merge: trimmed core only, or a main candidate.

@@ -29,16 +29,16 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 81
+        Count: 76
         AtLeast: 1
-        PercentCov: 8100.0000
+        PercentCov: 7600.0000
       - Name: "emitted bytes=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 1320
+        Count: 1321
         AtLeast: 1
-        PercentCov: 132000.0000
+        PercentCov: 132100.0000
       - Name: "emitted bytes=2"
         Type: "COUNT"
         Range: 
@@ -50,16 +50,16 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
-        Count: 175
+        Count: 176
         AtLeast: 1
-        PercentCov: 17500.0000
+        PercentCov: 17600.0000
       - Name: "emitted bytes=4"
         Type: "COUNT"
         Range: 
           - {Min: 4, Max: 4}
-        Count: 3405
+        Count: 3404
         AtLeast: 1
-        PercentCov: 340500.0000
+        PercentCov: 340400.0000
 
   - Name: "G4.Stream flushType"
     TestCases: 
@@ -141,9 +141,9 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 38
+        Count: 39
         AtLeast: 1
-        PercentCov: 3800.0000
+        PercentCov: 3900.0000
 
   - Name: "G4.Branch stuffEvent"
     TestCases: 
@@ -259,7 +259,7 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 64
+        Count: 75
         AtLeast: 1
-        PercentCov: 6400.0000
+        PercentCov: 7500.0000
 

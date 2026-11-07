@@ -19,8 +19,8 @@ entity a19_run_interruption_error is
   port (
     iErrval : in    signed (BITNESS downto 0);
     iRItype : in    std_logic;
-    iRa     : in    unsigned (BITNESS - 1 downto 0);
-    iRb     : in    unsigned (BITNESS - 1 downto 0);
+    -- Ra > Rb, registered with iErrval
+    iRaGtRb : in    std_logic;
     oErrval : out   signed (BITNESS downto 0);
     oSign   : out   std_logic
   );
@@ -28,38 +28,50 @@ end entity a19_run_interruption_error;
 
 architecture behavioral of a19_run_interruption_error is
 
+  signal sFlip : boolean;
+  signal sErr  : signed (BITNESS downto 0);
+
 begin
 
-  p_ri_error : process (iErrval, iRItype, iRa, iRb) is
+  sFlip <= iRItype = '0' and iRaGtRb = '1';
+  sErr  <= - iErrval when sFlip else
+           iErrval;
+  oSign <= CO_SIGN_NEG when sFlip else
+           CO_SIGN_POS;
 
-    variable vErr    : integer;
-    variable vErrAdj : integer;
+  gen_binary_range : if RANGE_P = 2 ** BITNESS generate
 
-  begin
+    -- As A.9: the low BITNESS bits read as signed are the residue
+    oErrval <= resize(sErr(BITNESS - 1 downto 0), BITNESS + 1);
 
-    if (iRItype = '0' and iRa > iRb) then
-      vErr  := - to_integer(iErrval);
-      oSign <= CO_SIGN_NEG;
-    else
-      vErr  := to_integer(iErrval);
-      oSign <= CO_SIGN_POS;
-    end if;
+  end generate gen_binary_range;
 
-    vErrAdj := vErr;
+  gen_general_range : if RANGE_P /= 2 ** BITNESS generate
 
-    if (vErrAdj < 0) then
-      vErrAdj := vErrAdj + RANGE_P;
-    end if;
+    p_modulo : process (sErr) is
 
-    if (vErrAdj >= (RANGE_P + 1) / 2) then
-      vErrAdj := vErrAdj - RANGE_P;
-    end if;
+      variable vErrAdj : integer;
 
-    assert abs(vErr) >= RANGE_P or (vErrAdj >= (RANGE_P + 1) / 2 - RANGE_P and vErrAdj < (RANGE_P + 1) / 2)
-      report "a19: Errval out of range" severity error;
+    begin
 
-    oErrval <= to_signed(vErrAdj, oErrval'length);
+      vErrAdj := to_integer(sErr);
 
-  end process p_ri_error;
+      if (vErrAdj < 0) then
+        vErrAdj := vErrAdj + RANGE_P;
+      end if;
+
+      if (vErrAdj >= (RANGE_P + 1) / 2) then
+        vErrAdj := vErrAdj - RANGE_P;
+      end if;
+
+      oErrval <= to_signed(vErrAdj, oErrval'length);
+
+    end process p_modulo;
+
+  end generate gen_general_range;
+
+  postponed assert is_x(oErrval) or abs(to_integer(sErr)) >= RANGE_P
+                   or (to_integer(oErrval) >= (RANGE_P + 1) / 2 - RANGE_P and to_integer(oErrval) < (RANGE_P + 1) / 2)
+    report "a19: Errval out of range" severity error;
 
 end architecture behavioral;

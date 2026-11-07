@@ -25,7 +25,8 @@ library tb_support;
 entity tb_a6_a7_osvvm is
   generic (
     BITNESS : natural range 8 to 16 := CO_BITNESS_STD;
-    MAX_VAL : natural := 2 ** BITNESS - 1
+    MAX_VAL   : natural := 2 ** BITNESS - 1;
+    CQ_OFFSET : integer range -1 to 1 := 0
   );
 end entity tb_a6_a7_osvvm;
 
@@ -33,7 +34,8 @@ architecture sim of tb_a6_a7_osvvm is
   constant PIXEL_MAX : natural := 2 ** BITNESS - 1;
   signal sIx, sPx : unsigned(BITNESS - 1 downto 0);
   signal sSign : std_logic;
-  signal sCq, sLo, sHi : signed(CO_CQ_WIDTH - 1 downto 0);
+  signal sCq : signed(CO_CQ_WIDTH - 1 downto 0);
+  signal sLo, sHi : signed(CO_CQ_WIDTH downto 0);
   signal sAtLo, sAtHi : signed(BITNESS downto 0);
   signal sError : signed(BITNESS downto 0);
 begin
@@ -46,7 +48,7 @@ begin
     port map (iIx => sIx, iSign => sSign, oAtLo => sAtLo, oAtHi => sAtHi);
 
   dut : entity work.a6_a7_prediction_error(behavioral)
-    generic map (BITNESS => BITNESS, MAX_VAL => MAX_VAL)
+    generic map (BITNESS => BITNESS, MAX_VAL => MAX_VAL, CQ_OFFSET => CQ_OFFSET)
     port map (iIx => sIx, iPx => sPx, iSign => sSign, iLo => sLo, iHi => sHi, iAtLo => sAtLo, iAtHi => sAtHi, iCq => sCq, oErrorVal => sError);
 
   stimulus : process is
@@ -65,10 +67,10 @@ begin
       end if;
       -- C order, not the RTL's fused difference-minus-bias
       if sign_bit = CO_SIGN_POS then
-        corrected := px + cq;
+        corrected := px + cq + CQ_OFFSET;
         sign_index := 0;
       else
-        corrected := px - cq;
+        corrected := px - cq - CQ_OFFSET;
         sign_index := 1;
       end if;
       region := 1;
@@ -107,9 +109,9 @@ begin
         return;
       end if;
       if sign_bit = CO_SIGN_POS then
-        corrected := px + cq;
+        corrected := px + cq + CQ_OFFSET;
       else
-        corrected := px - cq;
+        corrected := px - cq - CQ_OFFSET;
       end if;
       corrected := math_max(0, math_min(MAX_VAL, corrected));
       check(0, px, cq, sign_bit);
@@ -146,12 +148,12 @@ begin
       for sign_index in 0 to 1 loop
         if sign_index = 0 then
           sign_value := CO_SIGN_POS;
-          lower_edge := -cq;
-          upper_edge := MAX_VAL - cq;
+          lower_edge := -(cq + CQ_OFFSET);
+          upper_edge := MAX_VAL - (cq + CQ_OFFSET);
         else
           sign_value := CO_SIGN_NEG;
-          lower_edge := cq;
-          upper_edge := MAX_VAL + cq;
+          lower_edge := cq + CQ_OFFSET;
+          upper_edge := MAX_VAL + cq + CQ_OFFSET;
         end if;
         if BITNESS = 8 then
           for px in 0 to PIXEL_MAX loop

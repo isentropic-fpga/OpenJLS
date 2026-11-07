@@ -78,12 +78,12 @@ analyze ../../Sources/A11_1_golomb_encoder.vhd
 analyze ../../Sources/A11_2_bit_packer.vhd
 analyze ../../Sources/A12_variables_update.vhd
 analyze ../../Sources/A13_update_bias.vhd
+analyze ../../Sources/A12_A13_update.vhd
 analyze ../../Sources/A14_run_length_determination.vhd
 analyze ../../Sources/A15_A16_encode_run.vhd
 analyze ../../Sources/A17_run_interruption_index.vhd
 analyze ../../Sources/A18_run_interruption_prediction_error.vhd
 analyze ../../Sources/A19_run_interruption_error.vhd
-analyze ../../Sources/A20_compute_temp.vhd
 analyze ../../Sources/A20_1_run_context_index.vhd
 analyze ../../Sources/A20_2_compute_k.vhd
 analyze ../../Sources/A21_compute_map.vhd
@@ -110,6 +110,8 @@ Test Modules/tb_a6_a7_osvvm.vhd
 Test Modules/tb_a6_a7_osvvm.vhd [generic BITNESS 8]
 Test Modules/tb_a6_a7_osvvm.vhd [generic BITNESS 16]
 Test Modules/tb_a6_a7_osvvm.vhd [generic BITNESS 8] [generic MAX_VAL 200]
+Test Modules/tb_a6_a7_osvvm.vhd [generic BITNESS 8] [generic CQ_OFFSET 1]
+Test Modules/tb_a6_a7_osvvm.vhd [generic BITNESS 12] [generic CQ_OFFSET -1]
 Test Modules/tb_a8_1_osvvm.vhd
 Test Modules/tb_a9_osvvm.vhd
 # Binary-range shortcut at every width
@@ -127,12 +129,14 @@ Test Modules/tb_a11_1_osvvm.vhd
 Test Modules/tb_a11_2_osvvm.vhd
 Test Modules/tb_a12_osvvm.vhd
 Test Modules/tb_a13_osvvm.vhd
+Test Modules/tb_a12_a13_osvvm.vhd
+Test Modules/tb_a12_a13_osvvm.vhd [generic BITNESS 8]
+Test Modules/tb_a12_a13_osvvm.vhd [generic BITNESS 16]
 Test Modules/tb_a14_osvvm.vhd
 Test Modules/tb_a15_a16_osvvm.vhd
 Test Modules/tb_a17_osvvm.vhd
 Test Modules/tb_a18_osvvm.vhd
 Test Modules/tb_a19_osvvm.vhd
-Test Modules/tb_a20_osvvm.vhd
 Test Modules/tb_a20_1_osvvm.vhd
 Test Modules/tb_a20_2_osvvm.vhd
 Test Modules/tb_a21_osvvm.vhd
@@ -153,7 +157,7 @@ Test Modules/tb_jls_framer_osvvm.vhd [generic OUT_WIDTH 1024]
 
 # BITNESS endpoints; the runs above are 12-bit
 foreach bitness {8 16} {
-  foreach module {a1 a3 a4 a5 a6 a7 a8_1 a10 a11 a11_1 a11_2 a12 a13 a14 a15_a16 a17 a18 a19 a20 a20_2 a21 a22 a23 line_buffer context_ram} {
+  foreach module {a1 a3 a4 a5 a6 a7 a8_1 a10 a11 a11_1 a11_2 a12 a13 a14 a15_a16 a17 a18 a19 a20_2 a21 a22 a23 line_buffer context_ram} {
     Test Modules/tb_${module}_osvvm.vhd [generic BITNESS $bitness]
   }
 }

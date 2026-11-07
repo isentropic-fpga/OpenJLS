@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>NVC code coverage report</title>
+  <style>
+:root {
+    --table-row-color: #e8e8e8;
+    --margin-left: 20%;
+}
+
+body {
+    background-color: #f0f0e0ff;
+}
+
+header {
+    padding: 0.5em;
+    text-align: center;
+    font-size: 14pt;
+}
+
+h1 {
+    text-align: center;
+}
+
+h2 {
+    word-wrap: break-word;
+}
+
+h3 {
+    word-wrap: break-word;
+    margin-bottom: 0px;
+}
+
+hr {
+    border:none;
+    height: 2px;
+    background: black;
+}
+
+footer {
+    display: table;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+nav {
+    float: left;
+    background-color: var(--table-row-color);
+    width: 17%;
+    overflow: auto;
+    padding: 10px;
+    margin-top: -2px;
+    border: 2px solid black;
+}
+nav details details {
+    margin-left: 1rem;
+}
+nav details > a {
+    padding-left: 1.9rem;
+    display: block;
+}
+nav summary {
+    display: inline-flex;
+    cursor: pointer;
+    align-items: center;
+}
+nav summary::before {
+    content: '▶';
+    font-size: 0.7em;
+    margin-right: 0.4em;
+}
+nav details[open] > summary::before {
+    transform: rotate(90deg);
+}
+
+table {
+    table-layout: fixed;
+}
+
+table, th, td {
+    border: 2px solid black;
+    border-collapse: collapse;
+    word-wrap: break-word;
+}
+
+.tabcontent {
+    display: none;
+    padding: 0px 0px;
+    border: 2px solid #ccc;
+    border-top: none;
+    word-wrap: break-word;
+}
+
+.tab {
+    overflow: hidden;
+    border: 2px solid;
+    margin-left: var(--margin-left);
+    margin-top: 10px;
+}
+
+.cbg:hover {
+    background-color: #dddddd;
+}
+.cbg {
+    background-color: #bbbbbb;
+    text-align: center;
+}
+
+.cbt {
+    margin-top: 8px;
+}
+.cbt th {
+    background-color: #bbbbbb;
+    text-align: center;
+}
+.cbt td, .cbt th {
+    width: 50px;
+    text-align: center;
+}
+.cbt td + td, .cbt th + th {
+    width: 150px;
+}
+.cbt td + td + td, .cbt th + th + th {
+    width: 150px;
+}
+.cbt td + td + td + td, .cbt th + th + th + th {
+    width: 150px;
+}
+
+.percent100 {
+    background-color: #00cc00;
+}
+.percent90 {
+    background-color: #e6e600;
+}
+.percent80 {
+    background-color: #ff9900;
+}
+.percent0 {
+    background-color: #ff0000;
+}
+.percentna {
+    background-color: #cccccc;
+}
+
+.nav-sel {
+    font-weight: bold;
+}
+  </style>
+</head>
+<body style="font-family: verdana">
+
+<header><h1 style="text-align: center;">NVC code coverage report
+</h1></header>
+
+<h2 style="float: left; margin-bottom: 0px; margin-top: 0px;"><a href=../index.html>Back to summary</a></h2>
+<h2 style="float: left; clear: left;">Coverage report for file:</h2>
+<nav style="clear: left">
+<p style="margin-left: 10px"><a href=tb_jls_framer_osvvm.vhd.html>tb_jls_framer_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a11_1_osvvm.vhd.html>tb_a11_1_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_openjls_axis_regs_osvvm.vhd.html>tb_openjls_axis_regs_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A14_run_length_determination.vhd.html>A14_run_length_determination.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a6_osvvm.vhd.html>tb_a6_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A9_modulo_reduction.vhd.html>A9_modulo_reduction.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a12_a13_osvvm.vhd.html>tb_a12_a13_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a17_osvvm.vhd.html>tb_a17_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a1_osvvm.vhd.html>tb_a1_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A21_compute_map.vhd.html>A21_compute_map.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a23_osvvm.vhd.html>tb_a23_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A4_2_Q_mapping.vhd.html>A4_2_Q_mapping.vhd</a></p>
+<p style="margin-left: 10px"><a href=olo_base_ram_sdp.vhd.html>olo_base_ram_sdp.vhd</a></p>
+<p style="margin-left: 10px"><a href=AxiStreamTransmitter.vhd.html>AxiStreamTransmitter.vhd</a></p>
+<p style="margin-left: 10px"><a href=A11_2_bit_packer.vhd.html>A11_2_bit_packer.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a5_osvvm.vhd.html>tb_a5_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=line_buffer.vhd.html>line_buffer.vhd</a></p>
+<p style="margin-left: 10px"><a href=Axi4LiteManager.vhd.html>Axi4LiteManager.vhd</a></p>
+<p style="margin-left: 10px"><a href=A7_prediction_error.vhd.html>A7_prediction_error.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a9_osvvm.vhd.html>tb_a9_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A10_compute_k.vhd.html>A10_compute_k.vhd</a></p>
+<p style="margin-left: 10px"><a href=A12_variables_update.vhd.html>A12_variables_update.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a14_osvvm.vhd.html>tb_a14_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a18_osvvm.vhd.html>tb_a18_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A20_1_run_context_index.vhd.html>A20_1_run_context_index.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a21_osvvm.vhd.html>tb_a21_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A3_mode_selection.vhd.html>A3_mode_selection.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a4_2_osvvm.vhd.html>tb_a4_2_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a11_2_osvvm.vhd.html>tb_a11_2_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A6_A7_prediction_error.vhd.html>A6_A7_prediction_error.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_line_buffer_osvvm.vhd.html>tb_line_buffer_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a7_osvvm.vhd.html>tb_a7_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=byte_stuffer.vhd.html>byte_stuffer.vhd</a></p>
+<p style="margin-left: 10px"><a href=context_ram.vhd.html>context_ram.vhd</a></p>
+<p style="margin-left: 10px"><a href=AxiStreamReceiver.vhd.html>AxiStreamReceiver.vhd</a></p>
+<p style="margin-left: 10px"><a href=A18_run_interruption_prediction_error.vhd.html>A18_run_interruption_prediction_error.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a12_osvvm.vhd.html>tb_a12_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A15_A16_encode_run.vhd.html>A15_A16_encode_run.vhd</a></p>
+<p style="margin-left: 10px"><a href=A19_run_interruption_error.vhd.html>A19_run_interruption_error.vhd</a></p>
+<p style="margin-left: 10px"><a href=A22_errval_mapping.vhd.html>A22_errval_mapping.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a3_osvvm.vhd.html>tb_a3_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A4_quantization_gradients.vhd.html>A4_quantization_gradients.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_openjls_top_osvvm.vhd.html>tb_openjls_top_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A11_error_mapping.vhd.html>A11_error_mapping.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a20_1_osvvm.vhd.html>tb_a20_1_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=openjls_top.vhd.html>openjls_top.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a10_osvvm.vhd.html>tb_a10_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a6_a7_osvvm.vhd.html>tb_a6_a7_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A8_1_reconstructed_value.vhd.html>A8_1_reconstructed_value.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_byte_stuffer_osvvm.vhd.html>tb_byte_stuffer_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_context_ram_osvvm.vhd.html>tb_context_ram_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A13_update_bias.vhd.html>A13_update_bias.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a15_a16_osvvm.vhd.html>tb_a15_a16_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a22_osvvm.vhd.html>tb_a22_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A4_1_quant_gradient_merging.vhd.html>A4_1_quant_gradient_merging.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_openjls_top_stream_osvvm.vhd.html>tb_openjls_top_stream_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a11_osvvm.vhd.html>tb_a11_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a19_osvvm.vhd.html>tb_a19_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A20_2_compute_k.vhd.html>A20_2_compute_k.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a4_osvvm.vhd.html>tb_a4_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=openjls_axis.vhd.html>openjls_axis.vhd</a></p>
+<p style="margin-left: 10px"><a href=openjls_axis_regs.vhd.html>openjls_axis_regs.vhd</a></p>
+<p style="margin-left: 10px"><a href=A11_1_golomb_encoder.vhd.html>A11_1_golomb_encoder.vhd</a></p>
+<p style="margin-left: 10px"><a href=A6_prediction_correction.vhd.html>A6_prediction_correction.vhd</a></p>
+<p style="margin-left: 10px"><a href=olo_base_fifo_sync.vhd.html>olo_base_fifo_sync.vhd</a></p>
+<p style="margin-left: 10px"><a href=jls_framer.vhd.html>jls_framer.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a13_osvvm.vhd.html>tb_a13_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A17_run_interruption_index.vhd.html>A17_run_interruption_index.vhd</a></p>
+<p style="margin-left: 10px"><a href=A23_run_interruption_update.vhd.html>A23_run_interruption_update.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a8_1_osvvm.vhd.html>tb_a8_1_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A12_A13_update.vhd.html>A12_A13_update.vhd</a></p>
+<p style="margin-left: 10px"><a href=A1_gradient_comp.vhd.html>A1_gradient_comp.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a20_2_osvvm.vhd.html>tb_a20_2_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_a4_1_osvvm.vhd.html>tb_a4_1_osvvm.vhd</a></p>
+<p style="margin-left: 10px"><a href=A5_edge_detecting_predictor.vhd.html>A5_edge_detecting_predictor.vhd</a></p>
+<p style="margin-left: 10px"><a href=tb_openjls_axis_osvvm.vhd.html>tb_openjls_axis_osvvm.vhd</a></p>
+</nav>
+
+<h2 style="margin-left: var(--margin-left); width: 76%;">
+   File:&nbsp; <a href="../source/c982f15167f32c765ad217bb83bc6f974fec27f9.html">../../Sources/A12_A13_update.vhd</a>
+</h2>
+
+<h2 style="margin-left: var(--margin-left);">
+  Current File:
+</h2>
+
+<table id="cur_file_table" style="width: 76%;margin-left:var(--margin-left);margin-right:auto;"> 
+  <tr style="height:40px">
+    <th class="cbg" onclick="sortTable(0, &quot;cur_file_table&quot;)"  style="width:30%">File</th>
+    <th class="cbg" onclick="sortTable(1, &quot;cur_file_table&quot;)"  style="width:8%">Statement</th>
+    <th class="cbg" onclick="sortTable(2, &quot;cur_file_table&quot;)"  style="width:8%">Branch</th>
+    <th class="cbg" onclick="sortTable(3, &quot;cur_file_table&quot;)"  style="width:8%">Toggle</th>
+    <th class="cbg" onclick="sortTable(4, &quot;cur_file_table&quot;)"  style="width:8%">Expression</th>
+    <th class="cbg" onclick="sortTable(5, &quot;cur_file_table&quot;)"  style="width:8%">FSM state</th>
+    <th class="cbg" onclick="sortTable(6, &quot;cur_file_table&quot;)"  style="width:8%">Functional</th>
+    <th class="cbg" onclick="sortTable(7, &quot;cur_file_table&quot;)"  style="width:8%">Average</th>
+  </tr>
+  <tr>
+    <td style="background-color:var(--table-row-color)">
+<a href="A12_A13_update.vhd.html">A12_A13_update.vhd</a></td>
+    <td class="percent100">100.0 % (65/65)</td>
+    <td class="percent100">100.0 % (36/36)</td>
+    <td class="percentna">N.A.</td>
+    <td class="percentna">N.A.</td>
+    <td class="percentna">N.A.</td>
+    <td class="percentna">N.A.</td>
+    <td class="percent100">100.0 % (101/101)</td>
+  </tr>
+</table>
+
+<h2 style="margin-left: var(--margin-left);">
+  Details:
+</h2>
+
+<table style="width:76%;margin-left:var(--margin-left);margin-right:auto;"> 
+   <tr style="height:40px">
+      <th class="cbg" onclick="selectCoverage(event, 'Statement')" id="defaultOpen">Statement</th>
+      <th class="cbg" onclick="selectCoverage(event, 'Branch')">Branch</th>
+      <th class="cbg" onclick="selectCoverage(event, 'Toggle')">Toggle</th>
+      <th class="cbg" onclick="selectCoverage(event, 'Expression')">Expression</th>
+      <th class="cbg" onclick="selectCoverage(event, 'FSM_state')">FSM state</th>
+      <th class="cbg" onclick="selectCoverage(event, 'Functional')">Functional</th>
+   </tr>
+</table>
+
+<div id="Statement" class="tabcontent" style="width:76%;margin-left:var(--margin-left); margin-right:auto; margin-top:-2px; border: 2px solid black;">
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ffcccc;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Uncovered statements:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#d6eaf8;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Excluded statements:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Covered statements:</h2>
+  <div style="padding:0px 10px;">
+<h3>Variable assignment statement on line 60:</h3><code>60:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vA&nbsp;&nbsp;&nbsp;:=&nbsp;std_logic_vector(a);</code>&nbsp;</code><br><b>Count:</b> 3420105<br><b>Threshold:</b> 1<hr/>
+<h3>Variable assignment statement on line 61:</h3><code>61:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vB&nbsp;&nbsp;&nbsp;:=&nbsp;std_logic_vector(b);</code>&nbsp;</code><br><b>Count:</b> 3420105<br><b>Threshold:</b> 1<hr/>
+<h3>Variable assignment statement on line 62:</h3><code>62:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vC&nbsp;&nbsp;&nbsp;:=&nbsp;std_logic_vector(c);</code>&nbsp;</code><br><b>Count:</b> 3420105<br><b>Threshold:</b> 1<hr/>
+<h3>Variable assignment statement on line 63:</h3><code>63:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vMaj&nbsp;:=&nbsp;(vA&nbsp;and&nbsp;vB)&nbsp;or&nbsp;(vA&nbsp;and&nbsp;vC)&nbsp;or&nbsp;(vB&nbsp;and&nbsp;vC);</code>&nbsp;</code><br><b>Count:</b> 3420105<br><b>Threshold:</b> 1<hr/>
+<h3>Variable assignment statement on line 65:</h3><code>65:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vSum&nbsp;:=&nbsp;unsigned((vA&nbsp;xor&nbsp;vB&nbsp;xor&nbsp;vC)&nbsp;&amp;&nbsp;'1')&nbsp;+&nbsp;unsigned(vMaj(SUM_WIDTH&nbsp;-&nbsp;2&nbsp;downto&nbsp;0)&nbsp;&amp;&nbsp;'0'&nbsp;&amp;&nbsp;cin);</code>&nbsp;</code><br><b>Count:</b> 3420105<br><b>Threshold:</b> 1<hr/>
+<h3>Sequential statement on line 66:</h3><code>66:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">return&nbsp;signed(vSum(SUM_WIDTH&nbsp;downto&nbsp;1));</code>&nbsp;</code><br><b>Count:</b> 3420105<br><b>Threshold:</b> 1<hr/>
+<h3>Sequential statement on line 71:</h3><code>71:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">return&nbsp;to_signed(v,&nbsp;SUM_WIDTH);</code>&nbsp;</code><br><b>Count:</b> 1093972<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 104:</h3><code>104:&nbsp;&nbsp;sErrSign&nbsp;&lt;=&nbsp;<code class="cbg">iErrorVal(iErrorVal'high)</code>;&nbsp;</code><br><b>Count:</b> 151597<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 105:</h3><code>105:&nbsp;&nbsp;sErrExt&nbsp;&nbsp;&lt;=&nbsp;<code class="cbg">unsigned(resize(iErrorVal,&nbsp;A_WIDTH))&nbsp;xor&nbsp;(A_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0&nbsp;=&gt;&nbsp;sErrSign)</code>;&nbsp;</code><br><b>Count:</b> 495887<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 106:</h3><code>106:&nbsp;&nbsp;sAqSum&nbsp;&nbsp;&nbsp;&lt;=&nbsp;<code class="cbg">unsigned(iAq&nbsp;&amp;&nbsp;'1')&nbsp;+&nbsp;unsigned(sErrExt&nbsp;&amp;&nbsp;sErrSign)</code>;&nbsp;</code><br><b>Count:</b> 850857<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 107:</h3><code>107:&nbsp;&nbsp;sAqNew&nbsp;&nbsp;&nbsp;&lt;=&nbsp;<code class="cbg">sAqSum(A_WIDTH&nbsp;downto&nbsp;1)</code>;&nbsp;</code><br><b>Count:</b> 849376<br><b>Threshold:</b> 1<hr/>
+<h3>If statement on lines 109 to 110:</h3><code>109:&nbsp;&nbsp;oAq&nbsp;&lt;=&nbsp;shift_right(sAqNew,&nbsp;1)&nbsp;when&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;<br>110:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sAqNew;&nbsp;</code><br><b>Count:</b> 903522<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 109:</h3><code>109:&nbsp;&nbsp;oAq&nbsp;&lt;=&nbsp;<code class="cbg">shift_right(sAqNew,&nbsp;1)</code>&nbsp;when&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;</code><br><b>Count:</b> 99016<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 110:</h3><code>110:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">sAqNew</code>;&nbsp;</code><br><b>Count:</b> 804506<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 112:</h3><code>112:&nbsp;&nbsp;sB&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;<code class="cbg">resize(iBq,&nbsp;SUM_WIDTH)</code>;&nbsp;</code><br><b>Count:</b> 209638<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 113:</h3><code>113:&nbsp;&nbsp;sE&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;<code class="cbg">resize(iErrorVal,&nbsp;SUM_WIDTH)</code>;&nbsp;</code><br><b>Count:</b> 344316<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 114:</h3><code>114:&nbsp;&nbsp;sN&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;<code class="cbg">signed(resize(iNq,&nbsp;SUM_WIDTH))</code>;&nbsp;</code><br><b>Count:</b> 267348<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 115:</h3><code>115:&nbsp;&nbsp;sNNew&nbsp;&lt;=&nbsp;<code class="cbg">signed(resize(iNqNew,&nbsp;SUM_WIDTH))</code>;&nbsp;</code><br><b>Count:</b> 266640<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 116:</h3><code>116:&nbsp;&nbsp;sNot&nbsp;&nbsp;&lt;=&nbsp;<code class="cbg">not&nbsp;sNNew</code>;&nbsp;</code><br><b>Count:</b> 266666<br><b>Threshold:</b> 1<hr/>
+<h3>If statement on lines 118 to 119:</h3><code>118:&nbsp;&nbsp;sTNegSum&nbsp;&nbsp;&lt;=&nbsp;add3(sB,&nbsp;sE,&nbsp;const_sum(2&nbsp;*&nbsp;RESCALED_N&nbsp;-&nbsp;2),&nbsp;'0')&nbsp;when&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;<br>119:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add3(sB,&nbsp;sE,&nbsp;sN,&nbsp;'0');&nbsp;</code><br><b>Count:</b> 438634<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 118:</h3><code>118:&nbsp;&nbsp;sTNegSum&nbsp;&nbsp;&lt;=&nbsp;<code class="cbg">add3(sB,&nbsp;sE,&nbsp;const_sum(2&nbsp;*&nbsp;RESCALED_N&nbsp;-&nbsp;2),&nbsp;'0')</code>&nbsp;when&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;</code><br><b>Count:</b> 56704<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 119:</h3><code>119:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">add3(sB,&nbsp;sE,&nbsp;sN,&nbsp;'0')</code>;&nbsp;</code><br><b>Count:</b> 381930<br><b>Threshold:</b> 1<hr/>
+<h3>If statement on lines 120 to 121:</h3><code>120:&nbsp;&nbsp;sTClpNSum&nbsp;&lt;=&nbsp;add3(sB,&nbsp;sE,&nbsp;const_sum(4&nbsp;*&nbsp;RESCALED_N&nbsp;-&nbsp;2),&nbsp;'0')&nbsp;when&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;<br>121:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add3(sB,&nbsp;sE,&nbsp;sN(SUM_WIDTH&nbsp;-&nbsp;2&nbsp;downto&nbsp;0)&nbsp;&amp;&nbsp;'1',&nbsp;'0');&nbsp;</code><br><b>Count:</b> 438634<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 120:</h3><code>120:&nbsp;&nbsp;sTClpNSum&nbsp;&lt;=&nbsp;<code class="cbg">add3(sB,&nbsp;sE,&nbsp;const_sum(4&nbsp;*&nbsp;RESCALED_N&nbsp;-&nbsp;2),&nbsp;'0')</code>&nbsp;when&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;</code><br><b>Count:</b> 56704<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 121:</h3><code>121:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">add3(sB,&nbsp;sE,&nbsp;sN(SUM_WIDTH&nbsp;-&nbsp;2&nbsp;downto&nbsp;0)&nbsp;&amp;&nbsp;'1',&nbsp;'0')</code>;&nbsp;</code><br><b>Count:</b> 381930<br><b>Threshold:</b> 1<hr/>
+<h3>If statement on lines 122 to 123:</h3><code>122:&nbsp;&nbsp;sTPosSum&nbsp;&nbsp;&lt;=&nbsp;add3(sB,&nbsp;sE,&nbsp;const_sum(-2),&nbsp;'0')&nbsp;when&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;<br>123:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add3(sB,&nbsp;sE,&nbsp;const_sum(-1),&nbsp;'0');&nbsp;</code><br><b>Count:</b> 406259<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 122:</h3><code>122:&nbsp;&nbsp;sTPosSum&nbsp;&nbsp;&lt;=&nbsp;<code class="cbg">add3(sB,&nbsp;sE,&nbsp;const_sum(-2),&nbsp;'0')</code>&nbsp;when&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;</code><br><b>Count:</b> 56055<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 123:</h3><code>123:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">add3(sB,&nbsp;sE,&nbsp;const_sum(-1),&nbsp;'0')</code>;&nbsp;</code><br><b>Count:</b> 350204<br><b>Threshold:</b> 1<hr/>
+<h3>If statement on lines 124 to 125:</h3><code>124:&nbsp;&nbsp;sTClpPSum&nbsp;&lt;=&nbsp;add3(sB,&nbsp;sE,&nbsp;const_sum(-2&nbsp;*&nbsp;RESCALED_N&nbsp;-&nbsp;2),&nbsp;'0')&nbsp;when&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;<br>125:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add3(sB,&nbsp;sE,&nbsp;sNot,&nbsp;'0');&nbsp;</code><br><b>Count:</b> 672896<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 124:</h3><code>124:&nbsp;&nbsp;sTClpPSum&nbsp;&lt;=&nbsp;<code class="cbg">add3(sB,&nbsp;sE,&nbsp;const_sum(-2&nbsp;*&nbsp;RESCALED_N&nbsp;-&nbsp;2),&nbsp;'0')</code>&nbsp;when&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;</code><br><b>Count:</b> 82744<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 125:</h3><code>125:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">add3(sB,&nbsp;sE,&nbsp;sNot,&nbsp;'0')</code>;&nbsp;</code><br><b>Count:</b> 590152<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 127:</h3><code>127:&nbsp;&nbsp;sMidSum&nbsp;&nbsp;&nbsp;&lt;=&nbsp;<code class="cbg">add3(sB,&nbsp;sE,&nbsp;const_sum(0),&nbsp;'0')</code>;&nbsp;</code><br><b>Count:</b> 352113<br><b>Threshold:</b> 1<hr/>
+<h3>If statement on lines 128 to 129:</h3><code>128:&nbsp;&nbsp;sPlusSum&nbsp;&nbsp;&lt;=&nbsp;add3(sB,&nbsp;sE,&nbsp;const_sum(2&nbsp;*&nbsp;RESCALED_N),&nbsp;'0')&nbsp;when&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;<br>129:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add3(sB,&nbsp;sE,&nbsp;sNNew,&nbsp;'0');&nbsp;</code><br><b>Count:</b> 438673<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 128:</h3><code>128:&nbsp;&nbsp;sPlusSum&nbsp;&nbsp;&lt;=&nbsp;<code class="cbg">add3(sB,&nbsp;sE,&nbsp;const_sum(2&nbsp;*&nbsp;RESCALED_N),&nbsp;'0')</code>&nbsp;when&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;</code><br><b>Count:</b> 56704<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 129:</h3><code>129:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">add3(sB,&nbsp;sE,&nbsp;sNNew,&nbsp;'0')</code>;&nbsp;</code><br><b>Count:</b> 381969<br><b>Threshold:</b> 1<hr/>
+<h3>If statement on lines 130 to 131:</h3><code>130:&nbsp;&nbsp;sMinusSum&nbsp;&lt;=&nbsp;add3(sB,&nbsp;sE,&nbsp;const_sum(-2&nbsp;*&nbsp;RESCALED_N),&nbsp;'0')&nbsp;when&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;<br>131:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add3(sB,&nbsp;sE,&nbsp;sNot,&nbsp;'1');&nbsp;</code><br><b>Count:</b> 672896<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 130:</h3><code>130:&nbsp;&nbsp;sMinusSum&nbsp;&lt;=&nbsp;<code class="cbg">add3(sB,&nbsp;sE,&nbsp;const_sum(-2&nbsp;*&nbsp;RESCALED_N),&nbsp;'0')</code>&nbsp;when&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;</code><br><b>Count:</b> 82744<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 131:</h3><code>131:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">add3(sB,&nbsp;sE,&nbsp;sNot,&nbsp;'1')</code>;&nbsp;</code><br><b>Count:</b> 590152<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 133:</h3><code>133:&nbsp;&nbsp;sIsNeg&nbsp;&nbsp;&lt;=&nbsp;<code class="cbg">sTNegSum(SUM_WIDTH&nbsp;-&nbsp;1)</code>;&nbsp;</code><br><b>Count:</b> 157621<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 134:</h3><code>134:&nbsp;&nbsp;sClpNeg&nbsp;&lt;=&nbsp;<code class="cbg">sTClpNSum(SUM_WIDTH&nbsp;-&nbsp;1)</code>;&nbsp;</code><br><b>Count:</b> 115559<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 135:</h3><code>135:&nbsp;&nbsp;sIsPos&nbsp;&nbsp;&lt;=&nbsp;<code class="cbg">not&nbsp;sTPosSum(SUM_WIDTH&nbsp;-&nbsp;1)</code>;&nbsp;</code><br><b>Count:</b> 158362<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 136:</h3><code>136:&nbsp;&nbsp;sClpPos&nbsp;&lt;=&nbsp;<code class="cbg">not&nbsp;sTClpPSum(SUM_WIDTH&nbsp;-&nbsp;1)</code>;&nbsp;</code><br><b>Count:</b> 121266<br><b>Threshold:</b> 1<hr/>
+<h3>If statement on lines 138 to 139:</h3><code>138:&nbsp;&nbsp;sCDec&nbsp;&lt;=&nbsp;iCq&nbsp;-&nbsp;1&nbsp;when&nbsp;iCq&nbsp;&gt;&nbsp;MIN_C&nbsp;else&nbsp;<br>139:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iCq;&nbsp;</code><br><b>Count:</b> 240790<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 138:</h3><code>138:&nbsp;&nbsp;sCDec&nbsp;&lt;=&nbsp;<code class="cbg">iCq&nbsp;-&nbsp;1</code>&nbsp;when&nbsp;iCq&nbsp;&gt;&nbsp;MIN_C&nbsp;else&nbsp;</code><br><b>Count:</b> 235114<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 139:</h3><code>139:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">iCq</code>;&nbsp;</code><br><b>Count:</b> 5676<br><b>Threshold:</b> 1<hr/>
+<h3>If statement on lines 140 to 141:</h3><code>140:&nbsp;&nbsp;sCInc&nbsp;&lt;=&nbsp;iCq&nbsp;+&nbsp;1&nbsp;when&nbsp;iCq&nbsp;&lt;&nbsp;MAX_C&nbsp;else&nbsp;<br>141:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iCq;&nbsp;</code><br><b>Count:</b> 240790<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 140:</h3><code>140:&nbsp;&nbsp;sCInc&nbsp;&lt;=&nbsp;<code class="cbg">iCq&nbsp;+&nbsp;1</code>&nbsp;when&nbsp;iCq&nbsp;&lt;&nbsp;MAX_C&nbsp;else&nbsp;</code><br><b>Count:</b> 235159<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 141:</h3><code>141:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">iCq</code>;&nbsp;</code><br><b>Count:</b> 5631<br><b>Threshold:</b> 1<hr/>
+<h3>If statement on lines 143 to 150:</h3><code>143:&nbsp;&nbsp;oBq&nbsp;&lt;=&nbsp;resize(1&nbsp;-&nbsp;signed(resize(iNqNew,&nbsp;B_WIDTH&nbsp;+&nbsp;1)),&nbsp;B_WIDTH)&nbsp;when&nbsp;sIsNeg&nbsp;=&nbsp;'1'&nbsp;and&nbsp;sClpNeg&nbsp;=&nbsp;'1'&nbsp;else&nbsp;<br>144:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resize(shift_right(sPlusSum,&nbsp;1),&nbsp;B_WIDTH)&nbsp;when&nbsp;sIsNeg&nbsp;=&nbsp;'1'&nbsp;and&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;<br>...<br>149:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resize(shift_right(sMidSum,&nbsp;1),&nbsp;B_WIDTH)&nbsp;when&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;<br>150:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resize(sMidSum,&nbsp;B_WIDTH);&nbsp;</code><br><b>Count:</b> 1087423<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 143:</h3><code>143:&nbsp;&nbsp;oBq&nbsp;&lt;=&nbsp;<code class="cbg">resize(1&nbsp;-&nbsp;signed(resize(iNqNew,&nbsp;B_WIDTH&nbsp;+&nbsp;1)),&nbsp;B_WIDTH)</code>&nbsp;when&nbsp;sIsNeg&nbsp;=&nbsp;'1'&nbsp;and&nbsp;sClpNeg&nbsp;=&nbsp;'1'&nbsp;else&nbsp;</code><br><b>Count:</b> 221517<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 144:</h3><code>144:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">resize(shift_right(sPlusSum,&nbsp;1),&nbsp;B_WIDTH)</code>&nbsp;when&nbsp;sIsNeg&nbsp;=&nbsp;'1'&nbsp;and&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;</code><br><b>Count:</b> 9756<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 145:</h3><code>145:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">resize(sPlusSum,&nbsp;B_WIDTH)</code>&nbsp;when&nbsp;sIsNeg&nbsp;=&nbsp;'1'&nbsp;else&nbsp;</code><br><b>Count:</b> 125580<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 146:</h3><code>146:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">to_signed(0,&nbsp;B_WIDTH)</code>&nbsp;when&nbsp;sIsPos&nbsp;=&nbsp;'1'&nbsp;and&nbsp;sClpPos&nbsp;=&nbsp;'1'&nbsp;else&nbsp;</code><br><b>Count:</b> 236174<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 147:</h3><code>147:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">resize(shift_right(sMinusSum,&nbsp;1),&nbsp;B_WIDTH)</code>&nbsp;when&nbsp;sIsPos&nbsp;=&nbsp;'1'&nbsp;and&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;</code><br><b>Count:</b> 10929<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 148:</h3><code>148:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">resize(sMinusSum,&nbsp;B_WIDTH)</code>&nbsp;when&nbsp;sIsPos&nbsp;=&nbsp;'1'&nbsp;else&nbsp;</code><br><b>Count:</b> 128948<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 149:</h3><code>149:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">resize(shift_right(sMidSum,&nbsp;1),&nbsp;B_WIDTH)</code>&nbsp;when&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;</code><br><b>Count:</b> 13965<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 150:</h3><code>150:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">resize(sMidSum,&nbsp;B_WIDTH)</code>;&nbsp;</code><br><b>Count:</b> 340554<br><b>Threshold:</b> 1<hr/>
+<h3>If statement on lines 152 to 154:</h3><code>152:&nbsp;&nbsp;oCq&nbsp;&lt;=&nbsp;sCDec&nbsp;when&nbsp;sIsNeg&nbsp;=&nbsp;'1'&nbsp;else&nbsp;<br>153:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sCInc&nbsp;when&nbsp;sIsPos&nbsp;=&nbsp;'1'&nbsp;else&nbsp;<br>154:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iCq;&nbsp;</code><br><b>Count:</b> 705232<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 152:</h3><code>152:&nbsp;&nbsp;oCq&nbsp;&lt;=&nbsp;<code class="cbg">sCDec</code>&nbsp;when&nbsp;sIsNeg&nbsp;=&nbsp;'1'&nbsp;else&nbsp;</code><br><b>Count:</b> 240741<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 153:</h3><code>153:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">sCInc</code>&nbsp;when&nbsp;sIsPos&nbsp;=&nbsp;'1'&nbsp;else&nbsp;</code><br><b>Count:</b> 302638<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 154:</h3><code>154:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">iCq</code>;&nbsp;</code><br><b>Count:</b> 161853<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 156:</h3><code>156:&nbsp;&nbsp;oDec&nbsp;&lt;=&nbsp;<code class="cbg">sIsNeg</code>;&nbsp;</code><br><b>Count:</b> 157621<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 157:</h3><code>157:&nbsp;&nbsp;oInc&nbsp;&lt;=&nbsp;<code class="cbg">sIsPos&nbsp;and&nbsp;not&nbsp;sIsNeg</code>;&nbsp;</code><br><b>Count:</b> 223707<br><b>Threshold:</b> 1<hr/>
+<h3>Assertion statement on line 159:</h3><code>159:&nbsp;&nbsp;<code class="cbg">postponed&nbsp;assert&nbsp;is_x(sAqNew)&nbsp;or&nbsp;sAqNew&nbsp;&gt;=&nbsp;iAq&nbsp;report&nbsp;"a12_a13:&nbsp;A&nbsp;wrapped"&nbsp;severity&nbsp;error;</code>&nbsp;</code><br><b>Count:</b> 361206<br><b>Threshold:</b> 1<hr/>
+<h3>Assertion statement on lines 160 to 161:</h3><code>160:&nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(oCq)&nbsp;or&nbsp;iCq&nbsp;&lt;&nbsp;MIN_C&nbsp;or&nbsp;iCq&nbsp;&gt;&nbsp;MAX_C&nbsp;or&nbsp;(oCq&nbsp;&gt;=&nbsp;MIN_C&nbsp;and&nbsp;oCq&nbsp;&lt;=&nbsp;MAX_C)&nbsp;<br>161:&nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"a12_a13:&nbsp;C&nbsp;outside&nbsp;[MIN_C,&nbsp;MAX_C]"&nbsp;severity&nbsp;error;&nbsp;</code><br><b>Count:</b> 300357<br><b>Threshold:</b> 1  </div>
+  </section>
+
+</div>
+<div id="Branch" class="tabcontent" style="width:76%;margin-left:var(--margin-left); margin-right:auto; margin-top:-2px; border: 2px solid black;">
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ffcccc;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Uncovered branches:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#d6eaf8;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Excluded branches:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Covered branches:</h2>
+  <div style="padding:0px 10px;">
+<h3>"if" / "when" / "else" condition on line 109:</h3><code>109:&nbsp;&nbsp;oAq&nbsp;&lt;=&nbsp;shift_right(sAqNew,&nbsp;1)&nbsp;when&nbsp;<code class="cbg">iRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>99016</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 109:</h3><code>109:&nbsp;&nbsp;oAq&nbsp;&lt;=&nbsp;shift_right(sAqNew,&nbsp;1)&nbsp;when&nbsp;<code class="cbg">iRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>327942</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 118:</h3><code>118:&nbsp;&nbsp;sTNegSum&nbsp;&nbsp;&lt;=&nbsp;add3(sB,&nbsp;sE,&nbsp;const_sum(2&nbsp;*&nbsp;RESCALED_N&nbsp;-&nbsp;2),&nbsp;'0')&nbsp;when&nbsp;<code class="cbg">iRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>56704</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 118:</h3><code>118:&nbsp;&nbsp;sTNegSum&nbsp;&nbsp;&lt;=&nbsp;add3(sB,&nbsp;sE,&nbsp;const_sum(2&nbsp;*&nbsp;RESCALED_N&nbsp;-&nbsp;2),&nbsp;'0')&nbsp;when&nbsp;<code class="cbg">iRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>152952</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 120:</h3><code>120:&nbsp;&nbsp;sTClpNSum&nbsp;&lt;=&nbsp;add3(sB,&nbsp;sE,&nbsp;const_sum(4&nbsp;*&nbsp;RESCALED_N&nbsp;-&nbsp;2),&nbsp;'0')&nbsp;when&nbsp;<code class="cbg">iRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>56704</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 120:</h3><code>120:&nbsp;&nbsp;sTClpNSum&nbsp;&lt;=&nbsp;add3(sB,&nbsp;sE,&nbsp;const_sum(4&nbsp;*&nbsp;RESCALED_N&nbsp;-&nbsp;2),&nbsp;'0')&nbsp;when&nbsp;<code class="cbg">iRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>152952</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 122:</h3><code>122:&nbsp;&nbsp;sTPosSum&nbsp;&nbsp;&lt;=&nbsp;add3(sB,&nbsp;sE,&nbsp;const_sum(-2),&nbsp;'0')&nbsp;when&nbsp;<code class="cbg">iRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>56055</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 122:</h3><code>122:&nbsp;&nbsp;sTPosSum&nbsp;&nbsp;&lt;=&nbsp;add3(sB,&nbsp;sE,&nbsp;const_sum(-2),&nbsp;'0')&nbsp;when&nbsp;<code class="cbg">iRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>152952</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 124:</h3><code>124:&nbsp;&nbsp;sTClpPSum&nbsp;&lt;=&nbsp;add3(sB,&nbsp;sE,&nbsp;const_sum(-2&nbsp;*&nbsp;RESCALED_N&nbsp;-&nbsp;2),&nbsp;'0')&nbsp;when&nbsp;<code class="cbg">iRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>82744</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 124:</h3><code>124:&nbsp;&nbsp;sTClpPSum&nbsp;&lt;=&nbsp;add3(sB,&nbsp;sE,&nbsp;const_sum(-2&nbsp;*&nbsp;RESCALED_N&nbsp;-&nbsp;2),&nbsp;'0')&nbsp;when&nbsp;<code class="cbg">iRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>176334</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 128:</h3><code>128:&nbsp;&nbsp;sPlusSum&nbsp;&nbsp;&lt;=&nbsp;add3(sB,&nbsp;sE,&nbsp;const_sum(2&nbsp;*&nbsp;RESCALED_N),&nbsp;'0')&nbsp;when&nbsp;<code class="cbg">iRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>56704</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 128:</h3><code>128:&nbsp;&nbsp;sPlusSum&nbsp;&nbsp;&lt;=&nbsp;add3(sB,&nbsp;sE,&nbsp;const_sum(2&nbsp;*&nbsp;RESCALED_N),&nbsp;'0')&nbsp;when&nbsp;<code class="cbg">iRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>152952</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 130:</h3><code>130:&nbsp;&nbsp;sMinusSum&nbsp;&lt;=&nbsp;add3(sB,&nbsp;sE,&nbsp;const_sum(-2&nbsp;*&nbsp;RESCALED_N),&nbsp;'0')&nbsp;when&nbsp;<code class="cbg">iRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>82744</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 130:</h3><code>130:&nbsp;&nbsp;sMinusSum&nbsp;&lt;=&nbsp;add3(sB,&nbsp;sE,&nbsp;const_sum(-2&nbsp;*&nbsp;RESCALED_N),&nbsp;'0')&nbsp;when&nbsp;<code class="cbg">iRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>176334</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 138:</h3><code>138:&nbsp;&nbsp;sCDec&nbsp;&lt;=&nbsp;iCq&nbsp;-&nbsp;1&nbsp;when&nbsp;<code class="cbg">iCq&nbsp;&gt;&nbsp;MIN_C</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>235114</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 138:</h3><code>138:&nbsp;&nbsp;sCDec&nbsp;&lt;=&nbsp;iCq&nbsp;-&nbsp;1&nbsp;when&nbsp;<code class="cbg">iCq&nbsp;&gt;&nbsp;MIN_C</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>5589</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 140:</h3><code>140:&nbsp;&nbsp;sCInc&nbsp;&lt;=&nbsp;iCq&nbsp;+&nbsp;1&nbsp;when&nbsp;<code class="cbg">iCq&nbsp;&lt;&nbsp;MAX_C</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>235159</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 140:</h3><code>140:&nbsp;&nbsp;sCInc&nbsp;&lt;=&nbsp;iCq&nbsp;+&nbsp;1&nbsp;when&nbsp;<code class="cbg">iCq&nbsp;&lt;&nbsp;MAX_C</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>5544</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 143:</h3><code>143:&nbsp;&nbsp;oBq&nbsp;&lt;=&nbsp;resize(1&nbsp;-&nbsp;signed(resize(iNqNew,&nbsp;B_WIDTH&nbsp;+&nbsp;1)),&nbsp;B_WIDTH)&nbsp;when&nbsp;<code class="cbg">sIsNeg&nbsp;=&nbsp;'1'&nbsp;and&nbsp;sClpNeg&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>221517</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 143:</h3><code>143:&nbsp;&nbsp;oBq&nbsp;&lt;=&nbsp;resize(1&nbsp;-&nbsp;signed(resize(iNqNew,&nbsp;B_WIDTH&nbsp;+&nbsp;1)),&nbsp;B_WIDTH)&nbsp;when&nbsp;<code class="cbg">sIsNeg&nbsp;=&nbsp;'1'&nbsp;and&nbsp;sClpNeg&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>316884</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 144:</h3><code>144:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resize(shift_right(sPlusSum,&nbsp;1),&nbsp;B_WIDTH)&nbsp;when&nbsp;<code class="cbg">sIsNeg&nbsp;=&nbsp;'1'&nbsp;and&nbsp;iRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>9756</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 144:</h3><code>144:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resize(shift_right(sPlusSum,&nbsp;1),&nbsp;B_WIDTH)&nbsp;when&nbsp;<code class="cbg">sIsNeg&nbsp;=&nbsp;'1'&nbsp;and&nbsp;iRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>308651</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 145:</h3><code>145:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resize(sPlusSum,&nbsp;B_WIDTH)&nbsp;when&nbsp;<code class="cbg">sIsNeg&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>125580</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 145:</h3><code>145:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resize(sPlusSum,&nbsp;B_WIDTH)&nbsp;when&nbsp;<code class="cbg">sIsNeg&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>243131</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 146:</h3><code>146:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to_signed(0,&nbsp;B_WIDTH)&nbsp;when&nbsp;<code class="cbg">sIsPos&nbsp;=&nbsp;'1'&nbsp;and&nbsp;sClpPos&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>236174</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 146:</h3><code>146:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to_signed(0,&nbsp;B_WIDTH)&nbsp;when&nbsp;<code class="cbg">sIsPos&nbsp;=&nbsp;'1'&nbsp;and&nbsp;sClpPos&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>147779</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 147:</h3><code>147:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resize(shift_right(sMinusSum,&nbsp;1),&nbsp;B_WIDTH)&nbsp;when&nbsp;<code class="cbg">sIsPos&nbsp;=&nbsp;'1'&nbsp;and&nbsp;iRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>10929</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 147:</h3><code>147:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resize(shift_right(sMinusSum,&nbsp;1),&nbsp;B_WIDTH)&nbsp;when&nbsp;<code class="cbg">sIsPos&nbsp;=&nbsp;'1'&nbsp;and&nbsp;iRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>138746</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 148:</h3><code>148:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resize(sMinusSum,&nbsp;B_WIDTH)&nbsp;when&nbsp;<code class="cbg">sIsPos&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>128948</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 148:</h3><code>148:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resize(sMinusSum,&nbsp;B_WIDTH)&nbsp;when&nbsp;<code class="cbg">sIsPos&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>75023</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 149:</h3><code>149:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resize(shift_right(sMidSum,&nbsp;1),&nbsp;B_WIDTH)&nbsp;when&nbsp;<code class="cbg">iRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>13965</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 149:</h3><code>149:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resize(shift_right(sMidSum,&nbsp;1),&nbsp;B_WIDTH)&nbsp;when&nbsp;<code class="cbg">iRescale&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>65886</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 152:</h3><code>152:&nbsp;&nbsp;oCq&nbsp;&lt;=&nbsp;sCDec&nbsp;when&nbsp;<code class="cbg">sIsNeg&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>240741</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 152:</h3><code>152:&nbsp;&nbsp;oCq&nbsp;&lt;=&nbsp;sCDec&nbsp;when&nbsp;<code class="cbg">sIsNeg&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>183079</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 153:</h3><code>153:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sCInc&nbsp;when&nbsp;<code class="cbg">sIsPos&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>302638</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 153:</h3><code>153:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sCInc&nbsp;when&nbsp;<code class="cbg">sIsPos&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>43402</td><td>1</td></tr></table>  </div>
+  </section>
+
+</div>
+<div id="Toggle" class="tabcontent" style="width:76%;margin-left:var(--margin-left); margin-right:auto; margin-top:-2px; border: 2px solid black;">
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ffcccc;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Uncovered toggles:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#d6eaf8;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Excluded toggles:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Covered toggles:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+</div>
+<div id="Expression" class="tabcontent" style="width:76%;margin-left:var(--margin-left); margin-right:auto; margin-top:-2px; border: 2px solid black;">
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ffcccc;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Uncovered expressions:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#d6eaf8;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Excluded expressions:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Covered expressions:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+</div>
+<div id="FSM_state" class="tabcontent" style="width:76%;margin-left:var(--margin-left); margin-right:auto; margin-top:-2px; border: 2px solid black;">
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ffcccc;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Uncovered FSM states:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#d6eaf8;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Excluded FSM states:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Covered FSM states:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+</div>
+<div id="Functional" class="tabcontent" style="width:76%;margin-left:var(--margin-left); margin-right:auto; margin-top:-2px; border: 2px solid black;">
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ffcccc;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Uncovered functional coverage:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#d6eaf8;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Excluded functional coverage:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+  <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
+ <h2 style="margin-top: 0px; margin-bottom: 0px">Covered functional coverage:</h2>
+  <div style="padding:0px 10px;">
+  </div>
+  </section>
+
+</div>
+<script>
+   function selectCoverage(evt, coverageType) {
+      var i, tabcontent, tablinks;
+      tabcontent = document.getElementsByClassName("tabcontent");
+      for (i = 0; i < tabcontent.length; i++) {
+         tabcontent[i].style.display = "none";
+      }
+      tablinks = document.getElementsByClassName("tablinks");
+      for (i = 0; i < tablinks.length; i++) {
+         tablinks[i].className = tablinks[i].className.replace(" active", "");
+      }
+      document.getElementById(coverageType).style.display = "block";
+      evt.currentTarget.className += " active";
+   }
+   function GetExclude(excludeCmd) {
+      navigator.clipboard.writeText(excludeCmd);
+   }
+   function getCellValue (tr, n) {
+      let v = tr.getElementsByTagName("TD")[n];
+      v = parseInt(v.innerHTML.split("%")[0]);
+      if (isNaN(v)) {
+         v = -1;
+      }
+      return v;
+   }
+   function sortTable(n, tableId) {
+     const table = document.getElementById(tableId);
+     const rows = Array.from(table.querySelectorAll('tr:nth-child(n+2)'));
+     rows.sort((a, b) => {
+       const left = getCellValue(this.ascending ? a : b, n);
+       const right = getCellValue(this.ascending ? b : a, n);
+       if (!isNaN(left) && !isNaN(right)) {
+         return left - right;
+       } else {
+         return left.localeCompare(right);
+       }
+     });
+     rows.forEach(tr => table.appendChild(tr));
+     this.ascending = !this.ascending;
+   }
+   document.getElementById("defaultOpen").click();
+</script>
+<footer>   <p> NVC version: 1.23.0 </p>
+   <p> Generated on: Sat Nov  7 18:40:34 2026
+ </p>
+</footer>
+</body>
+</html>

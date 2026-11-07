@@ -8,7 +8,8 @@
 --
 -- Per-address init flags: after iEndOfImage, the first read of each context returns the initial values.
 -- The flag lookup selects on the merged A.4.1 Qi, skipping the A.4.2 adder; the flag clear lands a cycle late.
--- Writes land a cycle late from a register; a read forwards from both writes still in flight.
+-- Writes land a cycle late from a register. The read word loads a second register under iWordCE, along with the
+-- three writes the read cannot see: the one before it, the one with it, and the one a cycle after.
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -43,6 +44,10 @@ entity context_ram is
     iRdQ3           : in    signed(3 downto 0);
     iRdEn           : in    std_logic;
     iEndOfImage     : in    std_logic;
+    -- Low on stall: holds the write history a stalled read still has to forward from
+    iAdvance        : in    std_logic;
+    -- Loads the output word; high the cycle after iRdEn unless stalled
+    iWordCE         : in    std_logic;
     oRdData         : out   std_logic_vector(TOTAL_WIDTH - 1 downto 0);
     -- oRdData split: oRdAlt when oRdUseAlt else oRdBram. oRdAlt and oRdUseAlt come from registers
     oRdBram         : out   std_logic_vector(TOTAL_WIDTH - 1 downto 0);
@@ -77,12 +82,17 @@ architecture behavioral of context_ram is
   signal sClrAddr      : std_logic_vector(log2ceil(RAM_DEPTH) - 1 downto 0);
   signal sClrKey       : std_logic_vector(12 downto 0);
   signal sBramRdData   : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+  signal sBramWord     : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+  signal sUseInitWord  : std_logic;
 
   signal sWrPendEn     : std_logic;
   signal sWrPendAddr   : std_logic_vector(log2ceil(RAM_DEPTH) - 1 downto 0);
   signal sWrPendData   : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
+  signal sWrPend2En    : std_logic;
+  signal sWrPend2Addr  : std_logic_vector(log2ceil(RAM_DEPTH) - 1 downto 0);
+  signal sWrPend2Data  : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
 
-  -- Same-address write forwarding: WBR on top of an RBW BRAM. New: the write presented with the read; Old: the pending one
+  -- Same-address write forwarding: WBR on top of an RBW BRAM. New: the write at the word load; Old: the two before it
   signal sFwdNew       : std_logic;
   signal sFwdOld       : std_logic;
   signal sFwdNewData   : std_logic_vector(TOTAL_WIDTH - 1 downto 0);
@@ -187,46 +197,77 @@ begin
 
   end process p_init_tracker;
 
-  -- No reset: a write on the first reset cycle still lands, as with the unregistered port
+  -- No reset: a write on the first reset cycle still lands, as with the unregistered port.
+  -- A stall repeats the pending write, which is harmless: no read runs meanwhile
   p_wr_pend : process (iClk) is
   begin
 
     if rising_edge(iClk) then
-      sWrPendEn   <= iWrEn;
-      sWrPendAddr <= iWrAddr;
-      sWrPendData <= iWrData;
+      if (iAdvance = '1') then
+        sWrPendEn    <= iWrEn;
+        sWrPendAddr  <= iWrAddr;
+        sWrPendData  <= iWrData;
+        sWrPend2En   <= sWrPendEn;
+        sWrPend2Addr <= sWrPendAddr;
+        sWrPend2Data <= sWrPendData;
+      end if;
     end if;
 
   end process p_wr_pend;
 
-  -- Neither write is in the BRAM by the read; the newer wins at the output, so iWrData lands on a plain register
+  -- No reset and no other load, so it maps onto the BRAM output register
+  p_word : process (iClk) is
+  begin
+
+    if rising_edge(iClk) then
+      if (iWordCE = '1') then
+        sBramWord <= sBramRdData;
+      end if;
+    end if;
+
+  end process p_word;
+
+  -- sClrAddr holds the read address here. The newest write wins at the output, so iWrData lands on a plain register
   p_fwd : process (iClk) is
+
+    variable vPend1Hit : std_logic;
+    variable vPend2Hit : std_logic;
+
   begin
 
     if rising_edge(iClk) then
       if (iRst = '1') then
-        sFwdNew     <= '0';
-        sFwdOld     <= '0';
-        sFwdNewData <= (others => '0');
-        sFwdOldData <= (others => '0');
-      elsif (iRdEn = '1') then
-        sFwdNew     <= iWrEn and bool2bit(iWrAddr = iRdAddr);
-        sFwdOld     <= sWrPendEn and bool2bit(sWrPendAddr = iRdAddr);
-        sFwdNewData <= iWrData;
-        sFwdOldData <= sWrPendData;
+        sUseInitWord <= '0';
+        sFwdNew      <= '0';
+        sFwdOld      <= '0';
+        sFwdNewData  <= (others => '0');
+        sFwdOldData  <= (others => '0');
+      elsif (iWordCE = '1') then
+        vPend1Hit := sWrPendEn and bool2bit(sWrPendAddr = sClrAddr);
+        vPend2Hit := sWrPend2En and bool2bit(sWrPend2Addr = sClrAddr);
+
+        sUseInitWord <= sUseInitReg;
+        sFwdNew      <= iWrEn and bool2bit(iWrAddr = sClrAddr);
+        sFwdOld      <= vPend1Hit or vPend2Hit;
+        sFwdNewData  <= iWrData;
+        if (vPend1Hit = '1') then
+          sFwdOldData <= sWrPendData;
+        else
+          sFwdOldData <= sWrPend2Data;
+        end if;
       end if;
     end if;
 
   end process p_fwd;
 
-  sRdAlt    <= CTX_INIT when sUseInitReg = '1' else
+  sRdAlt    <= CTX_INIT when sUseInitWord = '1' else
                sFwdNewData when sFwdNew = '1' else
                sFwdOldData;
-  sRdUseAlt <= sUseInitReg or sFwdNew or sFwdOld;
+  sRdUseAlt <= sUseInitWord or sFwdNew or sFwdOld;
 
   oRdData   <= sRdAlt when sRdUseAlt = '1' else
-               sBramRdData;
-  oRdBram   <= sBramRdData;
+               sBramWord;
+  oRdBram   <= sBramWord;
   oRdAlt    <= sRdAlt;
   oRdUseAlt <= sRdUseAlt;
 

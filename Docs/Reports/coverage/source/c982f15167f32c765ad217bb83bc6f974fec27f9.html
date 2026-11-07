@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>NVC code coverage report</title>
+  <style>
+:root {
+    --table-row-color: #e8e8e8;
+    --margin-left: 20%;
+}
+
+body {
+    background-color: #f0f0e0ff;
+}
+
+header {
+    padding: 0.5em;
+    text-align: center;
+    font-size: 14pt;
+}
+
+h1 {
+    text-align: center;
+}
+
+h2 {
+    word-wrap: break-word;
+}
+
+h3 {
+    word-wrap: break-word;
+    margin-bottom: 0px;
+}
+
+hr {
+    border:none;
+    height: 2px;
+    background: black;
+}
+
+footer {
+    display: table;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+nav {
+    float: left;
+    background-color: var(--table-row-color);
+    width: 17%;
+    overflow: auto;
+    padding: 10px;
+    margin-top: -2px;
+    border: 2px solid black;
+}
+nav details details {
+    margin-left: 1rem;
+}
+nav details > a {
+    padding-left: 1.9rem;
+    display: block;
+}
+nav summary {
+    display: inline-flex;
+    cursor: pointer;
+    align-items: center;
+}
+nav summary::before {
+    content: '▶';
+    font-size: 0.7em;
+    margin-right: 0.4em;
+}
+nav details[open] > summary::before {
+    transform: rotate(90deg);
+}
+
+table {
+    table-layout: fixed;
+}
+
+table, th, td {
+    border: 2px solid black;
+    border-collapse: collapse;
+    word-wrap: break-word;
+}
+
+.tabcontent {
+    display: none;
+    padding: 0px 0px;
+    border: 2px solid #ccc;
+    border-top: none;
+    word-wrap: break-word;
+}
+
+.tab {
+    overflow: hidden;
+    border: 2px solid;
+    margin-left: var(--margin-left);
+    margin-top: 10px;
+}
+
+.cbg:hover {
+    background-color: #dddddd;
+}
+.cbg {
+    background-color: #bbbbbb;
+    text-align: center;
+}
+
+.cbt {
+    margin-top: 8px;
+}
+.cbt th {
+    background-color: #bbbbbb;
+    text-align: center;
+}
+.cbt td, .cbt th {
+    width: 50px;
+    text-align: center;
+}
+.cbt td + td, .cbt th + th {
+    width: 150px;
+}
+.cbt td + td + td, .cbt th + th + th {
+    width: 150px;
+}
+.cbt td + td + td + td, .cbt th + th + th + th {
+    width: 150px;
+}
+
+.percent100 {
+    background-color: #00cc00;
+}
+.percent90 {
+    background-color: #e6e600;
+}
+.percent80 {
+    background-color: #ff9900;
+}
+.percent0 {
+    background-color: #ff0000;
+}
+.percentna {
+    background-color: #cccccc;
+}
+
+.nav-sel {
+    font-weight: bold;
+}
+  </style>
+</head>
+<body style="font-family: verdana">
+
+<header><h1 style="text-align: center;">NVC code coverage report
+</h1></header>
+
+<h2 style="text-align: left;">
+   File:&nbsp; ../../Sources/A12_A13_update.vhd
+</h2><pre><code>     0: &nbsp; --&nbsp;Copyright&nbsp;(C)&nbsp;2026&nbsp;Vitor&nbsp;Mendes&nbsp;Camilo&nbsp;
+     1: &nbsp; --&nbsp;SPDX-License-Identifier:&nbsp;GPL-3.0-only&nbsp;
+     2: &nbsp; --&nbsp;
+     3: &nbsp; --&nbsp;This&nbsp;file&nbsp;is&nbsp;part&nbsp;of&nbsp;OpenJLS.&nbsp;Available&nbsp;under&nbsp;GPLv3&nbsp;or&nbsp;a&nbsp;
+     4: &nbsp; --&nbsp;commercial&nbsp;license.&nbsp;See&nbsp;LICENSE&nbsp;and&nbsp;README&nbsp;for&nbsp;details.&nbsp;
+     5: &nbsp; --&nbsp;
+     6: &nbsp; --&nbsp;a12_a13_update:&nbsp;T.87&nbsp;A.12&nbsp;and&nbsp;A.13&nbsp;fused,&nbsp;regular-mode&nbsp;update&nbsp;of&nbsp;A[Q],&nbsp;B[Q],&nbsp;C[Q]&nbsp;
+     7: &nbsp; --&nbsp;
+     8: &nbsp; --&nbsp;A.13&nbsp;tests&nbsp;and&nbsp;adds&nbsp;N[Q]&nbsp;on&nbsp;the&nbsp;B[Q]&nbsp;that&nbsp;A.12&nbsp;just&nbsp;produced.&nbsp;Each&nbsp;sum&nbsp;here&nbsp;is&nbsp;one&nbsp;carry&nbsp;chain&nbsp;over&nbsp;
+     9: &nbsp; --&nbsp;B&nbsp;+&nbsp;Errval&nbsp;+&nbsp;constant-or-N&nbsp;instead&nbsp;of&nbsp;two&nbsp;adders&nbsp;in&nbsp;series.&nbsp;Rescale&nbsp;halves&nbsp;the&nbsp;A.12&nbsp;B[Q],&nbsp;so&nbsp;its&nbsp;
+    10: &nbsp; --&nbsp;offsets&nbsp;are&nbsp;scaled&nbsp;to&nbsp;test&nbsp;the&nbsp;unhalved&nbsp;sum;&nbsp;every&nbsp;test&nbsp;is&nbsp;then&nbsp;a&nbsp;sign&nbsp;bit,&nbsp;with&nbsp;no&nbsp;zero&nbsp;detect.&nbsp;
+    11: &nbsp; &nbsp;
+    12: &nbsp; library&nbsp;ieee;&nbsp;
+    13: &nbsp; &nbsp;&nbsp;use&nbsp;ieee.std_logic_1164.all;&nbsp;
+    14: &nbsp; &nbsp;&nbsp;use&nbsp;ieee.numeric_std.all;&nbsp;
+    15: &nbsp; &nbsp;&nbsp;use&nbsp;work.openjls_pkg.all;&nbsp;
+    16: &nbsp; &nbsp;
+    17: &nbsp; entity&nbsp;a12_a13_update&nbsp;is&nbsp;
+    18: &nbsp; &nbsp;&nbsp;generic&nbsp;(&nbsp;
+    19: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;ERROR_WIDTH&nbsp;:&nbsp;natural&nbsp;:=&nbsp;CO_ERROR_VALUE_WIDTH_STD;&nbsp;
+    20: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;A_WIDTH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural&nbsp;:=&nbsp;CO_AQ_WIDTH_STD;&nbsp;
+    21: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;B_WIDTH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural&nbsp;:=&nbsp;CO_BQ_WIDTH_STD;&nbsp;
+    22: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;N_WIDTH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural&nbsp;:=&nbsp;CO_NQ_WIDTH_STD;&nbsp;
+    23: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;C_WIDTH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural&nbsp;:=&nbsp;CO_CQ_WIDTH;&nbsp;
+    24: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;MIN_C&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;integer&nbsp;:=&nbsp;CO_MIN_CQ;&nbsp;
+    25: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;MAX_C&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;integer&nbsp;:=&nbsp;CO_MAX_CQ;&nbsp;
+    26: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;RESET&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural&nbsp;:=&nbsp;CO_RESET_STD&nbsp;
+    27: &nbsp; &nbsp;&nbsp;);&nbsp;
+    28: &nbsp; &nbsp;&nbsp;port&nbsp;(&nbsp;
+    29: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;iErrorVal&nbsp;&nbsp;&nbsp;:&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;signed&nbsp;(ERROR_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+    30: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;iAq&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;unsigned&nbsp;(A_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+    31: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;iBq&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;signed&nbsp;(B_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+    32: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;iCq&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;signed&nbsp;(C_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+    33: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;iNq&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;unsigned&nbsp;(N_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+    34: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;--&nbsp;Next&nbsp;N[Q]&nbsp;and&nbsp;iNq&nbsp;=&nbsp;RESET,&nbsp;registered&nbsp;by&nbsp;the&nbsp;caller&nbsp;off&nbsp;the&nbsp;update&nbsp;path&nbsp;
+    35: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;iNqNew&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;unsigned&nbsp;(N_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+    36: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;iRescale&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;in&nbsp;&nbsp;&nbsp;&nbsp;std_logic;&nbsp;
+    37: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;oAq&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;out&nbsp;&nbsp;&nbsp;unsigned&nbsp;(A_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+    38: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;oBq&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;out&nbsp;&nbsp;&nbsp;signed&nbsp;(B_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+    39: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;oCq&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;out&nbsp;&nbsp;&nbsp;signed&nbsp;(C_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+    40: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;--&nbsp;Branch&nbsp;taken,&nbsp;set&nbsp;even&nbsp;when&nbsp;C&nbsp;is&nbsp;clamped&nbsp;
+    41: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;oDec&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;out&nbsp;&nbsp;&nbsp;std_logic;&nbsp;
+    42: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;oInc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;out&nbsp;&nbsp;&nbsp;std_logic&nbsp;
+    43: &nbsp; &nbsp;&nbsp;);&nbsp;
+    44: &nbsp; end&nbsp;entity&nbsp;a12_a13_update;&nbsp;
+    45: &nbsp; &nbsp;
+    46: &nbsp; architecture&nbsp;rtl&nbsp;of&nbsp;a12_a13_update&nbsp;is&nbsp;
+    47: &nbsp; &nbsp;
+    48: &nbsp; &nbsp;&nbsp;constant&nbsp;RESCALED_N&nbsp;:&nbsp;natural&nbsp;:=&nbsp;RESET&nbsp;/&nbsp;2&nbsp;+&nbsp;1;&nbsp;
+    49: &nbsp; &nbsp;&nbsp;--&nbsp;Guard&nbsp;bits&nbsp;so&nbsp;no&nbsp;sum&nbsp;wraps,&nbsp;for&nbsp;any&nbsp;iBq&nbsp;and&nbsp;the&nbsp;largest&nbsp;rescale&nbsp;offset&nbsp;
+    50: &nbsp; &nbsp;&nbsp;constant&nbsp;SUM_WIDTH&nbsp;&nbsp;:&nbsp;natural&nbsp;:=&nbsp;maximum(B_WIDTH,&nbsp;N_WIDTH&nbsp;+&nbsp;3)&nbsp;+&nbsp;3;&nbsp;
+    51: &nbsp; &nbsp;
+    52: &nbsp; &nbsp;&nbsp;subtype&nbsp;t_sum&nbsp;is&nbsp;signed(SUM_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+    53: &nbsp; &nbsp;
+    54: &nbsp; &nbsp;&nbsp;--&nbsp;a&nbsp;+&nbsp;b&nbsp;+&nbsp;c&nbsp;+&nbsp;cin&nbsp;as&nbsp;carry-save&nbsp;then&nbsp;one&nbsp;carry&nbsp;chain&nbsp;
+    55: &nbsp; &nbsp;&nbsp;function&nbsp;add3&nbsp;(a,&nbsp;b,&nbsp;c&nbsp;:&nbsp;t_sum;&nbsp;cin&nbsp;:&nbsp;std_logic)&nbsp;return&nbsp;t_sum&nbsp;is&nbsp;
+    56: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;vA,&nbsp;vB,&nbsp;vC,&nbsp;vMaj&nbsp;:&nbsp;std_logic_vector(SUM_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+    57: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;vSum&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unsigned(SUM_WIDTH&nbsp;downto&nbsp;0);&nbsp;
+    58: &nbsp; &nbsp;&nbsp;begin&nbsp;
+    59: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;vA&nbsp;&nbsp;&nbsp;:=&nbsp;std_logic_vector(a);&nbsp;
+    60: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;vB&nbsp;&nbsp;&nbsp;:=&nbsp;std_logic_vector(b);&nbsp;
+    61: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;vC&nbsp;&nbsp;&nbsp;:=&nbsp;std_logic_vector(c);&nbsp;
+    62: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;vMaj&nbsp;:=&nbsp;(vA&nbsp;and&nbsp;vB)&nbsp;or&nbsp;(vA&nbsp;and&nbsp;vC)&nbsp;or&nbsp;(vB&nbsp;and&nbsp;vC);&nbsp;
+    63: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;--&nbsp;The&nbsp;extra&nbsp;low&nbsp;bit&nbsp;carries&nbsp;cin&nbsp;into&nbsp;the&nbsp;chain&nbsp;
+    64: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;vSum&nbsp;:=&nbsp;unsigned((vA&nbsp;xor&nbsp;vB&nbsp;xor&nbsp;vC)&nbsp;&amp;&nbsp;'1')&nbsp;+&nbsp;unsigned(vMaj(SUM_WIDTH&nbsp;-&nbsp;2&nbsp;downto&nbsp;0)&nbsp;&amp;&nbsp;'0'&nbsp;&amp;&nbsp;cin);&nbsp;
+    65: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;signed(vSum(SUM_WIDTH&nbsp;downto&nbsp;1));&nbsp;
+    66: &nbsp; &nbsp;&nbsp;end&nbsp;function&nbsp;add3;&nbsp;
+    67: &nbsp; &nbsp;
+    68: &nbsp; &nbsp;&nbsp;function&nbsp;const_sum&nbsp;(v&nbsp;:&nbsp;integer)&nbsp;return&nbsp;t_sum&nbsp;is&nbsp;
+    69: &nbsp; &nbsp;&nbsp;begin&nbsp;
+    70: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;to_signed(v,&nbsp;SUM_WIDTH);&nbsp;
+    71: &nbsp; &nbsp;&nbsp;end&nbsp;function&nbsp;const_sum;&nbsp;
+    72: &nbsp; &nbsp;
+    73: &nbsp; &nbsp;&nbsp;signal&nbsp;sErrSign&nbsp;&nbsp;:&nbsp;std_logic;&nbsp;
+    74: &nbsp; &nbsp;&nbsp;signal&nbsp;sErrExt&nbsp;&nbsp;&nbsp;:&nbsp;unsigned(A_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+    75: &nbsp; &nbsp;&nbsp;signal&nbsp;sAqSum&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unsigned(A_WIDTH&nbsp;downto&nbsp;0);&nbsp;
+    76: &nbsp; &nbsp;&nbsp;signal&nbsp;sAqNew&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;unsigned(A_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+    77: &nbsp; &nbsp;
+    78: &nbsp; &nbsp;&nbsp;signal&nbsp;sB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;t_sum;&nbsp;
+    79: &nbsp; &nbsp;&nbsp;signal&nbsp;sE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;t_sum;&nbsp;
+    80: &nbsp; &nbsp;&nbsp;signal&nbsp;sN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;t_sum;&nbsp;
+    81: &nbsp; &nbsp;&nbsp;signal&nbsp;sNNew&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;t_sum;&nbsp;
+    82: &nbsp; &nbsp;&nbsp;signal&nbsp;sNot&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;t_sum;&nbsp;
+    83: &nbsp; &nbsp;
+    84: &nbsp; &nbsp;&nbsp;signal&nbsp;sTNegSum&nbsp;&nbsp;:&nbsp;t_sum;&nbsp;
+    85: &nbsp; &nbsp;&nbsp;signal&nbsp;sTClpNSum&nbsp;:&nbsp;t_sum;&nbsp;
+    86: &nbsp; &nbsp;&nbsp;signal&nbsp;sTPosSum&nbsp;&nbsp;:&nbsp;t_sum;&nbsp;
+    87: &nbsp; &nbsp;&nbsp;signal&nbsp;sTClpPSum&nbsp;:&nbsp;t_sum;&nbsp;
+    88: &nbsp; &nbsp;&nbsp;signal&nbsp;sMidSum&nbsp;&nbsp;&nbsp;:&nbsp;t_sum;&nbsp;
+    89: &nbsp; &nbsp;&nbsp;signal&nbsp;sPlusSum&nbsp;&nbsp;:&nbsp;t_sum;&nbsp;
+    90: &nbsp; &nbsp;&nbsp;signal&nbsp;sMinusSum&nbsp;:&nbsp;t_sum;&nbsp;
+    91: &nbsp; &nbsp;
+    92: &nbsp; &nbsp;&nbsp;signal&nbsp;sIsNeg&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;std_logic;&nbsp;
+    93: &nbsp; &nbsp;&nbsp;signal&nbsp;sIsPos&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;std_logic;&nbsp;
+    94: &nbsp; &nbsp;&nbsp;signal&nbsp;sClpNeg&nbsp;&nbsp;&nbsp;:&nbsp;std_logic;&nbsp;
+    95: &nbsp; &nbsp;&nbsp;signal&nbsp;sClpPos&nbsp;&nbsp;&nbsp;:&nbsp;std_logic;&nbsp;
+    96: &nbsp; &nbsp;
+    97: &nbsp; &nbsp;&nbsp;signal&nbsp;sCDec&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;signed(iCq'range);&nbsp;
+    98: &nbsp; &nbsp;&nbsp;signal&nbsp;sCInc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;signed(iCq'range);&nbsp;
+    99: &nbsp; &nbsp;
+   100: &nbsp; begin&nbsp;
+   101: &nbsp; &nbsp;
+   102: &nbsp; &nbsp;&nbsp;--&nbsp;A&nbsp;+&nbsp;|Errval|&nbsp;in&nbsp;one&nbsp;chain:&nbsp;conditional&nbsp;invert&nbsp;plus&nbsp;carry-in,&nbsp;no&nbsp;negate&nbsp;in&nbsp;series&nbsp;
+   103: &nbsp; &nbsp;&nbsp;sErrSign&nbsp;&lt;=&nbsp;iErrorVal(iErrorVal'high);&nbsp;
+   104: &nbsp; &nbsp;&nbsp;sErrExt&nbsp;&nbsp;&lt;=&nbsp;unsigned(resize(iErrorVal,&nbsp;A_WIDTH))&nbsp;xor&nbsp;(A_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0&nbsp;=&gt;&nbsp;sErrSign);&nbsp;
+   105: &nbsp; &nbsp;&nbsp;sAqSum&nbsp;&nbsp;&nbsp;&lt;=&nbsp;unsigned(iAq&nbsp;&amp;&nbsp;'1')&nbsp;+&nbsp;unsigned(sErrExt&nbsp;&amp;&nbsp;sErrSign);&nbsp;
+   106: &nbsp; &nbsp;&nbsp;sAqNew&nbsp;&nbsp;&nbsp;&lt;=&nbsp;sAqSum(A_WIDTH&nbsp;downto&nbsp;1);&nbsp;
+   107: &nbsp; &nbsp;
+   108: &nbsp; &nbsp;&nbsp;oAq&nbsp;&lt;=&nbsp;shift_right(sAqNew,&nbsp;1)&nbsp;when&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;
+   109: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sAqNew;&nbsp;
+   110: &nbsp; &nbsp;
+   111: &nbsp; &nbsp;&nbsp;sB&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;resize(iBq,&nbsp;SUM_WIDTH);&nbsp;
+   112: &nbsp; &nbsp;&nbsp;sE&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;resize(iErrorVal,&nbsp;SUM_WIDTH);&nbsp;
+   113: &nbsp; &nbsp;&nbsp;sN&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;signed(resize(iNq,&nbsp;SUM_WIDTH));&nbsp;
+   114: &nbsp; &nbsp;&nbsp;sNNew&nbsp;&lt;=&nbsp;signed(resize(iNqNew,&nbsp;SUM_WIDTH));&nbsp;
+   115: &nbsp; &nbsp;&nbsp;sNot&nbsp;&nbsp;&lt;=&nbsp;not&nbsp;sNNew;&nbsp;
+   116: &nbsp; &nbsp;
+   117: &nbsp; &nbsp;&nbsp;sTNegSum&nbsp;&nbsp;&lt;=&nbsp;add3(sB,&nbsp;sE,&nbsp;const_sum(2&nbsp;*&nbsp;RESCALED_N&nbsp;-&nbsp;2),&nbsp;'0')&nbsp;when&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;
+   118: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add3(sB,&nbsp;sE,&nbsp;sN,&nbsp;'0');&nbsp;
+   119: &nbsp; &nbsp;&nbsp;sTClpNSum&nbsp;&lt;=&nbsp;add3(sB,&nbsp;sE,&nbsp;const_sum(4&nbsp;*&nbsp;RESCALED_N&nbsp;-&nbsp;2),&nbsp;'0')&nbsp;when&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;
+   120: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add3(sB,&nbsp;sE,&nbsp;sN(SUM_WIDTH&nbsp;-&nbsp;2&nbsp;downto&nbsp;0)&nbsp;&amp;&nbsp;'1',&nbsp;'0');&nbsp;
+   121: &nbsp; &nbsp;&nbsp;sTPosSum&nbsp;&nbsp;&lt;=&nbsp;add3(sB,&nbsp;sE,&nbsp;const_sum(-2),&nbsp;'0')&nbsp;when&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;
+   122: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add3(sB,&nbsp;sE,&nbsp;const_sum(-1),&nbsp;'0');&nbsp;
+   123: &nbsp; &nbsp;&nbsp;sTClpPSum&nbsp;&lt;=&nbsp;add3(sB,&nbsp;sE,&nbsp;const_sum(-2&nbsp;*&nbsp;RESCALED_N&nbsp;-&nbsp;2),&nbsp;'0')&nbsp;when&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;
+   124: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add3(sB,&nbsp;sE,&nbsp;sNot,&nbsp;'0');&nbsp;
+   125: &nbsp; &nbsp;
+   126: &nbsp; &nbsp;&nbsp;sMidSum&nbsp;&nbsp;&nbsp;&lt;=&nbsp;add3(sB,&nbsp;sE,&nbsp;const_sum(0),&nbsp;'0');&nbsp;
+   127: &nbsp; &nbsp;&nbsp;sPlusSum&nbsp;&nbsp;&lt;=&nbsp;add3(sB,&nbsp;sE,&nbsp;const_sum(2&nbsp;*&nbsp;RESCALED_N),&nbsp;'0')&nbsp;when&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;
+   128: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add3(sB,&nbsp;sE,&nbsp;sNNew,&nbsp;'0');&nbsp;
+   129: &nbsp; &nbsp;&nbsp;sMinusSum&nbsp;&lt;=&nbsp;add3(sB,&nbsp;sE,&nbsp;const_sum(-2&nbsp;*&nbsp;RESCALED_N),&nbsp;'0')&nbsp;when&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;
+   130: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add3(sB,&nbsp;sE,&nbsp;sNot,&nbsp;'1');&nbsp;
+   131: &nbsp; &nbsp;
+   132: &nbsp; &nbsp;&nbsp;sIsNeg&nbsp;&nbsp;&lt;=&nbsp;sTNegSum(SUM_WIDTH&nbsp;-&nbsp;1);&nbsp;
+   133: &nbsp; &nbsp;&nbsp;sClpNeg&nbsp;&lt;=&nbsp;sTClpNSum(SUM_WIDTH&nbsp;-&nbsp;1);&nbsp;
+   134: &nbsp; &nbsp;&nbsp;sIsPos&nbsp;&nbsp;&lt;=&nbsp;not&nbsp;sTPosSum(SUM_WIDTH&nbsp;-&nbsp;1);&nbsp;
+   135: &nbsp; &nbsp;&nbsp;sClpPos&nbsp;&lt;=&nbsp;not&nbsp;sTClpPSum(SUM_WIDTH&nbsp;-&nbsp;1);&nbsp;
+   136: &nbsp; &nbsp;
+   137: &nbsp; &nbsp;&nbsp;sCDec&nbsp;&lt;=&nbsp;iCq&nbsp;-&nbsp;1&nbsp;when&nbsp;iCq&nbsp;&gt;&nbsp;MIN_C&nbsp;else&nbsp;
+   138: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iCq;&nbsp;
+   139: &nbsp; &nbsp;&nbsp;sCInc&nbsp;&lt;=&nbsp;iCq&nbsp;+&nbsp;1&nbsp;when&nbsp;iCq&nbsp;&lt;&nbsp;MAX_C&nbsp;else&nbsp;
+   140: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iCq;&nbsp;
+   141: &nbsp; &nbsp;
+   142: &nbsp; &nbsp;&nbsp;oBq&nbsp;&lt;=&nbsp;resize(1&nbsp;-&nbsp;signed(resize(iNqNew,&nbsp;B_WIDTH&nbsp;+&nbsp;1)),&nbsp;B_WIDTH)&nbsp;when&nbsp;sIsNeg&nbsp;=&nbsp;'1'&nbsp;and&nbsp;sClpNeg&nbsp;=&nbsp;'1'&nbsp;else&nbsp;
+   143: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resize(shift_right(sPlusSum,&nbsp;1),&nbsp;B_WIDTH)&nbsp;when&nbsp;sIsNeg&nbsp;=&nbsp;'1'&nbsp;and&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;
+   144: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resize(sPlusSum,&nbsp;B_WIDTH)&nbsp;when&nbsp;sIsNeg&nbsp;=&nbsp;'1'&nbsp;else&nbsp;
+   145: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to_signed(0,&nbsp;B_WIDTH)&nbsp;when&nbsp;sIsPos&nbsp;=&nbsp;'1'&nbsp;and&nbsp;sClpPos&nbsp;=&nbsp;'1'&nbsp;else&nbsp;
+   146: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resize(shift_right(sMinusSum,&nbsp;1),&nbsp;B_WIDTH)&nbsp;when&nbsp;sIsPos&nbsp;=&nbsp;'1'&nbsp;and&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;
+   147: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resize(sMinusSum,&nbsp;B_WIDTH)&nbsp;when&nbsp;sIsPos&nbsp;=&nbsp;'1'&nbsp;else&nbsp;
+   148: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resize(shift_right(sMidSum,&nbsp;1),&nbsp;B_WIDTH)&nbsp;when&nbsp;iRescale&nbsp;=&nbsp;'1'&nbsp;else&nbsp;
+   149: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resize(sMidSum,&nbsp;B_WIDTH);&nbsp;
+   150: &nbsp; &nbsp;
+   151: &nbsp; &nbsp;&nbsp;oCq&nbsp;&lt;=&nbsp;sCDec&nbsp;when&nbsp;sIsNeg&nbsp;=&nbsp;'1'&nbsp;else&nbsp;
+   152: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sCInc&nbsp;when&nbsp;sIsPos&nbsp;=&nbsp;'1'&nbsp;else&nbsp;
+   153: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iCq;&nbsp;
+   154: &nbsp; &nbsp;
+   155: &nbsp; &nbsp;&nbsp;oDec&nbsp;&lt;=&nbsp;sIsNeg;&nbsp;
+   156: &nbsp; &nbsp;&nbsp;oInc&nbsp;&lt;=&nbsp;sIsPos&nbsp;and&nbsp;not&nbsp;sIsNeg;&nbsp;
+   157: &nbsp; &nbsp;
+   158: &nbsp; &nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(sAqNew)&nbsp;or&nbsp;sAqNew&nbsp;&gt;=&nbsp;iAq&nbsp;report&nbsp;"a12_a13:&nbsp;A&nbsp;wrapped"&nbsp;severity&nbsp;error;&nbsp;
+   159: &nbsp; &nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(oCq)&nbsp;or&nbsp;iCq&nbsp;&lt;&nbsp;MIN_C&nbsp;or&nbsp;iCq&nbsp;&gt;&nbsp;MAX_C&nbsp;or&nbsp;(oCq&nbsp;&gt;=&nbsp;MIN_C&nbsp;and&nbsp;oCq&nbsp;&lt;=&nbsp;MAX_C)&nbsp;
+   160: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"a12_a13:&nbsp;C&nbsp;outside&nbsp;[MIN_C,&nbsp;MAX_C]"&nbsp;severity&nbsp;error;&nbsp;
+   161: &nbsp; &nbsp;
+   162: &nbsp; end&nbsp;architecture&nbsp;rtl;&nbsp;
+</code></pre>

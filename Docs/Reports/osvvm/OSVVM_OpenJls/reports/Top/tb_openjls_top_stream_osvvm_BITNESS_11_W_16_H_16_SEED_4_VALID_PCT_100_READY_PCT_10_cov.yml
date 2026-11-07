@@ -29,7 +29,7 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 1
+        Count: 2
         AtLeast: 1
-        PercentCov: 100.0000
+        PercentCov: 200.0000
 

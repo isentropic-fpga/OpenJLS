@@ -47,6 +47,7 @@ architecture sim of tb_a15_a16_osvvm is
   signal iEoi         : std_logic;
   signal iCE          : std_logic := '1';
   signal iRunCnt      : unsigned(RC_W - 1 downto 0);
+  signal iRunCntPrev  : unsigned(RC_W - 1 downto 0);
   signal iRunHit      : std_logic;
   signal iRunCont     : std_logic;
   signal iModeIsRun   : std_logic;
@@ -161,6 +162,7 @@ begin
       iCE           => iCE,
       iEoi          => iEoi,
       iRunCnt       => iRunCnt,
+      iRunCntPrev   => iRunCntPrev,
       iRunHit       => iRunHit,
       iRunContinue  => iRunCont,
       iModeIsRun    => iModeIsRun,
@@ -212,6 +214,12 @@ begin
       iRunHit  <= hit;
       iRunCont <= cont;
       iRunCnt  <= to_unsigned(cnt, RC_W);
+      -- A.14: the hit adds one to the registered count
+      if (hit = '1') then
+        iRunCntPrev <= to_unsigned(cnt, RC_W) - 1;
+      else
+        iRunCntPrev <= to_unsigned(cnt, RC_W);
+      end if;
       iIx      <= to_unsigned(ix, BITNESS);
       iRaPix   <= to_unsigned(ra, BITNESS);
       iRbPix   <= to_unsigned(RBVAL, BITNESS);
@@ -373,15 +381,16 @@ begin
 
   begin
 
-    rst        <= '0';
-    iEoi       <= '0';
-    iRunCnt    <= (others => '0');
-    iRunHit    <= '0';
-    iRunCont   <= '0';
-    iModeIsRun <= '1';
-    iIx        <= (others => '0');
-    iRaPix     <= (others => '0');
-    iRbPix     <= (others => '0');
+    rst         <= '0';
+    iEoi        <= '0';
+    iRunCnt     <= (others => '0');
+    iRunCntPrev <= (others => '0');
+    iRunHit     <= '0';
+    iRunCont    <= '0';
+    iModeIsRun  <= '1';
+    iIx         <= (others => '0');
+    iRaPix      <= (others => '0');
+    iRbPix      <= (others => '0');
 
     SetAlertLogName("tb_a15_a16_osvvm");
     SetLogEnable(PASSED, FALSE);

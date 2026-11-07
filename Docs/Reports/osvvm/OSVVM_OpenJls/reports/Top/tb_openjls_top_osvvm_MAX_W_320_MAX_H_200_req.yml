@@ -28,3 +28,8 @@
   - TestName: "tb_openjls_top_osvvm"
     Status: PASSED
     Results: {Goal: 100, Passed: 179, Errors: 0, Checked: 179, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+- Requirement: "OJLS.CSatForward"
+  TestCases: 
+  - TestName: "tb_openjls_top_osvvm"
+    Status: PASSED
+    Results: {Goal: 355, Passed: 357, Errors: 0, Checked: 357, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}

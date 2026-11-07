@@ -1,17 +1,18 @@
 Version: "0.1"
-TestCaseName: "tb_a20_osvvm"
-TestCaseFile:  "../../../Modules/tb_a20_osvvm.vhd"
+TestCaseName: "tb_a12_a13_osvvm"
+TestCaseFile:  "../../../Modules/tb_a12_a13_osvvm.vhd"
 TestSuiteName: "Modules"
 BuildName: "OSVVM_OpenJls"
-Generics:           null
+Generics:
+  BITNESS: "16"
 ReportsTestSuiteDirectory:  "reports/Modules"
-RequirementsYamlFile:  "reports/Modules/tb_a20_osvvm_req.yml"
-AlertYamlFile:  "reports/Modules/tb_a20_osvvm_alerts.yml"
-CovYamlFile:  "reports/Modules/tb_a20_osvvm_cov.yml"
+RequirementsYamlFile:  "reports/Modules/tb_a12_a13_osvvm_BITNESS_16_req.yml"
+AlertYamlFile:  "reports/Modules/tb_a12_a13_osvvm_BITNESS_16_alerts.yml"
+CovYamlFile:  "reports/Modules/tb_a12_a13_osvvm_BITNESS_16_cov.yml"
 ScoreboardDict:           null
 TranscriptFiles: ""
-TestCaseFileName: "tb_a20_osvvm"
-GenericNames: ""
+TestCaseFileName: "tb_a12_a13_osvvm_BITNESS_16"
+GenericNames: "_BITNESS_16"
 OsvvmSettingsInfo:
   ReportsSubdirectory:  "reports"
   SimulationLogFile: "logs/OSVVM_OpenJls.log"
