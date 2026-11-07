@@ -91,6 +91,68 @@ architecture sim of tb_openjls_top_osvvm is
      x"A9", x"ED", x"CA", x"4E", x"00", x"FF", x"D9");
   constant RI_EXP_BYTES : natural := RI_EXPECTED'length;
 
+  -- Back-to-back same-context updates with C[Q] saturated: the speculative
+  -- C+1 (P) and C-1 (M) chains must not be used past MAX_C/MIN_C. Row 0 keeps
+  -- every pixel in one context. Expected bytes are the CharLS golden.
+  constant CSAT_W : natural := 136;
+
+  constant CSAT_P_PIXELS : pixel_array_t(0 to CSAT_W - 1) :=
+    (194, 118, 69, 42, 255, 171, 152, 116, 35, 255, 128, 85, 255, 195, 179, 65, 255,
+     162, 47, 254, 115, 38, 0, 33, 255, 186, 120, 255, 138, 255, 134, 62, 255, 203,
+     128, 225, 96, 255, 109, 255, 98, 255, 140, 44, 255, 112, 21, 241, 160, 255, 115,
+     255, 180, 53, 183, 52, 35, 136, 255, 105, 0, 43, 163, 255, 94, 255, 138, 255,
+     124, 234, 150, 255, 80, 255, 115, 255, 130, 48, 181, 255, 120, 255, 53, 230, 70,
+     156, 255, 60, 255, 66, 220, 69, 195, 29, 142, 248, 92, 156, 52, 197, 72, 157,
+     255, 68, 227, 33, 255, 48, 162, 255, 29, 255, 65, 137, 255, 80, 204, 28, 223,
+     255, 30, 177, 255, 75, 255, 34, 150, 180, 255, 109, 164, 255, 60, 220, 255, 103);
+
+  constant CSAT_P_EXPECTED : byte_array_t(0 to 178) :=
+    (x"FF", x"D8", x"FF", x"F7", x"00", x"0B", x"08", x"00", x"01", x"00", x"88",
+     x"01", x"01", x"11", x"00", x"FF", x"DA", x"00", x"08", x"01", x"01", x"00",
+     x"00", x"00", x"00", x"00", x"00", x"01", x"79", x"00", x"00", x"01", x"97",
+     x"60", x"E4", x"A0", x"60", x"B9", x"F0", x"A9", x"E0", x"6C", x"42", x"2B",
+     x"30", x"46", x"12", x"19", x"8B", x"42", x"27", x"E1", x"C1", x"CB", x"11",
+     x"06", x"C2", x"E2", x"A0", x"80", x"76", x"18", x"0F", x"4A", x"C8", x"5A",
+     x"95", x"87", x"C3", x"F3", x"E0", x"B8", x"52", x"1B", x"9E", x"0A", x"CD",
+     x"D1", x"84", x"85", x"EB", x"C8", x"C3", x"21", x"E0", x"8D", x"C8", x"B0",
+     x"54", x"2E", x"22", x"8E", x"06", x"43", x"E3", x"01", x"54", x"F4", x"29",
+     x"09", x"58", x"8D", x"C5", x"82", x"31", x"8B", x"21", x"A0", x"56", x"98",
+     x"26", x"2D", x"35", x"52", x"2B", x"0A", x"CE", x"CB", x"03", x"C7", x"43",
+     x"00", x"90", x"56", x"18", x"20", x"85", x"0C", x"82", x"03", x"D1", x"68",
+     x"64", x"F6", x"40", x"32", x"25", x"1D", x"BD", x"08", x"CF", x"07", x"0F",
+     x"47", x"A8", x"42", x"81", x"F1", x"D0", x"70", x"82", x"32", x"3B", x"AE",
+     x"10", x"1D", x"1F", x"D8", x"42", x"D3", x"69", x"3D", x"F1", x"F5", x"04",
+     x"C8", x"6A", x"33", x"BC", x"AA", x"97", x"19", x"84", x"84", x"83", x"E5",
+     x"90", x"FF", x"D9");
+
+  constant CSAT_M_PIXELS : pixel_array_t(0 to CSAT_W - 1) :=
+    (255, 95, 153, 255, 255, 92, 114, 210, 250, 116, 150, 255, 39, 55, 176, 58, 80,
+     121, 228, 255, 73, 147, 255, 63, 199, 255, 21, 118, 255, 109, 180, 56, 121, 156,
+     255, 73, 217, 80, 137, 255, 115, 255, 83, 198, 107, 159, 255, 115, 255, 62, 190,
+     255, 83, 167, 255, 104, 255, 76, 255, 111, 203, 81, 255, 64, 221, 86, 255, 78,
+     160, 255, 81, 158, 53, 180, 77, 246, 74, 255, 24, 168, 115, 255, 91, 255, 91,
+     236, 118, 255, 89, 255, 110, 63, 255, 123, 255, 107, 40, 255, 46, 255, 98, 255,
+     255, 40, 0, 255, 93, 255, 52, 255, 117, 255, 73, 255, 60, 254, 104, 255, 113,
+     255, 34, 255, 97, 75, 255, 119, 22, 255, 118, 255, 113, 27, 24, 24, 23, 133);
+
+  constant CSAT_M_EXPECTED : byte_array_t(0 to 175) :=
+    (x"FF", x"D8", x"FF", x"F7", x"00", x"0B", x"08", x"00", x"01", x"00", x"88",
+     x"01", x"01", x"11", x"00", x"FF", x"DA", x"00", x"08", x"01", x"01", x"00",
+     x"00", x"00", x"00", x"40", x"00", x"00", x"1B", x"E7", x"11", x"1E", x"00",
+     x"F3", x"8C", x"EA", x"86", x"34", x"F3", x"3F", x"A7", x"C9", x"16", x"47",
+     x"99", x"FC", x"CE", x"B4", x"CA", x"6D", x"A6", x"F7", x"F1", x"8D", x"07",
+     x"59", x"3C", x"5D", x"16", x"D5", x"44", x"D4", x"58", x"E4", x"52", x"98",
+     x"B6", x"67", x"D2", x"61", x"19", x"D9", x"2A", x"74", x"9B", x"D6", x"47",
+     x"9D", x"CE", x"BB", x"FD", x"4F", x"CF", x"A9", x"F0", x"71", x"DA", x"2C",
+     x"14", x"CB", x"D5", x"BF", x"86", x"A3", x"71", x"A0", x"57", x"AA", x"D6",
+     x"8A", x"76", x"7E", x"DD", x"47", x"1E", x"A1", x"EF", x"50", x"AF", x"D2",
+     x"AD", x"3B", x"14", x"2B", x"E7", x"E5", x"6E", x"A5", x"5B", x"FD", x"BB",
+     x"79", x"D6", x"69", x"D6", x"EB", x"BD", x"96", x"F7", x"CF", x"6B", x"AF",
+     x"5D", x"FB", x"AD", x"F6", x"2F", x"9C", x"06", x"8B", x"95", x"17", x"7E",
+     x"BD", x"2C", x"37", x"5D", x"EA", x"4D", x"23", x"F2", x"A5", x"68", x"E5",
+     x"B8", x"ED", x"71", x"59", x"EC", x"37", x"2F", x"BB", x"BF", x"25", x"B6",
+     x"ED", x"97", x"71", x"EA", x"BE", x"5F", x"EF", x"DA", x"40", x"FF", x"D9");
+
   signal clk     : std_logic := '0';
   signal rst     : std_logic;
   signal iValid  : std_logic;
@@ -372,6 +434,7 @@ begin
     variable reqH3      : AlertLogIDType;
     variable reqB2B     : AlertLogIDType;
     variable reqRI      : AlertLogIDType;
+    variable reqCSat    : AlertLogIDType;
     variable reqFlood   : AlertLogIDType;
     variable floodOk    : boolean;
 
@@ -479,6 +542,33 @@ begin
       end loop;
 
     end procedure run_check;
+
+    procedure run_golden (
+      pixels   : pixel_array_t;
+      expected : byte_array_t;
+      req      : AlertLogIDType;
+      msg      : string
+    ) is
+    begin
+
+      do_reset;
+      base     := collectedCount;
+      baseL    := lastCount;
+      sBpMode  <= 0;
+      sNoStall <= false;
+      feed(pixels, false, pixels'length);
+      wait_images(1);
+
+      AffirmIfEqual(req, collectedCount - base, expected'length, msg & " byte count");
+      for i in 0 to expected'length - 1 loop
+
+        if (base + i < collectedCount) then
+          AffirmIfEqual(req, collected(base + i), expected(i), msg & " byte " & integer'image(i));
+        end if;
+
+      end loop;
+
+    end procedure run_golden;
 
     procedure check_against_ref (
       msg : string
@@ -600,25 +690,19 @@ begin
 
     -- RI context forwarding ---
     -- The only image that takes sFwdRiHit
-    sImgW    <= RI_W;
-    sImgH    <= RI_H;
-    do_reset;
-    base     := collectedCount;
-    baseL    := lastCount;
-    sBpMode  <= 0;
-    sNoStall <= false;
-    feed(RI_PIXELS, false, RI_PIXELS'length);
-    wait_images(1);
+    sImgW <= RI_W;
+    sImgH <= RI_H;
+    run_golden(RI_PIXELS, RI_EXPECTED, reqRI, "RI-forward");
 
-    AffirmIfEqual(reqRI, collectedCount - base, RI_EXP_BYTES, "RI-forward byte count");
-    for i in 0 to RI_EXP_BYTES - 1 loop
-
-      if (base + i < collectedCount) then
-        AffirmIfEqual(reqRI, collected(base + i), RI_EXPECTED(i),
-                      "RI-forward byte " & integer'image(i));
-      end if;
-
-    end loop;
+    -- Regular context forwarding with C[Q] saturated ---
+    -- Wider than the 48x48 variant's MAX
+    if (MAX_W >= CSAT_W) then
+      reqCSat := GetReqID("OJLS.CSatForward", CSAT_P_EXPECTED'length + CSAT_M_EXPECTED'length);
+      sImgW   <= CSAT_W;
+      sImgH   <= 1;
+      run_golden(CSAT_P_PIXELS, CSAT_P_EXPECTED, reqCSat, "C=MAX_C forward");
+      run_golden(CSAT_M_PIXELS, CSAT_M_EXPECTED, reqCSat, "C=MIN_C forward");
+    end if;
 
     -- Phase B: 48x48 noise, clean run as the reference ---
     sImgW <= BIG_W;
