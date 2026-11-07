@@ -235,7 +235,7 @@ OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level
 <sup>3</sup> Byte-exact vs CharLS: 5555 from reset, 6000 same-size images streamed with no reset between them.<br>
 <sup>4</sup> 155,469 affirmations on the gate-level netlist.<br>
 <sup>5</sup> 8-bit images up to 0.05 MP, byte-exact vs CharLS.<br>
-<sup>6</sup> Byte-exact vs CharLS on PYNQ-Z2 silicon at 71.43 MHz: 5639 from reset, 6000 same-size images streamed with no reset between them.
+<sup>6</sup> Byte-exact vs CharLS on PYNQ-Z2 silicon at 100 MHz: 5639 from reset, 6000 same-size images streamed with no reset between them.
 </sub>
 
 - **OSVVM** — 32 module testbenches against independent T.87 reference models, a top-level control-plane stress test, and AXI wrapper tests, all with requirements tracking.
