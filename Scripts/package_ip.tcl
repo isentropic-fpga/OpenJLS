@@ -16,7 +16,7 @@ set work_root  [file join [pwd] ip_pkg]
 
 set vendor   isentropic
 set library  openjls
-set version  1.4
+set version  1.5
 set repo_url https://github.com/isentropic-fpga/OpenJLS
 
 # Only a packaging vehicle; level_2 family support below opens all families

@@ -9,6 +9,42 @@
 library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
+
+-- A.23 A increment, |Errval| - RItype, computed a stage ahead of the A update.
+-- In RI, RItype 1 implies Errval /= 0, so one adder covers all four sign/RItype cases.
+entity a23_aq_delta is
+  generic (
+    ERROR_WIDTH : natural
+  );
+  port (
+    iErrVal : in    signed (ERROR_WIDTH - 1 downto 0);
+    iRiType : in    std_logic;
+    oDelta  : out   unsigned (ERROR_WIDTH - 2 downto 0)
+  );
+end entity a23_aq_delta;
+
+architecture rtl of a23_aq_delta is
+
+  signal sNeg : std_logic;
+  signal sMag : unsigned (ERROR_WIDTH - 2 downto 0);
+  signal sDec : unsigned (ERROR_WIDTH - 2 downto 0);
+  signal sInc : unsigned (0 downto 0);
+
+begin
+
+  sNeg <= iErrVal(iErrVal'high);
+  sMag <= unsigned(iErrVal(ERROR_WIDTH - 2 downto 0)) when sNeg = '0' else
+          unsigned(not iErrVal(ERROR_WIDTH - 2 downto 0));
+  sDec <= (others => iRiType and not sNeg);
+  sInc(0) <= sNeg and not iRiType;
+
+  oDelta <= sMag + sDec + sInc;
+
+end architecture rtl;
+
+library ieee;
+  use ieee.std_logic_1164.all;
+  use ieee.numeric_std.all;
   use work.openjls_pkg.all;
 
 entity a23_run_interruption_update is
@@ -21,7 +57,8 @@ entity a23_run_interruption_update is
   );
   port (
     iErrVal     : in    signed (ERROR_WIDTH - 1 downto 0);
-    iRiType     : in    std_logic;
+    -- a23_aq_delta of iErrVal
+    iAqDelta    : in    unsigned (ERROR_WIDTH - 2 downto 0);
     iAq         : in    unsigned (A_WIDTH - 1 downto 0);
     iNq         : in    unsigned (N_WIDTH - 1 downto 0);
     iNn         : in    unsigned (NN_WIDTH - 1 downto 0);
@@ -35,7 +72,7 @@ architecture behavioral of a23_run_interruption_update is
 
 begin
 
-  p_ri_update : process (iErrVal, iRiType, iAq, iNq, iNn) is
+  p_ri_update : process (iErrVal, iAqDelta, iAq, iNq, iNn) is
 
     variable vAq : integer;
     variable vNq : integer;
@@ -52,7 +89,7 @@ begin
     end if;
 
     -- Mert 2018 Fig. 9 form: A[Q] += abs(Errval) - RItype
-    vAq := vAq + abs(to_integer(iErrVal)) - std_to_int(iRiType);
+    vAq := vAq + to_integer(iAqDelta);
 
     if (vNq = integer(RESET)) then
       vAq := vAq / 2;

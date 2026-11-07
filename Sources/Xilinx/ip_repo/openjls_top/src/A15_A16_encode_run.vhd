@@ -8,6 +8,7 @@
 --
 -- Mealy FSM on A.14's combinational outputs. sNextBound is the run count of the next A.15 '1' bit:
 -- 2^J[RUNindex] at run start, then + 2^J[RUNindex + 1] per hit. RUNindex resets only at iEoi.
+-- Every next bound is precomputed from the registers, so the hit only selects one.
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -25,8 +26,9 @@ entity a15_a16_encode_run is
     iCE           : in    std_logic;
     iEoi          : in    std_logic;
 
-    -- From A14, unregistered
+    -- From A14, unregistered; iRunCnt = iRunCntPrev + iRunHit
     iRunCnt       : in    unsigned(RUN_CNT_WIDTH - 1 downto 0);
+    iRunCntPrev   : in    unsigned(RUN_CNT_WIDTH - 1 downto 0);
     iRunHit       : in    std_logic;
     iRunContinue  : in    std_logic;
 
@@ -58,29 +60,56 @@ architecture behavioral of a15_a16_encode_run is
 
   signal sRunIndex       : unsigned(4 downto 0);                  -- [0, 31], full type: saturated at 31
   signal sNextBound      : unsigned(C_BOUND_WIDTH - 1 downto 0);  -- [1, 2^RUN_CNT_WIDTH + 2^15]
+  signal sNextBoundM1    : unsigned(C_BOUND_WIDTH - 1 downto 0);  -- sNextBound - 1
   signal sInRun          : std_logic;
 
   signal sRunIndexNext   : unsigned(4 downto 0);
   signal sNextBoundNext  : unsigned(C_BOUND_WIDTH - 1 downto 0);
   signal sInRunNext      : std_logic;
+  signal sNextBoundM1Nxt : unsigned(C_BOUND_WIDTH - 1 downto 0);
+
+  -- Candidate indices and their 2^J, from sRunIndex only
+  signal sIdxInc         : unsigned(4 downto 0);
+  signal sIdxDec         : unsigned(4 downto 0);
+  signal sPowSame        : unsigned(C_BOUND_WIDTH - 1 downto 0);
+  signal sPowInc         : unsigned(C_BOUND_WIDTH - 1 downto 0);
+  signal sPowDec         : unsigned(C_BOUND_WIDTH - 1 downto 0);
+  signal sBoundAdd       : unsigned(C_BOUND_WIDTH - 1 downto 0);
+  signal sBoundAddM1     : unsigned(C_BOUND_WIDTH - 1 downto 0);
+
+  function pow2j (
+    idx : unsigned(4 downto 0)
+  ) return unsigned is
+  begin
+
+    return shift_left(to_unsigned(1, C_BOUND_WIDTH), CO_J_TABLE(to_integer(idx)));
+
+  end function pow2j;
 
 begin
+
+  sIdxInc     <= sRunIndex + 1 when sRunIndex < 31 else
+                 sRunIndex;
+  sIdxDec     <= sRunIndex - 1 when sRunIndex > 0 else
+                 sRunIndex;
+  sPowSame    <= pow2j(sRunIndex);
+  sPowInc     <= pow2j(sIdxInc);
+  sPowDec     <= pow2j(sIdxDec);
+  sBoundAdd   <= sNextBound + sPowInc;
+  sBoundAddM1 <= sNextBoundM1 + sPowInc;
 
   -- Contracts (PSL, simulation only)
   -- psl default clock is rising_edge(iClk);
   -- psl assert always ((iRst = '1' or iEoi = '1') -> next (sInRun = '0' and sRunIndex = 0)) report "a15_a16: run state must clear one cycle after iEoi/reset";
   -- psl assert always (iModeIsRun = '0' -> (oRawValid = '0' and oRiValid = '0')) report "a15_a16: no tokens outside run mode";
 
-  p_comb : process (sRunIndex, sNextBound, sInRun,
-                    iRunCnt, iRunHit, iRunContinue, iModeIsRun, iEoi, iRst,
+  p_comb : process (sRunIndex, sNextBound, sNextBoundM1, sInRun,
+                    sIdxInc, sIdxDec, sPowSame, sPowInc, sPowDec, sBoundAdd, sBoundAddM1,
+                    iRunCnt, iRunCntPrev, iRunHit, iRunContinue, iModeIsRun, iEoi, iRst,
                     iIx, iRa, iRb) is
 
     variable vJ        : natural;
-    variable vJNext    : natural;
-    variable vStep     : unsigned(C_BOUND_WIDTH - 1 downto 0);
-    variable vStepNext : unsigned(C_BOUND_WIDTH - 1 downto 0);
     variable vBoundHit : boolean;
-    variable vNewIndex : unsigned(4 downto 0);
 
   begin
 
@@ -93,30 +122,21 @@ begin
     oRiRb         <= iRb;
     oRiRunIndex   <= sRunIndex;
 
-    sRunIndexNext  <= sRunIndex;
-    sNextBoundNext <= sNextBound;
-    sInRunNext     <= sInRun;
+    sRunIndexNext   <= sRunIndex;
+    sNextBoundNext  <= sNextBound;
+    sNextBoundM1Nxt <= sNextBoundM1;
+    sInRunNext      <= sInRun;
 
     if (iModeIsRun = '1' and iRst = '0') then
-      vJ    := CO_J_TABLE(to_integer(sRunIndex));
-      vStep := shift_left(to_unsigned(1, C_BOUND_WIDTH), vJ);
-      if (sRunIndex < 31) then
-        vJNext := CO_J_TABLE(to_integer(sRunIndex) + 1);
-      else
-        vJNext := CO_J_TABLE(31);
-      end if;
-      vStepNext := shift_left(to_unsigned(1, C_BOUND_WIDTH), vJNext);
+      vJ := CO_J_TABLE(to_integer(sRunIndex));
 
       if (iRunHit = '1') then
-        -- A.15: match
-        vBoundHit := resize(iRunCnt, C_BOUND_WIDTH) = sNextBound;
-        vNewIndex := sRunIndex;
+        -- A.15: match; iRunCnt = sNextBound, on the registered count
+        vBoundHit := resize(iRunCntPrev, C_BOUND_WIDTH) = sNextBoundM1;
 
         if (vBoundHit) then
-          oRawValid <= '1';
-          if (sRunIndex < 31) then
-            vNewIndex := sRunIndex + 1;
-          end if;
+          oRawValid     <= '1';
+          sRunIndexNext <= sIdxInc;
         end if;
 
         sInRunNext <= '1';
@@ -127,36 +147,32 @@ begin
           if (not vBoundHit and iRunCnt > 0) then
             oRawValid <= '1'; -- A16 EOLine '1' bit
           end if;
-          sRunIndexNext  <= vNewIndex;
-          sNextBoundNext <= shift_left(to_unsigned(1, C_BOUND_WIDTH),
-                                       CO_J_TABLE(to_integer(vNewIndex)));
-        else
-          sRunIndexNext <= vNewIndex;
           if (vBoundHit) then
-            sNextBoundNext <= sNextBound + vStepNext;
+            sNextBoundNext  <= sPowInc;
+            sNextBoundM1Nxt <= sPowInc - 1;
+          else
+            sNextBoundNext  <= sPowSame;
+            sNextBoundM1Nxt <= sPowSame - 1;
           end if;
+        elsif (vBoundHit) then
+          sNextBoundNext  <= sBoundAdd;
+          sNextBoundM1Nxt <= sBoundAddM1;
         end if;
       else
         -- A.16: break, including on the first run-mode pixel (RUNcnt = 0 gives a single '0').
         -- Suffix = pixels since the last boundary.
         oRawValid     <= '1';
         oRawSuffixLen <= to_unsigned(vJ + 1, 5);
-        oRawSuffixVal <= iRunCnt - resize(sNextBound - vStep, RUN_CNT_WIDTH);
+        oRawSuffixVal <= iRunCnt - resize(sNextBound - sPowSame, RUN_CNT_WIDTH);
         oRiValid      <= '1';
         oRiIx         <= iIx;
         oRiRa         <= iRa;
         oRiRb         <= iRb;
 
-        if (sRunIndex > 0) then
-          vNewIndex := sRunIndex - 1;
-        else
-          vNewIndex := (others => '0');
-        end if;
-
-        sInRunNext     <= '0';
-        sRunIndexNext  <= vNewIndex;
-        sNextBoundNext <= shift_left(to_unsigned(1, C_BOUND_WIDTH),
-                                     CO_J_TABLE(to_integer(vNewIndex)));
+        sInRunNext      <= '0';
+        sRunIndexNext   <= sIdxDec;
+        sNextBoundNext  <= sPowDec;
+        sNextBoundM1Nxt <= sPowDec - 1;
       end if;
     end if;
 
@@ -169,16 +185,24 @@ begin
 
     if rising_edge(iClk) then
       if (iRst = '1' or iEoi = '1') then
-        sRunIndex  <= (others => '0');
-        sNextBound <= to_unsigned(1, C_BOUND_WIDTH);
-        sInRun     <= '0';
+        sRunIndex    <= (others => '0');
+        sNextBound   <= to_unsigned(1, C_BOUND_WIDTH);
+        sNextBoundM1 <= (others => '0');
+        sInRun       <= '0';
       elsif (iCE = '1') then
-        sRunIndex  <= sRunIndexNext;
-        sNextBound <= sNextBoundNext;
-        sInRun     <= sInRunNext;
+        sRunIndex    <= sRunIndexNext;
+        sNextBound   <= sNextBoundNext;
+        sNextBoundM1 <= sNextBoundM1Nxt;
+        sInRun       <= sInRunNext;
       end if;
     end if;
 
   end process p_state_reg;
+
+  postponed assert is_x(sNextBound) or sNextBoundM1 = sNextBound - 1
+    report "a15_a16: sNextBoundM1 out of step with sNextBound" severity error;
+  postponed assert iModeIsRun /= '1' or iRunHit /= '1' or is_x(iRunCnt) or is_x(iRunCntPrev) or
+                   iRunCnt = iRunCntPrev + 1
+    report "a15_a16: iRunCnt is not iRunCntPrev + 1 on a hit" severity error;
 
 end architecture behavioral;
