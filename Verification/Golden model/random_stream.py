@@ -35,7 +35,7 @@ CLI = ROOT / "ThirdParty/charls/build/cli/charls-cli"
 TB = "tb_openjls_golden_stream"
 TSV = OUT / "results.tsv"
 PINNED = HERE / "random_stream_seeds.txt"
-COLUMNS = "Seed Bits W H Out Valid% Ready% Images Pixels Result WindowHits Seconds RTL".split()
+COLUMNS = "Seed Bits W H MaxW MaxH Out Valid% Ready% Images Pixels Result WindowHits Seconds RTL".split()
 
 # Biased towards what found the image-merge bug: low ready and minimum dimensions.
 WIDTHS = ((4, 4, 25), (5, 16, 30), (17, 256, 35), (257, 2048, 10))
@@ -60,11 +60,30 @@ def band(rng, bands):
     return int(rng.integers(bands[i][0], bands[i][1], endpoint=True))
 
 
+def max_dim(rng, v, low):
+    """A MAX_IMAGE generic at or just above the image size, often on a power of two."""
+    kind = rng.integers(4)
+    if kind == 0:
+        m = v
+    elif kind == 1:
+        m = 1 << (v - 1).bit_length()
+    elif kind == 2:
+        m = (1 << v.bit_length()) - 1
+    else:
+        m = v + 1
+    return int(min(max(m, low), 65535))
+
+
 def settings(rng):
     w, h = band(rng, WIDTHS), band(rng, HEIGHTS)
+    if rng.random() < 0.3:
+        w = 1 << int(rng.integers(2, 12))
+    if rng.random() < 0.3:
+        h = 1 << int(rng.integers(0, 7))
     n = min(int(rng.integers(8, MAX_IMAGES, endpoint=True)), max(2, MAX_PIXELS // (w * h)))
     return {"bits": int(rng.integers(8, 16, endpoint=True)), "w": w, "h": h, "n": n,
-            "out": weighted(rng, OUT_WIDTHS), "valid": weighted(rng, VALID), "ready": weighted(rng, READY)}
+            "out": weighted(rng, OUT_WIDTHS), "valid": weighted(rng, VALID), "ready": weighted(rng, READY),
+            "max_w": max_dim(rng, w, 4), "max_h": max_dim(rng, h, 1)}
 
 
 def image(rng, kind, w, h, bits):
@@ -117,20 +136,23 @@ def simulate(seed, p, d, timeout, heap):
            f"-gJLS_PATH={rel}/x.jls", f"-gLEN_PATH={rel}/x.len", f"-gRES_PATH={rel}/x.res",
            f"-gBITNESS={p['bits']}", f"-gW={p['w']}", f"-gH={p['h']}", f"-gN_IMAGES={p['n']}",
            f"-gOUT_WIDTH={p['out']}", f"-gVALID_PCT={p['valid']}", f"-gREADY_PCT={p['ready']}",
-           f"-gSEED={seed}", TB, "-r", "--exit-severity=error", TB]
+           f"-gSEED={seed}", f"-gMAX_W={p['max_w']}", f"-gMAX_H={p['max_h']}", TB, "-r", "--exit-severity=error", TB]
     try:
         r = subprocess.run(cmd, capture_output=True, text=True, errors="replace", timeout=timeout)
     except subprocess.TimeoutExpired:
         return "TIMEOUT", 0
     (d / "sim.log").write_text(r.stdout + r.stderr)
     m = re.search(r"window_hits=(\d+)", r.stdout + r.stderr)
-    return ("PASS" if r.returncode == 0 else "FAIL"), int(m.group(1)) if m else 0
+    ok = r.returncode == 0 and f"{TB} RESULT: PASS" in r.stdout + r.stderr
+    return ("PASS" if ok else "FAIL"), int(m.group(1)) if m else 0
 
 
 def rtl_hash():
     h = hashlib.sha256()
-    for f in sorted((ROOT / "Sources").glob("*.vhd")) + [HERE / f"{TB}.vhd", Path(__file__).resolve()]:
+    tools = sorted((ROOT / "ThirdParty/open-logic/src/base/vhdl").glob("*.vhd")) + [CLI]
+    for f in sorted((ROOT / "Sources").glob("*.vhd")) + [HERE / f"{TB}.vhd", Path(__file__).resolve()] + tools:
         h.update(f.read_bytes())
+    h.update(subprocess.run(["nvc", "--version"], capture_output=True).stdout)
     return h.hexdigest()[:12]
 
 
@@ -153,8 +175,11 @@ def main():
     if not a.no_analyze:
         subprocess.run([HERE / "build_run.sh"], check=True, stdout=subprocess.DEVNULL, env={**os.environ, "ANALYZE_ONLY": "1"})
     OUT.mkdir(parents=True, exist_ok=True)
+    header = "\t".join(COLUMNS) + "\n"
+    if TSV.exists() and not TSV.read_text().startswith(header):
+        TSV.rename(TSV.with_suffix(".old.tsv"))
     if not TSV.exists():
-        TSV.write_text("\t".join(COLUMNS) + "\n")
+        TSV.write_text(header)
     rtl = rtl_hash()
     cached = {}
     if not a.rerun and a.replay is None:
@@ -199,10 +224,11 @@ def main():
             try:
                 generate(seed, p, d)
                 result, h = simulate(seed, p, d, a.timeout, a.heap)
-            except (subprocess.CalledProcessError, OSError) as e:
-                (d / "error.txt").write_text(str(e))
+            except Exception as e:  # a dead thread would lose the run silently
+                d.mkdir(parents=True, exist_ok=True)
+                (d / "error.txt").write_text(repr(e))
                 result, h = "ERROR", 0
-            row = [seed, p["bits"], p["w"], p["h"], p["out"], p["valid"], p["ready"], p["n"],
+            row = [seed, p["bits"], p["w"], p["h"], p["max_w"], p["max_h"], p["out"], p["valid"], p["ready"], p["n"],
                    p["n"] * p["w"] * p["h"], result, h, round(time.monotonic() - t0), rtl]
             with lock:
                 with open(TSV, "a") as f:
@@ -225,6 +251,8 @@ def main():
     for b in sorted(done):
         print(f"{b:4}  {done[b]:4}  {hits[b]:10}")
     print(f"Runs {sum(done.values())} ({reused} cached), failed {len(failed)}, window hits {sum(hits.values())}")
+    if limit and sum(done.values()) != limit + len(pinned):
+        raise SystemExit(f"FAIL: {sum(done.values())} of {limit + len(pinned)} runs finished")
     if failed:
         print("Failing seeds (files under Output/Random/s<seed>):", *sorted(failed))
         raise SystemExit(1)

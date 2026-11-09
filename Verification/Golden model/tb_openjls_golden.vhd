@@ -42,7 +42,7 @@ architecture bench of tb_openjls_golden is
   constant FULL_OUT_PATH         : string := REPO_ROOT & OUT_PATH;
 
   constant CLK_PERIOD            : time     := 10 ns;
-  -- Only the line buffer scales with MAX, one row, so run at the T.87 cap
+  -- The T.87 cap; random_stream.py runs MAX close to the image size
   constant MAX_IMAGE_WIDTH       : positive := 65535;
   constant MAX_IMAGE_HEIGHT      : positive := 65535;
   constant OUT_WIDTH             : natural  := CO_OUT_WIDTH_STD;
@@ -56,6 +56,10 @@ architecture bench of tb_openjls_golden is
 
   -- Room past the golden length so overproduction is caught, not truncated
   constant COLLECT_MARGIN        : natural := 4096;
+  -- Clocks with no pixel or byte accepted before the run is declared hung
+  constant WATCHDOG_CYCLES       : natural := 100000;
+  -- Clocks watched after the first oLast, for bytes or a second oLast
+  constant DRAIN_CYCLES          : natural := 64;
 
   signal iClk                    : std_logic;
   signal iRst                    : std_logic;
@@ -299,6 +303,25 @@ begin
 
   end process mon_stall;
 
+  watchdog : process (iClk) is
+
+    variable idle : natural := 0;
+
+  begin
+
+    if rising_edge(iClk) then
+      if (iRst = '1' or (iValid = '1' and oReady = '1') or (oValid = '1' and iReady = '1')) then
+        idle := 0;
+      else
+        idle := idle + 1;
+        assert idle < WATCHDOG_CYCLES
+          report "tb_openjls_golden RESULT: FAIL (no progress for " & integer'image(idle) & " cycles)"
+          severity failure;
+      end if;
+    end if;
+
+  end process watchdog;
+
   stim : process is
 
     variable pixels : pixel_ptr_t;
@@ -491,9 +514,14 @@ begin
     ) is
     begin
 
-      for i in 0 to 2000000 loop
+      while lastCount < n loop
 
-        exit when lastCount >= n;
+        wait until rising_edge(iClk);
+
+      end loop;
+
+      for i in 1 to DRAIN_CYCLES loop
+
         wait until rising_edge(iClk);
 
       end loop;
@@ -569,6 +597,7 @@ begin
     check(collectedCount = refLen,
           "Byte count mismatch: got " & integer'image(collectedCount) &
           " expected " & integer'image(refLen));
+    check(lastCount = 1, "oLast count: got " & integer'image(lastCount) & " expected 1");
     compare_slice(0, "Image");
 
     if (sStallCnt > 0) then

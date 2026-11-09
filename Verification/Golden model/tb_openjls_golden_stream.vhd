@@ -8,7 +8,7 @@
 -- tb_openjls_golden_stream: same-size images back-to-back with no reset between
 -- them, each byte-compared against its own CharLS .jls
 --
--- build_run_stream.sh concatenates the pixels and the .jls files. RTL only: the
+-- build_run.sh and random_stream.py concatenate the pixels and the .jls files. RTL only: the
 -- window counter reads byte_stuffer internals.
 
 use work.openjls_pkg.all;
@@ -34,7 +34,9 @@ entity tb_openjls_golden_stream is
     READY_PCT : positive range 1 to 100 := 100;
     VALID_PCT : positive range 1 to 100 := 100;
     OUT_WIDTH : positive := CO_OUT_WIDTH_STD;
-    SEED      : positive := 1
+    SEED      : positive := 1;
+    MAX_W     : positive range 4 to 65535 := 65535;
+    MAX_H     : positive range 1 to 65535 := 65535
   );
 end entity tb_openjls_golden_stream;
 
@@ -68,8 +70,8 @@ begin
   dut : entity work.openjls_top(rtl)
     generic map (
       BITNESS          => BITNESS,
-      MAX_IMAGE_WIDTH  => 65535,
-      MAX_IMAGE_HEIGHT => 65535,
+      MAX_IMAGE_WIDTH  => MAX_W,
+      MAX_IMAGE_HEIGHT => MAX_H,
       OUT_WIDTH        => OUT_WIDTH
     )
     port map (
@@ -213,7 +215,7 @@ begin
             b := oData(OUT_WIDTH - 1 - i * 8 downto OUT_WIDTH - (i + 1) * 8);
             if (remaining > 0) then
               read(jls, c);
-              if (to_integer(unsigned(b)) /= character'pos(c)) then
+              if (b /= std_logic_vector(to_unsigned(character'pos(c), 8))) then
                 badImage := true;
                 if (errors < MAX_REPORT) then
                   report "image " & integer'image(image) & " byte " & integer'image(offset) & " differs";
