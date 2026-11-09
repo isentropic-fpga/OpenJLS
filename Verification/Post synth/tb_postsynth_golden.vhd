@@ -41,6 +41,9 @@ architecture bench of tb_postsynth_golden is
   constant CLK_PERIOD     : time    := 10 ns;
   constant BYTES_PER_WORD : natural := OUT_WIDTH / 8;
   constant COLLECT_MARGIN : natural := 4096;
+  constant WATCHDOG_CYCLES : natural := 100000;
+  -- After the first oLast, long enough to see stray beats
+  constant DRAIN_CYCLES   : natural := 64;
 
   type pixel_array_t is array (natural range <>) of natural;
   type byte_array_t is array (natural range <>) of std_logic_vector(7 downto 0);
@@ -63,10 +66,13 @@ architecture bench of tb_postsynth_golden is
   signal sImgW        : natural := 1;
   signal sImgH        : natural := 1;
   signal sStallCnt    : natural := 0;
+  signal sCycleLimit  : natural := natural'high;
 
   shared variable collected      : byte_ptr_t;
   shared variable collectedCount : natural;
   shared variable lastCount      : natural;
+  shared variable lastAt         : natural;   -- bytes collected at the last oLast
+  shared variable ctrlX          : boolean;
   shared variable errCount       : natural;   -- cumulative
 
   procedure check (
@@ -76,8 +82,9 @@ architecture bench of tb_postsynth_golden is
   begin
 
     if (not cond) then
+      -- Not error: --exit-severity=error would drop the rest of the manifest
       report msg
-        severity error;
+        severity warning;
       errCount := errCount + 1;
     end if;
 
@@ -238,6 +245,10 @@ begin
       if (iRst = '1') then
         collectedCount := 0;
         lastCount      := 0;
+        lastAt         := 0;
+        ctrlX          := false;
+      elsif (is_x(oValid) or is_x(oReady) or (oValid = '1' and (is_x(oKeep) or is_x(oLast)))) then
+        ctrlX := true;
       elsif (oValid = '1' and iReady = '1') then
 
         for i in 0 to BYTES_PER_WORD - 1 loop
@@ -253,6 +264,7 @@ begin
 
         if (oLast = '1') then
           lastCount := lastCount + 1;
+          lastAt    := collectedCount;
         end if;
       end if;
     end if;
@@ -271,6 +283,32 @@ begin
     end if;
 
   end process mon_stall;
+
+  watchdog : process (iClk) is
+
+    variable idle   : natural := 0;
+    -- Output activity resets idle, so a runaway needs its own bound
+    variable cycles : natural := 0;
+
+  begin
+
+    if rising_edge(iClk) then
+      cycles := cycles + 1 when iRst = '0' else 0;
+      assert cycles < sCycleLimit
+        report "tb_postsynth_golden: cycle budget exceeded"
+        severity failure;
+
+      if (iRst = '1' or (iValid = '1' and oReady = '1') or (oValid = '1' and iReady = '1')) then
+        idle := 0;
+      else
+        idle := idle + 1;
+        assert idle < WATCHDOG_CYCLES
+          report "tb_postsynth_golden: no progress for " & integer'image(idle) & " cycles"
+          severity failure;
+      end if;
+    end if;
+
+  end process watchdog;
 
   stim : process is
 
@@ -456,9 +494,14 @@ begin
     ) is
     begin
 
-      for i in 0 to 2000000 loop
+      while lastCount < n loop
 
-        exit when lastCount >= n;
+        wait until rising_edge(iClk);
+
+      end loop;
+
+      for i in 1 to DRAIN_CYCLES loop
+
         wait until rising_edge(iClk);
 
       end loop;
@@ -482,7 +525,7 @@ begin
               report tag & " byte " & integer'image(i) &
                      " mismatch: exp=" & hex2(refbuf.all(i)) &
                      " got=" & hex2(collected.all(base + i))
-                severity error;
+                severity warning;
               logged := logged + 1;
             end if;
             errCount := errCount + 1;
@@ -518,6 +561,7 @@ begin
       errBase := errCount;
 
       load_pgm(REPO_ROOT & IMAGES_DIR & stem & ".pgm", imgW, imgH, nPix);
+      sCycleLimit <= 8 * nPix + 200000;
       sImgW <= imgW;
       sImgH <= imgH;
       load_jls(REPO_ROOT & GOLDEN_DIR & stem & "_charls.jls");
@@ -530,6 +574,9 @@ begin
       check(collectedCount = refLen,
             stem & ": byte count mismatch: got " & integer'image(collectedCount) &
             " expected " & integer'image(refLen));
+      check(lastCount = 1, stem & ": oLast count: got " & integer'image(lastCount) & " expected 1");
+      check(lastAt = refLen, stem & ": oLast after " & integer'image(lastAt) & " bytes, expected " & integer'image(refLen));
+      check(not ctrlX, stem & ": X on oValid, oReady, oKeep or oLast");
       compare_slice(0, stem);
 
       if (errCount /= errBase) then
@@ -554,11 +601,6 @@ begin
     iValid <= '0';
     iPixel <= (others => '0');
 
-    assert iPixel'length = BITNESS
-      report "iPixel width (" & integer'image(iPixel'length) &
-             ") /= BITNESS (" & integer'image(BITNESS) &
-             ") - netlist generics do not match the testbench"
-      severity failure;
     report "Post-synth netlist: BITNESS=" & integer'image(BITNESS) &
            " MAX=" & integer'image(MAX_IMAGE_WIDTH) & "x" & integer'image(MAX_IMAGE_HEIGHT) &
            " OUT_WIDTH=" & integer'image(OUT_WIDTH);
@@ -582,7 +624,7 @@ begin
           else
             mFail := mFail + 1;
             report "FAIL " & rtrim(ln.all)
-              severity error;
+              severity warning;
           end if;
         end if;
       end if;

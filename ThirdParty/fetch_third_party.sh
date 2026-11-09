@@ -45,7 +45,7 @@ CHARLS_COMMIT=57ac3c337083bedbdfc93d19ec75a02101b1cd71    # cli/ is on main, not
 
 NVC_URL="https://github.com/nickg/nvc"
 NVC_DOCS="https://www.nickg.me.uk/nvc/"
-NVC_VERSION="1.21.0"
+NVC_VERSION="1.23.0"
 
 # open-logic: base packages + the RAM/FIFO the RTL instantiates ---
 fetch_open_logic() {
@@ -192,6 +192,11 @@ fetch_charls() {
   local CLI="$SRC/build/cli/charls-cli"
 
   if [ -x "$CLI" ]; then
+    # Golden files are only as good as this binary
+    if [ "$(git -C "$SRC" rev-parse HEAD 2> /dev/null)" != "$CHARLS_COMMIT" ]; then
+      echo "ERROR: $SRC is not at the pinned commit $CHARLS_COMMIT" >&2
+      exit 1
+    fi
     echo "==> charls already built: $CLI"
     return 0
   fi

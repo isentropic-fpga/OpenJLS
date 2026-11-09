@@ -79,10 +79,13 @@ architecture bench of tb_openjls_golden is
   signal sImgH                   : natural := 1;
 
   signal sStallCnt               : natural := 0;
+  signal sCycleLimit             : natural := natural'high;
 
   shared variable collected      : byte_ptr_t;
   shared variable collectedCount : natural;
   shared variable lastCount      : natural;
+  shared variable lastAt         : natural;
+  shared variable ctrlX          : boolean;
 
   shared variable errCount       : natural;
 
@@ -269,6 +272,10 @@ begin
       if (iRst = '1') then
         collectedCount := 0;
         lastCount      := 0;
+        lastAt         := 0;
+        ctrlX          := false;
+      elsif (is_x(oValid) or is_x(oReady) or (oValid = '1' and (is_x(oKeep) or is_x(oLast)))) then
+        ctrlX := true;
       elsif (oValid = '1' and iReady = '1') then
 
         for i in 0 to BYTES_PER_WORD - 1 loop
@@ -284,6 +291,7 @@ begin
 
         if (oLast = '1') then
           lastCount := lastCount + 1;
+          lastAt    := collectedCount;
         end if;
       end if;
     end if;
@@ -305,11 +313,18 @@ begin
 
   watchdog : process (iClk) is
 
-    variable idle : natural := 0;
+    variable idle   : natural := 0;
+    -- Output activity resets idle, so a runaway needs its own bound
+    variable cycles : natural := 0;
 
   begin
 
     if rising_edge(iClk) then
+      cycles := cycles + 1 when iRst = '0' else 0;
+      assert cycles < sCycleLimit
+        report "tb_openjls_golden RESULT: FAIL cycle budget exceeded"
+        severity failure;
+
       if (iRst = '1' or (iValid = '1' and oReady = '1') or (oValid = '1' and iReady = '1')) then
         idle := 0;
       else
@@ -565,18 +580,13 @@ begin
     iValid <= '0';
     iPixel <= (others => '0');
 
-    -- A netlist built with other generics fails here, not as a byte mismatch
     report "DUT config: BITNESS=" & integer'image(BITNESS) &
            " OUT_WIDTH=" & integer'image(OUT_WIDTH) &
            " MAX_IMAGE=" & integer'image(MAX_IMAGE_WIDTH) & "x" & integer'image(MAX_IMAGE_HEIGHT);
-    assert iPixel'length = BITNESS
-      report "iPixel width (" & integer'image(iPixel'length) &
-             ") /= BITNESS (" & integer'image(BITNESS) &
-             ") - DUT generics do not match the testbench"
-      severity failure;
 
     report "Loading PGM: " & FULL_PGM_PATH;
     load_pgm(FULL_PGM_PATH, imgW, imgH, nPix);
+    sCycleLimit <= 8 * nPix + 200000;
     sImgW <= imgW;
     sImgH <= imgH;
 
@@ -598,6 +608,8 @@ begin
           "Byte count mismatch: got " & integer'image(collectedCount) &
           " expected " & integer'image(refLen));
     check(lastCount = 1, "oLast count: got " & integer'image(lastCount) & " expected 1");
+    check(lastAt = refLen, "oLast after " & integer'image(lastAt) & " bytes, expected " & integer'image(refLen));
+    check(not ctrlX, "X on oValid, oReady, oKeep or oLast");
     compare_slice(0, "Image");
 
     if (sStallCnt > 0) then

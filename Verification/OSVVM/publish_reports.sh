@@ -162,9 +162,13 @@ env_row() {
     emit_row "$fb_name" "$fb_note" "NA" "" "run the suite to populate" "" ""
     return
   fi
-  local NAME="" NOTE="" STATUS="" PCT="" SUMMARY="" DATE=""
+  local NAME="" NOTE="" STATUS="" PCT="" SUMMARY="" DATE="" SOURCES_HASH=""
   # shellcheck disable=SC1090
   source "$f"
+  # A result on other RTL is not a pass on this one
+  if [ "$STATUS" = PASS ] && [ "$SOURCES_HASH" != "$(cat "$ROOT"/Sources/*.vhd | sha256sum | cut -c1-12)" ]; then
+    STATUS=PARTIAL; SUMMARY="$SUMMARY (run on older RTL)"
+  fi
   emit_row "${NAME:-$fb_name}" "${fb_note:-$NOTE}" "${STATUS:-NA}" "${PCT:-}" \
     "${SUMMARY:-}" "$link" "${DATE%%T*}"
 }

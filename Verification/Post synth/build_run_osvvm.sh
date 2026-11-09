@@ -22,12 +22,19 @@ NETLIST="$HERE/Output/openjls_top_funcsim.vhd"
 
 TB="tb_openjls_top_osvvm"
 
+# An aborted run must not leave an older PASS behind
+rm -f "$HERE/Output/report_status_osvvm.env"
+
+source "$HERE/netlist_id.sh"
+WANT_ID="$(netlist_id 8 4096 4096 64)"
+
 # Synthesis, in a space-free scratch dir (see synth_funcsim.tcl)
 if [[ "${1:-}" != "--sim" ]]; then
   mkdir -p "$HERE/Output"
   SCRATCH="$(mktemp -d)"
   (cd "$SCRATCH" && vivado -mode batch -source "$HERE/synth_funcsim.tcl")
   mv "$SCRATCH/openjls_top_funcsim.vhd" "$SCRATCH/synth_util.rpt" "$HERE/Output/"
+  echo "$WANT_ID" > "$NETLIST.id"
   cp "$SCRATCH/vivado.log" "$HERE/Output/" 2> /dev/null || true
   rm -rf "$SCRATCH"
 fi
@@ -87,14 +94,22 @@ if "${NVC[@]}" --work=work:"$LIBS/work.08" \
 grep -q "$TB: PASS" "$PSLOG" || ps_rc=1
 
 # Status for publish_reports.sh
+ps_status=FAIL
+if [ "$ps_rc" -eq 0 ]; then
+  ps_status=PASS
+  if [ "$(netlist_recorded "$NETLIST")" != "$WANT_ID" ]; then
+    ps_status=PARTIAL; echo "STATUS=PARTIAL: netlist not from this RTL"
+  fi
+fi
 ps_aff=$(awk '/DONE/ && /Affirmations Checked:/ {
   for (i = 1; i <= NF; i++) if ($i == "Checked:") a = $(i+1) } END { print a + 0 }' "$PSLOG")
 {
   echo "NAME=\"Post-synth OSVVM\""
   echo "NOTE=\"control-plane stress on funcsim netlist\""
-  echo "STATUS=$([ "$ps_rc" -eq 0 ] && echo PASS || echo FAIL)"
+  echo "STATUS=$ps_status"
   echo "PCT=\"$([ "$ps_rc" -eq 0 ] && echo 100% || echo 0%)\""
   echo "SUMMARY=\"Control-plane stress test &middot; $(printf "%'d" "$ps_aff") affirmations\""
   echo "DATE=\"$(date -Iseconds)\""
+  echo "SOURCES_HASH=$(sources_hash)"
 } > "$HERE/Output/report_status_osvvm.env"
 exit "$ps_rc"

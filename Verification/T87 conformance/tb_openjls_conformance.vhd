@@ -5,7 +5,7 @@
 -- commercial license. See LICENSE and README for details.
 --
 
--- tb_openjls_t87_conformance: openjls_top against the ITU T16E0.JLS from TEST16.PGM
+-- tb_openjls_t87_conformance: openjls_top against one ITU T.87 reference vector
 --
 -- Encodes the image twice back to back, the second time under output
 -- backpressure; both must match. Only the first is saved to Output/.
@@ -19,7 +19,11 @@ library ieee;
 
 entity tb_openjls_t87_conformance is
   generic (
-    REPO_ROOT : string := "./"
+    REPO_ROOT : string  := "./";
+    BITNESS   : natural := 12;
+    PGM_NAME  : string  := "Reference Images/TEST16.PGM";
+    JLS_NAME  : string  := "Reference Images/T16E0.JLS";
+    OUT_NAME  : string  := "Output/T16E0_OPENJLS.JLS"
   );
 end entity tb_openjls_t87_conformance;
 
@@ -28,16 +32,17 @@ architecture bench of tb_openjls_t87_conformance is
   constant DUMP_VCD              : boolean := false;
   constant MAX_DIFF_LOG          : natural := 16;
 
-  constant PGM_PATH              : string := REPO_ROOT & "Verification/T87 conformance/Reference Images/TEST16.PGM";
-  constant JLS_PATH              : string := REPO_ROOT & "Verification/T87 conformance/Reference Images/T16E0.JLS";
-  constant OUT_PATH              : string := REPO_ROOT & "Verification/T87 conformance/Output/T16E0_OPENJLS.JLS";
+  constant PGM_PATH              : string := REPO_ROOT & "Verification/T87 conformance/" & PGM_NAME;
+  constant JLS_PATH              : string := REPO_ROOT & "Verification/T87 conformance/" & JLS_NAME;
+  constant OUT_PATH              : string := REPO_ROOT & "Verification/T87 conformance/" & OUT_NAME;
 
   constant CLK_PERIOD            : time     := 10 ns;
-  constant BITNESS               : natural  := 12;
   constant MAX_IMAGE_WIDTH       : positive := 4096;
   constant MAX_IMAGE_HEIGHT      : positive := 4096;
   constant OUT_WIDTH             : natural  := CO_OUT_WIDTH_STD;
   constant BYTES_PER_WORD        : natural  := OUT_WIDTH / 8;
+  constant WATCHDOG_CYCLES       : natural  := 100000;
+  constant DRAIN_CYCLES          : natural  := 64;
 
   constant IMG_W                 : natural := 256;
   constant IMG_H                 : natural := 256;
@@ -68,6 +73,10 @@ architecture bench of tb_openjls_t87_conformance is
   shared variable collected      : byte_array_t(0 to COLLECT_CAP - 1);
   shared variable collectedCount : natural;
   shared variable lastCount      : natural;
+  -- Bytes collected at each oLast
+  shared variable lastAt1        : natural;
+  shared variable lastAt2        : natural;
+  shared variable ctrlX          : boolean;
 
   shared variable errCount       : natural;
 
@@ -229,6 +238,11 @@ begin
       if (iRst = '1') then
         collectedCount := 0;
         lastCount      := 0;
+        lastAt1        := 0;
+        lastAt2        := 0;
+        ctrlX          := false;
+      elsif (is_x(oValid) or is_x(oReady) or (oValid = '1' and (is_x(oKeep) or is_x(oLast)))) then
+        ctrlX := true;
       elsif (oValid = '1' and iReady = '1') then
 
         for i in 0 to BYTES_PER_WORD - 1 loop
@@ -244,11 +258,42 @@ begin
 
         if (oLast = '1') then
           lastCount := lastCount + 1;
+          if (lastCount = 1) then
+            lastAt1 := collectedCount;
+          else
+            lastAt2 := collectedCount;
+          end if;
         end if;
       end if;
     end if;
 
   end process collect;
+
+  watchdog : process (iClk) is
+
+    variable idle   : natural := 0;
+    -- Output activity resets idle, so a runaway needs its own bound
+    variable cycles : natural := 0;
+
+  begin
+
+    if rising_edge(iClk) then
+      cycles := cycles + 1 when iRst = '0' else 0;
+      assert cycles < 16 * N_PIX + 200000
+        report "tb_openjls_t87_conformance RESULT: FAIL (cycle budget exceeded)"
+        severity failure;
+
+      if (iRst = '1' or (iValid = '1' and oReady = '1') or (oValid = '1' and iReady = '1') or sBpReq = '1') then
+        idle := 0;
+      else
+        idle := idle + 1;
+        assert idle < WATCHDOG_CYCLES
+          report "tb_openjls_t87_conformance RESULT: FAIL (no progress for " & integer'image(idle) & " cycles)"
+          severity failure;
+      end if;
+    end if;
+
+  end process watchdog;
 
   -- Per sBpReq: hold iReady low until oReady drops, BP_EXTRA cycles more, release
   bp_ctrl : process is
@@ -353,18 +398,23 @@ begin
         report "PGM maxval does not match BITNESS"
         severity failure;
 
-      -- 2 bytes per pixel, big-endian
+      -- Above 8 bits: 2 bytes per pixel, big-endian
       for i in 0 to N_PIX - 1 loop
 
         read_byte(f, bHi, eof);
         assert not eof
           report "PGM: unexpected EOF in body"
           severity failure;
-        read_byte(f, bLo, eof);
-        assert not eof
-          report "PGM: unexpected EOF in body"
-          severity failure;
-        pix       := to_integer(unsigned(bHi)) * 256 + to_integer(unsigned(bLo));
+        pix := to_integer(unsigned(bHi));
+
+        if (mx > 255) then
+          read_byte(f, bLo, eof);
+          assert not eof
+            report "PGM: unexpected EOF in body"
+            severity failure;
+          pix := pix * 256 + to_integer(unsigned(bLo));
+        end if;
+
         assert pix <= mx
           report "PGM: pixel exceeds maxval"
           severity failure;
@@ -449,9 +499,14 @@ begin
     ) is
     begin
 
-      for i in 0 to 2000000 loop
+      while lastCount < n loop
 
-        exit when lastCount >= n;
+        wait until rising_edge(iClk);
+
+      end loop;
+
+      for i in 1 to DRAIN_CYCLES loop
+
         wait until rising_edge(iClk);
 
       end loop;
@@ -523,6 +578,10 @@ begin
     check(collectedCount = 2 * refLen,
           "Byte count mismatch: got " & integer'image(collectedCount) &
           " expected " & integer'image(2 * refLen));
+    check(lastCount = 2, "oLast count: got " & integer'image(lastCount) & " expected 2");
+    check(lastAt1 = refLen, "First oLast after " & integer'image(lastAt1) & " bytes");
+    check(lastAt2 = 2 * refLen, "Second oLast after " & integer'image(lastAt2) & " bytes");
+    check(not ctrlX, "X on oValid, oReady, oKeep or oLast");
     compare_slice(0,      "Image 1");
     compare_slice(refLen, "Image 2");
 

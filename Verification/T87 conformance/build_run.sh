@@ -6,7 +6,7 @@
 # commercial license. See LICENSE and README for details.
 #
 
-# T.87 conformance: TEST16.PGM against the official T16E0.JLS under NVC
+# T.87 conformance: the official T16E0.JLS (12-bit) and the three T8C0E0.JLS scans (8-bit) under NVC
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -71,7 +71,26 @@ SRC_FILES=(
 
 "${NVC[@]}" --work=work:"$LIBS/work.08" -a "${A_FLAGS[@]}" "$HERE/tb_openjls_conformance.vhd"
 
+"$HERE/t87_split.py" "$HERE/Reference Images" "$HERE/Output"
+
 # Without --exit-severity=error a failed PSL contract still exits 0
-"${NVC[@]}" --work=work:"$LIBS/work.08" \
-  -e --jit --no-save -g REPO_ROOT="$ROOT/" "$TB" \
-  -r --exit-severity=error "$TB"
+run_vector() {
+  local bits="$1" pgm="$2" jls="$3" out="$4"
+  local log="$HERE/Output/$out.log"
+  if "${NVC[@]}" --work=work:"$LIBS/work.08" -e --jit --no-save \
+      -g REPO_ROOT="$ROOT/" -g BITNESS="$bits" -g PGM_NAME="Reference Images/$pgm" \
+      -g JLS_NAME="$jls" -g OUT_NAME="Output/$out" "$TB" \
+      -r --exit-severity=error "$TB" > "$log" 2>&1 && grep -q "$TB RESULT: PASS" "$log"; then
+    echo "PASS $pgm"
+  else
+    echo "FAIL $pgm, see $log"
+    return 1
+  fi
+}
+
+rc=0
+run_vector 12 TEST16.PGM "Reference Images/T16E0.JLS" T16E0_OPENJLS.JLS || rc=1
+for c in R G B; do
+  run_vector 8 "TEST8$c.PGM" "Output/T8C0E0_$c.JLS" "T8C0E0_${c}_OPENJLS.JLS" || rc=1
+done
+exit "$rc"

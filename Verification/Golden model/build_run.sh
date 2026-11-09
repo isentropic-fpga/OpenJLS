@@ -20,7 +20,6 @@ ROOT="$(cd "$HERE/../.." && pwd)"
 LIBS="$HERE/work-lib"
 GOLDEN="$HERE/Output/Golden"
 OUTPUT="$HERE/Output/OpenJLS"
-REF_DIR="$ROOT/Verification/T87 conformance/Reference Images"
 CLI="$ROOT/ThirdParty/charls/build/cli/charls-cli"
 
 TB="tb_openjls_golden"
@@ -28,16 +27,9 @@ STREAM_TB="tb_openjls_golden_stream"
 
 mkdir -p "$LIBS" "$GOLDEN" "$OUTPUT"
 
-[ -x "$CLI" ] || "$ROOT/ThirdParty/fetch_third_party.sh" charls
+"$ROOT/ThirdParty/fetch_third_party.sh" charls
 
-# CharLS is only trusted if it reproduces the official T16E0.JLS
-"$CLI" encode "$REF_DIR/TEST16.PGM" "$GOLDEN/TEST16_charls.jls" >/dev/null
-if ! cmp -s "$GOLDEN/TEST16_charls.jls" "$REF_DIR/T16E0.JLS"; then
-  echo "FATAL: CharLS does not reproduce the official T16E0.JLS byte-for-byte." >&2
-  echo "       The golden generator is not trustworthy — aborting." >&2
-  exit 1
-fi
-echo "CharLS gate: reproduces official T16E0.JLS byte-exact OK"
+"$ROOT/Verification/T87 conformance/charls_gate.sh" "$CLI" "$GOLDEN"
 
 # The TB holds whole images in memory. NVC fills the heap up to -H before
 # collecting, so -H x NUMBER_OF_THREADS must fit in RAM; 1g covers ~39 MP.
@@ -404,6 +396,7 @@ else status=PASS; fi
   echo "PCT=\"$gpct\""
   echo "SUMMARY=\"$tpass of $((tpass + tfail)) images byte-exact vs CharLS$([ "$RANDOM_RUNS" -gt 0 ] && echo ", $RANDOM_RUNS random streams $([ "$rfail" -eq 0 ] && echo passed || echo FAILED)" || echo ", random streams not run")$([ "$tstale" -eq 0 ] || echo " ($tstale not run on this RTL)")$([ "$tskip" -gt 0 ] && echo " ($tskip never run)")$([ -z "$vacuous" ] || echo ", no merge-window hits at BITNESS $vacuous")\""
   echo "DATE=\"$(date -Iseconds)\""
+  echo "SOURCES_HASH=$(cat "$ROOT"/Sources/*.vhd | sha256sum | cut -c1-12)"
 } > "$HERE/Output/report_status.env"
 [ "$status" != PARTIAL ] || echo "STATUS=PARTIAL: $tstale row(s) not run on this RTL, random streams: $RANDOM_RUNS run"
 if [ -f "$TMPD/stalls" ]; then

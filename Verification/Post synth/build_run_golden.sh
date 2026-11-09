@@ -38,13 +38,20 @@ MAX_H=5412
 OUT_WIDTH=64
 
 NVC_HEAP="${NVC_HEAP:-2g}"
-MAX_MP="${MAX_MP:-0.05}"
+DEFAULT_MP=0.05
+MAX_MP="${MAX_MP:-$DEFAULT_MP}"
 NT="${NUMBER_OF_THREADS:-20}"
 PER_MEM="${PER_MEM:-2G}"        # ~1 GB real on <= 4 MP images
 
 mkdir -p "$LIBS" "$GOLDEN" "$OUTPUT" "$LOGD" "$HERE/Output"
+# An aborted run must not leave an older PASS behind
+rm -f "$HERE/Output/report_status_golden.env"
 
-[ -x "$CLI" ] || "$ROOT/ThirdParty/fetch_third_party.sh" charls
+"$ROOT/ThirdParty/fetch_third_party.sh" charls
+"$ROOT/Verification/T87 conformance/charls_gate.sh" "$CLI" "$GOLDEN"
+
+source "$HERE/netlist_id.sh"
+WANT_ID="$(netlist_id "$BITNESS" "$MAX_W" "$MAX_H" "$OUT_WIDTH")"
 
 # Synthesis, in a space-free scratch dir (see synth_funcsim.tcl)
 if [[ "${1:-}" != "--sim" ]]; then
@@ -55,6 +62,7 @@ if [[ "${1:-}" != "--sim" ]]; then
       vivado -mode batch -source "$HERE/synth_funcsim.tcl" )
   mv "$SCRATCH/openjls_top_funcsim.vhd" "$NETLIST"
   mv "$SCRATCH/synth_util.rpt" "$HERE/Output/synth_util_8bit.rpt"
+  echo "$WANT_ID" > "$NETLIST.id"
   rm -rf "$SCRATCH"
 fi
 [ -f "$NETLIST" ] || { echo "netlist missing: $NETLIST (synthesis failed?)" >&2; exit 1; }
@@ -81,10 +89,8 @@ for pgm in "${PGMS[@]}"; do
   [ "$MX" = "255" ] || continue
   mp=$(awk -v w="$W" -v h="$H" 'BEGIN{printf "%.3f", w*h/1e6}')
   awk -v mp="$mp" -v cap="$MAX_MP" 'BEGIN{exit !(mp>cap)}' && { echo "SKIP $stem (${mp} MP)"; continue; }
-  if [ ! -f "$GOLDEN/${stem}_charls.jls" ]; then
-    "$CLI" encode "$pgm" "$GOLDEN/${stem}_charls.jls" >"$LOGD/$stem.charls.log" 2>&1 \
-      || { echo "FAIL $stem (charls encode)" >&2; exit 1; }
-  fi
+  "$CLI" encode "$pgm" "$GOLDEN/${stem}_charls.jls" >"$LOGD/$stem.charls.log" 2>&1 \
+    || { echo "FAIL $stem (charls encode)" >&2; exit 1; }
   EL_STEM+=("$stem"); EL_MP+=("$mp")
   echo "$stem" >> "$MANIFEST"
 done
@@ -145,12 +151,15 @@ for ((s=0; s<NSH; s++)); do run_shard "$s" & done
 for ((s=0; s<NSH; s++)); do wait -n || rc=1; done
 
 echo "=============================================================="
-npass=$(grep -hc '^\*\* Note:.*: PASS ' "$LOGD"/shard_*.log 2>/dev/null | awk '{s+=$1} END{print s+0}')
+npass=$(cat "$LOGD"/shard_*.log 2>/dev/null | grep -c '^\*\* Note:.*: PASS ' || true)
 echo "Per-image PASS lines: $npass of $nelig"
 grep -h 'MANIFEST RESULT' "$LOGD"/shard_*.log 2>/dev/null || true
 
 # Status for publish_reports.sh
-if [ "$rc" -ne 0 ] || [ "$npass" -ne "$nelig" ]; then ps_status=FAIL; else ps_status=PASS; fi
+if [ "$rc" -ne 0 ] || [ "$npass" -ne "$nelig" ]; then ps_status=FAIL
+elif [ "$(netlist_recorded "$NETLIST")" != "$WANT_ID" ] || [ -n "${IMAGE:-}" ] || [ "$MAX_MP" != "$DEFAULT_MP" ]; then
+  ps_status=PARTIAL; echo "STATUS=PARTIAL: netlist not from this RTL, or a reduced image set"
+else ps_status=PASS; fi
 gpct=$(awk -v p="$npass" -v t="$nelig" 'BEGIN{ if (t > 0) printf "%.0f%%", 100 * p / t }')
 {
   echo "NAME=\"Post-synth Golden Model\""
@@ -159,6 +168,7 @@ gpct=$(awk -v p="$npass" -v t="$nelig" 'BEGIN{ if (t > 0) printf "%.0f%%", 100 *
   echo "PCT=\"$gpct\""
   echo "SUMMARY=\"$npass of $nelig images byte-exact vs CharLS\""
   echo "DATE=\"$(date -Iseconds)\""
+  echo "SOURCES_HASH=$(sources_hash)"
 } > "$HERE/Output/report_status_golden.env"
 
 # Per-image table. A PASS line carries the byte count; a FAIL leaves a _PS.jls
