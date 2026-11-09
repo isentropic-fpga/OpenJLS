@@ -104,6 +104,7 @@ emit_row() {
     PASS)    cls="ok" ;;
     FAIL)    cls="bad" ;;
     INFO)    cls="info" ;;
+    PARTIAL) cls="na" ;;
     *)       cls="na"; status="not run" ;;
   esac
   if [ -n "$link" ]; then report="<a href=\"$link\">view</a>"; else report="&mdash;"; fi
