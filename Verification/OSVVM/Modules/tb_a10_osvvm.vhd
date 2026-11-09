@@ -38,19 +38,26 @@ architecture sim of tb_a10_osvvm is
 
   signal sNq : unsigned(N_WIDTH - 1 downto 0);
   signal sAq : unsigned(A_WIDTH - 1 downto 0);
+  signal sHalf : std_logic;
   signal sK  : unsigned(K_WIDTH - 1 downto 0);
 
-  -- T.87 A.10; N >= 1 is a T.87 invariant, so the loop ends by MAX_K
+  -- T.87 A.10, or A.20.2 TEMP = A + (N >> 1) with add_half; N >= 1 is a T.87 invariant, so the loop ends by MAX_K
   function ref_k (
-    n : integer;
-    a : integer
+    n        : integer;
+    a        : integer;
+    add_half : std_logic
   ) return integer is
 
     variable k : integer := 0;
+    variable t : integer := a;
 
   begin
 
-    while (n * (2 ** k) < a and k < MAX_K) loop
+    if (add_half = '1') then
+      t := a + n / 2;
+    end if;
+
+    while (n * (2 ** k) < t and k < MAX_K) loop
 
       k := k + 1;
 
@@ -71,6 +78,7 @@ begin
     port map (
       iNq => sNq,
       iAq => sAq,
+      iAddHalfN => sHalf,
       oK  => sK
     );
 
@@ -82,6 +90,28 @@ begin
     variable req     : AlertLogIDType;
     constant N_RAND  : natural := 6000;
 
+    procedure drive_one (
+      n    : integer;
+      a    : integer;
+      half : std_logic;
+      msg  : string
+    ) is
+    begin
+
+      sNq   <= to_unsigned(n, N_WIDTH);
+      sAq   <= to_unsigned(a, A_WIDTH);
+      sHalf <= half;
+      wait for 1 ns;
+      AffirmIfEqual(req, checked_integer(sK), ref_k(n, a, half),
+                    msg & " N=" & integer'image(n) & " A=" & integer'image(a) & " half=" & std_logic'image(half));
+      ICover(cov, ref_k(n, a, half));
+      ICover(mm, (1, n));
+      ICover(mm, (2, a));
+      ICover(st, (1, n));
+      ICover(st, (2, a));
+
+    end procedure drive_one;
+
     procedure drive_check (
       n   : integer;
       a   : integer;
@@ -89,16 +119,11 @@ begin
     ) is
     begin
 
-      sNq <= to_unsigned(n, N_WIDTH);
-      sAq <= to_unsigned(a, A_WIDTH);
-      wait for 1 ns;
-      AffirmIfEqual(req, checked_integer(sK), ref_k(n, a),
-                    msg & " N=" & integer'image(n) & " A=" & integer'image(a));
-      ICover(cov, ref_k(n, a));
-      ICover(mm, (1, n));
-      ICover(mm, (2, a));
-      ICover(st, (1, n));
-      ICover(st, (2, a));
+      drive_one(n, a, '0', msg);
+      -- A + (N >> 1) stays inside the module's no-wrap range
+      if (a + n / 2 <= A_MAX) then
+        drive_one(n, a, '1', msg);
+      end if;
 
     end procedure drive_check;
 
@@ -106,8 +131,8 @@ begin
 
     SetAlertLogName("tb_a10_osvvm");
     SetLogEnable(PASSED, FALSE);
-    rv.InitSeed(rv'instance_name);
-    req := GetReqID("T87.A10", 400);
+    rv.InitSeed(rv'instance_name & run_seed);
+    req := GetReqID("T87.A10", 16000);
 
     cov := NewID("G4.Coding kZero");
     SetFieldName(cov, "kZero");
@@ -141,10 +166,18 @@ begin
       end loop;
     end loop;
 
+    -- Nq = 0 is the reset value: no k matches a non-zero A, the "none" code is MAX_K + 1 in K_WIDTH bits
+    for a in 1 to 3 loop
+      sNq   <= to_unsigned(0, N_WIDTH);
+      sAq   <= to_unsigned(a, A_WIDTH);
+      sHalf <= '0';
+      wait for 1 ns;
+      AffirmIfEqual(req, checked_integer(sK), (MAX_K + 1) mod 2 ** K_WIDTH, "N=0 fallback");
+    end loop;
+
     for i in 1 to N_RAND loop
 
       drive_check(rv.RandInt(1, N_MAX), rv.RandInt(0, A_MAX), "rand");
-      exit when IsCovered(cov) and i > 400;
 
     end loop;
 

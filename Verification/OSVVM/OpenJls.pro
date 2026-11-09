@@ -56,6 +56,12 @@ analyze ../../ThirdParty/open-logic/src/base/vhdl/olo_base_pkg_attribute.vhd
 analyze ../../ThirdParty/open-logic/src/base/vhdl/olo_base_ram_sdp.vhd
 analyze ../../ThirdParty/open-logic/src/base/vhdl/olo_base_fifo_sync.vhd
 
+# Salt for TB random seeds, see run_seed in tb_support_pkg
+set rtlDir [file normalize [file join [file dirname [info script]] ../../Sources]]
+set seedFile [open run_seed.txt w]
+puts $seedFile [lindex [exec sh -c "cat $rtlDir/*.vhd $rtlDir/Xilinx/*.vhd | sha256sum"] 0]
+close $seedFile
+
 library tb_support
 analyze Support/tb_support_pkg.vhd
 
@@ -67,8 +73,6 @@ analyze ../../Sources/A4_quantization_gradients.vhd
 analyze ../../Sources/A4_1_quant_gradient_merging.vhd
 analyze ../../Sources/A4_2_Q_mapping.vhd
 analyze ../../Sources/A5_edge_detecting_predictor.vhd
-analyze ../../Sources/A6_prediction_correction.vhd
-analyze ../../Sources/A7_prediction_error.vhd
 analyze ../../Sources/A6_A7_prediction_error.vhd
 analyze ../../Sources/A8_1_reconstructed_value.vhd
 analyze ../../Sources/A9_modulo_reduction.vhd
@@ -76,8 +80,6 @@ analyze ../../Sources/A10_compute_k.vhd
 analyze ../../Sources/A11_error_mapping.vhd
 analyze ../../Sources/A11_1_golomb_encoder.vhd
 analyze ../../Sources/A11_2_bit_packer.vhd
-analyze ../../Sources/A12_variables_update.vhd
-analyze ../../Sources/A13_update_bias.vhd
 analyze ../../Sources/A12_A13_update.vhd
 analyze ../../Sources/A14_run_length_determination.vhd
 analyze ../../Sources/A15_A16_encode_run.vhd
@@ -101,15 +103,20 @@ TestSuite Modules
 Test Modules/tb_a1_osvvm.vhd
 Test Modules/tb_a3_osvvm.vhd
 Test Modules/tb_a4_osvvm.vhd
+# Only MAXVAL below about 21 reaches the threshold CLAMP
+Test Modules/tb_a4_osvvm.vhd [generic BITNESS 8] [generic MAX_VAL 2]
+Test Modules/tb_a4_osvvm.vhd [generic BITNESS 8] [generic MAX_VAL 3]
+Test Modules/tb_a4_osvvm.vhd [generic BITNESS 8] [generic MAX_VAL 6]
+Test Modules/tb_a4_osvvm.vhd [generic BITNESS 8] [generic MAX_VAL 20]
 Test Modules/tb_a4_1_osvvm.vhd
 Test Modules/tb_a4_2_osvvm.vhd
 Test Modules/tb_a5_osvvm.vhd
-Test Modules/tb_a6_osvvm.vhd
-Test Modules/tb_a7_osvvm.vhd
 Test Modules/tb_a6_a7_osvvm.vhd
-Test Modules/tb_a6_a7_osvvm.vhd [generic BITNESS 8]
-Test Modules/tb_a6_a7_osvvm.vhd [generic BITNESS 16]
 Test Modules/tb_a6_a7_osvvm.vhd [generic BITNESS 8] [generic MAX_VAL 200]
+# Non-binary MAXVAL above the Cq width takes the general compare; 4094 is one short of binary
+Test Modules/tb_a6_a7_osvvm.vhd [generic BITNESS 12] [generic MAX_VAL 3000]
+Test Modules/tb_a6_a7_osvvm.vhd [generic BITNESS 12] [generic MAX_VAL 4094]
+Test Modules/tb_a6_a7_osvvm.vhd [generic BITNESS 16] [generic MAX_VAL 40000]
 Test Modules/tb_a6_a7_osvvm.vhd [generic BITNESS 8] [generic CQ_OFFSET 1]
 Test Modules/tb_a6_a7_osvvm.vhd [generic BITNESS 12] [generic CQ_OFFSET -1]
 Test Modules/tb_a8_1_osvvm.vhd
@@ -123,20 +130,25 @@ Test Modules/tb_a9_osvvm.vhd [generic BITNESS 8] [generic RANGE_P 255]
 Test Modules/tb_a9_osvvm.vhd [generic BITNESS 8] [generic RANGE_P 257]
 Test Modules/tb_a9_osvvm.vhd [generic BITNESS 12] [generic RANGE_P 4095]
 Test Modules/tb_a9_osvvm.vhd [generic BITNESS 12] [generic RANGE_P 4097]
+# Even ranges split (RANGE + 1) / 2 from (RANGE + 2) / 2
+Test Modules/tb_a9_osvvm.vhd [generic BITNESS 8] [generic RANGE_P 254]
+Test Modules/tb_a9_osvvm.vhd [generic BITNESS 12] [generic RANGE_P 4094]
 Test Modules/tb_a10_osvvm.vhd
 Test Modules/tb_a11_osvvm.vhd
 Test Modules/tb_a11_1_osvvm.vhd
 Test Modules/tb_a11_2_osvvm.vhd
-Test Modules/tb_a12_osvvm.vhd
-Test Modules/tb_a13_osvvm.vhd
 Test Modules/tb_a12_a13_osvvm.vhd
-Test Modules/tb_a12_a13_osvvm.vhd [generic BITNESS 8]
-Test Modules/tb_a12_a13_osvvm.vhd [generic BITNESS 16]
 Test Modules/tb_a14_osvvm.vhd
 Test Modules/tb_a15_a16_osvvm.vhd
+# RUN_CNT_WIDTH the top derives from MAX_W 4096 and 128
+Test Modules/tb_a15_a16_osvvm.vhd [generic RC_W 13]
+Test Modules/tb_a15_a16_osvvm.vhd [generic RC_W 8]
 Test Modules/tb_a17_osvvm.vhd
 Test Modules/tb_a18_osvvm.vhd
 Test Modules/tb_a19_osvvm.vhd
+Test Modules/tb_a19_osvvm.vhd [generic BITNESS 8] [generic RANGE_P 254]
+Test Modules/tb_a19_osvvm.vhd [generic BITNESS 8] [generic RANGE_P 255]
+Test Modules/tb_a19_osvvm.vhd [generic BITNESS 12] [generic RANGE_P 4097]
 Test Modules/tb_a20_1_osvvm.vhd
 Test Modules/tb_a20_2_osvvm.vhd
 Test Modules/tb_a21_osvvm.vhd
@@ -148,16 +160,28 @@ Test Modules/tb_byte_stuffer_osvvm.vhd
 # IN_WIDTH = LIMIT at BITNESS 8 and 16
 Test Modules/tb_byte_stuffer_osvvm.vhd [generic IN_WIDTH 32]
 Test Modules/tb_byte_stuffer_osvvm.vhd [generic IN_WIDTH 64]
+# The other LIMIT values the top builds: IN_WIDTH /= FIFO_BITS for some
+foreach in_width {36 40 44 52 56 60} {
+  Test Modules/tb_byte_stuffer_osvvm.vhd [generic IN_WIDTH $in_width]
+}
+# The top's FIFO depth, and the almost-full cushion at its designed stall latency
+Test Modules/tb_byte_stuffer_osvvm.vhd [generic BURST_DEPTH 64]
+Test Modules/tb_byte_stuffer_osvvm.vhd [generic STALL_LAT 4]
+Test Modules/tb_byte_stuffer_osvvm.vhd [generic IN_WIDTH 64] [generic STALL_LAT 4]
 Test Modules/tb_jls_framer_osvvm.vhd
 # 48 floor, 56 another header split, 200 header ends on a beat, 1024 ceiling
 Test Modules/tb_jls_framer_osvvm.vhd [generic OUT_WIDTH 48]
 Test Modules/tb_jls_framer_osvvm.vhd [generic OUT_WIDTH 56]
 Test Modules/tb_jls_framer_osvvm.vhd [generic OUT_WIDTH 200]
 Test Modules/tb_jls_framer_osvvm.vhd [generic OUT_WIDTH 1024]
+# Ring exactly full (31 + 1 byte of margin): a stray write past the last byte hits the head
+Test Modules/tb_jls_framer_osvvm.vhd [generic OUT_WIDTH 56] [generic STALL_MARGIN 11]
+Test Modules/tb_jls_framer_osvvm.vhd [generic BITNESS 8]
+Test Modules/tb_jls_framer_osvvm.vhd [generic BITNESS 16]
 
 # BITNESS endpoints; the runs above are 12-bit
-foreach bitness {8 16} {
-  foreach module {a1 a3 a4 a5 a6 a7 a8_1 a10 a11 a11_1 a11_2 a12 a13 a14 a15_a16 a17 a18 a19 a20_2 a21 a22 a23 line_buffer context_ram} {
+foreach bitness {8 9 10 11 13 14 15 16} {
+  foreach module {a1 a3 a4 a5 a6_a7 a8_1 a10 a11 a11_1 a11_2 a12_a13 a14 a15_a16 a17 a18 a19 a20_2 a21 a22 a23 line_buffer context_ram} {
     Test Modules/tb_${module}_osvvm.vhd [generic BITNESS $bitness]
   }
 }
@@ -179,6 +203,12 @@ Test Top/tb_openjls_top_stream_osvvm.vhd [generic BITNESS 11] [generic W 16] [ge
 Test Top/tb_openjls_top_stream_osvvm.vhd [generic BITNESS 13] [generic W 8] [generic H 8] [generic SEED 3] [generic VALID_PCT 100] [generic READY_PCT 10]
 Test Top/tb_openjls_top_stream_osvvm.vhd [generic BITNESS 14] [generic W 32] [generic H 8] [generic SEED 3] [generic VALID_PCT 100] [generic READY_PCT 100]
 Test Top/tb_openjls_top_stream_osvvm.vhd [generic BITNESS 15] [generic W 4] [generic H 1] [generic SEED 2] [generic VALID_PCT 95] [generic READY_PCT 30]
+
+Test Top/tb_openjls_top_boundary_osvvm.vhd [generic BITNESS 8]
+Test Top/tb_openjls_top_boundary_osvvm.vhd [generic BITNESS 12]
+Test Top/tb_openjls_top_boundary_osvvm.vhd [generic BITNESS 16]
+Test Top/tb_openjls_top_boundary_osvvm.vhd [generic BITNESS 8] [generic OUT_WIDTH 48]
+Test Top/tb_openjls_top_boundary_osvvm.vhd [generic BITNESS 12] [generic OUT_WIDTH 1024]
 
 TestSuite Xilinx
 Test Modules/tb_openjls_axis_osvvm.vhd

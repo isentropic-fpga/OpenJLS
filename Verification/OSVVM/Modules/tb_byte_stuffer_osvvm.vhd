@@ -14,6 +14,7 @@
 --   G2.Clamp    N/A: no accumulator
 --   G3.Stim     N/A: payload random, FF runs in G4.Branch stuffEvent
 --   G4 other    N/A: Edge/Run/Coding not in scope
+--   G6.Code     N/A: byte_stuffer ff_flags_ok "return false", the invariant holds; line 311 needs an empty flush, which never occurs
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -32,7 +33,10 @@ library tb_support;
 
 entity tb_byte_stuffer_osvvm is
   generic (
-    IN_WIDTH : natural := CO_LIMIT_STD
+    IN_WIDTH    : natural := CO_LIMIT_STD;
+    BURST_DEPTH : natural := 16;
+    -- Cycles from oAlmostFull to iStall: 1 is the registered path alone
+    STALL_LAT   : positive := 1
   );
 end entity tb_byte_stuffer_osvvm;
 
@@ -40,7 +44,6 @@ architecture sim of tb_byte_stuffer_osvvm is
 
   constant OUT_BYTES       : natural := 4;
   constant OUT_WIDTH       : natural := OUT_BYTES * 8;
-  constant BURST_DEPTH     : natural := 16;
   constant VLEN_W          : natural := log2ceil(IN_WIDTH + 1);
   constant OBYTES_W        : natural := log2ceil(OUT_BYTES + 1);
 
@@ -64,6 +67,8 @@ architecture sim of tb_byte_stuffer_osvvm is
   signal oFlushDone        : std_logic;
 
   constant SB_ID : ScoreboardIDType := NewID("byte_stuffer SB");
+  -- Total stream bytes at each image end, for the oFlushDone alignment check
+  constant SB_END : ScoreboardIDType := NewID("byte_stuffer image ends");
   shared variable covEmit  : CoverageIDType;
   shared variable covFlush : CoverageIDType;
   shared variable covCross : CoverageIDType;
@@ -82,6 +87,11 @@ architecture sim of tb_byte_stuffer_osvvm is
   signal sDriverDone       : boolean;
 
   signal sRandStall        : std_logic;
+  -- Holds iReady low until oAlmostFull, for FIFO depths the random bursts do not reach
+  signal sFillReq          : boolean := false;
+  -- Sink always ready and no upstream stall: exposes a path that needs an iReady-low cycle
+  signal sSinkHigh         : boolean := false;
+  signal sFillDone         : boolean := false;
 
   -- Skip output of a reset-aborted image
   signal sIgnore           : boolean := false;
@@ -129,13 +139,18 @@ begin
   -- Upstream stall ---
   -- Registered; the almost-full cushion absorbs the extra cycle
   stall_proc : process (clk) is
+
+    variable delay : std_logic_vector(1 to STALL_LAT) := (others => '0');
+
   begin
 
     if rising_edge(clk) then
       if (rst = '1') then
         iStall <= '0';
+        delay  := (others => '0');
       else
-        iStall <= oAlmostFull or sRandStall;
+        delay  := oAlmostFull & delay(1 to STALL_LAT - 1) when STALL_LAT > 1 else (1 => oAlmostFull);
+        iStall <= delay(STALL_LAT) or sRandStall;
       end if;
     end if;
 
@@ -147,7 +162,7 @@ begin
 
   begin
 
-    rv.InitSeed("stall");
+    rv.InitSeed("stall" & run_seed);
     sRandStall <= '0';
     wait until rst = '0';
 
@@ -155,7 +170,7 @@ begin
 
       wait until rising_edge(clk);
       -- ~20% extra stall
-      if (rv.DistValInt(((1, 20), (0, 80))) = 1) then
+      if (not sSinkHigh and rv.DistValInt(((1, 20), (0, 80))) = 1) then
         sRandStall <= '1';
       else
         sRandStall <= '0';
@@ -178,15 +193,30 @@ begin
 
   begin
 
-    rv.InitSeed("ready");
+    rv.InitSeed("ready" & run_seed);
     iReady <= '1';
     wait until rst = '0';
 
     loop
 
       wait until rising_edge(clk);
+      if (sFillReq) then
+        iReady <= '0';
+        if (oAlmostFull /= '1') then
+          wait until oAlmostFull = '1';
+        end if;
+        for i in 1 to STALL_LAT + 8 loop
+          wait until rising_edge(clk);
+        end loop;
+        iReady    <= '1';
+        sFillDone <= true;
+        wait until not sFillReq;
+        sFillDone <= false;
+      end if;
       -- 1 in 12: long not-ready burst to fill the FIFO
-      if (rv.DistValInt(((1, 1), (0, 11))) = 1) then
+      if (sSinkHigh) then
+        iReady <= '1';
+      elsif (rv.DistValInt(((1, 1), (0, 11))) = 1) then
         iReady <= '0';
         burst  := rv.RandInt(2, 2 * BURST_DEPTH);
 
@@ -240,11 +270,13 @@ begin
     variable af      : integer;
     variable hasData : integer;
     variable req     : AlertLogIDType;
+    variable popped  : natural := 0;
+    variable prevRdy : std_logic := '0';
 
   begin
 
     -- Floor under the smallest variant
-    req := GetReqID("OJLS.ByteStuffer", 2900);
+    req := GetReqID("OJLS.ByteStuffer", 15000);
     cnt := 0;
     wait until rst = '0';
 
@@ -274,10 +306,16 @@ begin
 
         end loop;
 
+        popped := popped + nb;
+        -- oWordValid is the registered grant of the previous iReady, on every beat including the last
+        AffirmIf(GetAlertLogID("Protocol"), prevRdy = '1', "beat presented without an iReady grant");
+
       end if;
+      prevRdy := iReady;
 
       if (oFlushDone = '1' and not sIgnore) then
         AffirmIf(GetAlertLogID("Protocol"), oWordValid = '1', "oFlushDone must coincide with oWordValid");
+        AffirmIfEqual(GetAlertLogID("Protocol"), popped, to_integer(unsigned(Pop(SB_END))), "oFlushDone on the last image byte");
         cnt        := cnt + 1;
         sFlushDone <= cnt;
       end if;
@@ -303,6 +341,7 @@ begin
     variable lastEmitFF : boolean;
     variable realSince  : boolean;       -- real bit since last emit
     variable stuffSeen  : boolean;
+    variable totalBytes : natural := 0;
 
     -- A '0' is stuffed after every completed 0xFF byte
 
@@ -318,6 +357,7 @@ begin
 
       if (bitsInByte = 8) then
         Push(SB_ID, curByte);
+        totalBytes := totalBytes + 1;
         if (curByte = x"FF") then
           if (stuffSeen) then
             ICover(covStuff, SE_RUN);
@@ -371,7 +411,10 @@ begin
 
       if (bitsInByte > 0) then
         Push(SB_ID, curByte);                -- low bits already '0'
+        totalBytes := totalBytes + 1;
       end if;
+
+      Push(SB_END, std_logic_vector(to_unsigned(totalBytes, 32)));
 
       ICover(covFlush, ft);
 
@@ -521,6 +564,44 @@ begin
 
     end procedure directed;
 
+    -- Cycles from the flush beat to oFlushDone
+    procedure latency (
+      w      : std_logic_vector(IN_WIDTH - 1 downto 0);
+      len    : natural;
+      cycles : out natural;
+      first  : out natural;
+      last   : out natural
+    ) is
+
+      variable n : natural := 0;
+
+    begin
+
+      first := 0;
+      last  := 0;
+      send_beat(w, len, '1', '1');
+      sImagesSent <= sImagesSent + 1;
+      wait for 0 ns;
+
+      while (sFlushDone /= sImagesSent) loop
+
+        wait until rising_edge(clk);
+        n := n + 1;
+
+        if (oWordValid = '1') then
+          last := n;
+
+          if (first = 0) then
+            first := n;
+          end if;
+        end if;
+
+      end loop;
+
+      cycles := n;
+
+    end procedure latency;
+
     -- n full beats (flush on the last if flush = '1'), then iRst; the output is unscored
     procedure reset_mid (
       n     : natural;
@@ -578,6 +659,8 @@ begin
 
     variable ones : std_logic_vector(IN_WIDTH - 1 downto 0);
     variable wtmp : std_logic_vector(IN_WIDTH - 1 downto 0);
+    variable partialCycles, fullCycles : natural;
+    variable partialFirst, partialLast, fullFirst, fullLast : natural;
 
   begin
 
@@ -595,7 +678,7 @@ begin
 
     SetAlertLogName("tb_byte_stuffer_osvvm");
     SetLogEnable(PASSED, FALSE);
-    rv.InitSeed(rv'instance_name);
+    rv.InitSeed(rv'instance_name & run_seed);
 
     covEmit := NewID("G4.Stream emitBytes");
     SetFieldName(covEmit, "emitBytes");
@@ -679,6 +762,42 @@ begin
       send_image(rv.RandInt(1, MAX_BEATS));
 
     end loop;
+
+    -- Sink always ready: every flush length ends without waiting for an iReady-low cycle ---
+    sSinkHigh <= true;
+    for i in 1 to 8 loop
+      wait until rising_edge(clk);
+    end loop;
+    for len in 1 to IN_WIDTH loop
+      directed(ones, len);
+      directed(ZERO_W, len);
+    end loop;
+
+    -- A flush of exactly one FIFO word must not spend a beat on an empty second word.
+    -- Only widths where both lengths take the same number of output beats compare.
+    if (IN_WIDTH mod 8 = 0 and math_ceil_div(IN_WIDTH - 8, OUT_WIDTH) = math_ceil_div(IN_WIDTH, OUT_WIDTH)) then
+      latency(ZERO_W, IN_WIDTH - 8, partialCycles, partialFirst, partialLast);
+      latency(ZERO_W, IN_WIDTH, fullCycles, fullFirst, fullLast);
+      AffirmIfEqual(GetAlertLogID("Protocol"), fullCycles, partialCycles, "one-word flush latency");
+      AffirmIfEqual(GetAlertLogID("Protocol"), fullFirst, partialFirst, "one-word flush first beat");
+      AffirmIfEqual(GetAlertLogID("Protocol"), fullLast, partialLast, "one-word flush last beat");
+    end if;
+    sSinkHigh <= false;
+
+    -- FIFO filled to the almost-full level with the sink held off ---
+    sFillReq <= true;
+    wait until rising_edge(clk);
+    while not sFillDone loop
+
+      wtmp := rv.RandSlv(IN_WIDTH);
+      send_beat(wtmp, IN_WIDTH, '1', '0');
+
+    end loop;
+    sFillReq <= false;
+    wtmp := rv.RandSlv(IN_WIDTH);
+    send_beat(wtmp, IN_WIDTH, '1', '1');
+    sImagesSent <= sImagesSent + 1;
+    wait until sFlushDone = sImagesSent;
 
     -- Back-to-back pairs ---
     for pair in 1 to N_PAIRS loop

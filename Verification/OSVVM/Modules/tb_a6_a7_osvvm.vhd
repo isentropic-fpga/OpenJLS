@@ -59,10 +59,35 @@ begin
     variable sign_value : std_logic;
     variable lower_edge, upper_edge : integer;
 
+    alias sPxBig is <<signal .tb_a6_a7_osvvm.bounds.sPxBig : std_logic>>;
+    alias sCompBig is <<signal .tb_a6_a7_osvvm.bounds.sCompBig : std_logic>>;
+
+    -- a6_clip_bounds contract: A.6 limits saturated to the +-2^CO_CQ_WIDTH field
+    procedure check_bounds(px : integer; sign_bit : std_logic) is
+      constant SAT : integer := 2 ** CO_CQ_WIDTH;
+      variable lo, hi : integer;
+    begin
+      if sign_bit = CO_SIGN_POS then
+        lo := -px;
+        hi := MAX_VAL - px;
+      else
+        lo := px - MAX_VAL;
+        hi := px;
+      end if;
+      lo := math_max(lo, -SAT);
+      hi := math_min(hi, SAT - 1);
+      AffirmIfEqual(req, checked_integer(sLo), lo, "a6_clip_bounds lo");
+      AffirmIfEqual(req, checked_integer(sHi), hi, "a6_clip_bounds hi");
+      -- An undriven flag reads as '0' in the select, so it is invisible at the ports
+      AffirmIf(req, sPxBig = '0' or sPxBig = '1', "sPxBig driven");
+      AffirmIf(req, sCompBig = '0' or sCompBig = '1', "sCompBig driven");
+    end procedure;
+
     procedure check(ix, px, cq : integer; sign_bit : std_logic) is
       variable corrected, expected, region, sign_index : integer;
     begin
-      if px < 0 or px > PIXEL_MAX or ix < 0 or ix > PIXEL_MAX then
+      -- A.6 assumes pixels within MAXVAL
+      if px < 0 or px > MAX_VAL or ix < 0 or ix > MAX_VAL then
         return;
       end if;
       -- C order, not the RTL's fused difference-minus-bias
@@ -91,6 +116,7 @@ begin
       sSign <= sign_bit;
       wait for 1 ns;
       AffirmIfEqual(req, checked_integer(sError), expected, "A.6/A.7 sequential reference");
+      check_bounds(px, sign_bit);
       assert to_integer(sError) = expected
         report "Ix=" & integer'image(ix) & " Px=" & integer'image(px) &
                " Cq=" & integer'image(cq) & " sign=" & std_logic'image(sign_bit)
@@ -105,7 +131,7 @@ begin
     procedure check_prediction(px, cq : integer; sign_bit : std_logic) is
       variable corrected : integer;
     begin
-      if px < 0 or px > PIXEL_MAX then
+      if px < 0 or px > MAX_VAL then
         return;
       end if;
       if sign_bit = CO_SIGN_POS then
@@ -116,9 +142,9 @@ begin
       corrected := math_max(0, math_min(MAX_VAL, corrected));
       check(0, px, cq, sign_bit);
       check(1, px, cq, sign_bit);
-      check(PIXEL_MAX / 2, px, cq, sign_bit);
-      check(PIXEL_MAX - 1, px, cq, sign_bit);
-      check(PIXEL_MAX, px, cq, sign_bit);
+      check(MAX_VAL / 2, px, cq, sign_bit);
+      check(MAX_VAL - 1, px, cq, sign_bit);
+      check(MAX_VAL, px, cq, sign_bit);
       check(px, px, cq, sign_bit);
       check(corrected - 1, px, cq, sign_bit);
       check(corrected, px, cq, sign_bit);
@@ -127,8 +153,8 @@ begin
   begin
     SetAlertLogName("tb_a6_a7_osvvm");
     SetLogEnable(PASSED, FALSE);
-    rv.InitSeed(rv'instance_name);
-    req := GetReqID("T87.A6-A7", 20000);
+    rv.InitSeed(rv'instance_name & run_seed);
+    req := GetReqID("T87.A6-A7", 240000);
     cov := NewID("G4.Branch sign x clipping region");
     SetFieldName(cov, "sign", "clipping region");
     for axis0 in 0 to 1 loop
@@ -156,7 +182,7 @@ begin
           upper_edge := MAX_VAL + cq + CQ_OFFSET;
         end if;
         if BITNESS = 8 then
-          for px in 0 to PIXEL_MAX loop
+          for px in 0 to MAX_VAL loop
             check_prediction(px, cq, sign_value);
           end loop;
         else
@@ -166,10 +192,21 @@ begin
           end loop;
           check_prediction(0, cq, sign_value);
           check_prediction(1, cq, sign_value);
-          check_prediction(PIXEL_MAX / 2, cq, sign_value);
-          check_prediction(PIXEL_MAX - 1, cq, sign_value);
-          check_prediction(PIXEL_MAX, cq, sign_value);
+          check_prediction(MAX_VAL / 2, cq, sign_value);
+          check_prediction(MAX_VAL - 1, cq, sign_value);
+          check_prediction(MAX_VAL, cq, sign_value);
         end if;
+      end loop;
+    end loop;
+
+    -- Both sides of each saturation boundary
+    for delta in -2 to 2 loop
+      for sign_index in 0 to 1 loop
+        sign_value := bool2bit(sign_index = 0);
+        check_prediction(2 ** CO_CQ_WIDTH + delta, CO_MIN_CQ, sign_value);
+        check_prediction(2 ** CO_CQ_WIDTH + delta, CO_MAX_CQ, sign_value);
+        check_prediction(MAX_VAL - 2 ** CO_CQ_WIDTH + delta, CO_MIN_CQ, sign_value);
+        check_prediction(MAX_VAL - 2 ** CO_CQ_WIDTH + delta, CO_MAX_CQ, sign_value);
       end loop;
     end loop;
 
@@ -179,7 +216,7 @@ begin
       else
         sign_value := CO_SIGN_NEG;
       end if;
-      check(rv.RandInt(0, PIXEL_MAX), rv.RandInt(0, PIXEL_MAX),
+      check(rv.RandInt(0, MAX_VAL), rv.RandInt(0, MAX_VAL),
             rv.RandInt(CO_MIN_CQ, CO_MAX_CQ), sign_value);
     end loop;
     WriteBin(cov);

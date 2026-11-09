@@ -83,6 +83,8 @@ PSLOG="$HERE/Output/postsynth_osvvm.log"
 if "${NVC[@]}" --work=work:"$LIBS/work.08" \
     -e --jit --no-save -g POST_SYNTH=true "$TB" \
     -r --exit-severity=error "$TB" 2>&1 | tee "$PSLOG"; then ps_rc=0; else ps_rc=1; fi
+# Alert(FAILURE) + std.env.stop in the watchdog exits 0: require the TB's own verdict
+grep -q "$TB: PASS" "$PSLOG" || ps_rc=1
 
 # Status for publish_reports.sh
 ps_aff=$(awk '/DONE/ && /Affirmations Checked:/ {

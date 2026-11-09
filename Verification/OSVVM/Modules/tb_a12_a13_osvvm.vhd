@@ -216,8 +216,8 @@ begin
 
     SetAlertLogName("tb_a12_a13_osvvm");
     SetLogEnable(PASSED, FALSE);
-    rv.InitSeed(rv'instance_name);
-    req := GetReqID("T87.A12A13", 300);
+    rv.InitSeed(rv'instance_name & run_seed);
+    req := GetReqID("T87.A12A13", 230000);
 
     cov := NewID("G2.Rescale x clamp event");
     SetFieldName(cov, "rescale", "event");

@@ -26,21 +26,19 @@ library tb_support;
   use tb_support.tb_support_pkg.all;
 
 entity tb_a15_a16_osvvm is
-  generic (BITNESS : natural range 8 to 16 := CO_BITNESS_STD);
+  generic (
+    BITNESS : natural range 8 to 16 := CO_BITNESS_STD;
+    RC_W    : positive              := 16
+  );
 end entity tb_a15_a16_osvvm;
 
 architecture sim of tb_a15_a16_osvvm is
 
-  constant RC_W       : natural := 16;
   constant CLK_PERIOD : time    := CLK_PERIOD_DEFAULT;
   constant MAXBITS    : natural := 8192;
 
   constant T_BREAK    : integer := 0;
   constant T_EOL      : integer := 1;
-
-  constant RUNVAL     : integer := 10;
-  constant BRKPIX     : integer := 50;
-  constant RBVAL      : integer := 20;
 
   signal clk          : std_logic := '0';
   signal rst          : std_logic;
@@ -199,6 +197,18 @@ begin
     variable carried : natural;       -- RUNindex across runs
     variable newIdx  : natural;
     variable riFires : boolean;
+    variable RUNVAL  : integer := 10;
+    variable BRKPIX  : integer := 50;
+    variable RBVAL   : integer := 20;
+
+    procedure new_payload is
+    begin
+
+      RUNVAL := rv.RandInt(0, 2 ** BITNESS - 1);
+      RBVAL  := rv.RandInt(0, 2 ** BITNESS - 1);
+      BRKPIX := (RUNVAL + rv.RandInt(1, 2 ** BITNESS - 1)) mod 2 ** BITNESS;
+
+    end procedure new_payload;
 
     procedure cycle_collect (
       hit  : std_logic;
@@ -248,7 +258,7 @@ begin
 
     end procedure cycle_collect;
 
-    procedure do_run (
+    procedure do_run_exact (
       m    : natural;
       term : integer;
       eoi  : std_logic;
@@ -261,6 +271,8 @@ begin
       variable sat : boolean := false;
 
     begin
+
+      new_payload;
 
       gen_expected(carried, m, term, expBuf, expLen, newIdx, riFires);
       actLen := 0;
@@ -326,6 +338,19 @@ begin
       else
         carried := newIdx;
       end if;
+
+    end procedure do_run_exact;
+
+    -- A run of RUNcnt's full range is the longest the width can count
+    procedure do_run (
+      m    : natural;
+      term : integer;
+      eoi  : std_logic;
+      msg  : string
+    ) is
+    begin
+
+      do_run_exact(minimum(m, 2 ** RC_W - 1), term, eoi, msg);
 
     end procedure do_run;
 
@@ -394,8 +419,8 @@ begin
 
     SetAlertLogName("tb_a15_a16_osvvm");
     SetLogEnable(PASSED, FALSE);
-    rv.InitSeed(rv'instance_name);
-    req := GetReqID("T87.A15-A16", 100);
+    rv.InitSeed(rv'instance_name & run_seed);
+    req := GetReqID("T87.A15-A16", 1800);
 
     covTerm := NewID("G4.Run terminal");
     SetFieldName(covTerm, "terminal");
@@ -450,13 +475,18 @@ begin
     -- Saturate RUNindex ---
     -- 800-pixel runs stall at index 26; 33100 reaches 31, 40000 then crosses a
     -- segment boundary at 31
-    do_run(33100, T_EOL, '0', "saturate RUNindex to 31");
-    do_run(40000, T_EOL, '0', "boundary at saturated RUNindex");
-    do_run(2 ** RC_W - 1, T_EOL, '0', "longest run RUNcnt can count");
-    do_run(3, T_BREAK, '0', "break from saturated RUNindex");
-    wait for 1 ns;
-    AffirmIfEqual(req, checked_integer(oRiRunIndex), 30,
-                  "RUNindex decremented from saturation by the break");
+    -- A narrower RUNcnt cannot hold a run that saturates
+    if (RC_W = 16) then
+      do_run(33100, T_EOL, '0', "saturate RUNindex to 31");
+      do_run(40000, T_EOL, '0', "boundary at saturated RUNindex");
+      do_run(2 ** RC_W - 1, T_EOL, '0', "longest run RUNcnt can count");
+      do_run(3, T_BREAK, '0', "break from saturated RUNindex");
+      wait for 1 ns;
+      AffirmIfEqual(req, checked_integer(oRiRunIndex), 30,
+                    "RUNindex decremented from saturation by the break");
+    else
+      do_run(2 ** RC_W - 1, T_EOL, '0', "longest run RUNcnt can count");
+    end if;
 
     -- Mid-op reset ---
     reset_mid(0);
@@ -488,9 +518,6 @@ begin
         idle(rv.RandInt(1, 3));
       end if;
 
-      exit when IsCovered(covTerm) and IsCovered(covImm) and
-                IsCovered(covEoi) and IsCovered(covIdx) and r > 50;
-
     end loop;
 
     WriteBin(covTerm);
@@ -498,12 +525,16 @@ begin
     WriteBin(covEoi);
     WriteBin(covIdx);
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covTerm), "terminal coverage closed");
-    affirm_covered(cl, "RUNindex saturation and step past covered");
+    if (RC_W = 16) then
+      affirm_covered(cl, "RUNindex saturation and step past covered");
+    end if;
     affirm_covered(covCnt, "RUNcnt min/max covered");
     affirm_covered(rs, "reset phase coverage closed");
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covImm), "immediate-break coverage closed");
     AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covEoi), "EOI-reset coverage closed");
-    AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covIdx), "start-RUNindex coverage closed");
+    if (RC_W = 16) then
+      AffirmIf(GetAlertLogID("CoverageClosure"), IsCovered(covIdx), "start-RUNindex coverage closed");
+    end if;
 
     end_of_test("tb_a15_a16_osvvm");
     wait;

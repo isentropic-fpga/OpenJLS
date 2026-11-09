@@ -113,8 +113,8 @@ begin
 
     SetAlertLogName("tb_a1_osvvm");
     SetLogEnable(PASSED, FALSE);
-    rv.InitSeed(rv'instance_name);
-    req := GetReqID("T87.A1", 200);
+    rv.InitSeed(rv'instance_name & run_seed);
+    req := GetReqID("T87.A1", 10000);
 
     cov := NewID("G4.Branch sgnD1 x sgnD2 x sgnD3");
     SetFieldName(cov, "sgnD1", "sgnD2", "sgnD3");
@@ -162,7 +162,6 @@ begin
       c := rv.RandInt(0, PX_MAX);
       d := rv.RandInt(0, PX_MAX);
       drive_check(a, b, c, d, "rand");
-      exit when IsCovered(cov) and i > 200;
 
     end loop;
 

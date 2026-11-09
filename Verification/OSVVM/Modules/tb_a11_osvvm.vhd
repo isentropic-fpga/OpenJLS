@@ -127,8 +127,8 @@ begin
     SetAlertLogName("tb_a11_osvvm");
     SetLogEnable(PASSED, FALSE);
 
-    rv.InitSeed(rv'instance_name);
-    req := GetReqID("T87.A11", 500);
+    rv.InitSeed(rv'instance_name & run_seed);
+    req := GetReqID("T87.A11", 8900);
 
     -- Special mapping needs k = 0 and 2*B <= -N, rare under uniform random
     cov := NewID("G4.Coding Special x ErrSign");
@@ -253,8 +253,6 @@ begin
 
       ICover(cov, (special, signIdx));
       sample;
-
-      exit when IsCovered(cov) and i > 500;
 
     end loop;
 

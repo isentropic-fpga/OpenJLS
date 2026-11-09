@@ -137,8 +137,8 @@ begin
 
     SetAlertLogName("tb_a4_1_osvvm");
     SetLogEnable(PASSED, FALSE);
-    rv.InitSeed(rv'instance_name);
-    req := GetReqID("T87.A4.1", 729);
+    rv.InitSeed(rv'instance_name & run_seed);
+    req := GetReqID("T87.A4.1", 2600);
 
     cov := NewID("G4.Branch decider");
     SetFieldName(cov, "decider");

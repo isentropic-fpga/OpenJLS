@@ -492,6 +492,7 @@ begin
   -- psl assert always (iRst = '1' -> oReady = '0') report "openjls_top: reset must hold oReady low";
   -- psl assert always ((iRst = '0' and sStallLogic = '1') -> oReady = '0') report "openjls_top: oReady must stay low while the input latch is frozen (no dropped beat)";
   -- psl assert always ((iRst = '0' and iValid = '1' and oReady = '1') -> next (sValid = '1')) report "openjls_top: an accepted pixel (iValid and oReady) must be committed next cycle";
+  -- psl assert always ((iRst = '0' and sStallLogic = '1') -> (sReg1V = '0' and sValid = '0')) report "openjls_top: stage 1 and the input latch must hold no pixel while the logic is frozen";
 
   postponed assert is_x(sRunCntReg) or sRunCntReg <= MAX_IMAGE_WIDTH
     report "openjls_top: run count past MAX_IMAGE_WIDTH" severity error;

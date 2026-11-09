@@ -24,12 +24,14 @@ library tb_support;
   use tb_support.tb_support_pkg.all;
 
 entity tb_a19_osvvm is
-  generic (BITNESS : natural range 8 to 16 := CO_BITNESS_STD);
+  generic (
+    BITNESS : natural range 8 to 16 := CO_BITNESS_STD;
+    RANGE_P : natural := 2 ** BITNESS
+  );
 end entity tb_a19_osvvm;
 
 architecture sim of tb_a19_osvvm is
 
-  constant RANGE_P : natural := 2 ** BITNESS;
   constant PX_MAX  : integer := (2 ** BITNESS) - 1;
   constant ERR_LO  : integer := -PX_MAX;
   constant ERR_HI  : integer := PX_MAX;
@@ -127,8 +129,8 @@ begin
 
     SetAlertLogName("tb_a19_osvvm");
     SetLogEnable(PASSED, FALSE);
-    rv.InitSeed(rv'instance_name);
-    req := GetReqID("T87.A19", 300);
+    rv.InitSeed(rv'instance_name & run_seed);
+    req := GetReqID("T87.A19", 10000);
     cov := NewID("G4.Branch sign x wrapNeg x geHalf");
     SetFieldName(cov, "sign", "wrapNeg", "geHalf");
     for axis0 in 0 to 1 loop
@@ -175,7 +177,6 @@ begin
                     bool2bit(rv.RandInt(0, 1) = 1),
                     rv.RandInt(0, PX_MAX), rv.RandInt(0, PX_MAX), "rand");
       end if;
-      exit when IsCovered(cov) and i > 300;
 
     end loop;
 

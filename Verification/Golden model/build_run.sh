@@ -65,8 +65,6 @@ SRC_FILES=(
   A4_1_quant_gradient_merging.vhd
   A4_2_Q_mapping.vhd
   A5_edge_detecting_predictor.vhd
-  A6_prediction_correction.vhd
-  A7_prediction_error.vhd
   A6_A7_prediction_error.vhd
   A8_1_reconstructed_value.vhd
   A9_modulo_reduction.vhd
@@ -74,8 +72,6 @@ SRC_FILES=(
   A11_error_mapping.vhd
   A11_1_golomb_encoder.vhd
   A11_2_bit_packer.vhd
-  A12_variables_update.vhd
-  A13_update_bias.vhd
   A12_A13_update.vhd
   A14_run_length_determination.vhd
   A15_A16_encode_run.vhd

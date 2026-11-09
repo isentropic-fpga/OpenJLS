@@ -32,7 +32,7 @@ end entity tb_a11_2_osvvm;
 architecture sim of tb_a11_2_osvvm is
 
   constant LIMIT       : natural := 4 * BITNESS;
-  constant UNARY_W     : natural := log2ceil(3 * BITNESS);
+  constant UNARY_W     : natural := log2ceil(LIMIT);
   constant SUFFIX_W    : natural := BITNESS + log2ceil(CO_RESET_STD);
   constant SUFFIXLEN_W : natural := math_max(log2ceil(BITNESS + log2ceil(CO_RESET_STD) + 1), 5);
   constant OUT_WIDTH   : natural := 4 * BITNESS;
@@ -247,8 +247,14 @@ begin
 
     SetAlertLogName("tb_a11_2_osvvm");
     SetLogEnable(PASSED, FALSE);
-    rv.InitSeed(rv'instance_name);
-    req := GetReqID("T87.A11.2", 100);
+    rv.InitSeed(rv'instance_name & run_seed);
+    req := GetReqID("T87.A11.2", 12000);
+    case BITNESS is
+      when 8 => AffirmIfEqual(req, LIMIT, 32, "T.87 LIMIT pin");
+      when 12 => AffirmIfEqual(req, LIMIT, 48, "T.87 LIMIT pin");
+      when 16 => AffirmIfEqual(req, LIMIT, 64, "T.87 LIMIT pin");
+      when others => null;
+    end case;
     cov := NewID("G4.Branch case");
     SetFieldName(cov, "case");
     AddBins(cov, "idle", GenBin(0));
@@ -342,7 +348,6 @@ begin
       rawVal := rv.RandUnsigned(SUFFIX_W);
       sufVal := rv.RandUnsigned(SUFFIX_W);
       beat(rValid, rawLen, rawVal, gValid, uz, sl, sufVal, "rand");
-      exit when IsCovered(cov) and i > 200;
 
     end loop;
 

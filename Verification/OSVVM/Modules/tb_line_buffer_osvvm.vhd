@@ -291,9 +291,9 @@ begin
 
     SetAlertLogName("tb_line_buffer_osvvm");
     SetLogEnable(PASSED, FALSE);
-    rv.InitSeed(rv'instance_name);
+    rv.InitSeed(rv'instance_name & run_seed);
     -- 2477 pixels x 4 neighbours
-    req := GetReqID("OJLS.LineBuffer", 9908);
+    req := GetReqID("OJLS.LineBuffer", 16000);
     cov := NewID("G4.Edge rowPos x colPos");
     SetFieldName(cov, "rowPos", "colPos");
     for axis0 in 0 to 1 loop
@@ -326,7 +326,11 @@ begin
     run_image(7, 3, true);
     for width in 4 to MAX_W loop
       run_image(width, 1, true);
+      run_image(width, 2, true);
       run_image(width, MAX_H, true);
+    end loop;
+    for i in 1 to 20 loop
+      run_image(rv.RandInt(4, MAX_W), rv.RandInt(1, MAX_H), rv.RandInt(0, 1) = 1);
     end loop;
 
     -- Mid-image reset ---

@@ -165,10 +165,16 @@ begin
 
     SetAlertLogName("tb_a11_1_osvvm");
     SetLogEnable(PASSED, FALSE);
-    rv.InitSeed(rv'instance_name);
-    req   := GetReqID("T87.A11.1", 400);
+    rv.InitSeed(rv'instance_name & run_seed);
+    req   := GetReqID("T87.A11.1", 20000);
+    case BITNESS is
+      when 8 => AffirmIfEqual(req, LIMIT, 32, "T.87 LIMIT pin");
+      when 12 => AffirmIfEqual(req, LIMIT, 48, "T.87 LIMIT pin");
+      when 16 => AffirmIfEqual(req, LIMIT, 64, "T.87 LIMIT pin");
+      when others => null;
+    end case;
     -- 32 RUNindex x 2 suffix cases x 3 fields
-    reqRi := GetReqID("T87.A22.1", 192);
+    reqRi := GetReqID("T87.A22.1", 20000);
 
     covK := NewID("G4.Coding Golomb k");
     SetFieldName(covK, "k");
@@ -231,7 +237,6 @@ begin
       else
         drive_check(k, merr, '1', ridx, "rand RI");
       end if;
-      exit when IsCovered(cov) and i > 400;
 
     end loop;
 

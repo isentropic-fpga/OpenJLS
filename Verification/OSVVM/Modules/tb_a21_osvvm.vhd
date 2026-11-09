@@ -140,8 +140,8 @@ begin
 
     SetAlertLogName("tb_a21_osvvm");
     SetLogEnable(PASSED, FALSE);
-    rv.InitSeed(rv'instance_name);
-    req := GetReqID("T87.A21", 400);
+    rv.InitSeed(rv'instance_name & run_seed);
+    req := GetReqID("T87.A21", 97000);
 
     cov := NewID("G4.Run clause");
     SetFieldName(cov, "clause");
@@ -193,8 +193,6 @@ begin
       nn  := rv.RandInt(0, N_MAX);
       nq  := rv.RandInt(0, N_MAX);
       drive_check(k, err, nn, nq, "rand");
-
-      exit when IsCovered(cov) and i > 400;
 
     end loop;
 

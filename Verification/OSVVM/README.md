@@ -22,6 +22,7 @@ Requirements + status: [`verification_requirements.md`](../../Docs/verification_
 - Outputs (gitignored): `OSVVM_OpenJls/OSVVM_OpenJls.html` (summary), `reports/<suite>/<test>.html`, `reports/OSVVM_OpenJls_req.{html,csv}`, `NVC_CodeCoverage/html/`, `logs/`.
 - One TB: comment out the other `Test` lines in `OpenJls.pro`. A variant is added as `Test Modules/tb_x.vhd [generic NAME VALUE]`; its reports get a `_NAME_VALUE` suffix.
 - Fail: an `Alert ERROR <msg>` line, then `DONE FAILED`, nonzero exit.
+- Random stimulus: `OpenJls.pro` writes the RTL hash to `run_seed.txt` and the TBs salt their seeds with it. Each RTL version gets new stimuli; the same RTL replays them.
 
 ## Gotchas
 - tcl `exec` treats any stderr output as a failure, so `OpenJls.pro` sets `--stderr=error` and analysis must stay warning-clean.

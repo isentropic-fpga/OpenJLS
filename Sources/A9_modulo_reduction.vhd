@@ -26,15 +26,15 @@ architecture behavioral of a9_modulo_reduction is
 
 begin
 
-  gen_binary_range : if RANGE_P = 2 ** BITNESS generate
+  gen_binary_mod : if RANGE_P = 2 ** BITNESS generate
 
     -- Low BITNESS bits read as signed are the residue in [-RANGE/2, RANGE/2 - 1].
     -- Slice before resize, or the input's sign bit is kept instead of the residue's.
     oErrorVal <= resize(iErrorVal(BITNESS - 1 downto 0), BITNESS + 1);
 
-  end generate gen_binary_range;
+  end generate gen_binary_mod;
 
-  gen_general_range : if RANGE_P /= 2 ** BITNESS generate
+  gen_general_mod : if RANGE_P /= 2 ** BITNESS generate
 
     -- RANGE not a power of two: plain A.9 arithmetic
     constant RANGE_S : signed(BITNESS + 1 downto 0) := to_signed(RANGE_P, BITNESS + 2);
@@ -52,7 +52,7 @@ begin
     oErrorVal <= resize(sErrAdj - RANGE_S, BITNESS + 1) when sErrAdj >= (RANGE_P + 1) / 2 else
                  resize(sErrAdj, BITNESS + 1);
 
-  end generate gen_general_range;
+  end generate gen_general_mod;
 
   postponed assert is_x(oErrorVal) or abs(to_integer(iErrorVal)) >= RANGE_P
                    or (to_integer(oErrorVal) >= (RANGE_P + 1) / 2 - RANGE_P and to_integer(oErrorVal) < (RANGE_P + 1) / 2)

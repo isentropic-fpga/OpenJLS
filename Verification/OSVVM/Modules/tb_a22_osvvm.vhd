@@ -126,8 +126,8 @@ begin
 
     SetAlertLogName("tb_a22_osvvm");
     SetLogEnable(PASSED, FALSE);
-    rv.InitSeed(rv'instance_name);
-    req := GetReqID("T87.A22", 300);
+    rv.InitSeed(rv'instance_name & run_seed);
+    req := GetReqID("T87.A22", 8400);
 
     covCross := NewID("G4.Run ri x map");
     SetFieldName(covCross, "ri", "map");
@@ -174,7 +174,6 @@ begin
       ri := rv.RandInt(0, 1);
       mp := rv.RandInt(0, 1);
       drive_check(err, ri, mp, "rand");
-      exit when IsCovered(covCross) and IsCovered(covZero) and i > 400;
 
     end loop;
 

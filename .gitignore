@@ -18,6 +18,7 @@ Verification/OSVVM/*_build/
 Verification/OSVVM/NVC_CodeCoverage/
 Verification/OSVVM/*.html
 Verification/OSVVM/*.yml
+Verification/OSVVM/run_seed.txt
 # Verification deps, from fetch_third_party.sh; open-logic is committed
 ThirdParty/osvvm/
 ThirdParty/osvvm-scripts/

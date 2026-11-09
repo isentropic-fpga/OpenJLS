@@ -30,15 +30,17 @@ library tb_support;
 
 entity tb_jls_framer_osvvm is
   generic (
+    BITNESS   : natural  := CO_BITNESS_STD;
     OUT_WIDTH : natural  := CO_OUT_WIDTH_STD;
     MAX_W     : positive := 4096;
-    MAX_H     : positive := 4096
+    MAX_H     : positive := 4096;
+    -- 2 byte_stuffer beats + the footer; override to make the ring exactly full
+    STALL_MARGIN : natural := 2 * CO_BYTE_STUFFER_OUT_WIDTH / 8 + 2
   );
 end entity tb_jls_framer_osvvm;
 
 architecture sim of tb_jls_framer_osvvm is
 
-  constant BITNESS    : natural := CO_BITNESS_STD;
   constant IN_WIDTH   : natural := CO_BYTE_STUFFER_OUT_WIDTH;
   constant BYTES_IN   : natural := IN_WIDTH / 8;
   constant BYTES_OUT  : natural := OUT_WIDTH / 8;
@@ -50,6 +52,21 @@ architecture sim of tb_jls_framer_osvvm is
   constant N_IMAGES   : natural := 30;
   -- Wide OUT_WIDTHs need payload past the header's last-beat fill
   constant MAX_WORDS  : natural := math_max(24, 2 * BYTES_OUT);
+
+  -- Worst-case occupancy at iReady = '1', worked by hand from the sizing rule in the framer header
+  function nominal_depth return natural is
+  begin
+    case OUT_WIDTH is
+      when 48 => return 24;
+      when 56 => return 21;
+      when 64 => return 20;
+      when 200 => return 30;
+      when 1024 => return 133;
+      when others => report "tb_jls_framer_osvvm: no depth pinned for this OUT_WIDTH" severity failure; return 0;
+    end case;
+  end function;
+
+  constant NOMINAL_DEPTH_B : natural := nominal_depth;
 
   signal clk      : std_logic := '0';
   signal rst      : std_logic;
@@ -73,6 +90,10 @@ architecture sim of tb_jls_framer_osvvm is
   signal sDriverDone       : boolean;
   -- Skip output of a reset-aborted image
   signal sIgnore           : boolean := false;
+  -- 0 random, 1 held low, 2 held high
+  signal sSinkMode         : natural range 0 to 2 := 0;
+  signal sExpectReady      : boolean := false;
+  signal sPeak             : natural := 0;
 
   -- T.87 frame header, independent of the RTL ROM
   function header_byte (
@@ -131,7 +152,8 @@ begin
       IN_WIDTH         => IN_WIDTH,
       OUT_WIDTH        => OUT_WIDTH,
       MAX_IMAGE_WIDTH  => MAX_W,
-      MAX_IMAGE_HEIGHT => MAX_H
+      MAX_IMAGE_HEIGHT => MAX_H,
+      STALL_MARGIN_BYTES => STALL_MARGIN
     )
     port map (
       iClk         => clk,
@@ -186,26 +208,323 @@ begin
 
     end procedure push_word;
 
-    procedure send_image (
-      w      : natural;
-      h      : natural;
-      nWords : natural
+    -- One beat with no oReady check: what is in flight after oReady drops
+    procedure push_now (
+      wd    : std_logic_vector(IN_WIDTH - 1 downto 0);
+      nbe   : natural;
+      eoi   : std_logic;
+      start : std_logic
     ) is
-
-      variable word : std_logic_vector(IN_WIDTH - 1 downto 0);
-      variable be   : natural;
-
     begin
 
-      iWidth  <= to_unsigned(w, WDIM);
-      iHeight <= to_unsigned(h, HDIM);
+      iValid  <= '1';
+      iWord   <= wd;
+      iByteEn <= to_unsigned(nbe, BE_IN_W);
+      iEoi    <= eoi;
+      iStart  <= start;
       wait until rising_edge(clk);
+      iValid  <= '0';
+      iEoi    <= '0';
+      iStart  <= '0';
+
+    end procedure push_now;
+
+    procedure score_payload (
+      wd  : std_logic_vector(IN_WIDTH - 1 downto 0);
+      nbe : natural
+    ) is
+    begin
+
+      for i in 0 to nbe - 1 loop
+
+        Push(SB_ID, '0' & wd(IN_WIDTH - 1 - i * 8 downto IN_WIDTH - (i + 1) * 8));
+
+      end loop;
+
+    end procedure score_payload;
+
+    procedure score_header (
+      w : natural;
+      h : natural
+    ) is
+    begin
 
       for k in 0 to 24 loop
 
         Push(SB_ID, '0' & header_byte(k, w, h));
 
       end loop;
+
+    end procedure score_header;
+
+    procedure score_footer is
+    begin
+
+      Push(SB_ID, '0' & x"FF");
+      Push(SB_ID, '1' & x"D9");
+
+    end procedure score_footer;
+
+    procedure image_done (
+      n : natural := 1
+    ) is
+    begin
+
+      sent        := sent + n;
+      sImagesSent <= sent;
+      wait until sImagesDone = sent;
+
+    end procedure image_done;
+
+    procedure set_sink (
+      mode : natural
+    ) is
+    begin
+
+      sSinkMode <= mode;
+      -- The monitor applies the mode on its next cycle
+      wait until rising_edge(clk);
+      wait until rising_edge(clk);
+
+    end procedure set_sink;
+
+    -- Sink stalled: oReady must fall at the nominal depth, the margin then takes the in-flight beats
+    procedure fill_stalled (
+      be       : natural;
+      end_mode : natural                 -- 0 last beat partial, 1 last beat carries iEoi
+    ) is
+
+      variable accepted, in_beat, left, n : natural := 0;
+      variable word : std_logic_vector(IN_WIDTH - 1 downto 0);
+      variable flow : AlertLogIDType;
+
+    begin
+
+      flow := GetReqID("OJLS.FramerBackpressure", 11);
+      set_sink(1);
+      score_header(32, 32);
+      iWidth  <= to_unsigned(32, WDIM);
+      iHeight <= to_unsigned(32, HDIM);
+      wait until rising_edge(clk);
+      iStart  <= '1';
+      wait until rising_edge(clk);
+      iStart  <= '0';
+
+      for i in 1 to 4 loop
+        wait until rising_edge(clk);
+      end loop;
+
+      for i in 1 to NOMINAL_DEPTH_B + BYTES_OUT + 16 loop
+
+        wait for 1 ns;
+        exit when oReady /= '1';
+        word := rv.RandSlv(IN_WIDTH);
+        score_payload(word, be);
+        push_now(word, be, '0', '0');
+        accepted := accepted + be;
+
+      end loop;
+
+      wait for 1 ns;
+      AffirmIf(flow, oReady = '0', "oReady falls with the sink stalled");
+      if (oValid = '1' and to_integer(oByteEn) > 25) then
+        in_beat := to_integer(oByteEn) - 25;
+      end if;
+
+      -- Only a one-byte beat lands exactly on the threshold
+      if (be = 1) then
+        AffirmIfEqual(flow, accepted - in_beat, NOMINAL_DEPTH_B, "oReady drop depth");
+      else
+        AffirmIf(flow, accepted - in_beat >= NOMINAL_DEPTH_B and accepted - in_beat < NOMINAL_DEPTH_B + be, "oReady drop depth");
+      end if;
+
+      left := NOMINAL_DEPTH_B + STALL_MARGIN - (accepted - in_beat);
+      if (end_mode = 1) then
+        left := left - 2;
+      end if;
+
+      while (left > BYTES_IN) loop
+
+        word := rv.RandSlv(IN_WIDTH);
+        score_payload(word, BYTES_IN);
+        wait for 1 ns;
+        AffirmIf(flow, oReady = '0', "oReady stays low in the margin");
+        push_now(word, BYTES_IN, '0', '0');
+        left := left - BYTES_IN;
+
+      end loop;
+
+      word := rv.RandSlv(IN_WIDTH);
+      score_payload(word, left);
+
+      if (end_mode = 1) then
+        score_footer;
+        push_now(word, left, '1', '0');
+        set_sink(0);
+      else
+        push_now(word, left, '0', '0');
+        for i in 1 to 4 loop
+          wait until rising_edge(clk);
+        end loop;
+        set_sink(0);
+        score_footer;
+        push_word(rv.RandSlv(IN_WIDTH), 0, '1', '0');
+      end if;
+
+      image_done;
+
+    end procedure fill_stalled;
+
+    -- Three footers queued behind a stalled sink
+    procedure queue_images (
+      n  : natural;
+      be : natural
+    ) is
+
+      variable word : std_logic_vector(IN_WIDTH - 1 downto 0);
+
+    begin
+
+      iWidth  <= to_unsigned(16, WDIM);
+      iHeight <= to_unsigned(1, HDIM);
+      set_sink(1);
+
+      for img in 1 to n loop
+
+        word := rv.RandSlv(IN_WIDTH);
+        score_header(16, 1);
+        score_payload(word, be);
+        score_footer;
+        push_word(word, be, '1', '1');
+
+      end loop;
+
+      set_sink(0);
+      image_done(n);
+
+    end procedure queue_images;
+
+    -- Five starts ahead of any data: one taken at once, four held in the start queue
+    procedure start_queue is
+
+      type word_arr_t is array(1 to 5) of std_logic_vector(IN_WIDTH - 1 downto 0);
+      variable words : word_arr_t;
+
+    begin
+
+      iWidth  <= to_unsigned(16, WDIM);
+      iHeight <= to_unsigned(2, HDIM);
+      set_sink(1);
+
+      -- All five are scored now: the framer emits a queued header before its data arrives
+      for img in 1 to 5 loop
+
+        words(img) := rv.RandSlv(IN_WIDTH);
+        score_header(16, 2);
+        score_payload(words(img), 2);
+        score_footer;
+
+      end loop;
+
+      for img in 1 to 5 loop
+
+        iStart <= '1';
+        wait until rising_edge(clk);
+
+      end loop;
+
+      iStart <= '0';
+
+      for img in 1 to 3 loop
+
+        push_word(words(img), 2, '1', '0');
+
+      end loop;
+
+      set_sink(0);
+      wait until sImagesDone >= sent + 2;
+
+      for img in 4 to 5 loop
+
+        push_word(words(img), 2, '1', '0');
+
+      end loop;
+
+      image_done(5);
+
+    end procedure start_queue;
+
+    -- Back-to-back images at the full input rate and iReady = '1', oReady ignored as the sizing rule assumes
+    procedure full_rate (
+      n_first  : natural;
+      n_second : natural
+    ) is
+
+      type word_arr_t is array(1 to n_first + n_second) of std_logic_vector(IN_WIDTH - 1 downto 0);
+      variable words : word_arr_t;
+
+    begin
+
+      set_sink(2);
+      iWidth  <= to_unsigned(16, WDIM);
+      iHeight <= to_unsigned(16, HDIM);
+
+      -- Scored in stream order first: image 2's header is emitted while its words still arrive
+      score_header(16, 16);
+      for k in words'range loop
+
+        words(k) := rv.RandSlv(IN_WIDTH);
+        score_payload(words(k), BYTES_IN);
+        if (k = n_first) then
+          score_footer;
+          score_header(16, 16);
+        end if;
+
+      end loop;
+      score_footer;
+
+      wait until rising_edge(clk);
+      sExpectReady <= true;
+
+      for k in words'range loop
+
+        push_now(words(k), BYTES_IN, bool2bit(k = n_first or k = words'high), bool2bit(k = 1 or k = n_first + 1));
+
+      end loop;
+
+      image_done(2);
+      sExpectReady <= false;
+      wait until rising_edge(clk);
+      set_sink(0);
+
+    end procedure full_rate;
+
+    procedure send_image (
+      w      : natural;
+      h      : natural;
+      nWords : natural
+    ) is
+
+      variable word  : std_logic_vector(IN_WIDTH - 1 downto 0);
+      variable be    : natural;
+      -- The top raises iStart at the first pixel, cycles before the first stuffer word
+      variable early : natural;
+
+    begin
+
+      iWidth  <= to_unsigned(w, WDIM);
+      iHeight <= to_unsigned(h, HDIM);
+      wait until rising_edge(clk);
+      score_header(w, h);
+      early := rv.RandInt(0, 8);
+      if (early > 0) then
+        iStart <= '1';
+        wait until rising_edge(clk);
+        iStart <= '0';
+        for i in 1 to early - 1 loop
+          wait until rising_edge(clk);
+        end loop;
+      end if;
 
       for n in 1 to nWords loop
 
@@ -226,9 +545,9 @@ begin
         if (n = nWords) then
           Push(SB_ID, '0' & x"FF");
           Push(SB_ID, '1' & x"D9");
-          push_word(word, be, '1', bool2bit(n = 1));
+          push_word(word, be, '1', bool2bit(n = 1 and early = 0));
         else
-          push_word(word, be, '0', bool2bit(n = 1));
+          push_word(word, be, '0', bool2bit(n = 1 and early = 0));
         end if;
 
       end loop;
@@ -283,7 +602,7 @@ begin
 
     SetAlertLogName("tb_jls_framer_osvvm");
     SetLogEnable(PASSED, FALSE);
-    rv.InitSeed(rv'instance_name);
+    rv.InitSeed(rv'instance_name & run_seed);
 
     rs := NewID("G5.States resetPhase");
     AddBins(rs, "idle", GenBin(0));
@@ -310,8 +629,7 @@ begin
     reset_mid(6, '1');
 
     -- Two back-to-back empty images ---
-    -- Both EOIs queue while A's header drains: fills the EOI FIFO and takes both
-    -- terminal FSM arms
+    -- Both EOIs queue while A's header drains and both terminal FSM arms are taken
     for img in 1 to 2 loop
 
       for k in 0 to 24 loop
@@ -332,6 +650,30 @@ begin
     sent        := sent + 2;
     sImagesSent <= sent;
     wait until sImagesDone = sent;
+
+    -- Exact nominal depth, then the margin with and without a footer ---
+    fill_stalled(1, 0);
+    fill_stalled(1, 1);
+    fill_stalled(BYTES_IN, 0);
+    fill_stalled(BYTES_IN, 1);
+
+    -- EOI FIFO full (3 of 3), start queue full, starts ahead of data ---
+    for be in 0 to BYTES_IN loop
+      queue_images(3, be);
+    end loop;
+    start_queue;
+
+    -- Long enough that the input rate cannot outrun the drain across the header
+    for n_first in 16 to 24 loop
+      for n_second in 16 to 24 loop
+        full_rate(n_first, n_second);
+      end loop;
+    end loop;
+
+    -- Above about 25 output bytes the header no longer costs extra beats, so the bound is loose there
+    if (BYTES_OUT < 25) then
+      AffirmIfEqual(GetAlertLogID("FlowControl"), sPeak, NOMINAL_DEPTH_B, "full-rate phase reached the nominal depth");
+    end if;
 
     affirm_covered(rs, "reset phase coverage closed");
     sDriverDone <= true;
@@ -355,18 +697,22 @@ begin
     iReady <= '1';
     done   := 0;
     -- Floor under the smallest variant
-    req := GetReqID("OJLS.Framer", 1600);
+    req := GetReqID("OJLS.Framer", 18000);
     covBeat := NewID("G4.Stream partialBeat");
     SetFieldName(covBeat, "partialBeat");
     AddBins(covBeat, "partialBeat", GenBin(1, BYTES_OUT - 1, 1));
     AddBins(covBeat, "fullBeat", GenBin(BYTES_OUT, BYTES_OUT));
-    rv.InitSeed(rv'instance_name);
+    rv.InitSeed(rv'instance_name & run_seed);
     wait until rst = '0';
 
     loop
 
-      -- ~80% ready
-      iReady <= bool2bit(rv.DistValInt(((1, 4), (0, 1))) = 1);
+      -- ~80% ready unless a phase pins it
+      case sSinkMode is
+        when 1 => iReady <= '0';
+        when 2 => iReady <= '1';
+        when others => iReady <= bool2bit(rv.DistValInt(((1, 4), (0, 1))) = 1);
+      end case;
       wait for 1 ns;
 
       if (oValid = '1' and iReady = '1' and not sIgnore) then
@@ -379,6 +725,13 @@ begin
           byte     := oWord(OUT_WIDTH - 1 - i * 8 downto OUT_WIDTH - (i + 1) * 8);
           lastByte := byte;
           AffirmIfEqual(req, bool2bit(oLast = '1' and i = nb - 1) & byte, Pop(SB_ID), "framed byte");
+
+        end loop;
+
+        -- Bytes past the byte enable are zero
+        for i in nb to BYTES_OUT - 1 loop
+
+          AffirmIfEqual(GetAlertLogID("Protocol"), oWord(OUT_WIDTH - 1 - i * 8 downto OUT_WIDTH - (i + 1) * 8), x"00", "pad byte");
 
         end loop;
 
@@ -404,6 +757,16 @@ begin
     wait;
 
   end process monitor;
+
+  -- Framer sizing rule: with the sink ready, the input cannot push the occupancy past the nominal depth
+  depth_monitor : process(clk) is
+    alias fifo_count is <<signal .tb_jls_framer_osvvm.dut.sFifoByteCount : natural>>;
+  begin
+    if rising_edge(clk) and sExpectReady then
+      AffirmIf(GetAlertLogID("FlowControl"), fifo_count <= NOMINAL_DEPTH_B, "occupancy within the nominal depth at iReady = '1'");
+      sPeak <= math_max(sPeak, fifo_count);
+    end if;
+  end process;
 
   -- The pending beat, metadata included, holds across backpressure
   hold_monitor : process(clk) is
