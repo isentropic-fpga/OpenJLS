@@ -224,7 +224,7 @@ OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level
 |---|---|---|---|
 | NVC code coverage | info | 99.7% | Statement coverage<sup>1</sup> |
 | OSVVM suite | PASS | 100% | 128 tests<sup>2</sup> |
-| Golden model | PASS | 100% | 11555/11555 images<sup>3</sup> |
+| Golden model | PASS | 100% | 11555/11555 images, 1500 random streams<sup>3</sup> |
 | Post-synth OSVVM | PASS | 100% | Control-plane stress<sup>4</sup> |
 | Post-synth golden model | PASS | 100% | 167/167 images<sup>5</sup> |
 | HIL golden model | PASS | 100% | 11639/11639 images<sup>6</sup> |
@@ -240,7 +240,7 @@ OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level
 
 - **OSVVM** — 32 module testbenches against independent T.87 reference models, a top-level control-plane stress test, and AXI wrapper tests, all with requirements tracking.
 - **Coverage** — OSVVM functional coverage plus NVC statement coverage.
-- **Golden model** — byte-exact against [CharLS](https://github.com/team-charls/charls) and the official ISO/IEC 14495-1 reference vectors, both per image from reset and on same-size images streamed with no reset between them.
+- **Golden model** — byte-exact against [CharLS](https://github.com/team-charls/charls) and the official ISO/IEC 14495-1 reference vectors, both per image from reset and on same-size images streamed with no reset between them. Each RTL version also runs 1500 streams of random size, depth, output width, valid and ready.
 - **Design contracts** — PSL assertions on the handshakes, checked every run.
 - **Post-synthesis** — stress test and a golden subset re-run on the gate-level netlist.
 - **Hardware-in-the-loop** — full corpus and the no-reset streams encoded on a PYNQ-Z2 at depths 8–16, zero mismatches; reproducible via the [EncodeOverEthernet demo](https://github.com/isentropic-fpga/OpenJLS-Demos).

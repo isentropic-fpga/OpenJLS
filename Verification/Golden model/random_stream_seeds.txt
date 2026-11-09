@@ -1,0 +1,2 @@
+# Seeds that found real bugs; random_stream.py --rtl-seed always runs them.
+# A seed stays meaningful only while the generator in random_stream.py is unchanged.

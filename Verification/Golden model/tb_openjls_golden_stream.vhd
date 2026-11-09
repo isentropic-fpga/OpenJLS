@@ -31,18 +31,19 @@ entity tb_openjls_golden_stream is
     W         : positive := 256;
     H         : positive := 64;
     N_IMAGES  : positive := 200;
-    READY_PCT : natural  := 100;
+    READY_PCT : positive range 1 to 100 := 100;
+    VALID_PCT : positive range 1 to 100 := 100;
+    OUT_WIDTH : positive := CO_OUT_WIDTH_STD;
     SEED      : positive := 1
   );
 end entity tb_openjls_golden_stream;
 
 architecture bench of tb_openjls_golden_stream is
 
-  constant OUT_WIDTH  : natural  := CO_OUT_WIDTH_STD;
   constant BYTES      : natural  := OUT_WIDTH / 8;
   constant CLK_PERIOD : time     := 10 ns;
   -- A lost EOI hangs here; a whole flat image can pass with no output
-  constant IDLE_LIMIT : natural  := 50 * W * H;
+  constant IDLE_LIMIT : natural  := (50 * W * H + 2000) * (100 / VALID_PCT) + 2000 * (100 / READY_PCT);
   constant MAX_REPORT : natural  := 8;
 
   type char_file_t is file of character;
@@ -91,6 +92,9 @@ begin
     file     f : char_file_t;
     variable c : character;
     variable p : natural;
+    variable s1 : positive := SEED + 202;
+    variable s2 : positive := SEED + 303;
+    variable r  : real;
 
   begin
 
@@ -114,6 +118,14 @@ begin
         read(f, c);
         p := p * 256 + character'pos(c);
       end if;
+      uniform(s1, s2, r);
+      while (r * 100.0 >= real(VALID_PCT)) loop
+
+        iValid <= '0';
+        wait until rising_edge(iClk);
+        uniform(s1, s2, r);
+
+      end loop;
       iPixel <= std_logic_vector(to_unsigned(p, BITNESS));
       iValid <= '1';
       wait until oReady = '1' and rising_edge(iClk);

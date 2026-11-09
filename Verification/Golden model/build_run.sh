@@ -10,7 +10,8 @@
 # stream the same-size sets in Images_stream/ through one core with no reset
 # between images. Runs that passed on the same RTL hash are skipped; RERUN=1 runs all.
 # Knobs: MAX_MP (default 0.5), NUMBER_OF_THREADS (default 1), NVC_HEAP,
-# STREAM=0 (skip the streams).
+# STREAM=0 (skip the same-size and random streams), RANDOM_RUNS (default 1500),
+# ANALYZE_ONLY=1 (stop after compiling).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -96,6 +97,7 @@ SRC_FILES=(
   "${SRC_FILES[@]/#/$SRC/}"
 
 "${NVC[@]}" --work=work:"$LIBS/work.08" -a "${A_FLAGS[@]}" "$HERE/$TB.vhd" "$HERE/$STREAM_TB.vhd"
+[ "${ANALYZE_ONLY:-0}" = 1 ] && exit 0
 
 # Generics are fixed at elaboration, so each image is its own -e --no-save -r;
 # the library stays read-only and images run in parallel.
@@ -354,6 +356,18 @@ if [ "${STREAM:-1}" = 1 ]; then
   awk -F'\t' 'NR > 1 { split($4, a, "window_hits="); print "  BITNESS=" $1, "READY=" $2, $3, "window_hits=" a[2] }' "$STREAM_TSV"
 fi
 
+# Each RTL version gets its own seeds, so a release run explores new stimuli
+RANDOM_RUNS="${RANDOM_RUNS:-1500}"
+rfail=0
+if [ "${STREAM:-1}" = 1 ] && [ "$RANDOM_RUNS" -gt 0 ]; then
+  rflags=()
+  [ "${RERUN:-0}" = 1 ] && rflags=(--rerun)
+  python3 "$HERE/random_stream.py" --no-analyze --rtl-seed --runs "$RANDOM_RUNS" \
+    --threads "$NUMBER_OF_THREADS" "${rflags[@]}" || rfail=1
+else
+  RANDOM_RUNS=0
+fi
+
 # A depth that never reaches the merge window proves nothing about image boundaries
 sfail=0; vacuous=""
 if [ -f "$STREAM_TSV" ]; then
@@ -369,9 +383,9 @@ gpct=$(awk -v p="$tpass" -v t="$((tpass + tfail))" 'BEGIN{ if (t > 0) printf "%.
 {
   echo "NAME=\"Golden model\""
   echo "NOTE=\"CharLS byte-exact cross-check\""
-  echo "STATUS=$([ "$tfail" -eq 0 ] && [ "$sfail" -eq 0 ] && [ -z "$vacuous" ] && echo PASS || echo FAIL)"
+  echo "STATUS=$([ "$tfail" -eq 0 ] && [ "$sfail" -eq 0 ] && [ "$rfail" -eq 0 ] && [ -z "$vacuous" ] && echo PASS || echo FAIL)"
   echo "PCT=\"$gpct\""
-  echo "SUMMARY=\"$tpass of $((tpass + tfail)) images byte-exact vs CharLS$([ "$tskip" -gt 0 ] && echo " ($tskip never run)")$([ -z "$vacuous" ] || echo ", no merge-window hits at BITNESS $vacuous")\""
+  echo "SUMMARY=\"$tpass of $((tpass + tfail)) images byte-exact vs CharLS$([ "$RANDOM_RUNS" -gt 0 ] && echo ", $RANDOM_RUNS random streams $([ "$rfail" -eq 0 ] && echo passed || echo FAILED)")$([ "$tskip" -gt 0 ] && echo " ($tskip never run)")$([ -z "$vacuous" ] || echo ", no merge-window hits at BITNESS $vacuous")\""
   echo "DATE=\"$(date -Iseconds)\""
 } > "$HERE/Output/report_status.env"
 if [ -f "$TMPD/stalls" ]; then
@@ -382,7 +396,7 @@ if [ "$sfail" -ne 0 ] || [ -n "$vacuous" ]; then
   echo "No-reset streams failed (logs under $STREAM_LOGD):"
   awk -F'\t' 'NR > 1 && $3 != "PASS" { print "  -- BITNESS=" $1 " READY=" $2 ": " $4 }' "$STREAM_TSV"
 fi
-if [ "$fail" -ne 0 ] || [ "$sfail" -ne 0 ] || [ -n "$vacuous" ]; then
+if [ "$fail" -ne 0 ] || [ "$sfail" -ne 0 ] || [ "$rfail" -ne 0 ] || [ -n "$vacuous" ]; then
   if [ -f "$TMPD/failures" ]; then
     echo "Failing images (logs under $LOGD):"
     while IFS= read -r s; do
