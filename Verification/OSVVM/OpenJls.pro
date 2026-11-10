@@ -108,6 +108,8 @@ Test Modules/tb_a4_osvvm.vhd [generic BITNESS 8] [generic MAX_VAL 2]
 Test Modules/tb_a4_osvvm.vhd [generic BITNESS 8] [generic MAX_VAL 3]
 Test Modules/tb_a4_osvvm.vhd [generic BITNESS 8] [generic MAX_VAL 6]
 Test Modules/tb_a4_osvvm.vhd [generic BITNESS 8] [generic MAX_VAL 20]
+Test Modules/tb_a4_osvvm.vhd [generic BITNESS 8] [generic MAX_VAL 127]
+Test Modules/tb_a4_osvvm.vhd [generic BITNESS 8] [generic MAX_VAL 128]
 Test Modules/tb_a4_1_osvvm.vhd
 Test Modules/tb_a4_2_osvvm.vhd
 Test Modules/tb_a5_osvvm.vhd

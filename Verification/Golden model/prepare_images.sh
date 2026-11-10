@@ -61,6 +61,19 @@ gen_bound 7 1 random
 gen_bound 65535 1 random
 gen_bound 65535 2 random
 
+# RUNindex to 31, all of J; one context at the A and C limits
+echo "== run-index and context-limit probes =="
+for mx in 255 65535; do
+  python3 "$PREP/gen_stress.py" "$IMAGES/synth-bound-65535x3-longrun-$mx.pgm" \
+    --width 65535 --height 3 --pattern longrun --maxval "$mx"
+done
+for b in 8 9 10 11 12 13 14 15 16; do
+  for sign in neg pos; do
+    python3 "$PREP/gen_stress.py" "$IMAGES/synth-bound-1024x8-maxctx$sign-$b.pgm" \
+      --width 1024 --height 8 --pattern "maxctx-$sign" --maxval "$(((1 << b) - 1))"
+  done
+done
+
 # Tiny images often hit a first-use context on the last pixel (b513990)
 echo "== tiny-image fuzz batch =="
 python3 "$PREP/gen_stress.py" "$IMAGES" --fuzz-batch 16 --seed 0xB513

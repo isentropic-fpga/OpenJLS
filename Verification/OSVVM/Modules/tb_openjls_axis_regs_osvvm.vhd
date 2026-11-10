@@ -87,6 +87,8 @@ architecture sim of tb_openjls_axis_regs_osvvm is
   signal sForceData0  : std_logic := '0';
   signal sWData       : std_logic_vector(DATA_W - 1 downto 0);
   signal sAlignAr     : std_logic := '0';
+  signal sAwCount     : natural := 0;
+  signal sBCount      : natural := 0;
   signal sArValid     : std_logic;
 
   -- AXI4-Lite manager <-> DUT control bus
@@ -154,6 +156,19 @@ begin
          and AxiBus.WriteAddress.Addr(7 downto 2) = A_CTRL(7 downto 2)
          and AxiBus.WriteData.Strb(0) = '1' and AxiBus.WriteData.Data(0) = '1' then
         sApplyObserved <= '1';
+      end if;
+    end if;
+  end process;
+
+  -- The Manager VC does not fail a write whose response never comes
+  count_writes : process(clk) is
+  begin
+    if rising_edge(clk) and nReset = '1' then
+      if AxiBus.WriteAddress.Valid = '1' and AxiBus.WriteAddress.Ready = '1' then
+        sAwCount <= sAwCount + 1;
+      end if;
+      if AxiBus.WriteResponse.Valid = '1' and AxiBus.WriteResponse.Ready = '1' then
+        sBCount <= sBCount + 1;
       end if;
     end if;
   end process;
@@ -379,6 +394,9 @@ begin
     Write(ManagerRec, A_WIDTH, x"00000002");
     Read(ManagerRec, A_WIDTH, rdata);
     AffirmIfEqual(reqReg, rdata(15 downto 0), MAX_W_SLV, "WIDTH clamp (under min)");
+    Write(ManagerRec, A_WIDTH, x"00000003");
+    Read(ManagerRec, A_WIDTH, rdata);
+    AffirmIfEqual(reqReg, rdata(15 downto 0), MAX_W_SLV, "WIDTH clamp (just under min)");
     ICover(ra, 4);
 
     -- Partial-WSTRB byte-lane merge
@@ -454,8 +472,8 @@ begin
     SendBurstAsync(StreamTxRec, H3_PIXELS'length / 2);
     WaitForTransaction(StreamTxRec);
     Write(ManagerRec, A_CTRL, x"FFFFFFFE");            -- bit 0 clear, WSTRB 1111
-    Write(ManagerRec, x"00000019", x"FF");             -- WSTRB 0010
     sForceData0 <= '1';
+    Write(ManagerRec, x"00000019", x"FF");             -- WSTRB 0010, WDATA(0) high
     Write(ManagerRec, x"0000001A", x"FF");             -- WSTRB 0100, WDATA(0) high
     sForceData0 <= '0';
     PushBurst(StreamTxRec.BurstFifo, H3_PIXELS(H3_PIXELS'length / 2 to H3_PIXELS'length - 1));
@@ -511,6 +529,7 @@ begin
     AffirmIfEqual(reqReg, rdata(0), '1', "STATUS BUSY high in the APPLY cycle");
     WaitForClock(ManagerRec, 4);
 
+    AffirmIf(reqReg, sBCount > 0 and sBCount = sAwCount, "one write response per write: " & to_string(sBCount) & " of " & to_string(sAwCount));
     affirm_covered(ra, "register access coverage closed");
     affirm_covered(rs, "reset phase coverage closed");
     WaitForClock(ManagerRec, 4);

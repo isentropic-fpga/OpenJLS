@@ -1,2 +1,4 @@
-# Seeds that found real bugs; random_stream.py --rtl-seed always runs them.
+# Seeds that found real bugs or kill a mutant nothing else kills; random_stream.py --rtl-seed always runs them.
 # A seed stays meaningful only while the generator in random_stream.py is unchanged.
+424200  # power-of-two MAX_IMAGE_HEIGHT reached: ROW_WIDTH needs the +1
+424209  # power-of-two MAX_IMAGE_WIDTH reached by a run: RUN_CNT_WIDTH needs the +1
