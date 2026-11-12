@@ -235,6 +235,9 @@ begin
       iRbPix   <= to_unsigned(RBVAL, BITNESS);
       iEoi     <= eoi;
       wait for 1 ns;
+      -- The top's Reg1 holds run mode on this flag
+      AffirmIf(GetAlertLogID("DataChecks"), oInRunNext = (hit and cont),
+               "oInRunNext = match and continue");
       if eoi = '0' and rv.RandInt(0, 15) = 0 then
         iCE <= '0';
         paused := oRawValid & std_logic_vector(oRawSuffixLen) & std_logic_vector(oRawSuffixVal) &
@@ -367,6 +370,7 @@ begin
 
         wait for 1 ns;
         AffirmIf(GetAlertLogID("DataChecks"), oRawValid = '0', "idle: oRawValid must be 0 outside run mode");
+        AffirmIf(GetAlertLogID("DataChecks"), oInRunNext = '0', "idle: no run open after its terminal");
         wait until rising_edge(clk);
 
       end loop;
