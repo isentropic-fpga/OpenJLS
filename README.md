@@ -233,7 +233,7 @@ OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level
 <sub>
 <sup>1</sup> Per-file breakdown and the review of each uncovered line are in the verification report.<br>
 <sup>2</sup> 10,984,893 affirmations (module + top + AXI wrappers).<br>
-<sup>3</sup> 340 full proofs, 56 known-bad checks that fail as required.<br>
+<sup>3</sup> 340 full proofs, 56 fault-injection checks that fail as required.<br>
 <sup>4</sup> Byte-exact vs CharLS: 5555 from reset, 6000 same-size images streamed with no reset between them.<br>
 <sup>5</sup> 155,469 affirmations on the gate-level netlist.<br>
 <sup>6</sup> 8-bit images up to 0.05 MP, byte-exact vs CharLS.<br>
@@ -244,7 +244,7 @@ OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level
 - **Coverage** — OSVVM functional coverage plus NVC statement coverage.
 - **Golden model** — byte-exact against [CharLS](https://github.com/team-charls/charls) and the official ISO/IEC 14495-1 reference vectors, both per image from reset and on same-size images streamed with no reset between them. Each RTL version also runs 1500 streams of random size, depth, output width, valid and ready.
 - **Design contracts** — PSL assertions on the handshakes, checked every run.
-- **Formal** — proofs over all input sequences with SymbiYosys: top-level control invariants, the RTL assertions and module contracts, the per-sample T.87 modules against a transcription of the T.87 C code, bit and byte stream order, context forwarding, framer margin and datapath ranges. Scope and limits: [`Verification/Formal`](Verification/Formal/README.md).
+- **Formal** — proofs over all input sequences with SymbiYosys: top-level control invariants, the RTL assertions and module contracts, the per-sample T.87 modules against a transcription of the T.87 C code, bit and byte stream order, context forwarding, framer margin and datapath ranges. Each property also runs with an injected fault that it must catch. Scope and limits: [`Verification/Formal`](Verification/Formal/README.md).
 - **Post-synthesis** — stress test and a golden subset re-run on the gate-level netlist.
 - **Hardware-in-the-loop** — full corpus and the no-reset streams encoded on a PYNQ-Z2 at depths 8–16, zero mismatches; reproducible via the [EncodeOverEthernet demo](https://github.com/isentropic-fpga/OpenJLS-Demos).
 

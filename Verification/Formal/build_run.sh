@@ -6,7 +6,7 @@
 # commercial license. See LICENSE and README for details.
 #
 
-# Formal suite: release property proofs and their live checks -> Results/
+# Formal suite: release property proofs and their fault-injection checks -> Results/
 #
 # Usage:  ./build_run.sh
 set -euo pipefail

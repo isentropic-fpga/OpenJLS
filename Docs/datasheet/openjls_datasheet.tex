@@ -585,7 +585,7 @@ both RTL and post-synthesis (gate-level) stages, and by formal proofs:
         asserts and port contracts of every module, top-level control invariants,
         per-sample equivalence with the T.87 C reference, run coder, bit and byte
         stream order, context forwarding, FIFO overflow margins and datapath ranges.
-        Each property has a known-bad case that must fail.
+        Each property also runs with an injected fault that it must catch.
   \item \textbf{Coverage} --- OSVVM functional coverage with NVC structural code coverage.
   \item \textbf{Golden model} --- Byte-exact vs CharLS on all 5555
         simulation-size images (up to 0.5\,MP, 8--16 bit) from reset, 6000 same-size
@@ -645,7 +645,7 @@ simulation; their 84 full-size originals are part of the corpus but run on hardw
 \end{table}
 \footnotetext[9]{Per-DUT-file breakdown.}
 \footnotetext[10]{10\,984\,893 affirmations (module + top + AXI wrappers).}
-\footnotetext[11]{340 full proofs, 56 known-bad checks that fail as required.}
+\footnotetext[11]{340 full proofs, 56 fault-injection checks that fail as required.}
 \footnotetext[12]{Byte-exact vs CharLS: 5555 from reset, 6000 streamed with no reset.}
 \footnotetext[13]{155\,469 affirmations on the gate-level netlist.}
 \footnotetext[14]{8-bit images up to 0.05\,MP, byte-exact vs CharLS.}

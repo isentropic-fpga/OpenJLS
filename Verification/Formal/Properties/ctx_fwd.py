@@ -9,7 +9,7 @@ update of the same context by an earlier token of the same image (CTX_INIT if no
 from the stage-4/5 bypass when the token just ahead has the same context.
 Three jobs per BITNESS: fwd (bypass flags, PDR), word (RAM word, k-induction with helper facts), eoi (the
 assumption that the EOI token always reaches stage 2).
-python3 ctx_fwd.py [BITNESS ...]; env CF_LIVE=1 (known-bad, must fail: word misses the load-edge update, fwd demands
+python3 ctx_fwd.py [BITNESS ...]; env CF_LIVE=1 (fault injected, must fail: word misses the load-edge update, fwd demands
 a bypass across an image boundary, eoi asserts false), CF_TIMEOUT (s, 1800), CF_WORK, CF_THREADS (20).
 """
 import json, os, re, sys, multiprocessing as mp

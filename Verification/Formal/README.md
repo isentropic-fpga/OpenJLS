@@ -9,7 +9,7 @@ simulation, T.87 conformance and hardware-in-the-loop tests.
 ## What is proved
 
 Results of the release suite (`./build_run.sh`): 396 checks, all with the expected result. 340 are full proofs and
-56 are known-bad checks that fail as required (see "How results are qualified").
+56 are fault-injection checks that fail as required (see "How results are qualified").
 
 | Area | Property | Scope | Result |
 |---|---|---|---|
@@ -26,8 +26,8 @@ Results of the release suite (`./build_run.sh`): 396 checks, all with the expect
 
 ## How results are qualified
 
-- **Known-bad check per property.** Each property also runs on a copy with a bug put in on purpose (an inverted
-  assert, a moved boundary in the reference, removed input rules). That run must fail. A property whose known-bad
+- **Fault-injection check per property.** Each property also runs on a copy with a bug put in on purpose (an inverted
+  assert, a moved boundary in the reference, removed input rules). That run must fail. A property whose fault-injected
   copy passes is not counted.
 - **Input rules have a source.** A check may restrict the inputs only with a contract written in the RTL (PSL
   `assert` on module inputs) or with a fact that another check proves. Each rule in the scripts names its source.
@@ -82,7 +82,7 @@ replay.
 `./build_run.sh` runs the release set (`run_suite.py`): top control invariants (BITNESS 8-16, W8 H4 and W4096 H4096),
 byte_stuffer FIFO no-overflow at the `STALL_CUSHION_ENTRIES` in the RTL, the datapath range invariants, the
 per-sample modules against the T.87 reference, the run coder and stream checks, context forwarding and the RTL
-asserts, each with a known-bad check. It writes `Results/formal_results.tsv` and `Results/report_status.env`, which
+asserts, each with a fault-injection check. It writes `Results/formal_results.tsv` and `Results/report_status.env`, which
 `Verification/publish_reports.sh` turns into the Formal row of the verification report.
 
 ## Single checks
@@ -100,7 +100,7 @@ cd Mutation && FEQ_BITS=8 python3 module_eq.py byte_stuffer            # mutant 
 
 ## Rules for contributors
 
-- Each new check needs a known-bad switch that must fail. The present switches: `TC_VACUITY=1`, `AG_VACUITY=1`,
+- Each new check needs a fault-injection switch that must fail. The present switches: `TC_VACUITY=1`, `AG_VACUITY=1`,
   `FEQ_CONTRACTS=0`, `T87_LIVE=1`, `STREAM_LIVE=1`, `CF_LIVE=1`, `RA_LIVE=1`. `T87_LIVE=1` moves one boundary in
   the reference; pick a boundary that changes every output it feeds.
 - A formal DIFF counts only if NVC replays it on the unprepped RTL and the stop is a real difference or a bound/range

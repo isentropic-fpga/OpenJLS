@@ -1,7 +1,7 @@
 -- Copyright (C) 2026 Vitor Mendes Camilo
 -- SPDX-License-Identifier: GPL-3.0-only
 -- T.87 reference for t87_eq.py, transcribed from the C code segments in Docs/Requirements.md (NEAR = 0).
--- bug = true moves one boundary of the segment; the live check must then fail.
+-- bug = true moves one boundary of the segment; the fault-injection check must then fail.
 
 library ieee;
   use ieee.numeric_std.all;

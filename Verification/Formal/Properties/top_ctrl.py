@@ -19,7 +19,7 @@ WORK = Path(os.environ.get("TC_WORK", "/tmp/top_ctrl"))
 BITS = os.environ.get("TC_BITS", "8").split()
 GEN = os.environ.get("TC_GEN", "MAX_IMAGE_WIDTH=8 MAX_IMAGE_HEIGHT=4").split()
 VAC = os.environ.get("TC_VACUITY") == "1"
-# Non-vacuity: "old|||new" text substitution in the top (a known bad change must fail a property)
+# Non-vacuity: "old|||new" text substitution in the top (an injected fault must fail a property)
 SUB = os.environ.get("TC_SUB", "")
 KEEP = ["u_line_buffer"]
 # Optional f(text) -> top text with the RTL's own asserts kept (rtl_asserts.py); default strips them

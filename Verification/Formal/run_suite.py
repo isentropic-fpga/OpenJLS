@@ -4,7 +4,7 @@
 """Release set of property proofs; writes Results/formal_results.tsv and Results/report_status.env.
 
 Each check has an expected verdict: PROVED for a property, BOUNDED for a property checked to a fixed depth only,
-DISPROVED for its live check (a known-bad case).
+DISPROVED for its fault-injection check.
 Env: FORMAL_WORK (scratch, /tmp/openjls_formal), FORMAL_THREADS (20).
 """
 import os, re, subprocess as sp, sys, time, multiprocessing as mp
@@ -29,31 +29,31 @@ SIZES = {"W8 H4": "MAX_IMAGE_WIDTH=8 MAX_IMAGE_HEIGHT=4", "W4096 H4096": "MAX_IM
 
 CHECKS = ([("top control invariants", f"BITNESS {b}, {s}", "PROVED", ("tc", b, g, False))
            for s, g in SIZES.items() for b in range(8, 17)]
-          + [("top control invariants (live)", "assert false, BITNESS 8, W8 H4", "DISPROVED", ("tc", 8, SIZES["W8 H4"], True))]
+          + [("top control invariants (fault injected)", "assert false, BITNESS 8, W8 H4", "DISPROVED", ("tc", 8, SIZES["W8 H4"], True))]
           + [("byte_stuffer FIFO no overflow", f"cushion {CUSH}, BURST {b}", "PROVED", ("cu", CUSH, b))
              for b in (6, 8, 16, 64)]
-          + [("byte_stuffer FIFO no overflow (live)", f"cushion {CUSH - 1}, BURST 6", "DISPROVED", ("cu", CUSH - 1, 6))]
+          + [("byte_stuffer FIFO no overflow (fault injected)", f"cushion {CUSH - 1}, BURST 6", "DISPROVED", ("cu", CUSH - 1, 6))]
           + [(f"datapath invariant {n}", f"BITNESS {b}", "PROVED", ("ag", n, b, False))
              for n in ag.OBL for b in range(8, 17)]
-          + [(f"datapath invariant {n} (live)", "assert false, BITNESS 8", "DISPROVED", ("ag", n, 8, True)) for n in ag.OBL]
+          + [(f"datapath invariant {n} (fault injected)", "assert false, BITNESS 8", "DISPROVED", ("ag", n, 8, True)) for n in ag.OBL]
           + [(f"T.87 {n}", f"BITNESS {b}", "PROVED", ("t87", n, b, False)) for n, b, _ in t87_eq.jobs()]
-          + [(f"T.87 {n} (live)", "wrong reference, BITNESS 8", "DISPROVED", ("t87", n, 8, True)) for n in t87_eq.CHECKS]
+          + [(f"T.87 {n} (fault injected)", "wrong reference, BITNESS 8", "DISPROVED", ("t87", n, 8, True)) for n in t87_eq.CHECKS]
           + [("run coder A.14-A.16 vs T.87 model", f"line width {w}", "PROVED", ("rc", w, False)) for w in RC_WIDTHS]
-          + [("run coder A.14-A.16 vs T.87 model (live)", "model drops EOLine bit, line width 4", "DISPROVED", ("rc", 4, True))]
+          + [("run coder A.14-A.16 vs T.87 model (fault injected)", "model drops EOLine bit, line width 4", "DISPROVED", ("rc", 4, True))]
           + [(n, f"BITNESS {b}" + (f", {stream.CHECKS[n]['depth']} steps" if stream.CHECKS[n].get("mode") == "bmc" else ""),
               "BOUNDED" if stream.CHECKS[n].get("mode") == "bmc" else "PROVED", ("st", n, b, False))
              for n, b, _ in stream.jobs(STREAM)]
-          + [(f"{n} (live)", "broken harness, BITNESS 8", "DISPROVED", ("st", n, 8, True)) for n in STREAM]
+          + [(f"{n} (fault injected)", "broken harness, BITNESS 8", "DISPROVED", ("st", n, 8, True)) for n in STREAM]
           + [(f"byte_stuffer byte order: {BS[p]}", f"BITNESS {b}", "PROVED", ("bs", p, b, False))
              for p in bs_split.PARTS for b in ([8] if p == "fifo_bv" else (8, 12, 16))]
-          + [(f"byte_stuffer byte order: {BS[p]} (live)", "broken copy, BITNESS 8", "DISPROVED", ("bs", p, 8, True))
+          + [(f"byte_stuffer byte order: {BS[p]} (fault injected)", "broken copy, BITNESS 8", "DISPROVED", ("bs", p, 8, True))
              for p in bs_split.PARTS]
           + [(f"context read gets newest value: {CF[k]}", f"BITNESS {b}", "PROVED", ("cf", k, b, False))
              for k, b, _ in ctx_fwd.jobs()]
-          + [(f"context read gets newest value: {CF[k]} (live)", f"{CF_BAD[k]}, BITNESS 8", "DISPROVED", ("cf", k, 8, True))
+          + [(f"context read gets newest value: {CF[k]} (fault injected)", f"{CF_BAD[k]}, BITNESS 8", "DISPROVED", ("cf", k, 8, True))
              for k in CF]
           + [(f"RTL asserts: {n}", f"BITNESS {b}", "PROVED", ("ra", n, b, False)) for n, b, _ in rtl_asserts.jobs()]
-          + [(f"RTL asserts: {n} (live)", "first assert inverted, BITNESS 8", "DISPROVED", ("ra", n, 8, True))
+          + [(f"RTL asserts: {n} (fault injected)", "first assert inverted, BITNESS 8", "DISPROVED", ("ra", n, 8, True))
              for n in rtl_asserts.RELEASE])
 
 
@@ -123,7 +123,7 @@ def main():
         'NAME="Formal"\n'
         f'STATUS={"PASS" if ok == n else "FAIL"}\n'
         f'PCT="{100 * ok // n}%"\n'
-        f'SUMMARY="{ok} of {n} checks as expected: {n - live - bounded} proofs, {bounded} bounded, {live} known-bad checks"\n'
+        f'SUMMARY="{ok} of {n} checks as expected: {n - live - bounded} proofs, {bounded} bounded, {live} fault-injection checks"\n'
         f'DATE="{datetime.now().astimezone().isoformat(timespec="seconds")}"\n'
         f"SOURCES_HASH={h}\n")
     print(f"{ok} of {n} as expected", flush=True)

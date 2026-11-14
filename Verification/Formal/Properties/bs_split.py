@@ -7,7 +7,7 @@
        gets the last word's real-bit count with that word
   fifo the main FIFO (depth BURST) and the BV queue (depth CO_MAX_IMAGES_IN_FLIGHT) return every entry in order
   rd   skid + stage 3: a word stream with those properties leaves de-stuffed in order (the stream.py checker)
-Each part is a k-induction proof over helper invariants; each also runs a known-bad copy (BMC, must fail).
+Each part is a k-induction proof over helper invariants; each also runs a fault-injected copy (BMC, must fail).
 python3 bs_split.py [part ...]; env BS_BITS ("8 12 16"), BS_TIMEOUT (s), BS_WORK, BS_THREADS.
 """
 import json, os, re, shutil, sys, multiprocessing as mp
@@ -673,7 +673,7 @@ def job(arg):
     d = WORK / f"{part}_b{bits}{'_live' if live else ''}"
     shutil.rmtree(d, ignore_errors=True); (d / "lib").mkdir(parents=True)
     limit = 2 * (bits + max(8, bits))
-    # Proofs: k-induction over the helper invariants. Known-bad copies: BMC without helpers, so the failure is the
+    # Proofs: k-induction over the helper invariants. Fault-injected copies: BMC without helpers, so the failure is the
     # checked property itself
     mode, depth = ("bmc", 16) if live else ("prove", 3)
     if part.startswith("fifo"):
@@ -718,7 +718,7 @@ lib
     st = (d / "p" / "status").read_text().split()[0] if (d / "p" / "status").exists() else "ERROR"
     res = {"PASS": "PROVED" if mode == "prove" else "BOUNDED", "FAIL": "DISPROVED"}.get(st, st)
     if live and res == "DISPROVED":
-        # the known-bad copy must fail on the checked property, not on an environment helper
+        # the fault-injected copy must fail on the checked property, not on an environment helper
         m = re.search(r"Assert failed in \S+: (\S+)", p.stdout)
         if not m or m[1] not in ("wr_ok", "rd_ok", "fifo_ok"):
             res = "WRONG_FAIL"

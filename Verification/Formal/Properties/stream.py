@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 """Stream properties of the clocked modules, generics and constants as openjls_top sets them.
 
-python3 stream.py [check ...]; STREAM_LIVE=1 runs the known-bad variant (must fail).
+python3 stream.py [check ...]; STREAM_LIVE=1 runs the fault-injected variant (must fail).
 """
 import json, os, re, shutil, sys, multiprocessing as mp
 from pathlib import Path

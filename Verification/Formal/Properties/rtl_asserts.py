@@ -6,7 +6,7 @@
 Each module runs as the top instantiates it (generics from openjls_top), inputs free. Its VHDL asserts of severity
 error or failure and its PSL asserts stay as checks; PSL asserts on inputs only become assumes (contracts).
 CHECKS[...]["assume"] adds contracts the top meets; each names the check that proves it.
-python3 rtl_asserts.py [name ...]; env RA_LIVE=1 (known-bad: the first VHDL assert of the module inverted),
+python3 rtl_asserts.py [name ...]; env RA_LIVE=1 (fault injected: the first VHDL assert of the module inverted),
 RA_BITS ("8 12 16"), RA_TIMEOUT (s, 1800), RA_WORK, RA_THREADS (20).
 """
 import json, os, re, shutil, sys, subprocess as sp, multiprocessing as mp
@@ -227,9 +227,9 @@ def module_src(name, live, labels, cons=None, skip=(), only=None):
         if line in skip or only:
             labels[f"ra_{n}"] += " (not checked here)"
             return ""
-        bad = live and re.search(r"\b[siov][A-Z]\w*", cond) and not any(v.endswith("(known-bad)") for v in labels.values())
+        bad = live and re.search(r"\b[siov][A-Z]\w*", cond) and not any(v.endswith("(fault injected)") for v in labels.values())
         if bad:
-            labels[f"ra_{n}"] += " (known-bad)"
+            labels[f"ra_{n}"] += " (fault injected)"
         return f"{m[1]}ra_{n} : {m[2] or ''}assert {f'not ({cond})' if bad else cond} report{m[4]};"
     t = VASSERT.sub(lab, t)
     if cons:
@@ -243,8 +243,8 @@ def module_src(name, live, labels, cons=None, skip=(), only=None):
             labels[f"ra_{n}"] = f"{name}.vhd PSL (not checked here): {m[2].strip()[:60]}"
             return ""
         labels[f"ra_{n}"] = f"{name}.vhd PSL: {m[2].strip()[:70]}"
-        if live and not any(v.endswith("(known-bad)") for v in labels.values()):
-            labels[f"ra_{n}"] += " (known-bad)"
+        if live and not any(v.endswith("(fault injected)") for v in labels.values()):
+            labels[f"ra_{n}"] += " (fault injected)"
             return f"{m[1]}ra_{n} : assert always false;"
         return f"{m[1]}ra_{n} : assert{m[2]}"
     return re.sub(r"^([ \t]*--[ \t]*psl[ \t]+)assert\b(.*)$", psl, t, flags=re.M)

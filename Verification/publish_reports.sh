@@ -237,7 +237,7 @@ ps_golden_link=""
 [ -f "$PS_GOLDEN_ENV" ] && ps_golden_link="$(render_tsv_page "$PS_GOLDEN_TSV" post-synth-golden "Post-synth Golden Model — processed images")"
 
 env_row "$FORMAL_ENV"    "Formal" \
-  "Proofs over every input sequence (SymbiYosys): RTL asserts and port contracts of every module, top-level control invariants, per-sample equivalence with the T.87 C reference, run coder, bit and byte stream order, context forwarding, FIFO overflow margins and datapath ranges. Each property has a known-bad case that must fail." \
+  "Proofs over every input sequence (SymbiYosys): RTL asserts and port contracts of every module, top-level control invariants, per-sample equivalence with the T.87 C reference, run coder, bit and byte stream order, context forwarding, FIFO overflow margins and datapath ranges. Each property also runs with an injected fault that it must catch." \
   "$formal_link"
 env_row "$GOLDEN_ENV"    "Golden model" \
   "RTL encode of the simulation corpus (images up to 0.5&nbsp;MP, depths 8&ndash;16) compared byte-for-byte with the CharLS reference encoder, per image from reset and on same-size images streamed with no reset between them." \
