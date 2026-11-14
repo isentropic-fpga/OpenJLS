@@ -573,7 +573,7 @@ gradient carry chains into the quantized-gradient register limits. Logic and lin
 %======================================================================
 \section{Conformance and verification}
 Verified by simulation with NVC using a layered, self-checking suite run at
-both RTL and post-synthesis (gate-level) stages:
+both RTL and post-synthesis (gate-level) stages, and by formal proofs:
 \begin{itemize}
   \item \textbf{OSVVM} --- Per-module tests against independent T.87-derived
         reference models, top-level control-plane stress (reset injection,
@@ -581,6 +581,11 @@ both RTL and post-synthesis (gate-level) stages:
         tests (byte-exact AXI4-Stream pass-through at 8-, 12- and 16-bit, AXI4-Lite
         register map, live reconfiguration, mid-image abort), all with
         requirements tracking.
+  \item \textbf{Formal} --- Proofs over every input sequence (SymbiYosys): RTL
+        asserts and port contracts of every module, top-level control invariants,
+        per-sample equivalence with the T.87 C reference, run coder, bit and byte
+        stream order, context forwarding, FIFO overflow margins and datapath ranges.
+        Each property has a known-bad case that must fail.
   \item \textbf{Coverage} --- OSVVM functional coverage with NVC structural code coverage.
   \item \textbf{Golden model} --- Byte-exact vs CharLS on all 5555
         simulation-size images (up to 0.5\,MP, 8--16 bit) from reset, 6000 same-size
@@ -630,20 +635,22 @@ simulation; their 84 full-size originals are part of the corpus but run on hardw
   \midrule
   NVC code coverage       & info & 99.7\% & Statement coverage\footnotemark[9] \\
   OSVVM suite             & PASS & 100\%  & 128 tests\footnotemark[10] \\
-  Golden model            & PASS & 100\%  & 11555/11555 images\footnotemark[11] \\
-  Post-synth OSVVM        & PASS & 100\%  & Control-plane stress\footnotemark[12] \\
-  Post-synth golden model & PASS & 100\%  & 167/167 images\footnotemark[13] \\
-  HIL golden model        & PASS & 100\%  & 11639/11639 images\footnotemark[14] \\
+  Formal                  & PASS & 100\%  & 396/396 checks\footnotemark[11] \\
+  Golden model            & PASS & 100\%  & 11555/11555 images\footnotemark[12] \\
+  Post-synth OSVVM        & PASS & 100\%  & Control-plane stress\footnotemark[13] \\
+  Post-synth golden model & PASS & 100\%  & 167/167 images\footnotemark[14] \\
+  HIL golden model        & PASS & 100\%  & 11639/11639 images\footnotemark[15] \\
   \bottomrule
 \end{tabular}
 \end{table}
 \footnotetext[9]{Per-DUT-file breakdown.}
 \footnotetext[10]{10\,984\,893 affirmations (module + top + AXI wrappers).}
-\footnotetext[11]{Byte-exact vs CharLS: 5555 from reset, 6000 streamed with no reset.}
-\footnotetext[12]{155\,469 affirmations on the gate-level netlist.}
-\footnotetext[13]{8-bit images up to 0.05\,MP, byte-exact vs CharLS.}
-\footnotetext[14]{Byte-exact vs CharLS on PYNQ-Z2 silicon at 100\,MHz: 5639 from reset, 6000 streamed with no reset.}
-\setcounter{footnote}{14}
+\footnotetext[11]{340 full proofs, 56 known-bad checks that fail as required.}
+\footnotetext[12]{Byte-exact vs CharLS: 5555 from reset, 6000 streamed with no reset.}
+\footnotetext[13]{155\,469 affirmations on the gate-level netlist.}
+\footnotetext[14]{8-bit images up to 0.05\,MP, byte-exact vs CharLS.}
+\footnotetext[15]{Byte-exact vs CharLS on PYNQ-Z2 silicon at 100\,MHz: 5639 from reset, 6000 streamed with no reset.}
+\setcounter{footnote}{15}
 
 %======================================================================
 \section{Revision and contact}
