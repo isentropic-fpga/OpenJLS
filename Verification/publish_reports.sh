@@ -10,22 +10,23 @@
 # golden, post-synth and formal suites from their report_status.env.
 #
 # Typical flow:
-#   ./build_run.sh                                   # OSVVM regression + coverage
-#   ( cd "../Golden model" && ./build_run.sh )       # golden cross-check
-#   ( cd "../Post synth"   && ./build_run_osvvm.sh ) # gate-level (needs Vivado)
-#   ( cd ../Formal          && ./build_run.sh )       # formal proofs
-#   ./publish_reports.sh                             # -> Docs/Reports/
+#   ( cd OSVVM          && ./build_run.sh )       # OSVVM regression + coverage
+#   ( cd "Golden model" && ./build_run.sh )       # golden cross-check
+#   ( cd "Post synth"   && ./build_run_osvvm.sh ) # gate-level (needs Vivado)
+#   ( cd Formal         && ./build_run.sh )       # formal proofs
+#   ./publish_reports.sh                          # -> Docs/Reports/
 #
 # Usage:  ./publish_reports.sh
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
-ROOT="$(cd "$HERE/../.." && pwd)"
+ROOT="$(cd "$HERE/.." && pwd)"
+OSVVM="$HERE/OSVVM"
 DEST="$ROOT/Docs/Reports"
 
-OSVVM_YML="$HERE/OSVVM_OpenJls/OSVVM_OpenJls.yml"
-COV_HTML="$HERE/NVC_CodeCoverage/html"
-COVDB="$HERE/NVC_CodeCoverage/merged.covdb"
+OSVVM_YML="$OSVVM/OSVVM_OpenJls/OSVVM_OpenJls.yml"
+COV_HTML="$OSVVM/NVC_CodeCoverage/html"
+COVDB="$OSVVM/NVC_CodeCoverage/merged.covdb"
 GOLDEN_ENV="$ROOT/Verification/Golden model/Output/report_status.env"
 GOLDEN_TSV="$ROOT/Verification/Golden model/Output/golden_image_results.tsv"
 PS_OSVVM_ENV="$ROOT/Verification/Post synth/Output/report_status_osvvm.env"
@@ -123,7 +124,7 @@ if [ -d "$COV_HTML" ]; then
   rm -rf "$DEST/coverage"; cp -r "$COV_HTML" "$DEST/coverage"
   pct=""
   if [ -f "$COVDB" ]; then
-    pct=$(cd "$HERE" && python3 cover_summary.py NVC_CodeCoverage ../../Sources 2>/dev/null \
+    pct=$(cd "$OSVVM" && python3 cover_summary.py NVC_CodeCoverage ../../Sources 2>/dev/null \
             | awk '/^TOTAL/{print $3}')
   fi
   # The coverage HTML has no date; use its mtime
@@ -137,9 +138,9 @@ else
 fi
 
 # --- OSVVM regression (HTML tree) -----------------------------------------
-if [ -f "$HERE/index.html" ] && [ -f "$OSVVM_YML" ]; then
+if [ -f "$OSVVM/index.html" ] && [ -f "$OSVVM_YML" ]; then
   mkdir -p "$DEST/osvvm"
-  cp -r "$HERE/index.html" "$HERE/OSVVM_OpenJls" "$HERE/osvvm" "$DEST/osvvm/"
+  cp -r "$OSVVM/index.html" "$OSVVM/OSVVM_OpenJls" "$OSVVM/osvvm" "$DEST/osvvm/"
   pass=$(grep -c 'Status: PASSED' "$OSVVM_YML" || true)
   fail=$(grep -c 'Status: FAILED' "$OSVVM_YML" || true)
   total=$((pass + fail))
@@ -280,7 +281,7 @@ MATRIX="$(python3 "$HERE/matrix_html.py" "$ROOT/Docs/verification_requirements.m
   <tbody>
 $ROWS  </tbody>
 </table></div>
-<p class="notes">$NOTES The OSVVM and coverage reports are full HTML; the golden-model, post-synthesis and hardware pages list every image or log line. Generated $GEN_DATE by <code>Verification/OSVVM/publish_reports.sh</code>. <a href="https://isentropic.com.br/openjls">IP core specifications, throughput figures and licensing &rarr;</a></p>
+<p class="notes">$NOTES The OSVVM and coverage reports are full HTML; the golden-model, post-synthesis and hardware pages list every image or log line. Generated $GEN_DATE by <code>Verification/publish_reports.sh</code>. <a href="https://isentropic.com.br/openjls">IP core specifications, throughput figures and licensing &rarr;</a></p>
 <h2 class="section">Verification matrix</h2>
 <p class="notes">Every requirement the OSVVM suite tracks, with the RTL and testbench that cover it, the guaranteed minimum check count per run (Goal) and its status against verification rules G1&ndash;G6: &check; met, N/A not applicable. <strong>G1.</strong> Requirement checked against a golden model transcribed from the T.87 C code. <strong>G2.</strong> Arithmetic ranges asserted in the RTL and driven to min, max and clamp points. <strong>G3.</strong> Safe signed/unsigned conversions and resizes, stimulated with MSB set and most negative values. <strong>G4.</strong> Corner cases: image edges, run mode, coding extremes, BITNESS 8/16, streaming and backpressure. <strong>G5.</strong> Reset from every state recovers the module, checked against a fresh golden run. <strong>G6.</strong> Zero errors, all goals and coverage met, code coverage reviewed. Source: <a href="https://github.com/isentropic-fpga/OpenJLS/blob/main/Docs/verification_requirements.md"><code>Docs/verification_requirements.md</code></a>; rules in <a href="https://github.com/isentropic-fpga/OpenJLS/blob/main/Docs/verification_guidelines.md"><code>Docs/verification_guidelines.md</code></a>.</p>
 $MATRIX

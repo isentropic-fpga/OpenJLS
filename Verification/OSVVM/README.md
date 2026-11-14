@@ -10,7 +10,6 @@ Requirements + status: [`verification_requirements.md`](../../Docs/verification_
 - `build_run.sh`: full regression + HTML reports + NVC code coverage. `build_reports.sh`: same, no coverage.
 - `build_osvvm.sh`: one-time compile of OSVVM into `./nvc-libs`, needed only by `Verification/Post synth`.
 - `cover_summary.py` / `cover_prune.py`: code-coverage misses and waivers.
-- `publish_reports.sh`: rebuilds `Docs/Reports/` (OSVVM + coverage + golden/post-synth status). Run at milestones only, since the output is committed.
 
 ## Setup
 `ThirdParty/fetch_third_party.sh` fetches OSVVM, OSVVM-Scripts and tcllib. System packages: `nvc` and `tcl` ≥ 8.6.
@@ -24,7 +23,7 @@ Requirements + status: [`verification_requirements.md`](../../Docs/verification_
 - Fail: an `Alert ERROR <msg>` line, then `DONE FAILED`, nonzero exit.
 - Random stimulus: `OpenJls.pro` writes the RTL hash to `run_seed.txt` and the TBs salt their seeds with it. Each RTL version gets new stimuli; the same RTL replays them.
 
-## Gotchas
+## Notes for contributors
 - tcl `exec` treats any stderr output as a failure, so `OpenJls.pro` sets `--stderr=error` and analysis must stay warning-clean.
-- PSL: every flow runs NVC with `--psl --exit-severity=error`. Stay in the `always`/`never`/`next` boolean subset. A prose comment whose first word is `psl` is parsed as PSL.
+- PSL: every flow runs NVC with `--psl --exit-severity=error`. Stay in the `always`/`never`/`next` boolean subset.
 - Requirement goal = guaranteed minimum number of checks, so a TB that silently stops checking fails its requirement.

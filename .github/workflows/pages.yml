@@ -1,6 +1,6 @@
 # Publish the committed verification reports (Docs/Reports/) to GitHub Pages.
 # This does NOT run the test suites — it only deploys the static HTML that
-# Verification/OSVVM/publish_reports.sh already generated and committed. Free
+# Verification/publish_reports.sh already generated and committed. Free
 # and unmetered on this public repo.
 #
 # One-time setup: repo Settings -> Pages -> Source -> "GitHub Actions".
