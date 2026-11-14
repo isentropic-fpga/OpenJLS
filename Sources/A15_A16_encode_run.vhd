@@ -101,6 +101,7 @@ begin
   -- psl default clock is rising_edge(iClk);
   -- psl assert always ((iRst = '1' or iEoi = '1') -> next (sInRun = '0' and sRunIndex = 0)) report "a15_a16: run state must clear one cycle after iEoi/reset";
   -- psl assert always (iModeIsRun = '0' -> (oRawValid = '0' and oRiValid = '0')) report "a15_a16: no tokens outside run mode";
+  -- psl assert always ((iRst = '0' and iCE = '0') -> iEoi = '0') report "a15_a16: iEoi clears run state even when stalled, so it must not come while iCE is low";
 
   p_comb : process (sRunIndex, sNextBound, sNextBoundM1, sInRun,
                     sIdxInc, sIdxDec, sPowSame, sPowInc, sPowDec, sBoundAdd, sBoundAddM1,

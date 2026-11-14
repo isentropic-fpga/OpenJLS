@@ -257,7 +257,8 @@ begin
   postponed assert is_x(iImageWidth) or is_x(sColCounter) or iRst = '1'
     or (sIsFirstCol = (sColCounter = 0) and sIsLastCol = (sColCounter = iImageWidth - 1) and sIsFirstRow = (sRowCounter = 0))
     report "line_buffer: registered position flags disagree with the counters" severity error;
-  postponed assert is_x(iImageHeight) or is_x(sRowCounter) or iValid /= '1' or sIsLastRow = (sRowCounter = iImageHeight - 1)
+  postponed assert is_x(iImageHeight) or is_x(sRowCounter) or iRst = '1' or iValid /= '1'
+    or sIsLastRow = (sRowCounter = iImageHeight - 1)
     report "line_buffer: registered last-row flag disagrees with the row counter" severity error;
   postponed assert is_x(iImageHeight) or is_x(sRowCounter) or sRowCounter < iImageHeight
     report "line_buffer: row counter past height" severity error;
