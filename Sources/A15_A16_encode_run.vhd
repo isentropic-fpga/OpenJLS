@@ -98,7 +98,6 @@ begin
   sBoundAdd   <= sNextBound + sPowInc;
   sBoundAddM1 <= sNextBoundM1 + sPowInc;
 
-  -- Contracts (PSL, simulation only)
   -- psl default clock is rising_edge(iClk);
   -- psl assert always ((iRst = '1' or iEoi = '1') -> next (sInRun = '0' and sRunIndex = 0)) report "a15_a16: run state must clear one cycle after iEoi/reset";
   -- psl assert always (iModeIsRun = '0' -> (oRawValid = '0' and oRiValid = '0')) report "a15_a16: no tokens outside run mode";

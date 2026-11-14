@@ -404,10 +404,11 @@ begin
 
     end procedure queue_images;
 
-    -- Five starts ahead of any data: one taken at once, four held in the start queue
+    -- Starts for every image the top allows in flight, ahead of any data: one taken at once, the rest queued
     procedure start_queue is
 
-      type word_arr_t is array(1 to 5) of std_logic_vector(IN_WIDTH - 1 downto 0);
+      constant N : positive := CO_MAX_IMAGES_IN_FLIGHT;
+      type word_arr_t is array(1 to N) of std_logic_vector(IN_WIDTH - 1 downto 0);
       variable words : word_arr_t;
 
     begin
@@ -416,8 +417,8 @@ begin
       iHeight <= to_unsigned(2, HDIM);
       set_sink(1);
 
-      -- All five are scored now: the framer emits a queued header before its data arrives
-      for img in 1 to 5 loop
+      -- All are scored now: the framer emits a queued header before its data arrives
+      for img in 1 to N loop
 
         words(img) := rv.RandSlv(IN_WIDTH);
         score_header(16, 2);
@@ -426,7 +427,7 @@ begin
 
       end loop;
 
-      for img in 1 to 5 loop
+      for img in 1 to N loop
 
         iStart <= '1';
         wait until rising_edge(clk);
@@ -435,22 +436,18 @@ begin
 
       iStart <= '0';
 
-      for img in 1 to 3 loop
+      for img in 1 to N - 1 loop
 
         push_word(words(img), 2, '1', '0');
 
       end loop;
 
       set_sink(0);
-      wait until sImagesDone >= sent + 2;
+      wait until sImagesDone >= sent + N - 2;
 
-      for img in 4 to 5 loop
+      push_word(words(N), 2, '1', '0');
 
-        push_word(words(img), 2, '1', '0');
-
-      end loop;
-
-      image_done(5);
+      image_done(N);
 
     end procedure start_queue;
 
@@ -657,7 +654,7 @@ begin
     fill_stalled(BYTES_IN, 0);
     fill_stalled(BYTES_IN, 1);
 
-    -- EOI FIFO full (3 of 3), start queue full, starts ahead of data ---
+    -- EOI FIFO full (3 of 3), starts ahead of data at the in-flight limit ---
     for be in 0 to BYTES_IN loop
       queue_images(3, be);
     end loop;

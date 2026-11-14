@@ -106,9 +106,6 @@ architecture rtl of openjls_top is
   constant BYTE_STUFFER_OUT_BYTES_PER_CYCLE : natural := 4;                                           -- fixed by the stuffing layout table
   constant BYTE_STUFFER_BURST_DEPTH         : natural := 64;                                          -- covers natural images with margin
   constant BYTE_STUFFER_OUT_WIDTH           : natural := BYTE_STUFFER_OUT_BYTES_PER_CYCLE * 8;
-  -- Must not exceed the shallowest per-image queue: jls_framer EOI FIFO (3), start queue (4),
-  -- byte_stuffer valid-bits queue (3)
-  constant MAX_IMAGES_IN_FLIGHT             : natural := 3;
 
   -- Context RAM word: regular (A | B | C | N), run (A | Nn | 0 | N) ---
   constant CTX_A_HI                         : natural := TOTAL_WIDTH - 1;
@@ -394,7 +391,7 @@ architecture rtl of openjls_top is
   signal sFirstPixel                        : std_logic;
   signal sFramerStart                       : std_logic;
   signal sReadyOut                          : std_logic;
-  signal sImagesInFlight                    : natural range 0 to MAX_IMAGES_IN_FLIGHT;
+  signal sImagesInFlight                    : natural range 0 to CO_MAX_IMAGES_IN_FLIGHT;
   signal sNextIsFirst                       : std_logic;
   signal sInFlightStall                     : std_logic;
 
@@ -487,12 +484,12 @@ begin
   sReadyOut <= not iRst and not sStallUpstream and not sInFlightStall;
   oReady    <= sReadyOut;
 
-  -- Contracts (PSL, simulation only): AXI-Stream input
   -- psl default clock is rising_edge(iClk);
   -- psl assert always (iRst = '1' -> oReady = '0') report "openjls_top: reset must hold oReady low";
   -- psl assert always ((iRst = '0' and sStallLogic = '1') -> oReady = '0') report "openjls_top: oReady must stay low while the input latch is frozen (no dropped beat)";
   -- psl assert always ((iRst = '0' and iValid = '1' and oReady = '1') -> next (sValid = '1')) report "openjls_top: an accepted pixel (iValid and oReady) must be committed next cycle";
   -- psl assert always ((iRst = '0' and sStallLogic = '1') -> (sReg1V = '0' and sValid = '0')) report "openjls_top: stage 1 and the input latch must hold no pixel while the logic is frozen";
+  -- psl assert always ((sReg3.mode = token_run_interruption and sReg3.RiType = '1') -> sReg3.Errval /= 0) report "openjls_top: RI with RItype 1 must have Errval /= 0";
 
   postponed assert is_x(sRunCntReg) or sRunCntReg <= MAX_IMAGE_WIDTH
     report "openjls_top: run count past MAX_IMAGE_WIDTH" severity error;
@@ -1638,7 +1635,7 @@ begin
   -- first pixel at the cap bounds every per-image queue downstream
   p_images_in_flight : process (iClk) is
 
-    variable vCount : natural range 0 to MAX_IMAGES_IN_FLIGHT + 1;
+    variable vCount : natural range 0 to CO_MAX_IMAGES_IN_FLIGHT + 1;
 
   begin
 
@@ -1653,8 +1650,8 @@ begin
         if (oValid = '1' and iReady = '1' and oLast = '1') then
           vCount := vCount - 1;
         end if;
-        assert vCount <= MAX_IMAGES_IN_FLIGHT
-          report "openjls_top: images in flight past MAX_IMAGES_IN_FLIGHT"
+        assert vCount <= CO_MAX_IMAGES_IN_FLIGHT
+          report "openjls_top: images in flight past CO_MAX_IMAGES_IN_FLIGHT"
           severity failure;
         sImagesInFlight <= vCount;
       end if;
@@ -1664,7 +1661,7 @@ begin
 
   sNextIsFirst   <= sLbEoi when sValid = '1' else
                     sFirstPixel;
-  sInFlightStall <= '1' when sImagesInFlight = MAX_IMAGES_IN_FLIGHT and sNextIsFirst = '1' else
+  sInFlightStall <= '1' when sImagesInFlight = CO_MAX_IMAGES_IN_FLIGHT and sNextIsFirst = '1' else
                     '0';
 
 end architecture rtl;

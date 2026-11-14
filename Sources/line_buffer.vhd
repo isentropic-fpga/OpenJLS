@@ -74,6 +74,9 @@ architecture behavioral of line_buffer is
 
 begin
 
+  -- psl default clock is rising_edge(iClk);
+  -- psl assert always (iRst = '1' -> next (iRst = '1' or iValid = '0')) report "line_buffer: iValid must be low the cycle after reset (sIsLastRow settles one cycle late)";
+
   comb_proc : process (iValid, sFifoState,
                        sFifoOutReady, sFifoOutValid, sRowCounter,
                        sIsLastCol, sIsLastRow, sIsFirstCol, sIsFirstRow, sIsEol, sIsEoi,

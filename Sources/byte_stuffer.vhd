@@ -56,8 +56,8 @@ architecture behavioral of byte_stuffer is
   constant DATA_LSB               : natural := 1;
   constant FIFO_WIDTH             : natural := FIFO_BITS + 1;
 
-  -- Max last-flag words in flight in the main FIFO
-  constant BYTE_VALID_QUEUE_DEPTH : natural := 3;
+  -- One last-flag word per image in flight
+  constant BYTE_VALID_QUEUE_DEPTH : natural := CO_MAX_IMAGES_IN_FLIGHT;
 
   -- Absorbs the words in flight during the ~4-cycle top-level stall latency
   constant STALL_CUSHION_ENTRIES  : natural := 5;
@@ -202,8 +202,8 @@ begin
     report "byte_stuffer: FIFO write dropped - AlmFull cushion undersized vs stall latency"
     severity failure;
 
-  -- Contracts (PSL, simulation only)
   -- psl default clock is rising_edge(iClk);
+  -- psl assert always ((iFlush = '1' and iStall = '0') -> iWordValid = '1') report "byte_stuffer: iFlush must arrive with the image's last word";
   -- psl assert always (iRst = '1' -> next (oWordValid = '0' and oFlushDone = '0')) report "byte_stuffer: reset must clear the output beat and oFlushDone";
   -- psl assert never (oFlushDone = '1' and oWordValid = '0') report "byte_stuffer: oFlushDone only fires on a valid output beat (framer iEoi contract)";
   -- psl assert always (oFlushDone = '1' -> next (oFlushDone = '0')) report "byte_stuffer: oFlushDone is a strict 1-cycle pulse";
