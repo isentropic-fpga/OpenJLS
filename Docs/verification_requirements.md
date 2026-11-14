@@ -28,7 +28,7 @@ Status: ✓ met, N/A not applicable (reason in the TB header), **gap** open (see
 | `T87.A11` | Error mapping (incl. special case) | T.87 A.11 | [`A11_error_mapping`](../Sources/A11_error_mapping.vhd) | [`tb_a11_osvvm`](../Verification/OSVVM/Modules/tb_a11_osvvm.vhd) | 8900 | ✓ | ✓ | ✓ | ✓ | N/A | ✓ |
 | `T87.A11.1` | Golomb encoding, regular mode (incl. escape) | T.87 A.11.1 | [`A11_1_golomb_encoder`](../Sources/A11_1_golomb_encoder.vhd) | [`tb_a11_1_osvvm`](../Verification/OSVVM/Modules/tb_a11_1_osvvm.vhd) | 20000 | ✓ | ✓ | ✓ | ✓ | N/A | ✓ |
 | `T87.A11.2` | Bit packing | T.87 A.11.2 | [`A11_2_bit_packer`](../Sources/A11_2_bit_packer.vhd) | [`tb_a11_2_osvvm`](../Verification/OSVVM/Modules/tb_a11_2_osvvm.vhd) | 12000 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `T87.A12A13` | Context variables and bias update (A, B, C, N) | T.87 A.12-A.13 | [`A12_A13_update`](../Sources/A12_A13_update.vhd) | [`tb_a12_a13_osvvm`](../Verification/OSVVM/Modules/tb_a12_a13_osvvm.vhd) | 230000 | ✓ | ✓ | ✓ | ✓ | N/A | ✓ |
+| `T87.A12-A13` | Context variables and bias update (A, B, C, N) | T.87 A.12-A.13 | [`A12_A13_update`](../Sources/A12_A13_update.vhd) | [`tb_a12_a13_osvvm`](../Verification/OSVVM/Modules/tb_a12_a13_osvvm.vhd) | 230000 | ✓ | ✓ | ✓ | ✓ | N/A | ✓ |
 | `T87.A14` | Run-length determination | T.87 A.14 | [`A14_run_length_determination`](../Sources/A14_run_length_determination.vhd) | [`tb_a14_osvvm`](../Verification/OSVVM/Modules/tb_a14_osvvm.vhd) | 8100 | ✓ | ✓ | ✓ | ✓ | N/A | ✓ |
 | `T87.A15-A16` | Run encoding | T.87 A.15-A.16 | [`A15_A16_encode_run`](../Sources/A15_A16_encode_run.vhd) | [`tb_a15_a16_osvvm`](../Verification/OSVVM/Modules/tb_a15_a16_osvvm.vhd) | 1800 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | `T87.A17` | Run interruption type | T.87 A.17 | [`A17_run_interruption_index`](../Sources/A17_run_interruption_index.vhd) | [`tb_a17_osvvm`](../Verification/OSVVM/Modules/tb_a17_osvvm.vhd) | 2700 | ✓ | ✓ | ✓ | ✓ | N/A | ✓ |
@@ -65,4 +65,4 @@ None.
 
 ## Not tracked
 - A.2, A.8 (and every NEAR > 0 path): lossy only, not implemented.
-- Frame sizes above 65535 (T.87 LSE ID = 4): deferred.
+- Frame sizes above 65535 (T.87 LSE ID = 4): not supported.

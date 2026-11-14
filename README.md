@@ -7,9 +7,9 @@
 [![standard](https://img.shields.io/badge/JPEG--LS-ISO%2FIEC_14495--1-8a2be2)](https://www.itu.int/rec/T-REC-T.87)
 [![verification](https://img.shields.io/badge/verification-report-0969da)](https://isentropic-fpga.github.io/OpenJLS/)
 
-OpenJLS is an open, verification-signed JPEG-LS encoder IP core for FPGAs - the open alternative to closed, commercial JPEG-LS cores, for teams who want to audit the RTL and evaluate before they buy.
+OpenJLS is an open, openly verified JPEG-LS encoder IP core for FPGAs - the open alternative to closed, commercial JPEG-LS cores, for teams who want to audit the RTL and evaluate before they buy.
 
-It implements the JPEG-LS standard (ISO/IEC 14495-1 / ITU-T T.87), a low-complexity lossless image codec reaching ~1.6:1 on natural photographs. Every release is checked byte-exact against an independent reference encoder across 11639 images at 8–16 bits on silicon, 11555 of them also at RTL, and on a post-synthesis subset.
+It implements the JPEG-LS standard (ISO/IEC 14495-1 / ITU-T T.87), a low-complexity lossless image codec reaching ~1.6:1 on natural photographs. Every release is checked byte-exact against an independent reference encoder on silicon, at RTL and on a post-synthesis subset: 5639 corpus images at 8–16 bits, each encoded from reset, plus 6000 same-size images streamed with no reset between them (11639 encodes on silicon, 11555 at RTL). Formal proofs cover the control logic, the T.87 arithmetic and the bit/byte streams.
 
 OpenJLS reaches ~440 MHz with 12-bit pixels on a Xilinx UltraScale+ ZU7EG (the MPSoC family used in onboard processors such as the Xiphos Q8), processing one pixel per clock (~440 Mpixel/s) for ~6.6k LUTs and no external memory; 8-bit reaches ~450 MHz and 16-bit ~375 MHz. It handles single-component (grayscale) data, so a multi-band sensor instantiates one compressor per band - resource usage is low enough that all bands run in parallel cheaply.
 
@@ -218,7 +218,7 @@ Each configuration is implemented with four Vivado strategies. fmax tables in MH
 
 ## Verification
 
-OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level, and on hardware. Results are published in the **[verification report](https://isentropic-fpga.github.io/OpenJLS/)**.
+OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level, with formal proofs, and on hardware. Results are published in the **[verification report](https://isentropic-fpga.github.io/OpenJLS/)**.
 
 | Suite | Status | Test/Cov | Summary |
 |---|---|---|---|
@@ -228,20 +228,23 @@ OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level
 | Post-synth OSVVM | PASS | 100% | Control-plane stress<sup>4</sup> |
 | Post-synth golden model | PASS | 100% | 167/167 images<sup>5</sup> |
 | HIL golden model | PASS | 100% | 11639/11639 images<sup>6</sup> |
+| Formal | PASS | 100% | 384/384 checks<sup>7</sup> |
 
 <sub>
-<sup>1</sup> Per-DUT-file breakdown.<br>
+<sup>1</sup> Per-file breakdown and the review of each uncovered line are in the verification report.<br>
 <sup>2</sup> 10,984,893 affirmations (module + top + AXI wrappers).<br>
 <sup>3</sup> Byte-exact vs CharLS: 5555 from reset, 6000 same-size images streamed with no reset between them.<br>
 <sup>4</sup> 155,469 affirmations on the gate-level netlist.<br>
 <sup>5</sup> 8-bit images up to 0.05 MP, byte-exact vs CharLS.<br>
-<sup>6</sup> Byte-exact vs CharLS on PYNQ-Z2 silicon at 100 MHz: 5639 from reset, 6000 same-size images streamed with no reset between them.
+<sup>6</sup> Byte-exact vs CharLS on PYNQ-Z2 silicon at 100 MHz: 5639 from reset, 6000 same-size images streamed with no reset between them.<br>
+<sup>7</sup> 330 full proofs, 1 bounded check, 53 known-bad checks that fail as required.
 </sub>
 
 - **OSVVM** — 32 module testbenches against independent T.87 reference models, a top-level control-plane stress test, and AXI wrapper tests, all with requirements tracking.
 - **Coverage** — OSVVM functional coverage plus NVC statement coverage.
 - **Golden model** — byte-exact against [CharLS](https://github.com/team-charls/charls) and the official ISO/IEC 14495-1 reference vectors, both per image from reset and on same-size images streamed with no reset between them. Each RTL version also runs 1500 streams of random size, depth, output width, valid and ready.
 - **Design contracts** — PSL assertions on the handshakes, checked every run.
+- **Formal** — proofs over all input sequences with SymbiYosys: top-level control invariants, the RTL assertions and module contracts, the per-sample T.87 modules against a transcription of the T.87 C code, bit and byte stream order, context forwarding, framer margin and datapath ranges. Scope and limits: [`Verification/Formal`](Verification/Formal/README.md).
 - **Post-synthesis** — stress test and a golden subset re-run on the gate-level netlist.
 - **Hardware-in-the-loop** — full corpus and the no-reset streams encoded on a PYNQ-Z2 at depths 8–16, zero mismatches; reproducible via the [EncodeOverEthernet demo](https://github.com/isentropic-fpga/OpenJLS-Demos).
 
@@ -278,9 +281,6 @@ The public datasets are natural only at 8 and 16 bits. The natural-derived image
 End-to-end example projects live in a companion repository, [**OpenJLS-Demos**](https://github.com/isentropic-fpga/OpenJLS-Demos), each pinning the core as a submodule at its verified commit.
 
 - **[EncodeOverEthernet](https://github.com/isentropic-fpga/OpenJLS-Demos/tree/main/EncodeOverEthernet)** — streams raw images to a PYNQ-Z2 over Ethernet, encodes them 100% in the FPGA, and streams the `.jls` files back.
-
-More demos (additional boards and integrations) are planned.
-
 ---
 
 ## Licensing
@@ -298,7 +298,7 @@ OpenJLS is dual-licensed:
 
 ## Dependencies
 
-**Using the IP** needs only open-logic, committed in-tree. **Running the verification suite** needs the Linux toolchain in the second table; none of it is part of, or distributed with, the IP.
+**Using the IP** needs only open-logic, committed in-tree. **Running the verification suite** needs the Linux toolchain under Verification below; none of it is part of, or distributed with, the IP.
 
 ### Base IP
 
@@ -318,6 +318,13 @@ None of the components below are committed to the repository — running [`Third
 | [OSVVM](https://github.com/OSVVM/OSVVM) | Apache-2.0 | VHDL verification library used by the testbench suite. |
 | [OSVVM-Scripts](https://github.com/OSVVM/OSVVM-Scripts) | Apache-2.0 | Regression and report-generation script flow. |
 | [tcllib](https://github.com/tcltk/tcllib) | Tcl/BSD-style | `fileutil` and `yaml` modules required by the report scripts. |
+
+Two flows need tools that `fetch_third_party.sh` does not install:
+
+| Component | License | Notes |
+|---|---|---|
+| [OSS CAD Suite](https://github.com/YosysHQ/oss-cad-suite-build) | ISC and others | GHDL, Yosys and SymbiYosys for the formal flow; pinned to the 2026-10-13 build, as later builds break the GHDL plugin. Path set by `OSS_CAD_SUITE`. |
+| AMD Vivado | Proprietary | Synthesis of the gate-level netlist for the post-synthesis flows only. |
 
 NVC installs through your OS package manager — the script handles Ubuntu and Arch automatically; elsewhere install it manually from the [NVC docs](https://www.nickg.me.uk/nvc/). No dependency imposes copyleft on the OpenJLS sources, so the dual-licensing model above is unaffected. Redistribution must retain the third-party notices and license texts in `ThirdParty/`.
 
