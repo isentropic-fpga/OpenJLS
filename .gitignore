@@ -62,3 +62,6 @@ settings.json
 ip_pkg/
 
 Docs/t87.pdf
+
+# Formal flow outputs
+Verification/Formal/Results/

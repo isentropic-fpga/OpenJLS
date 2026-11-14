@@ -7,12 +7,13 @@
 #
 
 # Assemble Docs/Reports/ (GitHub Pages): the OSVVM and coverage HTML plus the
-# golden and post-synth suites from their Output/report_status.env.
+# golden, post-synth and formal suites from their report_status.env.
 #
 # Typical flow:
 #   ./build_run.sh                                   # OSVVM regression + coverage
 #   ( cd "../Golden model" && ./build_run.sh )       # golden cross-check
 #   ( cd "../Post synth"   && ./build_run_osvvm.sh ) # gate-level (needs Vivado)
+#   ( cd ../Formal          && ./build_run.sh )       # formal proofs
 #   ./publish_reports.sh                             # -> Docs/Reports/
 #
 # Usage:  ./publish_reports.sh
@@ -31,6 +32,8 @@ PS_OSVVM_ENV="$ROOT/Verification/Post synth/Output/report_status_osvvm.env"
 PS_OSVVM_LOG="$ROOT/Verification/Post synth/Output/postsynth_osvvm.log"
 PS_GOLDEN_ENV="$ROOT/Verification/Post synth/Output/report_status_golden.env"
 PS_GOLDEN_TSV="$ROOT/Verification/Post synth/Output/ps_golden_image_results.tsv"
+FORMAL_ENV="$ROOT/Verification/Formal/Results/report_status.env"
+FORMAL_TSV="$ROOT/Verification/Formal/Results/formal_results.tsv"
 
 # hil/results.csv comes from the OpenJLS-Demos sweep; keep it
 HIL_TMP=""
@@ -227,6 +230,8 @@ golden_link=""
 [ -f "$GOLDEN_ENV" ] && golden_link="$(render_tsv_page "$GOLDEN_TSV" golden "Golden model — processed images")"
 ps_osvvm_link=""
 [ -f "$PS_OSVVM_ENV" ] && ps_osvvm_link="$(render_log_page "$PS_OSVVM_LOG" post-synth-osvvm "Post-synth OSVVM — simulation log")"
+formal_link=""
+[ -f "$FORMAL_ENV" ] && formal_link="$(render_tsv_page "$FORMAL_TSV" formal "Formal — property proofs")"
 ps_golden_link=""
 [ -f "$PS_GOLDEN_ENV" ] && ps_golden_link="$(render_tsv_page "$PS_GOLDEN_TSV" post-synth-golden "Post-synth Golden Model — processed images")"
 
@@ -239,6 +244,9 @@ env_row "$PS_OSVVM_ENV"  "Post-synth OSVVM" \
 env_row "$PS_GOLDEN_ENV" "Post-synth Golden Model" \
   "8-bit corpus images up to 0.05&nbsp;MP encoded on the gate-level netlist and compared with CharLS; the cap keeps gate-level simulation time bounded." \
   "$ps_golden_link"
+env_row "$FORMAL_ENV"    "Formal" \
+  "Proofs over every input sequence (SymbiYosys): the top-level control invariants and port contracts at BITNESS 8&ndash;16, no byte_stuffer FIFO overflow at the shipped stall cushion, and the datapath range invariants. Each property has a live check, a known-bad case that must fail." \
+  "$formal_link"
 
 # --- hardware-in-the-loop (published out of band from OpenJLS-Demos) ------
 if [ -f "$DEST/hil/results.csv" ]; then
