@@ -12,8 +12,9 @@ SLICES = [
      "for t in 0 to 7 loop if t < vStuffBufferBits then vPadByte(7 - t) := sStuffBuffer(HOLD_BITS - 1 - t); end if; end loop;"),
 ]
 
-def prep(text, name):
-    text = ASSERT.sub("", text)
+def prep(text, name, keep=False):
+    """keep: leave error and failure asserts in place (they become solver checks); drop note and warning ones."""
+    text = ASSERT.sub(lambda m: m[0] if keep and not re.search(r"severity\s+(note|warning)\b", m[0], re.I) else "", text)
     # GHDL synth lacks integer abs; widen first so the most negative value stays exact
     text = re.sub(r"abs\(to_integer\((\w+)\)\)", r"to_integer(abs(resize(\1, \1'length + 1)))", text)
     # GHDL synth (7.0.0-dev r535) computes integer - signed as signed - integer
@@ -30,8 +31,9 @@ KEYWORDS = {"always", "never", "next", "and", "or", "not", "xor", "nand", "nor",
             "before", "true", "false", "report", "severity"}
 
 
-def contracts(text):
-    """Module-level proof: PSL asserts on inputs and generics only become assumes; other PSL asserts are dropped."""
+def contracts(text, keep=False):
+    """Module-level proof: PSL asserts on inputs and generics only become assumes; other PSL asserts are dropped
+    (kept with keep=True)."""
     ent = re.search(r"\bentity\s+\w+\s+is(.*?)\bend\b", text, re.S | re.I)[1]
     gen = re.search(r"\bgeneric\s*\((.*?)\)\s*;\s*port\b", ent, re.S | re.I)
     allowed = set()
@@ -47,7 +49,7 @@ def contracts(text):
         ids = {w.lower() for w in re.findall(r"\b[A-Za-z_]\w*\b", prop)} - KEYWORDS
         if ids and ids <= allowed:
             return m[1] + "assume" + re.split(r"\breport\b", m[2], 1)[0].rstrip().rstrip(";") + ";"
-        return ""
+        return m[0] if keep else ""
     return PSL.sub(one, text)
 
 

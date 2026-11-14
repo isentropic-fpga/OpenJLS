@@ -95,6 +95,7 @@ OBL = {
                a_ok("oAq", "sNqNew"),
                "oAq < 2 ** A_STORED"]),
     # A18 difference -> A19 -> A23 delta -> A23 keeps the RI context invariant (A20_2 assumes it)
+    # Nn < N (reset values 0 < 1) keeps Nn inside NN_WIDTH
     "ctx_ri": dict(
         srcs=["A19_run_interruption_error", "A23_run_interruption_update"],
         decl="""  signal iErr_i, sErr19 : signed(BITNESS downto 0);
@@ -117,9 +118,11 @@ OBL = {
         assume=["iErr_i >= -MAX_VAL and iErr_i <= MAX_VAL",
                 "iRiType_i = '1' -> iErr_i /= 0",
                 "iNq_i >= 1 and iNq_i <= RESET",
+                "iNn_i < iNq_i",
                 a_ok("iAq_i", "iNq_i")],
         check=["sDelta <= 2 ** (BITNESS - 1)",
                "oNq >= 1 and oNq <= RESET",
+               "oNn < oNq",
                a_ok("oAq", "oNq"),
                "oAq < 2 ** A_STORED"]),
     # A20_2 -> A11 -> A11_1, regular: LG(k, LIMIT) never exceeds LIMIT bits (bit_packer OUT_WIDTH)

@@ -22,6 +22,9 @@ VAC = os.environ.get("TC_VACUITY") == "1"
 # Non-vacuity: "old|||new" text substitution in the top (a known bad change must fail a property)
 SUB = os.environ.get("TC_SUB", "")
 KEEP = ["u_line_buffer"]
+# Optional f(text) -> top text with the RTL's own asserts kept (rtl_asserts.py); default strips them
+TOP_HOOK = None
+ENGINE, DEPTH = "abc pdr", 20
 
 ce = " and ".join(f"sCE{k} = (not sStallLogic and (sReg{k}V or sReg{k - 1}V))" for k in range(2, 8))
 PROPS = {
@@ -40,8 +43,11 @@ if os.environ.get("TC_EXTRA"):
 
 
 def top_src():
-    t = prep((S / "openjls_top.vhd").read_text(), "openjls_top.vhd")
-    t = re.sub(r"^[ \t]*--[ \t]*psl[ \t]+assert\b.*$", "", t, flags=re.M)
+    if TOP_HOOK:
+        t = TOP_HOOK((S / "openjls_top.vhd").read_text())
+    else:
+        t = prep((S / "openjls_top.vhd").read_text(), "openjls_top.vhd")
+        t = re.sub(r"^[ \t]*--[ \t]*psl[ \t]+assert\b.*$", "", t, flags=re.M)
     if SUB:
         a, b = SUB.split("|||")
         assert t.count(a) == 1, a
@@ -69,17 +75,20 @@ def check(bits):
                capture_output=True, text=True)
     if r.returncode:
         return dict(bits=bits, res="ERROR", info=r.stderr[-600:])
-    keep = " ".join(f"openjls_top/{k}" for k in KEEP)
+    # yosys %d subtracts only the selection on top of the stack: one %d per kept instance
+    keep = " ".join(f"openjls_top/{k} %d" for k in KEEP)
     (d / "p.sby").write_text(f"""[options]
 mode prove
+depth {DEPTH}
 [engines]
-abc pdr
+{ENGINE}
 [script]
 plugin -i ghdl
 ghdl --std=08 -frelaxed -fpsl --workdir=lib -gBITNESS={bits} {" ".join("-g" + g for g in GEN)} openjls_top
 hierarchy -top openjls_top
-cutpoint openjls_top/c:u_* {keep} %d
+cutpoint openjls_top/c:u_* {keep}
 prep -top openjls_top
+{"chformal -assert -skip 1" if TOP_HOOK else ""}
 flatten; memory_map; opt -fast; setundef -undriven -zero; setundef -zero -init
 [files]
 lib
