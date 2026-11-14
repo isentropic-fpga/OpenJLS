@@ -8,8 +8,8 @@ simulation, T.87 conformance and hardware-in-the-loop tests.
 
 ## What is proved
 
-Results of the release suite (`./build_run.sh`): 384 checks, all with the expected result. 330 are full proofs,
-1 is bounded, and 53 are known-bad checks that fail as required (see "How results are qualified").
+Results of the release suite (`./build_run.sh`): 396 checks, all with the expected result. 340 are full proofs and
+56 are known-bad checks that fail as required (see "How results are qualified").
 
 | Area | Property | Scope | Result |
 |---|---|---|---|
@@ -18,7 +18,7 @@ Results of the release suite (`./build_run.sh`): 384 checks, all with the expect
 | T.87 equivalence | Per-sample modules A.1-A.23 equal a reference transcribed from the ITU-T T.87 C code | 18 checks, BITNESS 8-16 | Proved |
 | Run coder | A.14-A.16 equal a step-by-step T.87 model | Line widths 4, 8, 37, 4096, 65535 | Proved |
 | Bit stream | `bit_packer` outputs every bit in order, with stall | BITNESS 8-16 | Proved |
-| Byte stream | `byte_stuffer` outputs every byte in order, stuffing removed, with stall | BITNESS 8 | Bounded, 14 cycles |
+| Byte stream | `byte_stuffer` outputs every byte in order, stuffing removed, with stall. Proved in 4 parts that meet at the FIFOs: stage 1 writes each bit at its stream position, the two FIFOs keep order, stage 3 outputs that word stream in order. Each part's input rules are the guarantees of the part before it | BITNESS 8, 12, 16 | Proved |
 | Stall margin | The `byte_stuffer` FIFO never overflows with `STALL_CUSHION_ENTRIES` = 5. With 4 it overflows, so 5 is the minimum | FIFO depths 6, 8, 16, 64 (64 in `openjls_top`) | Proved |
 | Framer margin | The `jls_framer` payload buffer never overflows under output backpressure, with the `byte_stuffer` output timing that the `byte_stuffer` check proves | BITNESS 8-16, OUT_WIDTH 48, 64, 256, 1024 | Proved |
 | Context forwarding | A context read gets the newest value written to that context, through the RAM or the bypass | BITNESS 8-16 | Proved |
@@ -45,7 +45,12 @@ Results of the release suite (`./build_run.sh`): 384 checks, all with the expect
   (all payload comes from the image's pixels). The module checks that use them name them as assumptions.
 - The top and framer image counts depend on each other. Each side uses only the other's past cycles, and both
   sides are proved.
-- The `byte_stuffer` byte order is checked for 14 cycles. A full proof did not finish in 3 hours.
+- The `byte_stuffer` byte-order proof counts bit positions up to 2^30 - 1. Past 2^30 bits of coded data in one
+  image (128 MB), the order of each bit stays proved, but the end-of-image position is not checked.
+- The `byte_stuffer` FIFO proofs use a copy of the FIFO and RAM files with extra output ports that show the internal
+  addresses and one RAM cell. The copies change no logic.
+- The `byte_stuffer` last-word queue does not overflow because the top admits at most 3 images in flight. The
+  `openjls_top` RTL-assert check proves that limit.
 - The first cycle after power-up is not checked: the tool starts all registers at 0, real hardware does not.
 - Proofs hold at the BITNESS values, image sizes and output widths listed above.
 

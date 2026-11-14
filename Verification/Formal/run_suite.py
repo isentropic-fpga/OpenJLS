@@ -14,13 +14,15 @@ from pathlib import Path
 F = Path(__file__).resolve().parent
 sys.path[:0] = [str(F / "Common"), str(F / "Properties")]
 from flow import S, RESULTS
-import top_ctrl, cushion, ag, t87_eq, run_coder, stream, ctx_fwd, rtl_asserts
+import top_ctrl, cushion, ag, t87_eq, run_coder, stream, ctx_fwd, rtl_asserts, bs_split
 
 WORK = Path(os.environ.get("FORMAL_WORK", "/tmp/openjls_formal"))
 CUSH = int(re.search(r"STALL_CUSHION_ENTRIES\s*:\s*natural\s*:=\s*(\d+)", (S / "byte_stuffer.vhd").read_text())[1])
 RC_WIDTHS = (4, 8, 37, 4096, 65535)
-# The PDR byte_stuffer entry is a research try, not a release check
-STREAM = [n for n in stream.CHECKS if not n.endswith(" pdr")]
+# bs_split proves the byte_stuffer byte order; the whole-module stream.py entries are research tries
+STREAM = [n for n in stream.CHECKS if not n.startswith("byte_stuffer")]
+BS = {"wr": "stage 1 writes each bit at its stream position", "fifo": "main FIFO keeps order",
+      "fifo_bv": "last-word queue keeps order", "rd": "stage 3 outputs the word stream in order"}
 CF = {"fwd": "bypass flags", "word": "RAM word", "eoi": "EOI token reaches stage 2"}
 CF_BAD = {"fwd": "bypass demanded across images", "word": "reference misses load-edge write", "eoi": "assert false"}
 SIZES = {"W8 H4": "MAX_IMAGE_WIDTH=8 MAX_IMAGE_HEIGHT=4", "W4096 H4096": "MAX_IMAGE_WIDTH=4096 MAX_IMAGE_HEIGHT=4096"}
@@ -42,6 +44,10 @@ CHECKS = ([("top control invariants", f"BITNESS {b}, {s}", "PROVED", ("tc", b, g
               "BOUNDED" if stream.CHECKS[n].get("mode") == "bmc" else "PROVED", ("st", n, b, False))
              for n, b, _ in stream.jobs(STREAM)]
           + [(f"{n} (live)", "broken harness, BITNESS 8", "DISPROVED", ("st", n, 8, True)) for n in STREAM]
+          + [(f"byte_stuffer byte order: {BS[p]}", f"BITNESS {b}", "PROVED", ("bs", p, b, False))
+             for p in bs_split.PARTS for b in ([8] if p == "fifo_bv" else (8, 12, 16))]
+          + [(f"byte_stuffer byte order: {BS[p]} (live)", "broken copy, BITNESS 8", "DISPROVED", ("bs", p, 8, True))
+             for p in bs_split.PARTS]
           + [(f"context read gets newest value: {CF[k]}", f"BITNESS {b}", "PROVED", ("cf", k, b, False))
              for k, b, _ in ctx_fwd.jobs()]
           + [(f"context read gets newest value: {CF[k]} (live)", f"{CF_BAD[k]}, BITNESS 8", "DISPROVED", ("cf", k, 8, True))
@@ -74,6 +80,9 @@ def do(i):
     elif job[0] == "ra":
         rtl_asserts.WORK = d
         r = rtl_asserts.one(job[1:])["res"]
+    elif job[0] == "bs":
+        bs_split.WORK = d
+        r = bs_split.job(job[1:])["res"]
     elif job[0] == "cf":
         ctx_fwd.WORK = d
         r = ctx_fwd.job(job[1:])["res"]
