@@ -150,8 +150,8 @@ if [ -f "$OSVVM/index.html" ] && [ -f "$OSVVM_YML" ]; then
   st=PASS; [ "$fail" -ne 0 ] && st=FAIL
   opct=$(awk -v p="$pass" -v t="$total" 'BEGIN{ if (t > 0) printf "%.0f%%", 100 * p / t }')
   # Link this build's summary; osvvm/index.html lists stale builds too
-  emit_row "OSVVM suite" "Module testbenches against independent T.87 reference models, the top-level control-plane stress test and the AXI wrapper tests, all with requirements tracking." "$st" "$opct" \
-    "$total tests &middot; $(printf "%'d" "$affirm") affirmations" \
+  emit_row "OSVVM suite" "Module testbenches against independent T.87 reference models, the top-level control-plane stress test and the AXI wrapper tests, all with requirements tracking. $(printf "%'d" "$affirm") affirmations." "$st" "$opct" \
+    "$total tests" \
     "osvvm/OSVVM_OpenJls/OSVVM_OpenJls.html" "${rdate%T*}"
 else
   emit_row "OSVVM suite" "" "NA" "" \
@@ -159,21 +159,21 @@ else
 fi
 
 # --- text-only suites: read their report_status.env ------------------------
-# fields: NAME, NOTE, STATUS, PCT, SUMMARY, DATE  (shell key=value, quoted)
+# fields: NAME, NOTE, STATUS, PCT, SUMMARY, DETAIL (appended to the note), DATE  (shell key=value, quoted)
 env_row() {
   local f="$1" fb_name="$2" fb_note="$3" link="$4"
   if [ ! -f "$f" ]; then
     emit_row "$fb_name" "$fb_note" "NA" "" "run the suite to populate" "" ""
     return
   fi
-  local NAME="" NOTE="" STATUS="" PCT="" SUMMARY="" DATE="" SOURCES_HASH=""
+  local NAME="" NOTE="" STATUS="" PCT="" SUMMARY="" DETAIL="" DATE="" SOURCES_HASH=""
   # shellcheck disable=SC1090
   source "$f"
   # A result on other RTL is not a pass on this one
   if [ "$STATUS" = PASS ] && [ "$SOURCES_HASH" != "$(cat "$ROOT"/Sources/*.vhd | sha256sum | cut -c1-12)" ]; then
     STATUS=PARTIAL; SUMMARY="$SUMMARY (run on older RTL)"
   fi
-  emit_row "${NAME:-$fb_name}" "${fb_note:-$NOTE}" "${STATUS:-NA}" "${PCT:-}" \
+  emit_row "${NAME:-$fb_name}" "${fb_note:-$NOTE}${DETAIL:+ $DETAIL}" "${STATUS:-NA}" "${PCT:-}" \
     "${SUMMARY:-}" "$link" "${DATE%%T*}"
 }
 

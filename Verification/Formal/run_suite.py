@@ -123,7 +123,9 @@ def main():
         'NAME="Formal"\n'
         f'STATUS={"PASS" if ok == n else "FAIL"}\n'
         f'PCT="{100 * ok // n}%"\n'
-        f'SUMMARY="{ok} of {n} checks as expected: {n - live - bounded} proofs, {bounded} bounded, {live} fault-injection checks"\n'
+        f'SUMMARY="{ok} of {n} checks"\n'
+        f'DETAIL="{n - live - bounded} full proofs{f", {bounded} bounded checks" if bounded else ""},'
+        f' {live} fault-injection checks that fail as required."\n'
         f'DATE="{datetime.now().astimezone().isoformat(timespec="seconds")}"\n'
         f"SOURCES_HASH={h}\n")
     print(f"{ok} of {n} as expected", flush=True)
