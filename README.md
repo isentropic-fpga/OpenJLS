@@ -225,7 +225,7 @@ OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level
 | NVC code coverage | info | 99.7% | Statement coverage<sup>1</sup> |
 | OSVVM suite | PASS | 100% | 281 tests<sup>2</sup> |
 | Formal | PASS | 100% | 396/396 checks<sup>3</sup> |
-| Golden model | PASS | 100% | 11575/11575 images, 1500 random streams<sup>4</sup> |
+| Golden model | PASS | 100% | 11575/11575 images<sup>4</sup> |
 | Post-synth OSVVM | PASS | 100% | Control-plane stress<sup>5</sup> |
 | Post-synth golden model | PASS | 100% | 169/169 images<sup>6</sup> |
 | HIL golden model | PASS | 100% | 11659/11659 images<sup>7</sup> |
@@ -234,7 +234,7 @@ OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level
 <sup>1</sup> Per-file breakdown and the review of each uncovered line are in the verification report.<br>
 <sup>2</sup> 37,001,113 affirmations (module + top + AXI wrappers).<br>
 <sup>3</sup> 340 full proofs, 56 fault-injection checks that fail as required.<br>
-<sup>4</sup> Byte-exact vs CharLS: 5575 from reset, 6000 same-size images streamed with no reset between them.<br>
+<sup>4</sup> Byte-exact vs CharLS: 5575 from reset, 6000 same-size images streamed with no reset between them, and 1500 random streams.<br>
 <sup>5</sup> 155,471 affirmations on the gate-level netlist.<br>
 <sup>6</sup> 8-bit images up to 0.05 MP, byte-exact vs CharLS.<br>
 <sup>7</sup> Byte-exact vs CharLS on PYNQ-Z2 silicon at 100 MHz: 5659 from reset, 6000 same-size images streamed with no reset between them.
