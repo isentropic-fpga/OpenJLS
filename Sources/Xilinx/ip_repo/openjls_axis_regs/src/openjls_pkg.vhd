@@ -132,6 +132,8 @@ package openjls_pkg is
   constant CO_BYTE_STUFFER_OUT_BYTES_PER_CYCLE : natural := 4;
   constant CO_BYTE_STUFFER_OUT_WIDTH           : natural := CO_BYTE_STUFFER_OUT_BYTES_PER_CYCLE * 8;
   constant CO_BYTE_STUFFER_BURST_DEPTH         : natural := 16;
+  -- Images from first pixel accepted to last output beat accepted; sizes every per-image queue
+  constant CO_MAX_IMAGES_IN_FLIGHT             : natural := 3;
 
 end package openjls_pkg;
 

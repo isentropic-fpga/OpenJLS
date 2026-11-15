@@ -332,7 +332,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>9fddb55a</spirit:value>
+            <spirit:value>4b498f1d</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -348,7 +348,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>9fddb55a</spirit:value>
+            <spirit:value>4b498f1d</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -1084,7 +1084,7 @@
       <spirit:file>
         <spirit:name>src/openjls_axis_regs.vhd</spirit:name>
         <spirit:userFileType>vhdlSource-2008</spirit:userFileType>
-        <spirit:userFileType>CHECKSUM_41b6b76b</spirit:userFileType>
+        <spirit:userFileType>CHECKSUM_8fe1c053</spirit:userFileType>
         <spirit:userFileType>IMPORTED_FILE</spirit:userFileType>
       </spirit:file>
     </spirit:fileSet>
@@ -1322,7 +1322,7 @@
     </spirit:parameter>
     <spirit:parameter>
       <spirit:name>Component_Name</spirit:name>
-      <spirit:value spirit:resolve="user" spirit:id="PARAM_VALUE.Component_Name" spirit:order="1">openjls_axis_regs_v1_0</spirit:value>
+      <spirit:value spirit:resolve="user" spirit:id="PARAM_VALUE.Component_Name" spirit:order="1">openjls_axis_regs_v1_5</spirit:value>
     </spirit:parameter>
   </spirit:parameters>
   <spirit:vendorExtensions>
@@ -1341,17 +1341,17 @@
       <xilinx:definitionSource>package_project</xilinx:definitionSource>
       <xilinx:vendorDisplayName>Isentropic</xilinx:vendorDisplayName>
       <xilinx:vendorURL>https://github.com/isentropic-fpga/OpenJLS</xilinx:vendorURL>
-      <xilinx:coreRevision>26110717</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2026-11-07T20:45:04Z</xilinx:coreCreationDateTime>
+      <xilinx:coreRevision>26111421</xilinx:coreRevision>
+      <xilinx:coreCreationDateTime>2026-11-15T00:43:32Z</xilinx:coreCreationDateTime>
     </xilinx:coreExtensions>
     <xilinx:packagingInfo>
       <xilinx:xilinxVersion>2025.2</xilinx:xilinxVersion>
       <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="e97bbc5d"/>
       <xilinx:checksum xilinx:scope="memoryMaps" xilinx:value="1912e5d4"/>
-      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="14c34d46"/>
+      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="6bb912d5"/>
       <xilinx:checksum xilinx:scope="ports" xilinx:value="fefdd5ae"/>
       <xilinx:checksum xilinx:scope="hdlParameters" xilinx:value="b0b062b2"/>
-      <xilinx:checksum xilinx:scope="parameters" xilinx:value="78111012"/>
+      <xilinx:checksum xilinx:scope="parameters" xilinx:value="f83c3b44"/>
     </xilinx:packagingInfo>
   </spirit:vendorExtensions>
 </spirit:component>

@@ -72,12 +72,10 @@ foreach {name meta} $ips {
     update_compile_order -fileset sources_1
 
     ipx::package_project -root_dir [file join $ip_repo $name] \
-        -vendor $vendor -library $library -taxonomy /Video_and_Image_Processing \
-        -import_files -force
+        -vendor $vendor -library $library -name $name -version $version \
+        -taxonomy /Video_and_Image_Processing -import_files -force
     set core [ipx::current_core]
 
-    set_property name         $name     $core
-    set_property version      $version  $core
     # yymmddHH, so block designs see a repackage as newer; fits a signed int32
     set_property core_revision [clock format [clock seconds] -format %y%m%d%H] $core
     set_property display_name $display  $core
