@@ -9,7 +9,7 @@ update of the same context by an earlier token of the same image (CTX_INIT if no
 from the stage-4/5 bypass when the token just ahead has the same context.
 Three jobs per BITNESS: fwd (bypass flags, PDR), word (RAM word, k-induction with helper facts), eoi (the
 assumption that the EOI token always reaches stage 2).
-python3 ctx_fwd.py [BITNESS ...]; env CF_LIVE=1 (fault injected, must fail: word misses the load-edge update, fwd demands
+python3 ctx_fwd.py [BITNESS ...]; env CF_MUT ("old|||new" on openjls_top: the mutant must meet the same spec), CF_LIVE=1 (fault injected, must fail: word misses the load-edge update, fwd demands
 a bypass across an image boundary, eoi asserts false), CF_TIMEOUT (s, 1800), CF_WORK, CF_THREADS (20).
 """
 import json, os, re, sys, multiprocessing as mp
@@ -20,6 +20,7 @@ from flow import S, BASE, ORDER, RESULTS, run
 
 WORK = Path(os.environ.get("CF_WORK", "/tmp/feq_ctx_fwd"))
 TIMEOUT = int(os.environ.get("CF_TIMEOUT", 1800))
+MUT = os.environ.get("CF_MUT", "")
 GEN = "MAX_IMAGE_WIDTH=8 MAX_IMAGE_HEIGHT=4".split()
 
 # RBW RAM, read latency 1, that stores only address Trk
@@ -217,6 +218,12 @@ HELPERS = """  hE2 <= fShV when fShSet = '1' and fShT = fT2 else F_INIT;
 """
 
 
+# CF_MUT runs: the mutant write enable reads bubble parity, which the gold proof never constrains
+HELP_MUT = """  -- psl h_bpar : assert always ((sFInit = '0' and iRst = '0') -> ((sReg1V = '1' or sReg1Par = fCnt(0)) and
+  --   (sReg2V = '1' or sReg2Par = fCnt(0))));
+"""
+
+
 # Facts proved elsewhere become assumes: top_ctrl.PROPS (same top, all cut except line_buffer, a superset of
 # this model's behaviors) and the fwd_* asserts (proved here by PDR without helpers, PROPS_FWD)
 def ctrl():
@@ -251,6 +258,10 @@ def sources(live, props=tuple(ASSERTS), two=False, help=False):
             if help:
                 t = debug(t)
         if n == "openjls_top":
+            if MUT:
+                a, b = MUT.split("|||")
+                assert t.count(a) == 1, a
+                t = t.replace(a, b)
             t = re.sub(r"^[ \t]*--[ \t]*psl[ \t]+assert\b.*$", "", t, flags=re.M)
             t = re.sub(r"(u_ctx_ram : entity work\.context_ram\(behavioral\).*?iClk        => iClk,)",
                        r"\1\n      iTrk        => std_logic_vector(fTrk),", t, count=1, flags=re.S)
@@ -264,7 +275,7 @@ def sources(live, props=tuple(ASSERTS), two=False, help=False):
             if live:
                 props_txt = props_txt.replace("fA3 = fA4 and\n  --   fT3 = fT4) ->", "fA3 = fA4) ->")
             body = body.replace("@ASSERTS@", (TWO_ASSUME if two else "") + props_txt
-                                + ("\n" + HELPERS.replace("@CTRL@", ctrl()) if help else ""))
+                                + ("\n" + HELPERS.replace("@CTRL@", ctrl()) + (HELP_MUT if MUT else "") if help else ""))
             sigs = "".join(f"  signal {n} : {ty};\n" for n, ty, _ in DBG) + HELP_DECL if help else ""
             t = t.replace("\nbegin\n", "\n" + DECL + sigs + (TWO if two else "") + "\nbegin\n", 1).replace("end architecture rtl;", body + "\nend architecture rtl;")
         out[n] = t

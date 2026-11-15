@@ -1,0 +1,3 @@
+# 471#std25 at OUT_WIDTH 48: the header index stays on the 6-byte beat grid
+(g("sheaderbyteidx") == 0) | (g("sheaderbyteidx") == 6) | (g("sheaderbyteidx") == 12) | (g("sheaderbyteidx") == 18) | (g("sheaderbyteidx") == 24)
+(m("sheaderbyteidx") == 0) | (m("sheaderbyteidx") == 6) | (m("sheaderbyteidx") == 12) | (m("sheaderbyteidx") == 18) | (m("sheaderbyteidx") == 24)

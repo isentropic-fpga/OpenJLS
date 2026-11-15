@@ -5,7 +5,7 @@
 
   module_eq.py STEM [STEM ...]   every std and lit mutant of STEM, BITNESS 8..16
 A formal DIFF counts only if NVC replays it on the unprepped RTL (GHDL synth bugs, see prep.py).
-Env: FEQ_WORK (scratch), FEQ_BITS, FEQ_ONLY (LINE#ID list), FEQ_DEPTH (default 1), FEQ_THREADS (20), FEQ_OUT.
+Env: FEQ_GOLD_INV=1 (gold's proved asserts become assumes), FEQ_WORK (scratch), FEQ_BITS, FEQ_ONLY (LINE#ID list), FEQ_DEPTH (default 1), FEQ_THREADS (20), FEQ_OUT.
 """
 import json, os, re, shutil, subprocess as sp, sys, multiprocessing as mp
 from pathlib import Path
@@ -28,6 +28,8 @@ BMC = os.environ.get("FEQ_MODE", "prove") == "bmc"
 # RTL PSL asserts on module inputs become assumes (assume-guarantee); 0 = ignore them (non-vacuity check)
 CONTRACTS = os.environ.get("FEQ_CONTRACTS", "1") == "1"
 OUT = Path(os.environ.get("FEQ_OUT", RESULTS / "module_eq.jsonl"))
+# Gold keeps its own asserts as assumes (skip 1). Sound only where rtl_asserts.py proves them under a weaker env
+GOLD_INV = os.environ.get("FEQ_GOLD_INV") == "1"
 
 # T.87 context invariants, as the top keeps them: -N < B <= 0, 1 <= N <= RESET, A below 2^A_STORED
 CTX = ["iNq_i >= 1 and iNq_i <= RESET",
@@ -194,7 +196,8 @@ def one_(job):
     if src == msrc:
         return dict(name=name, label=label, bits=bits, res="IN_CUT")
     (d / "gold_raw.vhd").write_text(src)
-    (d / "gold.vhd").write_text(ctr(prep(src, stem + ".vhd")) + "".join(ctr(prep(p, "")) for p in par))
+    gsrc = contracts(prep(src, stem + ".vhd", keep=True), keep=True) if GOLD_INV else ctr(prep(src, stem + ".vhd"))
+    (d / "gold.vhd").write_text(gsrc + "".join(ctr(prep(p, "")) for p in par))
     (d / "mut.vhd").write_text(rename(ctr(prep(msrc, stem + ".vhd")) + "".join(ctr(prep(p, "")) for p in par), ents))
     (d / "mut_raw.vhd").write_text(rename(msrc + "".join(par), ents))
     hsrc = par[-1] if par else src
@@ -221,6 +224,7 @@ depth {SEQ_DEPTH if label in CLOCKED else DEPTH}
 plugin -i ghdl
 ghdl --std=08 -frelaxed -fpsl --workdir=lib -gBITNESS={bits} {" ".join("-g" + g for g in GENERICS)} eq
 prep -top eq
+{f"chformal -assert -skip 1 {stem.lower()}*" + chr(10) + f"chformal -assert2assume {stem.lower()}*" if GOLD_INV else ""}
 {"flatten; memory_map; opt -fast; setundef -undriven -zero; setundef -zero -init" if label in CLOCKED else ""}
 [files]
 lib

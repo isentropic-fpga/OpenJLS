@@ -59,9 +59,12 @@ Results of the release suite (`./build_run.sh`): 396 checks, all with the expect
 Mutation testing checks the test benches, not the RTL. For each mutant that no test detected, `Mutation/` builds
 the original and the mutant side by side with the same inputs. A proof of equal outputs closes the mutant as
 equivalent. A difference becomes a new directed test in the OSVVM test benches. All combinational survivors are
-closed this way. A few sequential survivors, where a full proof did not finish, are classified by analysis with
-bounded evidence. Mutation
-equivalence is not in the release suite: it measures the tests, and some runs take hours.
+closed this way. Sequential mutants use `houdini.py`: it finds lockstep helper invariants (gold register = mutant
+register) for k-induction. Mutants that it cannot prove are closed by the OSVVM test benches on the current RTL.
+A proof at a small image size counts only after a rerun at the default maximum size.
+The `jls_framer` environment compares the AXIS data under TKEEP and `oLast` on valid beats. It does not compare pad
+bytes or the `oReady` threshold; the OSVVM framer test bench checks both. Mutation equivalence is not in the release
+suite: it measures the tests, and some runs take hours.
 
 ## Layout
 
@@ -69,7 +72,7 @@ equivalence is not in the release suite: it measures the tests, and some runs ta
 |---|---|
 | `Common/` | `flow.py` (paths, tool env, process runner), `prep.py` (makes RTL GHDL-synthesizable, turns input-only PSL contracts into assumes), `gen_harness.py`, `replay.py` (re-runs a formal trace in NVC) |
 | `Properties/` | Properties of the RTL itself: `top_ctrl.py` (top control invariants), `cushion.py` (byte_stuffer FIFO never overflows at `STALL_CUSHION_ENTRIES`), `ag.py` (proves the input assumptions that `module_eq.py` uses), `t87_eq.py` + `t87_ref_pkg.vhd` (per-sample modules A.1-A.23 equal a T.87 reference transcribed from the C code in `Docs/Requirements.md`), `run_coder.py` + `run_coder.vhd` (A.14-A.16 run coder vs a T.87 model), `stream.py` (bit_packer and byte_stuffer keep every bit in order), `ctx_fwd.py` (a context read gets the newest value), `rtl_asserts.py` (each module's own asserts, and the module contracts on the top) |
-| `Mutation/` | Mutant equivalence: `module_eq.py` (gold vs mutant per module), `top_ctx_eq.py` (2-copy top for context-RAM mutants), `exhaustive.py` (NVC exhaustive for small modules), `mutants.py` (mutant generator), `env/` (hand environments for sequential modules) |
+| `Mutation/` | Mutant equivalence: `module_eq.py` (gold vs mutant per module), `houdini.py` (lockstep helper invariants for sequential mutants), `top_ctx_eq.py` (2-copy top for context-RAM mutants), `exhaustive.py` (NVC exhaustive for small modules), `mutants.py` (mutant generator), `env/` (hand environments for sequential modules), `hd/` (`HD_EXTRA` relation candidates for mutants that shift state by a cycle) |
 | `Results/` | jsonl outputs (gitignored) |
 
 ## Tools

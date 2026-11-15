@@ -1,7 +1,8 @@
 -- Copyright (C) 2026 Vitor Mendes Camilo
 -- SPDX-License-Identifier: GPL-3.0-only
 -- jls_framer as openjls_top drives it: dims latched in reset, at most CO_MAX_IMAGES_IN_FLIGHT images,
--- data and EOI only for a started image, byte_stuffer beat only after it saw (gold) oReady high
+-- data and EOI only for a started image, byte_stuffer beat only after it saw (gold) oReady high, EOI only on a
+-- beat and never on consecutive cycles (byte_stuffer check, bs_eoi_gap)
 library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
@@ -30,6 +31,7 @@ architecture formal of @NAME@ is
   signal sInit : std_logic := '1';
   signal sPrevRst : std_logic := '1';
   signal sPrevReady : std_logic := '0';
+  signal sPrevEoi : std_logic := '0';
   signal sPrevW : unsigned(iWidth_i'range);
   signal sPrevH : unsigned(iHeight_i'range);
   -- sFlight: start to last output beat accepted (as openjls_top p_images_in_flight); sOpen: start to EOI input
@@ -71,6 +73,7 @@ begin
       sInit <= '0';
       sPrevRst <= iRst_i;
       sPrevReady <= g.r;
+      sPrevEoi <= iEoi_i;
       sPrevW <= iWidth_i; sPrevH <= iHeight_i;
       if iRst_i = '1' then
         sFlight <= 0; sOpen <= 0;
@@ -105,6 +108,8 @@ begin
   -- psl assume always (iRst_i = '1' -> (iStart_i = '0' and iValid_i = '0'));
   -- psl assume always (sFlight + sStartN <= CO_MAX_IMAGES_IN_FLIGHT);
   -- psl assume always (iValid_i = '1' -> (sOpen > 0 and sPrevReady = '1' and iBe_i <= BI));
+  -- psl assume always (iEoi_i = '1' -> iValid_i = '1');
+  -- psl assume always ((sInit = '0' and iRst_i = '0') -> not (iEoi_i = '1' and sPrevEoi = '1'));
   -- psl assert always (sInit = '0' -> (same(g, m)));
   -- @END@
 
