@@ -44,7 +44,7 @@
 \newfontfamily\kickerfont{Barlow-SemiBold}[Path=fonts/, Extension=.ttf, LetterSpace=14]
 \color{ink}
 
-% Kicker: small letterspaced uppercase label, the site's .kicker / .sec-num.
+% Kicker: small letterspaced uppercase label, the site's .kicker.
 \newcommand{\kicker}[1]{{\kickerfont\footnotesize\MakeUppercase{#1}}}
 % Table header cell, the report's <th>.
 \newcommand{\hd}[1]{\leavevmode{\kickerfont\scriptsize\color{muted}\MakeUppercase{#1}}}
@@ -66,19 +66,30 @@
 \setlength{\heavyrulewidth}{0.6pt}
 \setlength{\lightrulewidth}{0.4pt}
 
-\captionsetup{font={small,color=muted},labelfont={bf,color=accent},
-  labelsep=quad,position=top,skip=8pt,justification=centering}
+% Site .sec-no / .sweep-num / .fig-no: accent-700 at 45% and 70% over the page.
+\colorlet{secno}{accent!45!white}
+\colorlet{subno}{accent!70!white}
 
-\setcounter{secnumdepth}{1}
-\titleformat{\section}[display]
+\DeclareCaptionFont{capsize}{\fontsize{11}{13.5}\selectfont}
+\captionsetup{font={bf,color=ink,capsize},labelfont={bf,color=subno},
+  labelsep=quad,position=top,skip=8pt,justification=centering}
+\captionsetup[figure]{name=Fig.}
+\captionsetup[table]{name=Table}
+
+\setcounter{secnumdepth}{2}
+% Title, then a divider rule to the margin at mid-height, as the site's <hr>.
+\newcommand{\secrule}[1]{#1\hspace{0.6em}{\color{divider}\leaders\vrule
+  height\dimexpr0.5ex+0.2pt\relax depth-\dimexpr0.5ex-0.2pt\relax\hfill}}
+\titleformat{\section}[hang]
   {\headfont\fontsize{19}{22}\selectfont}
-  {\normalfont\color{accent}\kicker{\twodigit{\value{section}}}\hspace{1em}%
-   {\color{divider}\leaders\hrule height 0.4pt\hfill\kern0pt}}
-  {5pt}{}
-\titleformat{name=\section,numberless}[block]
-  {\headfont\fontsize{19}{22}\selectfont}{}{0pt}{}
+  {{\color{secno}\thesection}}{0.45em}{\secrule}
+\titleformat{name=\section,numberless}[hang]
+  {\headfont\fontsize{19}{22}\selectfont}{}{0pt}{\secrule}
 \titlespacing*{\section}{0pt}{20pt}{8pt}
-\titleformat{\subsection}{\headfont\fontsize{14}{17}\selectfont}{}{0pt}{}
+% Rule above, as the site's .sweep-head border.
+\titleformat{\subsection}[block]
+  {{\color{divider}\titlerule[0.4pt]}\vspace{7pt}\headfont\fontsize{14}{17}\selectfont}
+  {{\color{subno}\thesubsection}}{0.45em}{}
 \titlespacing*{\subsection}{0pt}{14pt}{5pt}
 % Text-font math: Barlow has no U+223C, and CM math clashes with it.
 \newcommand{\fmax}{\textit{f}\textsubscript{max}}
@@ -93,7 +104,6 @@
 \newcommand{\covermetric}{\@ifstar{\@covermetric{}}{\@covermetric{\rlap}}}
 \newcommand{\@covermetric}[3]{\begin{tabular}[t]{@{}l@{}}{\headfont\fontsize{26}{28}\selectfont #2}\\[3pt]#1{\color{muted}\kicker{#3}}\end{tabular}}
 \makeatother
-\newcommand{\twodigit}[1]{\ifnum#1<10 0\fi\number#1}
 
 \lstset{
   basicstyle=\ttfamily\footnotesize,
@@ -171,7 +181,7 @@ Demo projects: \url{https://github.com/isentropic-fpga/OpenJLS-Demos}
 
 \begin{table}[H]
   \centering
-  \caption{Key specifications.}
+  \caption{Key specifications}
   \label{tab:overview}
 \begin{tabularx}{\textwidth}{@{}>{\bfseries}l X@{}}
   \toprule
@@ -222,7 +232,7 @@ word is ready, so output beats are much rarer than input pixels.
 
 \begin{figure}[H]
   \centering
-  \caption{Encoder pipeline architecture.}
+  \caption{Encoder pipeline architecture}
   \label{fig:arch}
   \includegraphics[width=\textwidth]{OpenJLS_arch.png}
 \end{figure}
@@ -241,7 +251,7 @@ framer on each image's first pixel.
 \section{Generics}
 \begin{table}[H]
   \centering
-  \caption{Configuration generics.}
+  \caption{Configuration generics}
   \label{tab:generics}
 \begin{tabularx}{\textwidth}{@{}l C X@{}}
   \toprule
@@ -270,7 +280,7 @@ ecosystem (Avalon-ST maps the same way at \texttt{readyLatency}~=~0).
 
 \begin{table}[H]
   \centering
-  \caption{Port list and AXI4-Stream mapping.}
+  \caption{Port list and AXI4-Stream mapping}
   \label{tab:ports}
 \begin{tabularx}{\textwidth}{@{}l c l l X@{}}
   \toprule
@@ -313,7 +323,7 @@ with a brief downstream stall.
 
 \begin{figure}[H]
   \centering
-  \caption{Pixel-input handshake.}
+  \caption{Pixel-input handshake}
   \label{fig:timing-input}
 \begin{tikztimingtable}[timing/slope=0.1,xscale=1.7]
   iClk    & 8{C}        \\
@@ -334,7 +344,7 @@ changes; with the size unchanged, images encode back-to-back.
 
 \begin{figure}[H]
   \centering
-  \caption{Reset and dimension capture.}
+  \caption{Reset and dimension capture}
   \label{fig:timing-reset}
 \begin{tikztimingtable}[timing/slope=0.1,xscale=1.45]
   iClk         & 7{C}          \\
@@ -467,14 +477,14 @@ with width.
 
 \begin{figure}[H]
   \centering
-  \caption{Maximum frequency vs maximum image width.}
+  \caption{Maximum frequency vs maximum image width}
   \label{fig:fmax}
   \includegraphics[width=0.70\linewidth]{fmax_vs_size.png}
 \end{figure}
 
 \begin{table}[H]
   \centering
-  \caption{Maximum frequency by maximum image width and strategy.}
+  \caption{Maximum frequency by maximum image width and strategy}
   \label{tab:fmax}
 \begin{tabular}{@{}r @{\hspace{2.4em}} r r r r@{}}
   \toprule
@@ -492,14 +502,14 @@ with width.
 
 \begin{figure}[H]
   \centering
-  \caption{Resource usage vs maximum image width.}
+  \caption{Resource usage vs maximum image width}
   \label{fig:util}
   \includegraphics[width=0.70\linewidth]{util_vs_size.png}
 \end{figure}
 
 \begin{table}[H]
   \centering
-  \caption{Resource usage by maximum image width.}
+  \caption{Resource usage by maximum image width}
   \label{tab:util}
 \begin{tabular}{@{}r @{\hspace{2.4em}} r r r@{}}
   \toprule
@@ -524,14 +534,14 @@ gradient carry chains into the quantized-gradient register limits. Logic and lin
 
 \begin{figure}[H]
   \centering
-  \caption{Maximum frequency vs pixel bit depth (\texttt{MAX\_IMAGE\_WIDTH = 12288}).}
+  \caption{Maximum frequency vs pixel bit depth (\texttt{MAX\_IMAGE\_WIDTH = 12288})}
   \label{fig:fmaxbits}
   \includegraphics[width=0.70\linewidth]{fmax_vs_bitness.png}
 \end{figure}
 
 \begin{table}[H]
   \centering
-  \caption{Maximum frequency by pixel bit depth and strategy (\texttt{MAX\_IMAGE\_WIDTH = 12288}).}
+  \caption{Maximum frequency by pixel bit depth and strategy (\texttt{MAX\_IMAGE\_WIDTH = 12288})}
   \label{tab:bits}
 \begin{tabular}{@{}r @{\hspace{2.4em}} r r r r@{}}
   \toprule
@@ -548,14 +558,14 @@ gradient carry chains into the quantized-gradient register limits. Logic and lin
 
 \begin{figure}[H]
   \centering
-  \caption{Resource usage vs pixel bit depth (\texttt{MAX\_IMAGE\_WIDTH = 12288}).}
+  \caption{Resource usage vs pixel bit depth (\texttt{MAX\_IMAGE\_WIDTH = 12288})}
   \label{fig:utilbits}
   \includegraphics[width=0.70\linewidth]{util_vs_bitness.png}
 \end{figure}
 
 \begin{table}[H]
   \centering
-  \caption{Resource usage by pixel bit depth (\texttt{MAX\_IMAGE\_WIDTH = 12288}).}
+  \caption{Resource usage by pixel bit depth (\texttt{MAX\_IMAGE\_WIDTH = 12288})}
   \label{tab:utilbits}
 \begin{tabular}{@{}r @{\hspace{2.4em}} r r r@{}}
   \toprule
@@ -604,7 +614,7 @@ simulation; their 84 full-size originals are part of the corpus but run on hardw
 
 \begin{table}[H]
   \centering
-  \caption{Golden-model corpus per bit depth.}
+  \caption{Golden-model corpus per bit depth}
   \label{tab:corpus}
 \begin{tabular}{@{}r r r r r r r@{}}
   \toprule
@@ -627,7 +637,7 @@ simulation; their 84 full-size originals are part of the corpus but run on hardw
 
 \begin{table}[H]
   \centering
-  \caption{Latest regression snapshot.}
+  \caption{Latest regression snapshot}
   \label{tab:regression}
 \begin{tabular}{@{}l c c l@{}}
   \toprule
@@ -656,7 +666,7 @@ simulation; their 84 full-size originals are part of the corpus but run on hardw
 \section{Revision and contact}
 \begin{table}[H]
   \centering
-  \caption{Revision history.}
+  \caption{Revision history}
   \label{tab:revision}
 \begin{tabular}{@{}l l l@{}}
   \toprule
