@@ -31,49 +31,49 @@ Models:
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
-        Count: 67327
+        Count: 67649
         AtLeast: 1
-        PercentCov: 6732700.0000
+        PercentCov: 6764900.0000
       - Name: "sign=0 / clipping region=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
-        Count: 371840
+        Count: 322174
         AtLeast: 1
-        PercentCov: 37184000.0000
+        PercentCov: 32217400.0000
       - Name: "sign=0 / clipping region=2"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 2, Max: 2}
-        Count: 152409
+        Count: 66595
         AtLeast: 1
-        PercentCov: 15240900.0000
+        PercentCov: 6659500.0000
       - Name: "sign=1 / clipping region=0"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 66318
+        Count: 66581
         AtLeast: 1
-        PercentCov: 6631800.0000
+        PercentCov: 6658100.0000
       - Name: "sign=1 / clipping region=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 371057
+        Count: 322264
         AtLeast: 1
-        PercentCov: 37105700.0000
+        PercentCov: 32226400.0000
       - Name: "sign=1 / clipping region=2"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 2, Max: 2}
-        Count: 154056
+        Count: 67663
         AtLeast: 1
-        PercentCov: 15405600.0000
+        PercentCov: 6766300.0000
 
   - Name: "G2.MinMax node x value"
     TestCases: 
@@ -103,17 +103,17 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: -200, Max: -200}
-        Count: 17218
+        Count: 16534
         AtLeast: 1
-        PercentCov: 1721800.0000
+        PercentCov: 1653400.0000
       - Name: "Errval=200"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 200, Max: 200}
-        Count: 17403
+        Count: 16785
         AtLeast: 1
-        PercentCov: 1740300.0000
+        PercentCov: 1678500.0000
 
   - Name: "G3.Stim node x value"
     TestCases: 
@@ -143,23 +143,23 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 128, Max: 255}
-        Count: 534268
+        Count: 354962
         AtLeast: 1
-        PercentCov: 53426800.0000
+        PercentCov: 35496200.0000
       - Name: "Px MSB=128..255"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 128, Max: 255}
-        Count: 599763
+        Count: 330104
         AtLeast: 1
-        PercentCov: 59976300.0000
+        PercentCov: 33010400.0000
       - Name: "C=-128"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
           - {Min: -128, Max: -128}
-        Count: 4561
+        Count: 3430
         AtLeast: 1
-        PercentCov: 456100.0000
+        PercentCov: 343000.0000
 

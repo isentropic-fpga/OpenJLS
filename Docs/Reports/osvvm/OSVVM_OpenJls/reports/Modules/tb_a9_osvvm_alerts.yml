@@ -30,7 +30,7 @@ Children:
     Children: 
       - Name: "T87.A9"
         Status: PASSED
-        Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 8198, AffirmCount: 8198, RequirementsPassed: 8198, RequirementsGoal: 200, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+        Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 8198, AffirmCount: 8198, RequirementsPassed: 8198, RequirementsGoal: 460, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
         Children: []
   - Name: "KnownOutputs"
     Status: PASSED

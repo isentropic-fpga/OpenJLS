@@ -218,6 +218,8 @@ architecture sim of tb_openjls_top_stream_osvvm is
 
 begin
 
+  stream_contract : monitor_stream(clk, rst, oValid, iReady, oData, oKeep, oLast);
+
   dimW <= std_logic_vector(to_unsigned(W, 16));
   dimH <= std_logic_vector(to_unsigned(H, 16));
   clk  <= not clk after CLK_PERIOD_DEFAULT / 2;

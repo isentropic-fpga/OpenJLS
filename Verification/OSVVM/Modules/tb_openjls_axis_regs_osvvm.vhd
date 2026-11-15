@@ -59,7 +59,7 @@ architecture sim of tb_openjls_axis_regs_osvvm is
   constant A_UNMAP   : std_logic_vector(ADDR_W - 1 downto 0) := x"00000020";
 
   constant EXP_ID      : std_logic_vector(31 downto 0) := x"4F4A4C53";           -- "OJLS"
-  constant EXP_VERSION : std_logic_vector(31 downto 0) := x"00010500";           -- 1.5.0
+  constant EXP_VERSION : std_logic_vector(31 downto 0) := x"00010501";           -- 1.5.1
   constant EXP_CAPS    : std_logic_vector(31 downto 0) :=
     std_logic_vector(to_unsigned(H3_BITNESS + (OUT_WIDTH / 8) * 256, 32));
   constant EXP_MAXDIM  : std_logic_vector(31 downto 0) :=
@@ -83,6 +83,13 @@ architecture sim of tb_openjls_axis_regs_osvvm is
   signal nReset : std_logic := '0';
   signal sApplyObserved : std_logic := '0';
   signal sStreamReset : std_logic;
+  -- Drives WDATA(0) high under a write with WSTRB(0) clear, which the Manager VC cannot do
+  signal sForceData0  : std_logic := '0';
+  signal sWData       : std_logic_vector(DATA_W - 1 downto 0);
+  signal sAlignAr     : std_logic := '0';
+  signal sAwCount     : natural := 0;
+  signal sBCount      : natural := 0;
+  signal sArValid     : std_logic;
 
   -- AXI4-Lite manager <-> DUT control bus
   signal AxiBus : Axi4LiteRecType(
@@ -153,6 +160,22 @@ begin
     end if;
   end process;
 
+  -- The Manager VC does not fail a write whose response never comes
+  count_writes : process(clk) is
+  begin
+    if rising_edge(clk) and nReset = '1' then
+      if AxiBus.WriteAddress.Valid = '1' and AxiBus.WriteAddress.Ready = '1' then
+        sAwCount <= sAwCount + 1;
+      end if;
+      if AxiBus.WriteResponse.Valid = '1' and AxiBus.WriteResponse.Ready = '1' then
+        sBCount <= sBCount + 1;
+      end if;
+    end if;
+  end process;
+
+  sWData   <= AxiBus.WriteData.Data(DATA_W - 1 downto 1) & (AxiBus.WriteData.Data(0) or sForceData0);
+  sArValid <= AxiBus.ReadAddress.Valid and (sApplyObserved or not sAlignAr);
+
   clk    <= not clk after CLK_PERIOD / 2;
   nReset <= '0', '1' after 8 * CLK_PERIOD;
 
@@ -172,7 +195,7 @@ begin
       s_axi_ctrl_awprot  => AxiBus.WriteAddress.Prot,
       s_axi_ctrl_awvalid => AxiBus.WriteAddress.Valid,
       s_axi_ctrl_awready => AxiBus.WriteAddress.Ready,
-      s_axi_ctrl_wdata   => AxiBus.WriteData.Data,
+      s_axi_ctrl_wdata   => sWData,
       s_axi_ctrl_wstrb   => AxiBus.WriteData.Strb,
       s_axi_ctrl_wvalid  => AxiBus.WriteData.Valid,
       s_axi_ctrl_wready  => AxiBus.WriteData.Ready,
@@ -181,7 +204,7 @@ begin
       s_axi_ctrl_bready  => AxiBus.WriteResponse.Ready,
       s_axi_ctrl_araddr  => AxiBus.ReadAddress.Addr(7 downto 0),
       s_axi_ctrl_arprot  => AxiBus.ReadAddress.Prot,
-      s_axi_ctrl_arvalid => AxiBus.ReadAddress.Valid,
+      s_axi_ctrl_arvalid => sArValid,
       s_axi_ctrl_arready => AxiBus.ReadAddress.Ready,
       s_axi_ctrl_rdata   => AxiBus.ReadData.Data,
       s_axi_ctrl_rresp   => AxiBus.ReadData.Resp,
@@ -255,6 +278,49 @@ begin
     variable ra       : CoverageIDType;
     variable rs       : CoverageIDType;
 
+    -- APPLY a size, then confirm the core uses it: frame length through TLAST, SOF Y and X
+    procedure apply_size (
+      w : positive;
+      h : positive
+    ) is
+
+      variable b : std_logic_vector(7 downto 0);
+
+    begin
+
+      Write(ManagerRec, A_WIDTH, std_logic_vector(to_unsigned(w, 32)));
+      Write(ManagerRec, A_HEIGHT, std_logic_vector(to_unsigned(h, 32)));
+      Write(ManagerRec, A_CTRL, x"00000001");
+      WaitForClock(ManagerRec, 4);
+
+      for i in 1 to w * h loop
+
+        Push(StreamTxRec.BurstFifo, x"00");
+
+      end loop;
+
+      SendBurstAsync(StreamTxRec, w * h);
+      GetBurst(StreamRxRec, numBytes);
+      AffirmIf(reqReg, numBytes > 25, "APPLY " & to_string(w) & "x" & to_string(h) & " frame complete");
+
+      for i in 0 to numBytes - 1 loop
+
+        Pop(StreamRxRec.BurstFifo, b);
+
+        if (i = 7) then
+          AffirmIfEqual(reqReg, b, std_logic_vector(to_unsigned(h / 256, 8)), "SOF Y high");
+        elsif (i = 8) then
+          AffirmIfEqual(reqReg, b, std_logic_vector(to_unsigned(h mod 256, 8)), "SOF Y low");
+        elsif (i = 9) then
+          AffirmIfEqual(reqReg, b, std_logic_vector(to_unsigned(w / 256, 8)), "SOF X high");
+        elsif (i = 10) then
+          AffirmIfEqual(reqReg, b, std_logic_vector(to_unsigned(w mod 256, 8)), "SOF X low");
+        end if;
+
+      end loop;
+
+    end procedure apply_size;
+
   begin
 
     SetTestName("tb_openjls_axis_regs_osvvm");
@@ -262,7 +328,7 @@ begin
 
     wait for 0 ns;
     wait for 0 ns;
-    reqReg   := GetReqID("OJLS.AxiLiteRegMap", 16);
+    reqReg   := GetReqID("OJLS.AxiLiteRegMap", 34);
     reqApply := GetReqID("OJLS.AxiApplyReconfig", H3_EXPECTED'length);
     reqAbort := GetReqID("OJLS.AxiAbortReencode", H3_EXPECTED'length);
 
@@ -328,6 +394,9 @@ begin
     Write(ManagerRec, A_WIDTH, x"00000002");
     Read(ManagerRec, A_WIDTH, rdata);
     AffirmIfEqual(reqReg, rdata(15 downto 0), MAX_W_SLV, "WIDTH clamp (under min)");
+    Write(ManagerRec, A_WIDTH, x"00000003");
+    Read(ManagerRec, A_WIDTH, rdata);
+    AffirmIfEqual(reqReg, rdata(15 downto 0), MAX_W_SLV, "WIDTH clamp (just under min)");
     ICover(ra, 4);
 
     -- Partial-WSTRB byte-lane merge
@@ -398,8 +467,17 @@ begin
     SetBurstMode(StreamRxRec, STREAM_BURST_BYTE_MODE);
     SetAxiStreamOptions(StreamRxRec, RECEIVE_READY_DELAY_CYCLES, 2);
 
-    PushBurst(StreamTxRec.BurstFifo, H3_PIXELS);
-    SendBurstAsync(StreamTxRec, H3_PIXELS'length);
+    -- Writes that must not APPLY land mid-image: a soft reset would break the golden below
+    PushBurst(StreamTxRec.BurstFifo, H3_PIXELS(0 to H3_PIXELS'length / 2 - 1));
+    SendBurstAsync(StreamTxRec, H3_PIXELS'length / 2);
+    WaitForTransaction(StreamTxRec);
+    Write(ManagerRec, A_CTRL, x"FFFFFFFE");            -- bit 0 clear, WSTRB 1111
+    sForceData0 <= '1';
+    Write(ManagerRec, x"00000019", x"FF");             -- WSTRB 0010, WDATA(0) high
+    Write(ManagerRec, x"0000001A", x"FF");             -- WSTRB 0100, WDATA(0) high
+    sForceData0 <= '0';
+    PushBurst(StreamTxRec.BurstFifo, H3_PIXELS(H3_PIXELS'length / 2 to H3_PIXELS'length - 1));
+    SendBurstAsync(StreamTxRec, H3_PIXELS'length - H3_PIXELS'length / 2);
     GetBurst(StreamRxRec, numBytes);
     AffirmIfEqual(reqApply, numBytes, H3_EXPECTED'length, "APPLY encode byte count");
     for i in 0 to numBytes - 1 loop
@@ -437,6 +515,21 @@ begin
       end if;
     end loop;
 
+    -- Other sizes, including a width that needs both bytes of the SOF field
+    apply_size(5, 1);
+    apply_size(4, 2);
+    apply_size(261, 2);
+
+    -- Hold a STATUS read until the APPLY write's pulse cycle, the one cycle BUSY is high
+    sAlignAr <= '1';
+    ReadAddressAsync(ManagerRec, A_STATUS);
+    Write(ManagerRec, A_CTRL, x"00000001");
+    ReadData(ManagerRec, rdata);
+    sAlignAr <= '0';
+    AffirmIfEqual(reqReg, rdata(0), '1', "STATUS BUSY high in the APPLY cycle");
+    WaitForClock(ManagerRec, 4);
+
+    AffirmIf(reqReg, sBCount > 0 and sBCount = sAwCount, "one write response per write: " & to_string(sBCount) & " of " & to_string(sAwCount));
     affirm_covered(ra, "register access coverage closed");
     affirm_covered(rs, "reset phase coverage closed");
     WaitForClock(ManagerRec, 4);

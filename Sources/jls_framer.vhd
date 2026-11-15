@@ -81,7 +81,7 @@ architecture behavioral of jls_framer is
   signal sFsmState              : fsm_t;
 
   -- Footer (D9) offsets of in-flight images; > 1 only for tiny images (T.87 H.3 4x4)
-  constant EOI_FIFO_DEPTH       : natural := 3;
+  constant EOI_FIFO_DEPTH       : natural := CO_MAX_IMAGES_IN_FLIGHT;
 
   type eoi_offsets_t is array(natural range <>) of natural range 0 to BUFFER_BYTES;
 
@@ -123,7 +123,7 @@ architecture behavioral of jls_framer is
   signal sHeaderByteIdx         : natural range 0 to HEADER_LEN;
   signal sHdrLastBeat           : boolean := HEADER_LEN < BYTES_OUT; -- HEADER_LEN - sHeaderByteIdx < BYTES_OUT
   -- iStart pulses that arrive while earlier images are still being framed
-  constant START_QUEUE_DEPTH    : natural := 4;
+  constant START_QUEUE_DEPTH    : natural := CO_MAX_IMAGES_IN_FLIGHT;
   signal   sNextPending         : natural range 0 to START_QUEUE_DEPTH;
 
   signal sAxiHandshake          : boolean;
@@ -319,7 +319,6 @@ begin
 
   sAxiHandshake <= (iReady and sOutValid) = '1';
 
-  -- Contracts (PSL, simulation only): AXI-Stream master rules
   -- psl default clock is rising_edge(iClk);
   -- psl assert always (iRst = '1' -> next (oValid = '0' and oLast = '0')) report "jls_framer: reset must clear the output stream";
   -- psl assert always ((iRst = '0' and oValid = '1' and iReady = '0') -> next (oValid = '1')) report "jls_framer: oValid must hold until the beat is accepted (AXIS)";

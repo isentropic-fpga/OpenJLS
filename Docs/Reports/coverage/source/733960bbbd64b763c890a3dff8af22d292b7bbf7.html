@@ -257,10 +257,10 @@ table, th, td {
     97: &nbsp; &nbsp;&nbsp;sBoundAdd&nbsp;&nbsp;&nbsp;&lt;=&nbsp;sNextBound&nbsp;+&nbsp;sPowInc;&nbsp;
     98: &nbsp; &nbsp;&nbsp;sBoundAddM1&nbsp;&lt;=&nbsp;sNextBoundM1&nbsp;+&nbsp;sPowInc;&nbsp;
     99: &nbsp; &nbsp;
-   100: &nbsp; &nbsp;&nbsp;--&nbsp;Contracts&nbsp;(PSL,&nbsp;simulation&nbsp;only)&nbsp;
-   101: &nbsp; &nbsp;&nbsp;--&nbsp;psl&nbsp;default&nbsp;clock&nbsp;is&nbsp;rising_edge(iClk);&nbsp;
-   102: &nbsp; &nbsp;&nbsp;--&nbsp;psl&nbsp;assert&nbsp;always&nbsp;((iRst&nbsp;=&nbsp;'1'&nbsp;or&nbsp;iEoi&nbsp;=&nbsp;'1')&nbsp;-&gt;&nbsp;next&nbsp;(sInRun&nbsp;=&nbsp;'0'&nbsp;and&nbsp;sRunIndex&nbsp;=&nbsp;0))&nbsp;report&nbsp;"a15_a16:&nbsp;run&nbsp;state&nbsp;must&nbsp;clear&nbsp;one&nbsp;cycle&nbsp;after&nbsp;iEoi/reset";&nbsp;
-   103: &nbsp; &nbsp;&nbsp;--&nbsp;psl&nbsp;assert&nbsp;always&nbsp;(iModeIsRun&nbsp;=&nbsp;'0'&nbsp;-&gt;&nbsp;(oRawValid&nbsp;=&nbsp;'0'&nbsp;and&nbsp;oRiValid&nbsp;=&nbsp;'0'))&nbsp;report&nbsp;"a15_a16:&nbsp;no&nbsp;tokens&nbsp;outside&nbsp;run&nbsp;mode";&nbsp;
+   100: &nbsp; &nbsp;&nbsp;--&nbsp;psl&nbsp;default&nbsp;clock&nbsp;is&nbsp;rising_edge(iClk);&nbsp;
+   101: &nbsp; &nbsp;&nbsp;--&nbsp;psl&nbsp;assert&nbsp;always&nbsp;((iRst&nbsp;=&nbsp;'1'&nbsp;or&nbsp;iEoi&nbsp;=&nbsp;'1')&nbsp;-&gt;&nbsp;next&nbsp;(sInRun&nbsp;=&nbsp;'0'&nbsp;and&nbsp;sRunIndex&nbsp;=&nbsp;0))&nbsp;report&nbsp;"a15_a16:&nbsp;run&nbsp;state&nbsp;must&nbsp;clear&nbsp;one&nbsp;cycle&nbsp;after&nbsp;iEoi/reset";&nbsp;
+   102: &nbsp; &nbsp;&nbsp;--&nbsp;psl&nbsp;assert&nbsp;always&nbsp;(iModeIsRun&nbsp;=&nbsp;'0'&nbsp;-&gt;&nbsp;(oRawValid&nbsp;=&nbsp;'0'&nbsp;and&nbsp;oRiValid&nbsp;=&nbsp;'0'))&nbsp;report&nbsp;"a15_a16:&nbsp;no&nbsp;tokens&nbsp;outside&nbsp;run&nbsp;mode";&nbsp;
+   103: &nbsp; &nbsp;&nbsp;--&nbsp;psl&nbsp;assert&nbsp;always&nbsp;((iRst&nbsp;=&nbsp;'0'&nbsp;and&nbsp;iCE&nbsp;=&nbsp;'0')&nbsp;-&gt;&nbsp;iEoi&nbsp;=&nbsp;'0')&nbsp;report&nbsp;"a15_a16:&nbsp;iEoi&nbsp;clears&nbsp;run&nbsp;state&nbsp;even&nbsp;when&nbsp;stalled,&nbsp;so&nbsp;it&nbsp;must&nbsp;not&nbsp;come&nbsp;while&nbsp;iCE&nbsp;is&nbsp;low";&nbsp;
    104: &nbsp; &nbsp;
    105: &nbsp; &nbsp;&nbsp;p_comb&nbsp;:&nbsp;process&nbsp;(sRunIndex,&nbsp;sNextBound,&nbsp;sNextBoundM1,&nbsp;sInRun,&nbsp;
    106: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sIdxInc,&nbsp;sIdxDec,&nbsp;sPowSame,&nbsp;sPowInc,&nbsp;sPowDec,&nbsp;sBoundAdd,&nbsp;sBoundAddM1,&nbsp;

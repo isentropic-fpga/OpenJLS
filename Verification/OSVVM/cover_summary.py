@@ -30,14 +30,15 @@ def main():
     entity2file = {os.path.basename(f)[:-4].upper(): os.path.relpath(f, srcdir)
                    for f in glob.glob(os.path.join(srcdir, "*.vhd"))
                    + glob.glob(os.path.join(srcdir, "Xilinx", "*.vhd"))}
-    # A generate exports as a class named after its label
+    # A generate exports as a class named after its label, which files may share
     gen_re = re.compile(r"^\s*(\w+)\s*:\s*(?:for|if)\b.*\bgenerate\b", re.M)
-    for ent, f in sorted(entity2file.items()):
+    generates = {}
+    for f in entity2file.values():
         with open(os.path.join(srcdir, f)) as fd:
-            for lbl in gen_re.findall(fd.read()):
-                entity2file.setdefault(lbl.upper(), f)
+            generates[f] = {lbl.upper() for lbl in gen_re.findall(fd.read())}
 
     hits = collections.defaultdict(dict)
+    seen = collections.defaultdict(set)
     with tempfile.TemporaryDirectory() as td:
         xml = os.path.join(td, "merged.xml")
         # Keep nvc's work library stub out of the cwd
@@ -49,7 +50,11 @@ def main():
             ent = cls.get("name", "").split("(")[0]
             f = entity2file.get(ent)
             if f is None:
-                continue
+                src = cls.get("filename", "").partition("Sources/")[2]
+                if ent not in generates.get(src, ()):
+                    continue
+                f = src
+                seen[f].add(ent)
             for line in cls.iter("line"):
                 if line.get("branch") == "true":
                     continue
@@ -69,6 +74,10 @@ def main():
     uncovered = sorted(set(entity2file.values()) - set(hits) - {"openjls_pkg.vhd"})
     for f in uncovered:
         print(f"{f:32}    0/?      0.0%  NOT INSTRUMENTED BY ANY TEST")
+    # No statement records exist for a generate that never elaborated
+    for f in sorted(generates):
+        for lbl in sorted(generates[f] - seen[f]):
+            print(f"{f:32} generate {lbl.lower()} never elaborated")
     if tott:
         print(f"{'TOTAL':32} {totc:4}/{tott:<4} {100*totc/tott:5.1f}%")
 

@@ -31,49 +31,49 @@ Models:
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
-        Count: 3170
+        Count: 3173
         AtLeast: 1
-        PercentCov: 317000.0000
+        PercentCov: 317300.0000
       - Name: "sign=0 / clipping region=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
-        Count: 21309
+        Count: 21305
         AtLeast: 1
-        PercentCov: 2130900.0000
+        PercentCov: 2130500.0000
       - Name: "sign=0 / clipping region=2"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 2, Max: 2}
-        Count: 3093
+        Count: 3092
         AtLeast: 1
-        PercentCov: 309300.0000
+        PercentCov: 309200.0000
       - Name: "sign=1 / clipping region=0"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 3094
+        Count: 3086
         AtLeast: 1
-        PercentCov: 309400.0000
+        PercentCov: 308600.0000
       - Name: "sign=1 / clipping region=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 21047
+        Count: 21418
         AtLeast: 1
-        PercentCov: 2104700.0000
+        PercentCov: 2141800.0000
       - Name: "sign=1 / clipping region=2"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 2, Max: 2}
-        Count: 3157
+        Count: 3156
         AtLeast: 1
-        PercentCov: 315700.0000
+        PercentCov: 315600.0000
 
   - Name: "G2.MinMax node x value"
     TestCases: 
@@ -111,9 +111,9 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 4095, Max: 4095}
-        Count: 1036
+        Count: 1037
         AtLeast: 1
-        PercentCov: 103600.0000
+        PercentCov: 103700.0000
 
   - Name: "G3.Stim node x value"
     TestCases: 
@@ -143,23 +143,23 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 2048, Max: 4095}
-        Count: 25105
+        Count: 25232
         AtLeast: 1
-        PercentCov: 2510500.0000
+        PercentCov: 2523200.0000
       - Name: "Px MSB=2048..4095"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 2048, Max: 4095}
-        Count: 25071
+        Count: 25284
         AtLeast: 1
-        PercentCov: 2507100.0000
+        PercentCov: 2528400.0000
       - Name: "C=-128"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
           - {Min: -128, Max: -128}
-        Count: 218
+        Count: 386
         AtLeast: 1
-        PercentCov: 21800.0000
+        PercentCov: 38600.0000
 

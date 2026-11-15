@@ -80,14 +80,14 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 6}
-        Count: 36
+        Count: 178
         AtLeast: 1
-        PercentCov: 3600.0000
+        PercentCov: 17800.0000
       - Name: "fullBeat"
         Type: "COUNT"
         Range: 
           - {Min: 7, Max: 7}
-        Count: 239
+        Count: 2789
         AtLeast: 1
-        PercentCov: 23900.0000
+        PercentCov: 278900.0000
 

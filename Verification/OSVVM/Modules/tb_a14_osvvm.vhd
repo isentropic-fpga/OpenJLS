@@ -117,8 +117,8 @@ begin
 
     SetAlertLogName("tb_a14_osvvm");
     SetLogEnable(PASSED, FALSE);
-    rv.InitSeed(rv'instance_name);
-    req := GetReqID("T87.A14", 100);
+    rv.InitSeed(rv'instance_name & run_seed);
+    req := GetReqID("T87.A14", 8100);
     cov := NewID("G4.Run runHit x eol");
     SetFieldName(cov, "runHit", "eol");
     for axis0 in 0 to 1 loop
@@ -156,7 +156,6 @@ begin
       end if;
       rc := rv.RandInt(0, RC_MOD - 1);
       drive_check(ra, ix, rc, bool2bit(rv.RandInt(0, 1) = 1), "rand");
-      exit when IsCovered(cov) and i > 100;
 
     end loop;
 

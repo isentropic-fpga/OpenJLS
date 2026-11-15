@@ -5,6 +5,9 @@
 -- commercial license. See LICENSE and README for details.
 --
 
+library std;
+  use std.textio.all;
+
 library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
@@ -99,6 +102,10 @@ package tb_support_pkg is
     constant active : in    std_logic := '1'
   );
 
+  -- Salt for random seeds: the RTL hash written by OpenJls.pro, so each RTL version gets new
+  -- stimuli and the same RTL replays them. Empty outside that flow.
+  impure function run_seed return string;
+
   procedure end_of_test (
     constant test_name : in string
   );
@@ -112,6 +119,20 @@ package tb_support_pkg is
 end package tb_support_pkg;
 
 package body tb_support_pkg is
+
+  impure function run_seed return string is
+    file f        : text;
+    variable st   : file_open_status;
+    variable line_v : line;
+  begin
+    file_open(st, f, "run_seed.txt", read_mode);
+    if st /= open_ok then
+      return "";
+    end if;
+    readline(f, line_v);
+    file_close(f);
+    return line_v.all;
+  end function;
 
   procedure label_delay_coverage(id : DelayCoverageIDType; prefix : string) is
     procedure label_model(model : CoverageIDType; label_text : string) is

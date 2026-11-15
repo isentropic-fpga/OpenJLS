@@ -89,8 +89,8 @@ begin
 
     SetAlertLogName("tb_a17_osvvm");
     SetLogEnable(PASSED, FALSE);
-    rv.InitSeed(rv'instance_name);
-    req := GetReqID("T87.A17", 100);
+    rv.InitSeed(rv'instance_name & run_seed);
+    req := GetReqID("T87.A17", 2700);
     cov := NewID("G4.Run RItype");
     SetFieldName(cov, "RItype");
     AddBins(cov, "unequal neighbours", GenBin(0));
@@ -122,7 +122,6 @@ begin
         rb := rv.RandInt(0, PX_MAX);
       end if;
       drive_check(ra, rb, "rand");
-      exit when IsCovered(cov) and i > 100;
 
     end loop;
 

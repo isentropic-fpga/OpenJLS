@@ -32,5 +32,7 @@ echo "Copying reference images to $REF_DIR..."
 mkdir -p "$REF_DIR"
 cp "$WORK_DIR"/jlsimgV100/* "$REF_DIR/"
 
+( cd "$REF_DIR" && sha256sum -c --quiet "$SCRIPT_DIR/reference_images.sha256" )
+
 echo "Done. Reference images are in: $REF_DIR/"
 ls "$REF_DIR/"

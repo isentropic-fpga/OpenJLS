@@ -113,8 +113,8 @@ begin
 
     SetAlertLogName("tb_a18_osvvm");
     SetLogEnable(PASSED, FALSE);
-    rv.InitSeed(rv'instance_name);
-    req := GetReqID("T87.A18", 200);
+    rv.InitSeed(rv'instance_name & run_seed);
+    req := GetReqID("T87.A18", 3600);
     cov := NewID("G4.Run RItype x errSign");
     SetFieldName(cov, "RItype", "errSign");
     for axis0 in 0 to 1 loop
@@ -146,7 +146,6 @@ begin
       else
         drive_check('0', rv.RandInt(0, PX_MAX), rv.RandInt(0, PX_MAX), rv.RandInt(0, PX_MAX), "rand ri0");
       end if;
-      exit when IsCovered(cov) and i > 200;
 
     end loop;
 

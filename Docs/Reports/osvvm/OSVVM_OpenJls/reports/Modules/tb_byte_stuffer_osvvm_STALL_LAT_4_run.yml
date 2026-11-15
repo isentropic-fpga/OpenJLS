@@ -1,0 +1,25 @@
+Version: "0.1"
+TestCaseName: "tb_byte_stuffer_osvvm"
+TestCaseFile:  "../../../Modules/tb_byte_stuffer_osvvm.vhd"
+TestSuiteName: "Modules"
+BuildName: "OSVVM_OpenJls"
+Generics:
+  STALL_LAT: "4"
+ReportsTestSuiteDirectory:  "reports/Modules"
+RequirementsYamlFile:  "reports/Modules/tb_byte_stuffer_osvvm_STALL_LAT_4_req.yml"
+AlertYamlFile:  "reports/Modules/tb_byte_stuffer_osvvm_STALL_LAT_4_alerts.yml"
+CovYamlFile:  "reports/Modules/tb_byte_stuffer_osvvm_STALL_LAT_4_cov.yml"
+ScoreboardDict:
+  slv: "reports/Modules/tb_byte_stuffer_osvvm_STALL_LAT_4_sb_slv.yml"
+TranscriptFiles: ""
+TestCaseFileName: "tb_byte_stuffer_osvvm_STALL_LAT_4"
+GenericNames: "_STALL_LAT_4"
+OsvvmSettingsInfo:
+  ReportsSubdirectory:  "reports"
+  SimulationLogFile: "logs/OSVVM_OpenJls.log"
+  SimulationHtmlLogFile: "logs/OSVVM_OpenJls_log.html"
+  RequirementsSubdirectory: ""
+  CoverageSubdirectory:    "CodeCoverage/OSVVM_OpenJls_code_cov.html"
+  Report2CssFiles:
+    - "reports/CssOsvvmStyle.css"
+  Report2PngFile:  "reports/OsvvmLogo.png"

@@ -31,49 +31,49 @@ Models:
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
-        Count: 36
+        Count: 96
         AtLeast: 1
-        PercentCov: 3600.0000
+        PercentCov: 9600.0000
       - Name: "rowPos=0 / colPos=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
-        Count: 254
+        Count: 581
         AtLeast: 1
-        PercentCov: 25400.0000
+        PercentCov: 58100.0000
       - Name: "rowPos=0 / colPos=2"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 2, Max: 2}
-        Count: 36
+        Count: 96
         AtLeast: 1
-        PercentCov: 3600.0000
+        PercentCov: 9600.0000
       - Name: "rowPos=1 / colPos=0"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 223
+        Count: 416
         AtLeast: 1
-        PercentCov: 22300.0000
+        PercentCov: 41600.0000
       - Name: "rowPos=1 / colPos=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 1705
+        Count: 2938
         AtLeast: 1
-        PercentCov: 170500.0000
+        PercentCov: 293800.0000
       - Name: "rowPos=1 / colPos=2"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 2, Max: 2}
-        Count: 223
+        Count: 416
         AtLeast: 1
-        PercentCov: 22300.0000
+        PercentCov: 41600.0000
 
   - Name: "G4.Config width x height"
     TestCases: 
@@ -103,9 +103,9 @@ Models:
         Range: 
           - {Min: 4, Max: 4}
           - {Min: 1, Max: 1}
-        Count: 1
+        Count: 4
         AtLeast: 1
-        PercentCov: 100.0000
+        PercentCov: 400.0000
       - Name: "width=4 / height=16"
         Type: "COUNT"
         Range: 

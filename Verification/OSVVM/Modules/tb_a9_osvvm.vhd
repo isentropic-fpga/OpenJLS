@@ -127,7 +127,7 @@ begin
 
     SetAlertLogName("tb_a9_osvvm");
     SetLogEnable(PASSED, FALSE);
-    req := GetReqID("T87.A9", 200);
+    req := GetReqID("T87.A9", 460);
 
     cov := NewID("G4.Branch wrapNeg x geHalf");
     SetFieldName(cov, "wrapNeg", "geHalf");

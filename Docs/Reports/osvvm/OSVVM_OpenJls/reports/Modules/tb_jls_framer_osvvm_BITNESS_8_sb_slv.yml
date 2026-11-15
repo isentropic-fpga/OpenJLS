@@ -1,0 +1,11 @@
+Version: "0.1"
+TestCase: "tb_jls_framer_osvvm"
+Scoreboards: 
+  - Name:         "framer SB"
+    ParentName:   "OSVVM"
+    ItemCount:    20137
+    ErrorCount:   0
+    ItemsChecked: 0
+    ItemsPopped:  20137
+    ItemsDropped: 0
+    FifoCount:    0

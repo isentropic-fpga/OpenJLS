@@ -27,12 +27,14 @@ library tb_support;
   use tb_support.tb_support_pkg.all;
 
 entity tb_a4_osvvm is
-  generic (BITNESS : natural range 8 to 16 := CO_BITNESS_STD);
+  generic (
+    BITNESS : natural range 8 to 16 := CO_BITNESS_STD;
+    MAX_VAL : natural := 2 ** BITNESS - 1
+  );
 end entity tb_a4_osvvm;
 
 architecture sim of tb_a4_osvvm is
 
-  constant MAX_VAL : natural := 2 ** BITNESS - 1;
   constant D_MIN   : integer := -(2 ** BITNESS);
   constant D_MAX   : integer := (2 ** BITNESS) - 1;
 
@@ -144,15 +146,18 @@ begin
 
     SetAlertLogName("tb_a4_osvvm");
     SetLogEnable(PASSED, FALSE);
-    rv.InitSeed(rv'instance_name);
-    req := GetReqID("T87.A4", 200);
+    rv.InitSeed(rv'instance_name & run_seed);
+    req := GetReqID("T87.A4", 16000);
 
     cov := NewID("G4.Branch G2.MinMax Qi");
     SetFieldName(cov, "gradient lane", "quantized level");
     for lane in 1 to 3 loop
       for level in -4 to 4 loop
-        AddCross(cov, "lane=" & to_string(lane) & " / level=" & to_string(level),
-                 GenBin(lane), GenBin(level));
+        -- Equal clamped thresholds leave the middle levels empty
+        if (abs(level) /= 2 or T2 > T1) and (abs(level) /= 3 or T3 > T2) and (abs(level) /= 1 or T1 > 1) then
+          AddCross(cov, "lane=" & to_string(lane) & " / level=" & to_string(level),
+                   GenBin(lane), GenBin(level));
+        end if;
       end loop;
     end loop;
 
@@ -161,6 +166,13 @@ begin
       add_value_bin(st, lane, "D" & to_string(lane), D_MIN);
       add_value_bin(st, lane, "D" & to_string(lane) & " MSB", D_MIN, -1);
     end loop;
+
+    -- Values from T.87 C.2.4.1.1.1, independent of the formula above
+    if MAX_VAL = 255 then
+      AffirmIf(req, T1 = 3 and T2 = 7 and T3 = 21, "8-bit default thresholds");
+    elsif MAX_VAL >= 4095 then
+      AffirmIf(req, T1 = 18 and T2 = 67 and T3 = 276, "12-bit and above default thresholds");
+    end if;
 
     -- Threshold boundaries, both signs
     drive_check(0, 1, -1, "near-zero");
@@ -180,7 +192,6 @@ begin
     for i in 1 to N_RAND loop
 
       drive_check(rv.RandInt(D_MIN, D_MAX), rv.RandInt(D_MIN, D_MAX), rv.RandInt(D_MIN, D_MAX), "rand");
-      exit when IsCovered(cov) and i > 200;
 
     end loop;
 

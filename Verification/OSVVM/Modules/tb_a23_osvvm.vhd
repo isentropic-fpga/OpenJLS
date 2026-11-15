@@ -200,8 +200,8 @@ begin
 
     SetAlertLogName("tb_a23_osvvm");
     SetLogEnable(PASSED, FALSE);
-    rv.InitSeed(rv'instance_name);
-    req := GetReqID("T87.A23", 600);
+    rv.InitSeed(rv'instance_name & run_seed);
+    req := GetReqID("T87.A23", 130000);
 
     cov := NewID("G4.Run rescale x errNeg x RItype");
     SetFieldName(cov, "rescale", "errNeg", "RItype");
@@ -268,7 +268,6 @@ begin
       end if;
       nn := rv.RandInt(0, n - 1);
       drive_check(err, ri, a, n, nn, mp, "rand coherent");
-      exit when IsCovered(cov) and i > 600;
 
     end loop;
 

@@ -7,9 +7,9 @@
 [![standard](https://img.shields.io/badge/JPEG--LS-ISO%2FIEC_14495--1-8a2be2)](https://www.itu.int/rec/T-REC-T.87)
 [![verification](https://img.shields.io/badge/verification-report-0969da)](https://isentropic-fpga.github.io/OpenJLS/)
 
-OpenJLS is an open, verification-signed JPEG-LS encoder IP core for FPGAs - the open alternative to closed, commercial JPEG-LS cores, for teams who want to audit the RTL and evaluate before they buy.
+OpenJLS is an open, openly verified JPEG-LS encoder IP core for FPGAs - the open alternative to closed, commercial JPEG-LS cores, for teams who want to audit the RTL and evaluate before they buy.
 
-It implements the JPEG-LS standard (ISO/IEC 14495-1 / ITU-T T.87), a low-complexity lossless image codec reaching ~1.6:1 on natural photographs. Every release is checked byte-exact against an independent reference encoder across 11639 images at 8–16 bits on silicon, 11555 of them also at RTL, and on a post-synthesis subset.
+It implements the JPEG-LS standard (ISO/IEC 14495-1 / ITU-T T.87), a low-complexity lossless image codec reaching ~1.6:1 on natural photographs. Every release is checked byte-exact against an independent reference encoder on silicon, at RTL and on a post-synthesis subset: 5659 corpus images at 8–16 bits, each encoded from reset, plus 6000 same-size images streamed with no reset between them (11659 encodes on silicon, 11575 at RTL). Formal proofs cover the control logic, the T.87 arithmetic and the bit/byte streams.
 
 OpenJLS reaches ~440 MHz with 12-bit pixels on a Xilinx UltraScale+ ZU7EG (the MPSoC family used in onboard processors such as the Xiphos Q8), processing one pixel per clock (~440 Mpixel/s) for ~6.6k LUTs and no external memory; 8-bit reaches ~450 MHz and 16-bit ~375 MHz. It handles single-component (grayscale) data, so a multi-band sensor instantiates one compressor per band - resource usage is low enough that all bands run in parallel cheaply.
 
@@ -218,58 +218,61 @@ Each configuration is implemented with four Vivado strategies. fmax tables in MH
 
 ## Verification
 
-OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level, and on hardware. Results are published in the **[verification report](https://isentropic-fpga.github.io/OpenJLS/)**.
+OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level, with formal proofs, and on hardware. Results are published in the **[verification report](https://isentropic-fpga.github.io/OpenJLS/)**.
 
 | Suite | Status | Test/Cov | Summary |
 |---|---|---|---|
 | NVC code coverage | info | 99.7% | Statement coverage<sup>1</sup> |
-| OSVVM suite | PASS | 100% | 128 tests<sup>2</sup> |
-| Golden model | PASS | 100% | 11555/11555 images<sup>3</sup> |
-| Post-synth OSVVM | PASS | 100% | Control-plane stress<sup>4</sup> |
-| Post-synth golden model | PASS | 100% | 167/167 images<sup>5</sup> |
-| HIL golden model | PASS | 100% | 11639/11639 images<sup>6</sup> |
+| OSVVM suite | PASS | 100% | 281 tests<sup>2</sup> |
+| Formal | PASS | 100% | 396/396 checks<sup>3</sup> |
+| Golden model | PASS | 100% | 11575/11575 images, 1500 random streams<sup>4</sup> |
+| Post-synth OSVVM | PASS | 100% | Control-plane stress<sup>5</sup> |
+| Post-synth golden model | PASS | 100% | 169/169 images<sup>6</sup> |
+| HIL golden model | PASS | 100% | 11659/11659 images<sup>7</sup> |
 
 <sub>
-<sup>1</sup> Per-DUT-file breakdown.<br>
-<sup>2</sup> 10,984,893 affirmations (module + top + AXI wrappers).<br>
-<sup>3</sup> Byte-exact vs CharLS: 5555 from reset, 6000 same-size images streamed with no reset between them.<br>
-<sup>4</sup> 155,469 affirmations on the gate-level netlist.<br>
-<sup>5</sup> 8-bit images up to 0.05 MP, byte-exact vs CharLS.<br>
-<sup>6</sup> Byte-exact vs CharLS on PYNQ-Z2 silicon at 100 MHz: 5639 from reset, 6000 same-size images streamed with no reset between them.
+<sup>1</sup> Per-file breakdown and the review of each uncovered line are in the verification report.<br>
+<sup>2</sup> 37,001,113 affirmations (module + top + AXI wrappers).<br>
+<sup>3</sup> 340 full proofs, 56 fault-injection checks that fail as required.<br>
+<sup>4</sup> Byte-exact vs CharLS: 5575 from reset, 6000 same-size images streamed with no reset between them.<br>
+<sup>5</sup> 155,471 affirmations on the gate-level netlist.<br>
+<sup>6</sup> 8-bit images up to 0.05 MP, byte-exact vs CharLS.<br>
+<sup>7</sup> Byte-exact vs CharLS on PYNQ-Z2 silicon at 100 MHz: 5659 from reset, 6000 same-size images streamed with no reset between them.
 </sub>
 
 - **OSVVM** — 32 module testbenches against independent T.87 reference models, a top-level control-plane stress test, and AXI wrapper tests, all with requirements tracking.
 - **Coverage** — OSVVM functional coverage plus NVC statement coverage.
-- **Golden model** — byte-exact against [CharLS](https://github.com/team-charls/charls) and the official ISO/IEC 14495-1 reference vectors, both per image from reset and on same-size images streamed with no reset between them.
+- **Golden model** — byte-exact against [CharLS](https://github.com/team-charls/charls) and the official ISO/IEC 14495-1 reference vectors, both per image from reset and on same-size images streamed with no reset between them. Each RTL version also runs 1500 streams of random size, depth, output width, valid and ready.
 - **Design contracts** — PSL assertions on the handshakes, checked every run.
+- **Formal** — proofs over all input sequences with SymbiYosys: top-level control invariants, the RTL assertions and module contracts, the per-sample T.87 modules against a transcription of the T.87 C code, bit and byte stream order, context forwarding, framer margin and datapath ranges. Each property also runs with an injected fault that it must catch. Scope and limits: [`Verification/Formal`](Verification/Formal/README.md).
 - **Post-synthesis** — stress test and a golden subset re-run on the gate-level netlist.
 - **Hardware-in-the-loop** — full corpus and the no-reset streams encoded on a PYNQ-Z2 at depths 8–16, zero mismatches; reproducible via the [EncodeOverEthernet demo](https://github.com/isentropic-fpga/OpenJLS-Demos).
 
-**Golden-model dataset** — 5639 images: 5555 from 4×1 up to 0.5 MP, run in simulation and on hardware, plus 84 full-size originals run on hardware only:
+**Golden-model dataset** — 5659 images: 5575 from 4×1 up to 0.5 MP, run in simulation and on hardware, plus 84 full-size originals run on hardware only:
 
 | Source | Set | Images |
 |---|---|--:|
 | [USC-SIPI](https://sipi.usc.edu/database/) | Aerials, textures, miscellaneous, sequences | 318 |
 | [imagecompression.info](http://imagecompression.info/test_images/) | 8-bit and 16-bit natural photographs | 90 |
-| Generated stress probes | Boundary, predictor-adversarial, high-entropy and fuzz patterns | 45 |
+| Generated stress probes | Boundary, predictor-adversarial, context-limit, long-run, high-entropy and fuzz patterns | 65 |
 | Natural derived | Random crops of the 16-bit photographs, rescaled to each depth 9–16 (~300 per depth) | 2402 |
 | Generated noise probes | White and 1/f^β (smoothed) noise, random sizes and value ranges, 300 per depth 8–16 | 2700 |
 | Full-size originals | Unsliced USC-SIPI and imagecompression.info images over 0.5 MP, hardware only | 84 |
 
 | Bits | Natural | Natural derived | Noise probes | Stress probes | Full-size originals | Total |
 |--:|--:|--:|--:|--:|--:|--:|
-| 8 | 363 | 0 | 300 | 0 | 69 | 732 |
-| 9 | 0 | 300 | 300 | 2 | 0 | 602 |
-| 10 | 0 | 301 | 300 | 2 | 0 | 603 |
-| 11 | 0 | 300 | 300 | 2 | 0 | 602 |
-| 12 | 0 | 300 | 300 | 2 | 0 | 602 |
-| 13 | 0 | 300 | 300 | 2 | 0 | 602 |
-| 14 | 0 | 301 | 300 | 2 | 0 | 603 |
-| 15 | 0 | 300 | 300 | 2 | 0 | 602 |
-| 16 | 45 | 300 | 300 | 31 | 15 | 691 |
-| **All** | **408** | **2402** | **2700** | **45** | **84** | **5639** |
+| 8 | 363 | 0 | 300 | 3 | 69 | 735 |
+| 9 | 0 | 300 | 300 | 4 | 0 | 604 |
+| 10 | 0 | 301 | 300 | 4 | 0 | 605 |
+| 11 | 0 | 300 | 300 | 4 | 0 | 604 |
+| 12 | 0 | 300 | 300 | 4 | 0 | 604 |
+| 13 | 0 | 300 | 300 | 4 | 0 | 604 |
+| 14 | 0 | 301 | 300 | 4 | 0 | 605 |
+| 15 | 0 | 300 | 300 | 4 | 0 | 604 |
+| 16 | 45 | 300 | 300 | 34 | 15 | 694 |
+| **All** | **408** | **2402** | **2700** | **65** | **84** | **5659** |
 
-The public datasets are natural only at 8 and 16 bits. The natural-derived images ([`gen_depth_tiles.py`](Verification/Golden%20model/imageprep/gen_depth_tiles.py)) rescale random 4×1 to 640×384 crops of the 16-bit photographs to each depth 9–16, giving every depth real texture. The noise probes ([`gen_noise_probes.py`](Verification/Golden%20model/imageprep/gen_noise_probes.py)) span incompressible white noise to smooth, run-mode-heavy 1/f^β gradients. The stress probes ([`gen_stress.py`](Verification/Golden%20model/imageprep/gen_stress.py)) cover boundary geometries (4×1 up to 65535×1), MED-adversarial patterns and a tiny-image fuzz batch. All generators are seeded. Images over 0.5 MP are sliced into three full-width strips of up to 64 rows ([`slice_large.py`](Verification/Golden%20model/imageprep/slice_large.py)); their originals run on hardware only.
+The public datasets are natural only at 8 and 16 bits. The natural-derived images ([`gen_depth_tiles.py`](Verification/Golden%20model/imageprep/gen_depth_tiles.py)) rescale random 4×1 to 640×384 crops of the 16-bit photographs to each depth 9–16, giving every depth real texture. The noise probes ([`gen_noise_probes.py`](Verification/Golden%20model/imageprep/gen_noise_probes.py)) span incompressible white noise to smooth, run-mode-heavy 1/f^β gradients. The stress probes ([`gen_stress.py`](Verification/Golden%20model/imageprep/gen_stress.py)) cover boundary geometries (4×1 up to 65535×1), MED-adversarial patterns, context limits at each depth, 65535-pixel runs and a tiny-image fuzz batch. All generators are seeded. Images over 0.5 MP are sliced into three full-width strips of up to 64 rows ([`slice_large.py`](Verification/Golden%20model/imageprep/slice_large.py)); their originals run on hardware only.
 
 ---
 
@@ -278,9 +281,6 @@ The public datasets are natural only at 8 and 16 bits. The natural-derived image
 End-to-end example projects live in a companion repository, [**OpenJLS-Demos**](https://github.com/isentropic-fpga/OpenJLS-Demos), each pinning the core as a submodule at its verified commit.
 
 - **[EncodeOverEthernet](https://github.com/isentropic-fpga/OpenJLS-Demos/tree/main/EncodeOverEthernet)** — streams raw images to a PYNQ-Z2 over Ethernet, encodes them 100% in the FPGA, and streams the `.jls` files back.
-
-More demos (additional boards and integrations) are planned.
-
 ---
 
 ## Licensing
@@ -298,7 +298,7 @@ OpenJLS is dual-licensed:
 
 ## Dependencies
 
-**Using the IP** needs only open-logic, committed in-tree. **Running the verification suite** needs the Linux toolchain in the second table; none of it is part of, or distributed with, the IP.
+**Using the IP** needs only open-logic, committed in-tree. **Running the verification suite** needs the Linux toolchain under Verification below; none of it is part of, or distributed with, the IP.
 
 ### Base IP
 
@@ -313,11 +313,18 @@ None of the components below are committed to the repository — running [`Third
 
 | Component | License | Notes |
 |---|---|---|
-| [NVC](https://www.nickg.me.uk/nvc/) | GPL-3.0 | VHDL simulator for all simulation, coverage, and post-synthesis flows; developed and tested with NVC 1.21. Not vendored — its GPL covers the simulator, not the IP it runs. |
+| [NVC](https://www.nickg.me.uk/nvc/) | GPL-3.0 | VHDL simulator for all simulation, coverage, and post-synthesis flows; developed and tested with NVC 1.23. Not vendored — its GPL covers the simulator, not the IP it runs. |
 | [CharLS](https://github.com/team-charls/charls) | BSD-3-Clause | JPEG-LS reference encoder for the golden-model cross-check; built from source at a pinned commit by `ThirdParty/fetch_third_party.sh`. |
 | [OSVVM](https://github.com/OSVVM/OSVVM) | Apache-2.0 | VHDL verification library used by the testbench suite. |
 | [OSVVM-Scripts](https://github.com/OSVVM/OSVVM-Scripts) | Apache-2.0 | Regression and report-generation script flow. |
 | [tcllib](https://github.com/tcltk/tcllib) | Tcl/BSD-style | `fileutil` and `yaml` modules required by the report scripts. |
+
+Two flows need tools that `fetch_third_party.sh` does not install:
+
+| Component | License | Notes |
+|---|---|---|
+| [OSS CAD Suite](https://github.com/YosysHQ/oss-cad-suite-build) | ISC and others | GHDL, Yosys and SymbiYosys for the formal flow; pinned to the 2026-10-13 build, as later builds break the GHDL plugin. Path set by `OSS_CAD_SUITE`. |
+| AMD Vivado | Proprietary | Synthesis of the gate-level netlist for the post-synthesis flows only. |
 
 NVC installs through your OS package manager — the script handles Ubuntu and Arch automatically; elsewhere install it manually from the [NVC docs](https://www.nickg.me.uk/nvc/). No dependency imposes copyleft on the OpenJLS sources, so the dual-licensing model above is unaffected. Redistribution must retain the third-party notices and license texts in `ThirdParty/`.
 

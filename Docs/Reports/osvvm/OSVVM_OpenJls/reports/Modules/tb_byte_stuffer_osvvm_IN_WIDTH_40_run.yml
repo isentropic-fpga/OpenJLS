@@ -1,0 +1,25 @@
+Version: "0.1"
+TestCaseName: "tb_byte_stuffer_osvvm"
+TestCaseFile:  "../../../Modules/tb_byte_stuffer_osvvm.vhd"
+TestSuiteName: "Modules"
+BuildName: "OSVVM_OpenJls"
+Generics:
+  IN_WIDTH: "40"
+ReportsTestSuiteDirectory:  "reports/Modules"
+RequirementsYamlFile:  "reports/Modules/tb_byte_stuffer_osvvm_IN_WIDTH_40_req.yml"
+AlertYamlFile:  "reports/Modules/tb_byte_stuffer_osvvm_IN_WIDTH_40_alerts.yml"
+CovYamlFile:  "reports/Modules/tb_byte_stuffer_osvvm_IN_WIDTH_40_cov.yml"
+ScoreboardDict:
+  slv: "reports/Modules/tb_byte_stuffer_osvvm_IN_WIDTH_40_sb_slv.yml"
+TranscriptFiles: ""
+TestCaseFileName: "tb_byte_stuffer_osvvm_IN_WIDTH_40"
+GenericNames: "_IN_WIDTH_40"
+OsvvmSettingsInfo:
+  ReportsSubdirectory:  "reports"
+  SimulationLogFile: "logs/OSVVM_OpenJls.log"
+  SimulationHtmlLogFile: "logs/OSVVM_OpenJls_log.html"
+  RequirementsSubdirectory: ""
+  CoverageSubdirectory:    "CodeCoverage/OSVVM_OpenJls_code_cov.html"
+  Report2CssFiles:
+    - "reports/CssOsvvmStyle.css"
+  Report2PngFile:  "reports/OsvvmLogo.png"

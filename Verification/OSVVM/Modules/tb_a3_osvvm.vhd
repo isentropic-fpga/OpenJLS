@@ -98,8 +98,8 @@ begin
 
     SetAlertLogName("tb_a3_osvvm");
     SetLogEnable(PASSED, FALSE);
-    rv.InitSeed(rv'instance_name);
-    req := GetReqID("T87.A3", 100);
+    rv.InitSeed(rv'instance_name & run_seed);
+    req := GetReqID("T87.A3", 2700);
 
     cov := NewID("G4.Branch modeRun");
     SetFieldName(cov, "modeRun");
@@ -146,7 +146,6 @@ begin
         d3 := rv.RandInt(D_MIN, D_MAX);
       end if;
       drive_check(d1, d2, d3, "rand");
-      exit when IsCovered(cov) and i > 100;
 
     end loop;
 

@@ -3,89 +3,89 @@ TestCase: "tb_openjls_axis_regs_osvvm"
 Scoreboards: 
   - Name:         "WriteResp SB"
     ParentName:   "u_manager"
-    ItemCount:    19
+    ItemCount:    33
     ErrorCount:   0
-    ItemsChecked: 19
-    ItemsPopped:  19
+    ItemsChecked: 33
+    ItemsPopped:  33
     ItemsDropped: 0
     FifoCount:    0
   - Name:         "ReadResp SB"
     ParentName:   "u_manager"
-    ItemCount:    21
+    ItemCount:    23
     ErrorCount:   0
-    ItemsChecked: 21
-    ItemsPopped:  21
+    ItemsChecked: 23
+    ItemsPopped:  23
     ItemsDropped: 0
     FifoCount:    0
   - Name:         "WriteAddrFifo"
     ParentName:   "u_manager"
-    ItemCount:    19
+    ItemCount:    33
     ErrorCount:   0
     ItemsChecked: 0
-    ItemsPopped:  19
+    ItemsPopped:  33
     ItemsDropped: 0
     FifoCount:    0
   - Name:         "WriteDataFifo"
     ParentName:   "u_manager"
-    ItemCount:    19
+    ItemCount:    33
     ErrorCount:   0
     ItemsChecked: 0
-    ItemsPopped:  19
+    ItemsPopped:  33
     ItemsDropped: 0
     FifoCount:    0
   - Name:         "ReadAddrFifo"
     ParentName:   "u_manager"
-    ItemCount:    21
+    ItemCount:    23
     ErrorCount:   0
     ItemsChecked: 0
-    ItemsPopped:  21
+    ItemsPopped:  23
     ItemsDropped: 0
     FifoCount:    0
   - Name:         "ReadByteAddrFifo"
     ParentName:   "u_manager"
-    ItemCount:    21
+    ItemCount:    23
     ErrorCount:   0
     ItemsChecked: 0
-    ItemsPopped:  21
+    ItemsPopped:  23
     ItemsDropped: 0
     FifoCount:    0
   - Name:         "ReadDataFifo"
     ParentName:   "u_manager"
-    ItemCount:    21
+    ItemCount:    23
     ErrorCount:   0
     ItemsChecked: 0
-    ItemsPopped:  21
+    ItemsPopped:  23
     ItemsDropped: 0
     FifoCount:    0
   - Name:         "TransmitFifo"
     ParentName:   "PixelInput"
-    ItemCount:    40
+    ItemCount:    575
     ErrorCount:   0
     ItemsChecked: 0
-    ItemsPopped:  40
+    ItemsPopped:  575
     ItemsDropped: 0
     FifoCount:    0
   - Name:         "ReceiveFifo"
     ParentName:   "EncodedOutput"
-    ItemCount:    21
+    ItemCount:    33
     ErrorCount:   0
     ItemsChecked: 0
-    ItemsPopped:  21
+    ItemsPopped:  33
     ItemsDropped: 0
     FifoCount:    0
   - Name:         "TxBurstFifo"
     ParentName:   "PixelInput"
-    ItemCount:    40
+    ItemCount:    575
     ErrorCount:   0
     ItemsChecked: 0
-    ItemsPopped:  40
+    ItemsPopped:  575
     ItemsDropped: 0
     FifoCount:    0
   - Name:         "RxBurstFifo"
     ParentName:   "EncodedOutput"
-    ItemCount:    154
+    ItemCount:    241
     ErrorCount:   0
     ItemsChecked: 0
-    ItemsPopped:  154
+    ItemsPopped:  241
     ItemsDropped: 0
     FifoCount:    0

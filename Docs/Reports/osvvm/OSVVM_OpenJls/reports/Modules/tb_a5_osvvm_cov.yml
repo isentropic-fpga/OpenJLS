@@ -29,23 +29,23 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 76
+        Count: 1335
         AtLeast: 1
-        PercentCov: 7600.0000
+        PercentCov: 133500.0000
       - Name: "C <= min: choose max"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 80
+        Count: 1351
         AtLeast: 1
-        PercentCov: 8000.0000
+        PercentCov: 135100.0000
       - Name: "interpolate"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
-        Count: 64
+        Count: 1333
         AtLeast: 1
-        PercentCov: 6400.0000
+        PercentCov: 133300.0000
 
   - Name: "G2.MinMax node x value"
     TestCases: 
@@ -83,9 +83,9 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 4095, Max: 4095}
-        Count: 4
+        Count: 6
         AtLeast: 1
-        PercentCov: 400.0000
+        PercentCov: 600.0000
 
   - Name: "G3.Stim node x value"
     TestCases: 
@@ -115,23 +115,23 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 2048, Max: 4095}
-        Count: 114
+        Count: 2031
         AtLeast: 1
-        PercentCov: 11400.0000
+        PercentCov: 203100.0000
       - Name: "Rb MSB=2048..4095"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 2048, Max: 4095}
-        Count: 103
+        Count: 1993
         AtLeast: 1
-        PercentCov: 10300.0000
+        PercentCov: 199300.0000
       - Name: "Rc MSB=2048..4095"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
           - {Min: 2048, Max: 4095}
-        Count: 104
+        Count: 1994
         AtLeast: 1
-        PercentCov: 10400.0000
+        PercentCov: 199400.0000
 

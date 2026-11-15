@@ -149,8 +149,8 @@ begin
 
     SetAlertLogName("tb_a20_2_osvvm");
     SetLogEnable(PASSED, FALSE);
-    rv.InitSeed(rv'instance_name);
-    req := GetReqID("T87.A20.2", 400);
+    rv.InitSeed(rv'instance_name & run_seed);
+    req := GetReqID("T87.A20.2", 17000);
 
     cov := NewID("G4.Coding mode x k");
     SetFieldName(cov, "RItype", "k");
@@ -203,7 +203,6 @@ begin
       n  := rv.RandInt(1, N_MAX);
       a  := rv.RandInt(0, A_MAX - (n / 2) * rt);
       drive_check(rv.RandInt(0, 1), rt, n, a, "rand");
-      exit when IsCovered(cov) and i > 400;
 
     end loop;
 

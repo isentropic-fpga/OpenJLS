@@ -1,0 +1,5 @@
+- Requirement: "T87.A22"
+  TestCases: 
+  - TestName: "tb_a22_osvvm"
+    Status: PASSED
+    Results: {Goal: 8400, Passed: 23792, Errors: 0, Checked: 23792, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}

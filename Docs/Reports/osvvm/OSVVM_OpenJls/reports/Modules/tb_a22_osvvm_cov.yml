@@ -31,33 +31,33 @@ Models:
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
-        Count: 8297
+        Count: 10285
         AtLeast: 1
-        PercentCov: 829700.0000
+        PercentCov: 1028500.0000
       - Name: "ri=0 / map=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
-        Count: 8265
+        Count: 9992
         AtLeast: 1
-        PercentCov: 826500.0000
+        PercentCov: 999200.0000
       - Name: "ri=1 / map=0"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 8289
+        Count: 9966
         AtLeast: 1
-        PercentCov: 828900.0000
+        PercentCov: 996600.0000
       - Name: "ri=1 / map=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 8286
+        Count: 9933
         AtLeast: 1
-        PercentCov: 828600.0000
+        PercentCov: 993300.0000
 
   - Name: "G4.Run emZero"
     TestCases: 
@@ -85,16 +85,16 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 33089
+        Count: 39594
         AtLeast: 1
-        PercentCov: 3308900.0000
+        PercentCov: 3959400.0000
       - Name: "zero mapped error"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 48
+        Count: 582
         AtLeast: 1
-        PercentCov: 4800.0000
+        PercentCov: 58200.0000
 
   - Name: "G2.MinMax node x value"
     TestCases: 
@@ -132,17 +132,17 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 4095, Max: 4095}
-        Count: 5
+        Count: 6
         AtLeast: 1
-        PercentCov: 500.0000
+        PercentCov: 600.0000
       - Name: "EMErrval=0"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 0, Max: 0}
-        Count: 48
+        Count: 582
         AtLeast: 1
-        PercentCov: 4800.0000
+        PercentCov: 58200.0000
       - Name: "EMErrval=8192"
         Type: "COUNT"
         Range: 

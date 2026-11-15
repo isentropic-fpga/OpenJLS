@@ -1,0 +1,5 @@
+- Requirement: "T87.A17"
+  TestCases: 
+  - TestName: "tb_a17_osvvm"
+    Status: PASSED
+    Results: {Goal: 2700, Passed: 3023, Errors: 0, Checked: 3023, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}

@@ -1,0 +1,186 @@
+Version: "0.1"
+Coverage: 100.00
+Settings: 
+  WritePassFail: 0
+Models: 
+  - Name: "G4.Run ri x map"
+    TestCases: 
+      - "tb_a22_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1766224188, 962277875]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 4
+      TotalCovGoal: 4
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "ri"
+        - "map"
+      NumBins: 4
+    Bins: 
+      - Name: "ri=0 / map=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 0, Max: 0}
+        Count: 34861
+        AtLeast: 1
+        PercentCov: 3486100.0000
+      - Name: "ri=0 / map=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 1, Max: 1}
+        Count: 34568
+        AtLeast: 1
+        PercentCov: 3456800.0000
+      - Name: "ri=1 / map=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 0, Max: 0}
+        Count: 34542
+        AtLeast: 1
+        PercentCov: 3454200.0000
+      - Name: "ri=1 / map=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 1, Max: 1}
+        Count: 34509
+        AtLeast: 1
+        PercentCov: 3450900.0000
+
+  - Name: "G4.Run emZero"
+    TestCases: 
+      - "tb_a22_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [520881819, 1583714948]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 2
+      TotalCovGoal: 2
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "emZero"
+      NumBins: 2
+    Bins: 
+      - Name: "nonzero mapped error"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+        Count: 137900
+        AtLeast: 1
+        PercentCov: 13790000.0000
+      - Name: "zero mapped error"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 580
+        AtLeast: 1
+        PercentCov: 58000.0000
+
+  - Name: "G2.MinMax node x value"
+    TestCases: 
+      - "tb_a22_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1168425035, 132857010]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 4
+      TotalCovGoal: 4
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "Bin1"
+        - "Bin2"
+      NumBins: 4
+    Bins: 
+      - Name: "Errval=-16384"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: -16384, Max: -16384}
+        Count: 5
+        AtLeast: 1
+        PercentCov: 500.0000
+      - Name: "Errval=16383"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 16383, Max: 16383}
+        Count: 6
+        AtLeast: 1
+        PercentCov: 600.0000
+      - Name: "EMErrval=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: 0, Max: 0}
+        Count: 580
+        AtLeast: 1
+        PercentCov: 58000.0000
+      - Name: "EMErrval=32768"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: 32768, Max: 32768}
+        Count: 2
+        AtLeast: 1
+        PercentCov: 200.0000
+
+  - Name: "G3.Stim node x value"
+    TestCases: 
+      - "tb_a22_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [101216275, 2036723784]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 1
+      TotalCovGoal: 1
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "Bin1"
+        - "Bin2"
+      NumBins: 1
+    Bins: 
+      - Name: "Errval=-16384"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: -16384, Max: -16384}
+        Count: 5
+        AtLeast: 1
+        PercentCov: 500.0000
+

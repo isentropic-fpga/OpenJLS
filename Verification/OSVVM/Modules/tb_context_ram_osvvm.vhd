@@ -391,9 +391,15 @@ begin
 
     SetAlertLogName("tb_context_ram_osvvm");
     SetLogEnable(PASSED, FALSE);
-    rv.InitSeed(rv'instance_name);
+    rv.InitSeed(rv'instance_name & run_seed);
     -- 18 directed + 3 x RAM_DEPTH sweep + 2 + at least 201 random
-    req := GetReqID("OJLS.CtxRam", 1322);
+    req := GetReqID("OJLS.CtxRam", 9900);
+    case BITNESS is
+      when 8 => AffirmIfEqual(req, A_INIT, 4, "T.87 A_INIT pin");
+      when 12 => AffirmIfEqual(req, A_INIT, 64, "T.87 A_INIT pin");
+      when 16 => AffirmIfEqual(req, A_INIT, 1024, "T.87 A_INIT pin");
+      when others => null;
+    end case;
     cov := NewID("G4.Stream readOutcome");
     SetFieldName(cov, "readOutcome");
     AddBins(cov, "initial value", GenBin(0));
@@ -529,8 +535,6 @@ begin
         pulse_rst_access(rv.RandInt(0, RAM_DEPTH - 1),
                          rv.RandInt(0, RAM_DEPTH - 1), rv.RandSlv(TOTAL_WIDTH));
       end if;
-
-      exit when IsCovered(cov) and IsCovered(covEoiRd) and IsCovered(covPend) and IsCovered(covStall) and i > 200;
 
     end loop;
 

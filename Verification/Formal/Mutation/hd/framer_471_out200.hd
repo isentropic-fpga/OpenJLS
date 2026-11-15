@@ -1,0 +1,9 @@
+# 471#std25 at OUT_WIDTH 200: the mutant sends the first data beat from header (idx 25, last beat) while gold is in data
+(g("sfsmstate") == m("sfsmstate")) | ((g("sfsmstate") == 2) & (m("sfsmstate") == 1) & (m("sheaderbyteidx") == 25) & m("shdrlastbeat"))
+imp((g("sfsmstate") == 1) & (m("sfsmstate") == 1), (g("sheaderbyteidx") == m("sheaderbyteidx")) & (g("shdrlastbeat") == m("shdrlastbeat")))
+imp(g("sfsmstate") == 1, (g("sheaderbyteidx") == 0) & ~g("shdrlastbeat"))
+imp(m("sfsmstate") == 1, ((m("sheaderbyteidx") == 0) & ~m("shdrlastbeat")) | ((m("sheaderbyteidx") == 25) & m("shdrlastbeat")))
+imp((m("sfsmstate") == 1) & (m("sheaderbyteidx") == 25), g("sfsmstate") == 2)
+imp((g("sfsmstate") == 2) & (m("sfsmstate") == 1), m("shdrfire") == g("sdatafire"))
+imp((g("sfsmstate") == 2) & (m("sfsmstate") == 1), m("shdremit") == g("sdataemit"))
+imp((g("sfsmstate") == 2) & (m("sfsmstate") == 1), m("seoiinhdr") == g("seoiindata"))

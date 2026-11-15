@@ -29,16 +29,16 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 127
+        Count: 2644
         AtLeast: 1
-        PercentCov: 12700.0000
+        PercentCov: 264400.0000
       - Name: "run"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 19
+        Count: 401
         AtLeast: 1
-        PercentCov: 1900.0000
+        PercentCov: 40100.0000
 
   - Name: "G2.MinMax node x value"
     TestCases: 
@@ -68,9 +68,9 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: -4096, Max: -4096}
-        Count: 2
+        Count: 3
         AtLeast: 1
-        PercentCov: 200.0000
+        PercentCov: 300.0000
       - Name: "D1=4095"
         Type: "COUNT"
         Range: 
@@ -100,9 +100,9 @@ Models:
         Range: 
           - {Min: 3, Max: 3}
           - {Min: -4096, Max: -4096}
-        Count: 2
+        Count: 3
         AtLeast: 1
-        PercentCov: 200.0000
+        PercentCov: 300.0000
       - Name: "D3=4095"
         Type: "COUNT"
         Range: 
@@ -140,9 +140,9 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: -4096, Max: -4096}
-        Count: 2
+        Count: 3
         AtLeast: 1
-        PercentCov: 200.0000
+        PercentCov: 300.0000
       - Name: "D2=-4096"
         Type: "COUNT"
         Range: 
@@ -156,7 +156,7 @@ Models:
         Range: 
           - {Min: 3, Max: 3}
           - {Min: -4096, Max: -4096}
-        Count: 2
+        Count: 3
         AtLeast: 1
-        PercentCov: 200.0000
+        PercentCov: 300.0000
 

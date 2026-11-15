@@ -52,6 +52,8 @@ bitness,image,status,in_bytes,jls_bytes
 8,noise8-white-139.pgm,pass,8041,5222
 8,noise8-smooth-270.pgm,pass,8113,2570
 8,noise8-smooth-176.pgm,pass,8172,1822
+8,synth-bound-1024x8-maxctxneg-8.pgm,pass,8192,3708
+8,synth-bound-1024x8-maxctxpos-8.pgm,pass,8192,3242
 8,noise8-white-066.pgm,pass,8260,4372
 8,noise8-white-007.pgm,pass,8262,3957
 8,noise8-white-117.pgm,pass,8478,5076
@@ -544,6 +546,7 @@ bitness,image,status,in_bytes,jls_bytes
 8,ic-gray8_leaves_iso_200-strip2.pgm,pass,192512,89015
 8,noise8-smooth-183.pgm,pass,193644,87164
 8,noise8-white-143.pgm,pass,195209,142550
+8,synth-bound-65535x3-longrun-255.pgm,pass,196605,35
 8,ic-gray8_artificial-strip0.pgm,pass,196608,40
 8,ic-gray8_artificial-strip1.pgm,pass,196608,21584
 8,ic-gray8_artificial-strip2.pgm,pass,196608,16196
@@ -2014,6 +2017,8 @@ bitness,image,status,in_bytes,jls_bytes
 9,tile9-flower_foveon-202.pgm,pass,15394,2957
 9,noise9-white-083.pgm,pass,15440,9361
 9,noise9-white-052.pgm,pass,15616,3432
+9,synth-bound-1024x8-maxctxneg-9.pgm,pass,16384,6134
+9,synth-bound-1024x8-maxctxpos-9.pgm,pass,16384,4075
 9,tile9-flower_foveon-262.pgm,pass,16660,3250
 9,noise9-smooth-180.pgm,pass,16686,2900
 9,noise9-white-033.pgm,pass,16740,7504
@@ -3218,6 +3223,8 @@ bitness,image,status,in_bytes,jls_bytes
 10,tile10-big_building-121.pgm,pass,15906,6097
 10,noise10-smooth-292.pgm,pass,16016,1170
 10,noise10-smooth-231.pgm,pass,16264,968
+10,synth-bound-1024x8-maxctxneg-10.pgm,pass,16384,6511
+10,synth-bound-1024x8-maxctxpos-10.pgm,pass,16384,5852
 10,noise10-white-119.pgm,pass,17000,6116
 10,tile10-artificial-045.pgm,pass,17324,2251
 10,noise10-white-070.pgm,pass,17556,8253
@@ -4433,6 +4440,8 @@ bitness,image,status,in_bytes,jls_bytes
 11,noise11-white-112.pgm,pass,15808,2309
 11,tile11-fireworks-006.pgm,pass,15930,1934
 11,noise11-smooth-225.pgm,pass,16224,4861
+11,synth-bound-1024x8-maxctxneg-11.pgm,pass,16384,8009
+11,synth-bound-1024x8-maxctxpos-11.pgm,pass,16384,8143
 11,noise11-white-105.pgm,pass,16720,6299
 11,tile11-nightshot_iso_1600-222.pgm,pass,16744,7459
 11,noise11-white-064.pgm,pass,17238,7960
@@ -5612,6 +5621,8 @@ bitness,image,status,in_bytes,jls_bytes
 12,tile12-deer-035.pgm,pass,15360,8624
 12,tile12-flower_foveon-247.pgm,pass,15680,5487
 12,tile12-big_building-031.pgm,pass,16380,7564
+12,synth-bound-1024x8-maxctxneg-12.pgm,pass,16384,10310
+12,synth-bound-1024x8-maxctxpos-12.pgm,pass,16384,10311
 12,tile12-nightshot_iso_100-101.pgm,pass,16536,6559
 12,noise12-white-083.pgm,pass,16720,10623
 12,tile12-deer-290.pgm,pass,16796,9189
@@ -6830,6 +6841,8 @@ bitness,image,status,in_bytes,jls_bytes
 13,tile13-zone_plate-104.pgm,pass,15660,12881
 13,tile13-artificial-270.pgm,pass,15904,886
 13,tile13-hdr-248.pgm,pass,16328,7456
+13,synth-bound-1024x8-maxctxneg-13.pgm,pass,16384,11377
+13,synth-bound-1024x8-maxctxpos-13.pgm,pass,16384,11404
 13,tile13-artificial-225.pgm,pass,16800,6671
 13,tile13-flower_foveon-262.pgm,pass,16800,6793
 13,tile13-cathedral-154.pgm,pass,16850,9288
@@ -8016,6 +8029,8 @@ bitness,image,status,in_bytes,jls_bytes
 14,noise14-white-090.pgm,pass,16120,9620
 14,tile14-nightshot_iso_100-071.pgm,pass,16182,9567
 14,tile14-big_building-271.pgm,pass,16192,11078
+14,synth-bound-1024x8-maxctxneg-14.pgm,pass,16384,12207
+14,synth-bound-1024x8-maxctxpos-14.pgm,pass,16384,12203
 14,noise14-white-003.pgm,pass,16878,14881
 14,noise14-white-089.pgm,pass,17752,4338
 14,noise14-smooth-287.pgm,pass,18250,1102
@@ -9234,6 +9249,8 @@ bitness,image,status,in_bytes,jls_bytes
 15,tile15-cathedral-139.pgm,pass,15730,10218
 15,noise15-white-079.pgm,pass,16020,11293
 15,tile15-cathedral-214.pgm,pass,16120,11041
+15,synth-bound-1024x8-maxctxneg-15.pgm,pass,16384,13195
+15,synth-bound-1024x8-maxctxpos-15.pgm,pass,16384,13224
 15,tile15-artificial-240.pgm,pass,16576,7234
 15,noise15-smooth-247.pgm,pass,17202,3565
 15,tile15-spider_web-163.pgm,pass,17220,9650
@@ -10453,6 +10470,8 @@ bitness,image,status,in_bytes,jls_bytes
 16,noise16-white-073.pgm,pass,15660,2421
 16,noise16-smooth-289.pgm,pass,16104,6936
 16,noise16-smooth-290.pgm,pass,16224,3007
+16,synth-bound-1024x8-maxctxneg-16.pgm,pass,16384,14113
+16,synth-bound-1024x8-maxctxpos-16.pgm,pass,16384,14192
 16,tile16-big_tree-047.pgm,pass,16520,12250
 16,tile16-nightshot_iso_1600-192.pgm,pass,16640,12382
 16,tile16-spider_web-283.pgm,pass,16872,10498
@@ -10980,6 +10999,7 @@ bitness,image,status,in_bytes,jls_bytes
 16,ic-gray16_leaves_iso_200-strip1.pgm,pass,385024,292685
 16,ic-gray16_leaves_iso_200-strip2.pgm,pass,385024,285140
 16,noise16-smooth-217.pgm,pass,391140,57731
+16,synth-bound-65535x3-longrun-65535.pgm,pass,393210,37
 16,ic-gray16_artificial-strip0.pgm,pass,393216,40
 16,ic-gray16_artificial-strip1.pgm,pass,393216,109537
 16,ic-gray16_artificial-strip2.pgm,pass,393216,92092

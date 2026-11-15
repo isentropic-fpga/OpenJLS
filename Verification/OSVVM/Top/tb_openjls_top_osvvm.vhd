@@ -342,8 +342,8 @@ begin
 
     if rising_edge(clk) then
       if (reqCompress = ALERTLOG_ID_NOT_ASSIGNED) then
-        reqCompress := GetReqID("OJLS.NoStallCompress", 5000);
-        reqEol      := GetReqID("OJLS.NoStallEOL", 100);
+        reqCompress := GetReqID("OJLS.NoStallCompress", 6300);
+        reqEol      := GetReqID("OJLS.NoStallEOL", 160);
       end if;
 
       if (rst = '1' or not sNoStall) then
@@ -376,7 +376,7 @@ begin
 
   begin
 
-    rv.InitSeed("ready");
+    rv.InitSeed("ready" & run_seed);
     iReady  <= '1';
     holdCnt := 0;
 
@@ -597,7 +597,7 @@ begin
 
     SetAlertLogName("tb_openjls_top_osvvm");
     SetLogEnable(PASSED, FALSE);
-    rv.InitSeed(rv'instance_name);
+    rv.InitSeed(rv'instance_name & run_seed);
     covSweep := NewID("G4.Stream bp x inputStall x prelude");
     SetFieldName(covSweep, "bp", "inputStall", "prelude");
     for axis0 in 0 to 1 loop
@@ -630,7 +630,7 @@ begin
 
     -- BackToBack: b2b x3, B5 and C
     reqH3    := GetReqID("T87.H3", EXP_BYTES);
-    reqB2B   := GetReqID("OJLS.BackToBack", 3);
+    reqB2B   := GetReqID("OJLS.BackToBack", 6);
     reqRI    := GetReqID("OJLS.RIForward", RI_EXP_BYTES);
     reqFlood := GetReqID("OJLS.ImageFlood", 2 * (FLOOD_IMAGES + 1));
 
@@ -888,6 +888,8 @@ begin
 
     end loop;
 
+    AffirmIf(GetAlertLogID("DataChecks"), collectedCount - base >= 14, "header bytes arrived before timeout");
+
     AffirmIfEqual(GetAlertLogID("DataChecks"), collected(base + 7),
                   std_logic_vector(to_unsigned(MAX_H / 256, 8)),
                   "D: header Y hi = MAX_IMAGE_HEIGHT");
@@ -919,6 +921,8 @@ begin
         wait until rising_edge(clk);
 
       end loop;
+
+    AffirmIf(GetAlertLogID("DataChecks"), collectedCount - base >= 14, "header bytes arrived before timeout");
 
       AffirmIfEqual(GetAlertLogID("DataChecks"), collected(base + 7),
                     std_logic_vector(to_unsigned(MAX_H / 256, 8)),

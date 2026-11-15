@@ -2,4 +2,9 @@
   TestCases: 
   - TestName: "tb_jls_framer_osvvm"
     Status: PASSED
-    Results: {Goal: 1600, Passed: 2941, Errors: 0, Checked: 2941, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+    Results: {Goal: 18000, Passed: 21402, Errors: 0, Checked: 21402, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+- Requirement: "OJLS.FramerBackpressure"
+  TestCases: 
+  - TestName: "tb_jls_framer_osvvm"
+    Status: PASSED
+    Results: {Goal: 11, Passed: 13, Errors: 0, Checked: 13, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}

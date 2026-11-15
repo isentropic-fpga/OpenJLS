@@ -3,9 +3,9 @@ TestCase: "tb_jls_framer_osvvm"
 Scoreboards: 
   - Name:         "framer SB"
     ParentName:   "OSVVM"
-    ItemCount:    12220
+    ItemCount:    30074
     ErrorCount:   0
     ItemsChecked: 0
-    ItemsPopped:  12220
+    ItemsPopped:  30074
     ItemsDropped: 0
     FifoCount:    0

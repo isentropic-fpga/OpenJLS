@@ -56,7 +56,6 @@ begin
     report "A11_2_bit_packer: OUT_WIDTH must be >= LIMIT (per-cycle worst case)"
     severity failure;
 
-  -- Contracts (PSL, simulation only)
   -- psl default clock is rising_edge(iClk);
   -- psl assert always (iRst = '1' -> next (oWordValid = '0')) report "a11_2: reset must clear oWordValid";
   -- psl assert always ((iRst = '0' and iStall = '1' and oWordValid = '1') -> next (oWordValid = '1')) report "a11_2: stall must hold oWordValid asserted";

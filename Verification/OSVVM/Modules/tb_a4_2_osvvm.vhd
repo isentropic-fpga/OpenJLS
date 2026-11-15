@@ -52,7 +52,6 @@ begin
     variable seen   : integer_vector(0 to 364) := (others => -1);
     variable nSeen  : natural := 0;
     variable q      : integer;
-    variable expQ   : integer;
     variable req    : AlertLogIDType;
     variable cov    : CoverageIDType;
 
@@ -72,20 +71,21 @@ begin
       wait for 1 ns;
 
       e := 81 * q1 + 9 * q2 + q3;
-      AffirmIfEqual(req, checked_integer(sQ), e,
+      q := checked_integer(sQ);
+      AffirmIfEqual(req, q, e,
                     "map Q1=" & integer'image(q1) &
                     " Q2=" & integer'image(q2) &
                     " Q3=" & integer'image(q3));
 
-      AffirmIf(req, e >= 0 and e <= 364, "Q in range for vector");
+      AffirmIf(req, q >= 0 and q <= 364, "Q in range for vector");
 
-      if (e >= 0 and e <= 364) then
-        ICover(cov, e);
-        AffirmIf(req, seen(e) = -1,
-                 "Q=" & integer'image(e) & " collides with vector index " &
-                 integer'image(seen(e)));
-        if (seen(e) = -1) then
-          seen(e) := q1 * 100 + q2 * 10 + q3;
+      if (q >= 0 and q <= 364) then
+        ICover(cov, q);
+        AffirmIf(req, seen(q) = -1,
+                 "Q=" & integer'image(q) & " collides with vector index " &
+                 integer'image(seen(q)));
+        if (seen(q) = -1) then
+          seen(q) := q1 * 100 + q2 * 10 + q3;
           nSeen   := nSeen + 1;
         end if;
       end if;
@@ -96,7 +96,7 @@ begin
 
     SetAlertLogName("tb_a4_2_osvvm");
     SetLogEnable(PASSED, FALSE);
-    req := GetReqID("T87.A4.2", 365);
+    req := GetReqID("T87.A4.2", 980);
 
     cov := NewID("G1.Property G2.MinMax a4_2_Q_codes");
     SetFieldName(cov, "a4_2_Q_codes");
