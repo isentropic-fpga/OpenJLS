@@ -9,7 +9,7 @@
 
 OpenJLS is an open, openly verified JPEG-LS encoder IP core for FPGAs - the open alternative to closed, commercial JPEG-LS cores, for teams who want to audit the RTL and evaluate before they buy.
 
-It implements the JPEG-LS standard (ISO/IEC 14495-1 / ITU-T T.87), a low-complexity lossless image codec reaching ~1.6:1 on natural photographs. Every release is checked byte-exact against an independent reference encoder on silicon, at RTL and on a post-synthesis subset: 5659 corpus images at 8–16 bits, each encoded from reset, plus 6000 same-size images streamed with no reset between them (11639 encodes on silicon, 11575 at RTL). Formal proofs cover the control logic, the T.87 arithmetic and the bit/byte streams.
+It implements the JPEG-LS standard (ISO/IEC 14495-1 / ITU-T T.87), a low-complexity lossless image codec reaching ~1.6:1 on natural photographs. Every release is checked byte-exact against an independent reference encoder on silicon, at RTL and on a post-synthesis subset: 5659 corpus images at 8–16 bits, each encoded from reset, plus 6000 same-size images streamed with no reset between them (11659 encodes on silicon, 11575 at RTL). Formal proofs cover the control logic, the T.87 arithmetic and the bit/byte streams.
 
 OpenJLS reaches ~440 MHz with 12-bit pixels on a Xilinx UltraScale+ ZU7EG (the MPSoC family used in onboard processors such as the Xiphos Q8), processing one pixel per clock (~440 Mpixel/s) for ~6.6k LUTs and no external memory; 8-bit reaches ~450 MHz and 16-bit ~375 MHz. It handles single-component (grayscale) data, so a multi-band sensor instantiates one compressor per band - resource usage is low enough that all bands run in parallel cheaply.
 
@@ -228,7 +228,7 @@ OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level
 | Golden model | PASS | 100% | 11575/11575 images, 1500 random streams<sup>4</sup> |
 | Post-synth OSVVM | PASS | 100% | Control-plane stress<sup>5</sup> |
 | Post-synth golden model | PASS | 100% | 169/169 images<sup>6</sup> |
-| HIL golden model | PASS | 100% | 11639/11639 images<sup>7</sup> |
+| HIL golden model | PASS | 100% | 11659/11659 images<sup>7</sup> |
 
 <sub>
 <sup>1</sup> Per-file breakdown and the review of each uncovered line are in the verification report.<br>
@@ -237,7 +237,7 @@ OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level
 <sup>4</sup> Byte-exact vs CharLS: 5575 from reset, 6000 same-size images streamed with no reset between them.<br>
 <sup>5</sup> 155,471 affirmations on the gate-level netlist.<br>
 <sup>6</sup> 8-bit images up to 0.05 MP, byte-exact vs CharLS.<br>
-<sup>7</sup> Byte-exact vs CharLS on PYNQ-Z2 silicon at 100 MHz: 5639 from reset, 6000 same-size images streamed with no reset between them.
+<sup>7</sup> Byte-exact vs CharLS on PYNQ-Z2 silicon at 100 MHz: 5659 from reset, 6000 same-size images streamed with no reset between them.
 </sub>
 
 - **OSVVM** — 32 module testbenches against independent T.87 reference models, a top-level control-plane stress test, and AXI wrapper tests, all with requirements tracking.
@@ -248,7 +248,7 @@ OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level
 - **Post-synthesis** — stress test and a golden subset re-run on the gate-level netlist.
 - **Hardware-in-the-loop** — full corpus and the no-reset streams encoded on a PYNQ-Z2 at depths 8–16, zero mismatches; reproducible via the [EncodeOverEthernet demo](https://github.com/isentropic-fpga/OpenJLS-Demos).
 
-**Golden-model dataset** — 5659 images: 5575 from 4×1 up to 0.5 MP run in simulation, plus 84 full-size originals run on hardware only. Hardware runs all except 20 context-limit and long-run stress probes:
+**Golden-model dataset** — 5659 images: 5575 from 4×1 up to 0.5 MP, run in simulation and on hardware, plus 84 full-size originals run on hardware only:
 
 | Source | Set | Images |
 |---|---|--:|

@@ -148,7 +148,7 @@ Lossless JPEG-LS encoder for FPGAs.\\One pixel per clock, no external memory.\pa
 \covermetric{440\,MPx/s}{Throughput, 12-bit}\hfill
 \covermetric{1.6:1}{Compression}\hfill
 \covermetric{8--16\,bit}{Pixel depth}\hfill
-\covermetric*{11639/11639}{Byte-exact images}
+\covermetric*{11659/11659}{Byte-exact images}
 \vspace{14mm}
 
 {\color{divider}\hrule height 0.4pt}\vspace{3mm}
@@ -592,7 +592,7 @@ both RTL and post-synthesis (gate-level) stages, and by formal proofs:
         images streamed with no reset between them, plus the ISO/IEC 14495-1 vectors.
   \item \textbf{Design contracts} --- Embedded PSL assertions (ready/valid handshake protocol, internal handshakes) on every run.
   \item \textbf{Post-synthesis} --- The stress test and a golden-model subset re-run on the synthesized netlist.
-  \item \textbf{Hardware-in-the-loop} --- The golden-model comparison on silicon: 5639 corpus images, including the 84 full-size originals, and the 6000 no-reset stream images, encoded on a PYNQ-Z2 FPGA and byte-compared against CharLS. Run by the EncodeOverEthernet project in \href{https://github.com/isentropic-fpga/OpenJLS-Demos}{OpenJLS-Demos}.
+  \item \textbf{Hardware-in-the-loop} --- The golden-model comparison on silicon: the full 5659-image corpus, including the 84 full-size originals, and the 6000 no-reset stream images, encoded on a PYNQ-Z2 FPGA and byte-compared against CharLS. Run by the EncodeOverEthernet project in \href{https://github.com/isentropic-fpga/OpenJLS-Demos}{OpenJLS-Demos}.
 \end{itemize}
 
 \noindent The golden corpus (Table~\ref{tab:corpus}) combines natural photographs
@@ -601,7 +601,6 @@ with natural-derived crops of the 16-bit photographs rescaled to each depth
 9--16, seeded white and 1/f$^\beta$ noise probes, and boundary, adversarial,
 context-limit and long-run stress probes. Images over 0.5\,MP are sliced into full-width strips for
 simulation; their 84 full-size originals are part of the corpus but run on hardware only.
-The 20 context-limit and long-run stress probes run in simulation only.
 
 \begin{table}[H]
   \centering
@@ -640,7 +639,7 @@ The 20 context-limit and long-run stress probes run in simulation only.
   Golden model            & PASS & 100\%  & 11575/11575 images\footnotemark[12] \\
   Post-synth OSVVM        & PASS & 100\%  & Control-plane stress\footnotemark[13] \\
   Post-synth golden model & PASS & 100\%  & 169/169 images\footnotemark[14] \\
-  HIL golden model        & PASS & 100\%  & 11639/11639 images\footnotemark[15] \\
+  HIL golden model        & PASS & 100\%  & 11659/11659 images\footnotemark[15] \\
   \bottomrule
 \end{tabular}
 \end{table}
@@ -650,7 +649,7 @@ The 20 context-limit and long-run stress probes run in simulation only.
 \footnotetext[12]{Byte-exact vs CharLS: 5575 from reset, 6000 streamed with no reset.}
 \footnotetext[13]{155\,471 affirmations on the gate-level netlist.}
 \footnotetext[14]{8-bit images up to 0.05\,MP, byte-exact vs CharLS.}
-\footnotetext[15]{Byte-exact vs CharLS on PYNQ-Z2 silicon at 100\,MHz: 5639 from reset, 6000 streamed with no reset.}
+\footnotetext[15]{Byte-exact vs CharLS on PYNQ-Z2 silicon at 100\,MHz: 5659 from reset, 6000 streamed with no reset.}
 \setcounter{footnote}{15}
 
 %======================================================================
