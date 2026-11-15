@@ -9,7 +9,7 @@
 
 OpenJLS is an open, openly verified JPEG-LS encoder IP core for FPGAs - the open alternative to closed, commercial JPEG-LS cores, for teams who want to audit the RTL and evaluate before they buy.
 
-It implements the JPEG-LS standard (ISO/IEC 14495-1 / ITU-T T.87), a low-complexity lossless image codec reaching ~1.6:1 on natural photographs. Every release is checked byte-exact against an independent reference encoder on silicon, at RTL and on a post-synthesis subset: 5639 corpus images at 8–16 bits, each encoded from reset, plus 6000 same-size images streamed with no reset between them (11639 encodes on silicon, 11575 at RTL). Formal proofs cover the control logic, the T.87 arithmetic and the bit/byte streams.
+It implements the JPEG-LS standard (ISO/IEC 14495-1 / ITU-T T.87), a low-complexity lossless image codec reaching ~1.6:1 on natural photographs. Every release is checked byte-exact against an independent reference encoder on silicon, at RTL and on a post-synthesis subset: 5659 corpus images at 8–16 bits, each encoded from reset, plus 6000 same-size images streamed with no reset between them (11639 encodes on silicon, 11575 at RTL). Formal proofs cover the control logic, the T.87 arithmetic and the bit/byte streams.
 
 OpenJLS reaches ~440 MHz with 12-bit pixels on a Xilinx UltraScale+ ZU7EG (the MPSoC family used in onboard processors such as the Xiphos Q8), processing one pixel per clock (~440 Mpixel/s) for ~6.6k LUTs and no external memory; 8-bit reaches ~450 MHz and 16-bit ~375 MHz. It handles single-component (grayscale) data, so a multi-band sensor instantiates one compressor per band - resource usage is low enough that all bands run in parallel cheaply.
 
@@ -248,31 +248,31 @@ OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level
 - **Post-synthesis** — stress test and a golden subset re-run on the gate-level netlist.
 - **Hardware-in-the-loop** — full corpus and the no-reset streams encoded on a PYNQ-Z2 at depths 8–16, zero mismatches; reproducible via the [EncodeOverEthernet demo](https://github.com/isentropic-fpga/OpenJLS-Demos).
 
-**Golden-model dataset** — 5639 images: 5555 from 4×1 up to 0.5 MP, run in simulation and on hardware, plus 84 full-size originals run on hardware only:
+**Golden-model dataset** — 5659 images: 5575 from 4×1 up to 0.5 MP run in simulation, plus 84 full-size originals run on hardware only. Hardware runs all except 20 context-limit and long-run stress probes:
 
 | Source | Set | Images |
 |---|---|--:|
 | [USC-SIPI](https://sipi.usc.edu/database/) | Aerials, textures, miscellaneous, sequences | 318 |
 | [imagecompression.info](http://imagecompression.info/test_images/) | 8-bit and 16-bit natural photographs | 90 |
-| Generated stress probes | Boundary, predictor-adversarial, high-entropy and fuzz patterns | 45 |
+| Generated stress probes | Boundary, predictor-adversarial, context-limit, long-run, high-entropy and fuzz patterns | 65 |
 | Natural derived | Random crops of the 16-bit photographs, rescaled to each depth 9–16 (~300 per depth) | 2402 |
 | Generated noise probes | White and 1/f^β (smoothed) noise, random sizes and value ranges, 300 per depth 8–16 | 2700 |
 | Full-size originals | Unsliced USC-SIPI and imagecompression.info images over 0.5 MP, hardware only | 84 |
 
 | Bits | Natural | Natural derived | Noise probes | Stress probes | Full-size originals | Total |
 |--:|--:|--:|--:|--:|--:|--:|
-| 8 | 363 | 0 | 300 | 0 | 69 | 732 |
-| 9 | 0 | 300 | 300 | 2 | 0 | 602 |
-| 10 | 0 | 301 | 300 | 2 | 0 | 603 |
-| 11 | 0 | 300 | 300 | 2 | 0 | 602 |
-| 12 | 0 | 300 | 300 | 2 | 0 | 602 |
-| 13 | 0 | 300 | 300 | 2 | 0 | 602 |
-| 14 | 0 | 301 | 300 | 2 | 0 | 603 |
-| 15 | 0 | 300 | 300 | 2 | 0 | 602 |
-| 16 | 45 | 300 | 300 | 31 | 15 | 691 |
-| **All** | **408** | **2402** | **2700** | **45** | **84** | **5639** |
+| 8 | 363 | 0 | 300 | 3 | 69 | 735 |
+| 9 | 0 | 300 | 300 | 4 | 0 | 604 |
+| 10 | 0 | 301 | 300 | 4 | 0 | 605 |
+| 11 | 0 | 300 | 300 | 4 | 0 | 604 |
+| 12 | 0 | 300 | 300 | 4 | 0 | 604 |
+| 13 | 0 | 300 | 300 | 4 | 0 | 604 |
+| 14 | 0 | 301 | 300 | 4 | 0 | 605 |
+| 15 | 0 | 300 | 300 | 4 | 0 | 604 |
+| 16 | 45 | 300 | 300 | 34 | 15 | 694 |
+| **All** | **408** | **2402** | **2700** | **65** | **84** | **5659** |
 
-The public datasets are natural only at 8 and 16 bits. The natural-derived images ([`gen_depth_tiles.py`](Verification/Golden%20model/imageprep/gen_depth_tiles.py)) rescale random 4×1 to 640×384 crops of the 16-bit photographs to each depth 9–16, giving every depth real texture. The noise probes ([`gen_noise_probes.py`](Verification/Golden%20model/imageprep/gen_noise_probes.py)) span incompressible white noise to smooth, run-mode-heavy 1/f^β gradients. The stress probes ([`gen_stress.py`](Verification/Golden%20model/imageprep/gen_stress.py)) cover boundary geometries (4×1 up to 65535×1), MED-adversarial patterns and a tiny-image fuzz batch. All generators are seeded. Images over 0.5 MP are sliced into three full-width strips of up to 64 rows ([`slice_large.py`](Verification/Golden%20model/imageprep/slice_large.py)); their originals run on hardware only.
+The public datasets are natural only at 8 and 16 bits. The natural-derived images ([`gen_depth_tiles.py`](Verification/Golden%20model/imageprep/gen_depth_tiles.py)) rescale random 4×1 to 640×384 crops of the 16-bit photographs to each depth 9–16, giving every depth real texture. The noise probes ([`gen_noise_probes.py`](Verification/Golden%20model/imageprep/gen_noise_probes.py)) span incompressible white noise to smooth, run-mode-heavy 1/f^β gradients. The stress probes ([`gen_stress.py`](Verification/Golden%20model/imageprep/gen_stress.py)) cover boundary geometries (4×1 up to 65535×1), MED-adversarial patterns, context limits at each depth, 65535-pixel runs and a tiny-image fuzz batch. All generators are seeded. Images over 0.5 MP are sliced into three full-width strips of up to 64 rows ([`slice_large.py`](Verification/Golden%20model/imageprep/slice_large.py)); their originals run on hardware only.
 
 ---
 
