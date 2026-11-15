@@ -104,6 +104,10 @@ if [ "${#PGMS[@]}" -eq 0 ]; then
   echo "No images in $IMAGES_DIR — run ./prepare_images.sh first." >&2
   exit 1
 fi
+if [ "$(cat "$IMAGES_DIR/.corpus_id" 2> /dev/null)" != "$("$HERE/corpus_id.sh")" ]; then
+  echo "$IMAGES_DIR was not made by the current prepare_images.sh — run it again." >&2
+  exit 1
+fi
 SETS="$HERE/Images_stream"
 if [ "${STREAM:-1}" = 1 ] && [ ! -d "$SETS/8-r3" ]; then
   echo "No stream sets in $SETS — run ./prepare_images.sh first, or STREAM=0." >&2

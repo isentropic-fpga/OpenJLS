@@ -101,4 +101,5 @@ echo "== stream sets =="
 rm -rf "$HERE/Images_stream"
 python3 "$PREP/gen_stream_set.py" "$FULL" "$HERE/Images_stream"
 
+"$HERE/corpus_id.sh" > "$IMAGES/.corpus_id"
 echo "Images ready: $(find "$IMAGES" -name '*.pgm' | wc -l) PGM(s) in $IMAGES"
