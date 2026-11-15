@@ -1,0 +1,317 @@
+Version: "0.1"
+Coverage: 100.00
+Settings: 
+  WritePassFail: 0
+Models: 
+  - Name: "G4.Branch G2.MinMax Qi"
+    TestCases: 
+      - "tb_a4_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1546387436, 807582908]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 27
+      TotalCovGoal: 27
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "gradient lane"
+        - "quantized level"
+      NumBins: 27
+    Bins: 
+      - Name: "lane=1 / level=-4"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: -4, Max: -4}
+        Count: 3258
+        AtLeast: 1
+        PercentCov: 325800.0000
+      - Name: "lane=1 / level=-3"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: -3, Max: -3}
+        Count: 186
+        AtLeast: 1
+        PercentCov: 18600.0000
+      - Name: "lane=1 / level=-2"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: -2, Max: -2}
+        Count: 49
+        AtLeast: 1
+        PercentCov: 4900.0000
+      - Name: "lane=1 / level=-1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: -1, Max: -1}
+        Count: 25
+        AtLeast: 1
+        PercentCov: 2500.0000
+      - Name: "lane=1 / level=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 0, Max: 0}
+        Count: 1033
+        AtLeast: 1
+        PercentCov: 103300.0000
+      - Name: "lane=1 / level=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 1, Max: 1}
+        Count: 27
+        AtLeast: 1
+        PercentCov: 2700.0000
+      - Name: "lane=1 / level=2"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 2, Max: 2}
+        Count: 45
+        AtLeast: 1
+        PercentCov: 4500.0000
+      - Name: "lane=1 / level=3"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 3, Max: 3}
+        Count: 201
+        AtLeast: 1
+        PercentCov: 20100.0000
+      - Name: "lane=1 / level=4"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 4, Max: 4}
+        Count: 3229
+        AtLeast: 1
+        PercentCov: 322900.0000
+      - Name: "lane=2 / level=-4"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: -4, Max: -4}
+        Count: 3781
+        AtLeast: 1
+        PercentCov: 378100.0000
+      - Name: "lane=2 / level=-3"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: -3, Max: -3}
+        Count: 240
+        AtLeast: 1
+        PercentCov: 24000.0000
+      - Name: "lane=2 / level=-2"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: -2, Max: -2}
+        Count: 56
+        AtLeast: 1
+        PercentCov: 5600.0000
+      - Name: "lane=2 / level=-1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: -1, Max: -1}
+        Count: 20
+        AtLeast: 1
+        PercentCov: 2000.0000
+      - Name: "lane=2 / level=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: 0, Max: 0}
+        Count: 8
+        AtLeast: 1
+        PercentCov: 800.0000
+      - Name: "lane=2 / level=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: 1, Max: 1}
+        Count: 29
+        AtLeast: 1
+        PercentCov: 2900.0000
+      - Name: "lane=2 / level=2"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: 2, Max: 2}
+        Count: 60
+        AtLeast: 1
+        PercentCov: 6000.0000
+      - Name: "lane=2 / level=3"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: 3, Max: 3}
+        Count: 212
+        AtLeast: 1
+        PercentCov: 21200.0000
+      - Name: "lane=2 / level=4"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: 4, Max: 4}
+        Count: 3647
+        AtLeast: 1
+        PercentCov: 364700.0000
+      - Name: "lane=3 / level=-4"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+          - {Min: -4, Max: -4}
+        Count: 3308
+        AtLeast: 1
+        PercentCov: 330800.0000
+      - Name: "lane=3 / level=-3"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+          - {Min: -3, Max: -3}
+        Count: 174
+        AtLeast: 1
+        PercentCov: 17400.0000
+      - Name: "lane=3 / level=-2"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+          - {Min: -2, Max: -2}
+        Count: 37
+        AtLeast: 1
+        PercentCov: 3700.0000
+      - Name: "lane=3 / level=-1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+          - {Min: -1, Max: -1}
+        Count: 22
+        AtLeast: 1
+        PercentCov: 2200.0000
+      - Name: "lane=3 / level=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+          - {Min: 0, Max: 0}
+        Count: 1033
+        AtLeast: 1
+        PercentCov: 103300.0000
+      - Name: "lane=3 / level=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+          - {Min: 1, Max: 1}
+        Count: 15
+        AtLeast: 1
+        PercentCov: 1500.0000
+      - Name: "lane=3 / level=2"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+          - {Min: 2, Max: 2}
+        Count: 45
+        AtLeast: 1
+        PercentCov: 4500.0000
+      - Name: "lane=3 / level=3"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+          - {Min: 3, Max: 3}
+        Count: 213
+        AtLeast: 1
+        PercentCov: 21300.0000
+      - Name: "lane=3 / level=4"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+          - {Min: 4, Max: 4}
+        Count: 3206
+        AtLeast: 1
+        PercentCov: 320600.0000
+
+  - Name: "G3.Stim node x value"
+    TestCases: 
+      - "tb_a4_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [101216275, 2036723784]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 6
+      TotalCovGoal: 6
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "Bin1"
+        - "Bin2"
+      NumBins: 6
+    Bins: 
+      - Name: "D1=-512"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: -512, Max: -512}
+        Count: 8
+        AtLeast: 1
+        PercentCov: 800.0000
+      - Name: "D1 MSB=-512..-1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: -512, Max: -1}
+        Count: 3510
+        AtLeast: 1
+        PercentCov: 351000.0000
+      - Name: "D2=-512"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: -512, Max: -512}
+        Count: 6
+        AtLeast: 1
+        PercentCov: 600.0000
+      - Name: "D2 MSB=-512..-1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: -512, Max: -1}
+        Count: 4091
+        AtLeast: 1
+        PercentCov: 409100.0000
+      - Name: "D3=-512"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+          - {Min: -512, Max: -512}
+        Count: 10
+        AtLeast: 1
+        PercentCov: 1000.0000
+      - Name: "D3 MSB=-512..-1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+          - {Min: -512, Max: -1}
+        Count: 3531
+        AtLeast: 1
+        PercentCov: 353100.0000
+

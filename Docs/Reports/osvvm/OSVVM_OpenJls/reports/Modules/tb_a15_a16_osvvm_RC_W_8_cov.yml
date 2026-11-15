@@ -1,0 +1,285 @@
+Version: "0.1"
+Coverage: 82.35
+Settings: 
+  WritePassFail: 0
+Models: 
+  - Name: "G4.Run terminal"
+    TestCases: 
+      - "tb_a15_a16_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1070534974, 565282000]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 2
+      TotalCovGoal: 2
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "terminal"
+      NumBins: 2
+    Bins: 
+      - Name: "interruption"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+        Count: 202
+        AtLeast: 1
+        PercentCov: 20200.0000
+      - Name: "end of line"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 213
+        AtLeast: 1
+        PercentCov: 21300.0000
+
+  - Name: "G4.Run immediateBreak"
+    TestCases: 
+      - "tb_a15_a16_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1774062170, 1840676098]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 2
+      TotalCovGoal: 2
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "immediateBreak"
+      NumBins: 2
+    Bins: 
+      - Name: "nonempty run"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+        Count: 383
+        AtLeast: 1
+        PercentCov: 38300.0000
+      - Name: "immediate break"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 32
+        AtLeast: 1
+        PercentCov: 3200.0000
+
+  - Name: "G4.Run eoiReset"
+    TestCases: 
+      - "tb_a15_a16_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [114483262, 937609164]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 2
+      TotalCovGoal: 2
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "eoiReset"
+      NumBins: 2
+    Bins: 
+      - Name: "within image"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+        Count: 377
+        AtLeast: 1
+        PercentCov: 37700.0000
+      - Name: "end of image"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 38
+        AtLeast: 1
+        PercentCov: 3800.0000
+
+  - Name: "G4.Run G2.MinMax startIdx"
+    TestCases: 
+      - "tb_a15_a16_osvvm"
+    Coverage: 80.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1219270138, 1185154664]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 4
+      TotalCovGoal: 5
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "startIdx"
+      NumBins: 5
+    Bins: 
+      - Name: "startIdx0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+        Count: 47
+        AtLeast: 1
+        PercentCov: 4700.0000
+      - Name: "startIdxLo"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 3}
+        Count: 16
+        AtLeast: 1
+        PercentCov: 1600.0000
+      - Name: "startIdxMid"
+        Type: "COUNT"
+        Range: 
+          - {Min: 4, Max: 10}
+        Count: 60
+        AtLeast: 1
+        PercentCov: 6000.0000
+      - Name: "startIdxHi"
+        Type: "COUNT"
+        Range: 
+          - {Min: 11, Max: 30}
+        Count: 292
+        AtLeast: 1
+        PercentCov: 29200.0000
+      - Name: "startIdx31"
+        Type: "COUNT"
+        Range: 
+          - {Min: 31, Max: 31}
+        Count: 0
+        AtLeast: 1
+        PercentCov: 0.0000
+
+  - Name: "G2.Clamp G2.MinMax RUNindex"
+    TestCases: 
+      - "tb_a15_a16_osvvm"
+    Coverage: 0.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [624791976, 1959000246]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 0
+      TotalCovGoal: 2
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "RUNindex"
+      NumBins: 2
+    Bins: 
+      - Name: "RUNindex=31 / increment held"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 0
+        AtLeast: 1
+        PercentCov: 0.0000
+      - Name: "RUNindex=31 / break decrements"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+        Count: 0
+        AtLeast: 1
+        PercentCov: 0.0000
+
+  - Name: "G2.MinMax G3.Stim RUNcnt"
+    TestCases: 
+      - "tb_a15_a16_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1786163510, 1730099207]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 2
+      TotalCovGoal: 2
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "Bin1"
+      NumBins: 2
+    Bins: 
+      - Name: "RUNcnt=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+        Count: 32
+        AtLeast: 1
+        PercentCov: 3200.0000
+      - Name: "RUNcnt=2^RC_W-1 (MSB set)"
+        Type: "COUNT"
+        Range: 
+          - {Min: 255, Max: 255}
+        Count: 88
+        AtLeast: 1
+        PercentCov: 8800.0000
+
+  - Name: "G5.States resetPhase"
+    TestCases: 
+      - "tb_a15_a16_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1133384431, 2139824688]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 2
+      TotalCovGoal: 2
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "Bin1"
+      NumBins: 2
+    Bins: 
+      - Name: "between runs"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "mid-run"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+

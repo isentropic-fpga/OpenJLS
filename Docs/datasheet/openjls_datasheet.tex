@@ -587,7 +587,7 @@ both RTL and post-synthesis (gate-level) stages, and by formal proofs:
         stream order, context forwarding, FIFO overflow margins and datapath ranges.
         Each property also runs with an injected fault that it must catch.
   \item \textbf{Coverage} --- OSVVM functional coverage with NVC structural code coverage.
-  \item \textbf{Golden model} --- Byte-exact vs CharLS on all 5555
+  \item \textbf{Golden model} --- Byte-exact vs CharLS on all 5575
         simulation-size images (up to 0.5\,MP, 8--16 bit) from reset, 6000 same-size
         images streamed with no reset between them, plus the ISO/IEC 14495-1 vectors.
   \item \textbf{Design contracts} --- Embedded PSL assertions (ready/valid handshake protocol, internal handshakes) on every run.
@@ -634,20 +634,20 @@ simulation; their 84 full-size originals are part of the corpus but run on hardw
   \hd{Suite} & \hd{Status} & \hd{Test/Cov} & \hd{Summary} \\
   \midrule
   NVC code coverage       & info & 99.7\% & Statement coverage\footnotemark[9] \\
-  OSVVM suite             & PASS & 100\%  & 128 tests\footnotemark[10] \\
+  OSVVM suite             & PASS & 100\%  & 281 tests\footnotemark[10] \\
   Formal                  & PASS & 100\%  & 396/396 checks\footnotemark[11] \\
-  Golden model            & PASS & 100\%  & 11555/11555 images\footnotemark[12] \\
+  Golden model            & PASS & 100\%  & 11575/11575 images\footnotemark[12] \\
   Post-synth OSVVM        & PASS & 100\%  & Control-plane stress\footnotemark[13] \\
-  Post-synth golden model & PASS & 100\%  & 167/167 images\footnotemark[14] \\
+  Post-synth golden model & PASS & 100\%  & 169/169 images\footnotemark[14] \\
   HIL golden model        & PASS & 100\%  & 11639/11639 images\footnotemark[15] \\
   \bottomrule
 \end{tabular}
 \end{table}
 \footnotetext[9]{Per-DUT-file breakdown.}
-\footnotetext[10]{10\,984\,893 affirmations (module + top + AXI wrappers).}
+\footnotetext[10]{37\,001\,113 affirmations (module + top + AXI wrappers).}
 \footnotetext[11]{340 full proofs, 56 fault-injection checks that fail as required.}
-\footnotetext[12]{Byte-exact vs CharLS: 5555 from reset, 6000 streamed with no reset.}
-\footnotetext[13]{155\,469 affirmations on the gate-level netlist.}
+\footnotetext[12]{Byte-exact vs CharLS: 5575 from reset, 6000 streamed with no reset.}
+\footnotetext[13]{155\,471 affirmations on the gate-level netlist.}
 \footnotetext[14]{8-bit images up to 0.05\,MP, byte-exact vs CharLS.}
 \footnotetext[15]{Byte-exact vs CharLS on PYNQ-Z2 silicon at 100\,MHz: 5639 from reset, 6000 streamed with no reset.}
 \setcounter{footnote}{15}

@@ -31,33 +31,33 @@ Models:
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
-        Count: 131177
+        Count: 133165
         AtLeast: 1
-        PercentCov: 13117700.0000
+        PercentCov: 13316500.0000
       - Name: "ri=0 / map=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
-        Count: 131145
+        Count: 132872
         AtLeast: 1
-        PercentCov: 13114500.0000
+        PercentCov: 13287200.0000
       - Name: "ri=1 / map=0"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 131169
+        Count: 132846
         AtLeast: 1
-        PercentCov: 13116900.0000
+        PercentCov: 13284600.0000
       - Name: "ri=1 / map=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 131166
+        Count: 132813
         AtLeast: 1
-        PercentCov: 13116600.0000
+        PercentCov: 13281300.0000
 
   - Name: "G4.Run emZero"
     TestCases: 
@@ -85,16 +85,16 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 524609
+        Count: 531116
         AtLeast: 1
-        PercentCov: 52460900.0000
+        PercentCov: 53111600.0000
       - Name: "zero mapped error"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 48
+        Count: 580
         AtLeast: 1
-        PercentCov: 4800.0000
+        PercentCov: 58000.0000
 
   - Name: "G2.MinMax node x value"
     TestCases: 
@@ -140,9 +140,9 @@ Models:
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 0, Max: 0}
-        Count: 48
+        Count: 580
         AtLeast: 1
-        PercentCov: 4800.0000
+        PercentCov: 58000.0000
       - Name: "EMErrval=131072"
         Type: "COUNT"
         Range: 

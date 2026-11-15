@@ -9,7 +9,7 @@
 
 OpenJLS is an open, openly verified JPEG-LS encoder IP core for FPGAs - the open alternative to closed, commercial JPEG-LS cores, for teams who want to audit the RTL and evaluate before they buy.
 
-It implements the JPEG-LS standard (ISO/IEC 14495-1 / ITU-T T.87), a low-complexity lossless image codec reaching ~1.6:1 on natural photographs. Every release is checked byte-exact against an independent reference encoder on silicon, at RTL and on a post-synthesis subset: 5639 corpus images at 8–16 bits, each encoded from reset, plus 6000 same-size images streamed with no reset between them (11639 encodes on silicon, 11555 at RTL). Formal proofs cover the control logic, the T.87 arithmetic and the bit/byte streams.
+It implements the JPEG-LS standard (ISO/IEC 14495-1 / ITU-T T.87), a low-complexity lossless image codec reaching ~1.6:1 on natural photographs. Every release is checked byte-exact against an independent reference encoder on silicon, at RTL and on a post-synthesis subset: 5639 corpus images at 8–16 bits, each encoded from reset, plus 6000 same-size images streamed with no reset between them (11639 encodes on silicon, 11575 at RTL). Formal proofs cover the control logic, the T.87 arithmetic and the bit/byte streams.
 
 OpenJLS reaches ~440 MHz with 12-bit pixels on a Xilinx UltraScale+ ZU7EG (the MPSoC family used in onboard processors such as the Xiphos Q8), processing one pixel per clock (~440 Mpixel/s) for ~6.6k LUTs and no external memory; 8-bit reaches ~450 MHz and 16-bit ~375 MHz. It handles single-component (grayscale) data, so a multi-band sensor instantiates one compressor per band - resource usage is low enough that all bands run in parallel cheaply.
 
@@ -223,19 +223,19 @@ OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level
 | Suite | Status | Test/Cov | Summary |
 |---|---|---|---|
 | NVC code coverage | info | 99.7% | Statement coverage<sup>1</sup> |
-| OSVVM suite | PASS | 100% | 128 tests<sup>2</sup> |
+| OSVVM suite | PASS | 100% | 281 tests<sup>2</sup> |
 | Formal | PASS | 100% | 396/396 checks<sup>3</sup> |
-| Golden model | PASS | 100% | 11555/11555 images, 1500 random streams<sup>4</sup> |
+| Golden model | PASS | 100% | 11575/11575 images, 1500 random streams<sup>4</sup> |
 | Post-synth OSVVM | PASS | 100% | Control-plane stress<sup>5</sup> |
-| Post-synth golden model | PASS | 100% | 167/167 images<sup>6</sup> |
+| Post-synth golden model | PASS | 100% | 169/169 images<sup>6</sup> |
 | HIL golden model | PASS | 100% | 11639/11639 images<sup>7</sup> |
 
 <sub>
 <sup>1</sup> Per-file breakdown and the review of each uncovered line are in the verification report.<br>
-<sup>2</sup> 10,984,893 affirmations (module + top + AXI wrappers).<br>
+<sup>2</sup> 37,001,113 affirmations (module + top + AXI wrappers).<br>
 <sup>3</sup> 340 full proofs, 56 fault-injection checks that fail as required.<br>
-<sup>4</sup> Byte-exact vs CharLS: 5555 from reset, 6000 same-size images streamed with no reset between them.<br>
-<sup>5</sup> 155,469 affirmations on the gate-level netlist.<br>
+<sup>4</sup> Byte-exact vs CharLS: 5575 from reset, 6000 same-size images streamed with no reset between them.<br>
+<sup>5</sup> 155,471 affirmations on the gate-level netlist.<br>
 <sup>6</sup> 8-bit images up to 0.05 MP, byte-exact vs CharLS.<br>
 <sup>7</sup> Byte-exact vs CharLS on PYNQ-Z2 silicon at 100 MHz: 5639 from reset, 6000 same-size images streamed with no reset between them.
 </sub>
@@ -272,7 +272,7 @@ OpenJLS is verified in [NVC](https://www.nickg.me.uk/nvc/) at RTL and gate level
 | 16 | 45 | 300 | 300 | 31 | 15 | 691 |
 | **All** | **408** | **2402** | **2700** | **45** | **84** | **5639** |
 
-The public datasets are natural only at 8 and 16 bits. The natural-derived images ([`gen_depth_tiles.py`](Verification/Golden%20model/imageprep/gen_depth_tiles.py)) rescale random 4×1 to 640×384 crops of the 16-bit photographs to each depth 9–16, giving every depth real texture. The noise probes ([`gen_noise_probes.py`](Verification/Golden%20model/imageprep/gen_noise_probes.py)) span incompressible white noise to smooth, run-mode-heavy 1/f^β gradients. The stress probes ([`gen_stress.py`](Verification/Golden%20model/imageprep/gen_stress.py)) cover boundary geometries (4×1 up to 65535×1), MED-adversarial patterns and a tiny-image fuzz batch. All generators are seeded. Images over 0.5 MP are sliced into three full-width strips of up to 64 rows ([`slice_large.py`](Verification/Golden%20model/imageprep/slice_large.py)); their originals run on hardware only.
+The public datasets are natural only at 8 and 16 bits. The natural-derived images ([`gen_depth_tiles.py`](Verification/Golden%20model/imageprep/gen_depth_tiles.py)) rescale random 4×1 to 640×384 crops of the 16-bit photographs to each depth 9–16, giving every depth real texture. The noise probes ([`gen_noise_probes.py`](Verification/Golden%20model/imageprep/gen_noise_probes.py)) span incompressible white noise to smooth, run-mode-heavy 1/f^β gradients. The stress probes ([`gen_stress.py`](Verification/Golden%20model/imageprep/gen_stress.py)) cover boundary geometries (4×1 up to 65535×1), MED-adversarial patterns and a tiny-image fuzz batch. Twenty more stress images (context limits at each depth 8–16, and runs 65535 pixels long) run in simulation only, so the RTL runs 5575 images from reset. All generators are seeded. Images over 0.5 MP are sliced into three full-width strips of up to 64 rows ([`slice_large.py`](Verification/Golden%20model/imageprep/slice_large.py)); their originals run on hardware only.
 
 ---
 

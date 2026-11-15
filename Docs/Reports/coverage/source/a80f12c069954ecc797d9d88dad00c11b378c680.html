@@ -375,8 +375,8 @@ table, th, td {
    215: &nbsp; &nbsp;
    216: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;SetAlertLogName("tb_a12_a13_osvvm");&nbsp;
    217: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;SetLogEnable(PASSED,&nbsp;FALSE);&nbsp;
-   218: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;rv.InitSeed(rv'instance_name);&nbsp;
-   219: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;req&nbsp;:=&nbsp;GetReqID("T87.A12A13",&nbsp;300);&nbsp;
+   218: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;rv.InitSeed(rv'instance_name&nbsp;&amp;&nbsp;run_seed);&nbsp;
+   219: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;req&nbsp;:=&nbsp;GetReqID("T87.A12-A13",&nbsp;230000);&nbsp;
    220: &nbsp; &nbsp;
    221: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;cov&nbsp;:=&nbsp;NewID("G2.Rescale&nbsp;x&nbsp;clamp&nbsp;event");&nbsp;
    222: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;SetFieldName(cov,&nbsp;"rescale",&nbsp;"event");&nbsp;

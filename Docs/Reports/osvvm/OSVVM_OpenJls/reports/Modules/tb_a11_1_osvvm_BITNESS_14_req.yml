@@ -1,0 +1,10 @@
+- Requirement: "T87.A11.1"
+  TestCases: 
+  - TestName: "tb_a11_1_osvvm"
+    Status: PASSED
+    Results: {Goal: 20000, Passed: 25140, Errors: 0, Checked: 25140, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+- Requirement: "T87.A22.1"
+  TestCases: 
+  - TestName: "tb_a11_1_osvvm"
+    Status: PASSED
+    Results: {Goal: 20000, Passed: 25344, Errors: 0, Checked: 25344, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}

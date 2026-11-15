@@ -29,37 +29,37 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 76
+        Count: 85
         AtLeast: 1
-        PercentCov: 7600.0000
+        PercentCov: 8500.0000
       - Name: "emitted bytes=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 1321
+        Count: 1385
         AtLeast: 1
-        PercentCov: 132100.0000
+        PercentCov: 138500.0000
       - Name: "emitted bytes=2"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
-        Count: 205
+        Count: 201
         AtLeast: 1
-        PercentCov: 20500.0000
+        PercentCov: 20100.0000
       - Name: "emitted bytes=3"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
-        Count: 176
+        Count: 193
         AtLeast: 1
-        PercentCov: 17600.0000
+        PercentCov: 19300.0000
       - Name: "emitted bytes=4"
         Type: "COUNT"
         Range: 
           - {Min: 4, Max: 4}
-        Count: 3404
+        Count: 3506
         AtLeast: 1
-        PercentCov: 340400.0000
+        PercentCov: 350600.0000
 
   - Name: "G4.Stream flushType"
     TestCases: 
@@ -87,23 +87,23 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 81
+        Count: 86
         AtLeast: 1
-        PercentCov: 8100.0000
+        PercentCov: 8600.0000
       - Name: "padded residue"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
-        Count: 796
+        Count: 860
         AtLeast: 1
-        PercentCov: 79600.0000
+        PercentCov: 86000.0000
       - Name: "dangling FF"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
-        Count: 60
+        Count: 58
         AtLeast: 1
-        PercentCov: 6000.0000
+        PercentCov: 5800.0000
 
   - Name: "G4.Stream data x almostFull"
     TestCases: 
@@ -133,17 +133,17 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 5067
+        Count: 5250
         AtLeast: 1
-        PercentCov: 506700.0000
+        PercentCov: 525000.0000
       - Name: "data beat / almostFull=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 39
+        Count: 35
         AtLeast: 1
-        PercentCov: 3900.0000
+        PercentCov: 3500.0000
 
   - Name: "G4.Branch stuffEvent"
     TestCases: 
@@ -171,23 +171,23 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 10480
+        Count: 10820
         AtLeast: 1
-        PercentCov: 1048000.0000
+        PercentCov: 1082000.0000
       - Name: "firstStuff"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 806
+        Count: 842
         AtLeast: 1
-        PercentCov: 80600.0000
+        PercentCov: 84200.0000
       - Name: "runStuff"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
-        Count: 3733
+        Count: 3810
         AtLeast: 1
-        PercentCov: 373300.0000
+        PercentCov: 381000.0000
 
   - Name: "G5.States resetPhase"
     TestCases: 
@@ -259,7 +259,7 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 75
+        Count: 72
         AtLeast: 1
-        PercentCov: 7500.0000
+        PercentCov: 7200.0000
 

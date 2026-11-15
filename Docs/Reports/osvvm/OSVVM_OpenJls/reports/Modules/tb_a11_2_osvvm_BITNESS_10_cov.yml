@@ -1,0 +1,181 @@
+Version: "0.1"
+Coverage: 100.00
+Settings: 
+  WritePassFail: 0
+Models: 
+  - Name: "G4.Branch case"
+    TestCases: 
+      - "tb_a11_2_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1212089104, 871029267]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 4
+      TotalCovGoal: 4
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "case"
+      NumBins: 4
+    Bins: 
+      - Name: "idle"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+        Count: 1014
+        AtLeast: 1
+        PercentCov: 101400.0000
+      - Name: "raw only"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 1010
+        AtLeast: 1
+        PercentCov: 101000.0000
+      - Name: "Golomb only"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+        Count: 982
+        AtLeast: 1
+        PercentCov: 98200.0000
+      - Name: "raw and Golomb"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+        Count: 1581
+        AtLeast: 1
+        PercentCov: 158100.0000
+
+  - Name: "G2.MinMax node x value"
+    TestCases: 
+      - "tb_a11_2_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1168425035, 132857010]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 8
+      TotalCovGoal: 8
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "Bin1"
+        - "Bin2"
+      NumBins: 8
+    Bins: 
+      - Name: "ValidLen=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 0, Max: 0}
+        Count: 1098
+        AtLeast: 1
+        PercentCov: 109800.0000
+      - Name: "ValidLen=40"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 40, Max: 40}
+        Count: 296
+        AtLeast: 1
+        PercentCov: 29600.0000
+      - Name: "Unary=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: 0, Max: 0}
+        Count: 368
+        AtLeast: 1
+        PercentCov: 36800.0000
+      - Name: "Unary=39"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: 39, Max: 39}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "SuffixLen=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+          - {Min: 0, Max: 0}
+        Count: 200
+        AtLeast: 1
+        PercentCov: 20000.0000
+      - Name: "SuffixLen=16"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+          - {Min: 16, Max: 16}
+        Count: 34
+        AtLeast: 1
+        PercentCov: 3400.0000
+      - Name: "RawLen=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 4, Max: 4}
+          - {Min: 0, Max: 0}
+        Count: 208
+        AtLeast: 1
+        PercentCov: 20800.0000
+      - Name: "RawLen=16"
+        Type: "COUNT"
+        Range: 
+          - {Min: 4, Max: 4}
+          - {Min: 16, Max: 16}
+        Count: 34
+        AtLeast: 1
+        PercentCov: 3400.0000
+
+  - Name: "G5.States resetPhase"
+    TestCases: 
+      - "tb_a11_2_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1133384431, 2139824688]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 2
+      TotalCovGoal: 2
+    BinInfo: 
+      Dimensions: 1
+      FieldNames: 
+        - "Bin1"
+      NumBins: 2
+    Bins: 
+      - Name: "output held (stall)"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+      - Name: "output running"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+        Count: 1
+        AtLeast: 1
+        PercentCov: 100.0000
+

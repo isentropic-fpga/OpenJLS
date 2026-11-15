@@ -1,5 +1,0 @@
-- Requirement: "T87.A13"
-  TestCases: 
-  - TestName: "tb_a13_osvvm"
-    Status: PASSED
-    Results: {Goal: 300, Passed: 787672, Errors: 0, Checked: 787672, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}

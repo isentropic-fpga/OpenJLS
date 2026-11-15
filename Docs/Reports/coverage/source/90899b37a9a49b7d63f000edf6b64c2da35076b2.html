@@ -296,8 +296,8 @@ table, th, td {
    136: &nbsp; &nbsp;
    137: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;SetAlertLogName("tb_a4_1_osvvm");&nbsp;
    138: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;SetLogEnable(PASSED,&nbsp;FALSE);&nbsp;
-   139: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;rv.InitSeed(rv'instance_name);&nbsp;
-   140: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;req&nbsp;:=&nbsp;GetReqID("T87.A4.1",&nbsp;729);&nbsp;
+   139: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;rv.InitSeed(rv'instance_name&nbsp;&amp;&nbsp;run_seed);&nbsp;
+   140: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;req&nbsp;:=&nbsp;GetReqID("T87.A4.1",&nbsp;2600);&nbsp;
    141: &nbsp; &nbsp;
    142: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;cov&nbsp;:=&nbsp;NewID("G4.Branch&nbsp;decider");&nbsp;
    143: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;SetFieldName(cov,&nbsp;"decider");&nbsp;

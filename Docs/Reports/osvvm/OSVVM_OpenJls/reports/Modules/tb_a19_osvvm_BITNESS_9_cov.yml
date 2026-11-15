@@ -1,0 +1,206 @@
+Version: "0.1"
+Coverage: 100.00
+Settings: 
+  WritePassFail: 0
+Models: 
+  - Name: "G4.Branch sign x wrapNeg x geHalf"
+    TestCases: 
+      - "tb_a19_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1006324914, 2010967696]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 8
+      TotalCovGoal: 8
+    BinInfo: 
+      Dimensions: 3
+      FieldNames: 
+        - "sign"
+        - "wrapNeg"
+        - "geHalf"
+      NumBins: 8
+    Bins: 
+      - Name: "sign=0 / wrapNeg=0 / geHalf=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 0, Max: 0}
+          - {Min: 0, Max: 0}
+        Count: 573
+        AtLeast: 1
+        PercentCov: 57300.0000
+      - Name: "sign=0 / wrapNeg=0 / geHalf=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 0, Max: 0}
+          - {Min: 1, Max: 1}
+        Count: 572
+        AtLeast: 1
+        PercentCov: 57200.0000
+      - Name: "sign=0 / wrapNeg=1 / geHalf=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 1, Max: 1}
+          - {Min: 0, Max: 0}
+        Count: 534
+        AtLeast: 1
+        PercentCov: 53400.0000
+      - Name: "sign=0 / wrapNeg=1 / geHalf=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 1, Max: 1}
+          - {Min: 1, Max: 1}
+        Count: 616
+        AtLeast: 1
+        PercentCov: 61600.0000
+      - Name: "sign=1 / wrapNeg=0 / geHalf=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 0, Max: 0}
+          - {Min: 0, Max: 0}
+        Count: 978
+        AtLeast: 1
+        PercentCov: 97800.0000
+      - Name: "sign=1 / wrapNeg=0 / geHalf=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 0, Max: 0}
+          - {Min: 1, Max: 1}
+        Count: 913
+        AtLeast: 1
+        PercentCov: 91300.0000
+      - Name: "sign=1 / wrapNeg=1 / geHalf=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 1, Max: 1}
+          - {Min: 0, Max: 0}
+        Count: 949
+        AtLeast: 1
+        PercentCov: 94900.0000
+      - Name: "sign=1 / wrapNeg=1 / geHalf=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 1, Max: 1}
+          - {Min: 1, Max: 1}
+        Count: 924
+        AtLeast: 1
+        PercentCov: 92400.0000
+
+  - Name: "G2.MinMax node x value"
+    TestCases: 
+      - "tb_a19_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1168425035, 132857010]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 4
+      TotalCovGoal: 4
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "Bin1"
+        - "Bin2"
+      NumBins: 4
+    Bins: 
+      - Name: "Errval in=-511"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: -511, Max: -511}
+        Count: 5
+        AtLeast: 1
+        PercentCov: 500.0000
+      - Name: "Errval in=511"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 511, Max: 511}
+        Count: 7
+        AtLeast: 1
+        PercentCov: 700.0000
+      - Name: "Errval out=-256"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: -256, Max: -256}
+        Count: 23
+        AtLeast: 1
+        PercentCov: 2300.0000
+      - Name: "Errval out=255"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: 255, Max: 255}
+        Count: 23
+        AtLeast: 1
+        PercentCov: 2300.0000
+
+  - Name: "G3.Stim node x value"
+    TestCases: 
+      - "tb_a19_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [101216275, 2036723784]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 3
+      TotalCovGoal: 3
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "Bin1"
+        - "Bin2"
+      NumBins: 3
+    Bins: 
+      - Name: "Errval=-511"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: -511, Max: -511}
+        Count: 5
+        AtLeast: 1
+        PercentCov: 500.0000
+      - Name: "Ra MSB=256..511"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: 256, Max: 511}
+        Count: 1551
+        AtLeast: 1
+        PercentCov: 155100.0000
+      - Name: "Rb MSB=256..511"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+          - {Min: 256, Max: 511}
+        Count: 1465
+        AtLeast: 1
+        PercentCov: 146500.0000
+

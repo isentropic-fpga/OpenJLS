@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>NVC code coverage report</title>
+  <style>
+:root {
+    --table-row-color: #e8e8e8;
+    --margin-left: 20%;
+}
+
+body {
+    background-color: #f0f0e0ff;
+}
+
+header {
+    padding: 0.5em;
+    text-align: center;
+    font-size: 14pt;
+}
+
+h1 {
+    text-align: center;
+}
+
+h2 {
+    word-wrap: break-word;
+}
+
+h3 {
+    word-wrap: break-word;
+    margin-bottom: 0px;
+}
+
+hr {
+    border:none;
+    height: 2px;
+    background: black;
+}
+
+footer {
+    display: table;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+nav {
+    float: left;
+    background-color: var(--table-row-color);
+    width: 17%;
+    overflow: auto;
+    padding: 10px;
+    margin-top: -2px;
+    border: 2px solid black;
+}
+nav details details {
+    margin-left: 1rem;
+}
+nav details > a {
+    padding-left: 1.9rem;
+    display: block;
+}
+nav summary {
+    display: inline-flex;
+    cursor: pointer;
+    align-items: center;
+}
+nav summary::before {
+    content: '▶';
+    font-size: 0.7em;
+    margin-right: 0.4em;
+}
+nav details[open] > summary::before {
+    transform: rotate(90deg);
+}
+
+table {
+    table-layout: fixed;
+}
+
+table, th, td {
+    border: 2px solid black;
+    border-collapse: collapse;
+    word-wrap: break-word;
+}
+
+.tabcontent {
+    display: none;
+    padding: 0px 0px;
+    border: 2px solid #ccc;
+    border-top: none;
+    word-wrap: break-word;
+}
+
+.tab {
+    overflow: hidden;
+    border: 2px solid;
+    margin-left: var(--margin-left);
+    margin-top: 10px;
+}
+
+.cbg:hover {
+    background-color: #dddddd;
+}
+.cbg {
+    background-color: #bbbbbb;
+    text-align: center;
+}
+
+.cbt {
+    margin-top: 8px;
+}
+.cbt th {
+    background-color: #bbbbbb;
+    text-align: center;
+}
+.cbt td, .cbt th {
+    width: 50px;
+    text-align: center;
+}
+.cbt td + td, .cbt th + th {
+    width: 150px;
+}
+.cbt td + td + td, .cbt th + th + th {
+    width: 150px;
+}
+.cbt td + td + td + td, .cbt th + th + th + th {
+    width: 150px;
+}
+
+.percent100 {
+    background-color: #00cc00;
+}
+.percent90 {
+    background-color: #e6e600;
+}
+.percent80 {
+    background-color: #ff9900;
+}
+.percent0 {
+    background-color: #ff0000;
+}
+.percentna {
+    background-color: #cccccc;
+}
+
+.nav-sel {
+    font-weight: bold;
+}
+  </style>
+</head>
+<body style="font-family: verdana">
+
+<header><h1 style="text-align: center;">NVC code coverage report
+</h1></header>
+
+<h2 style="text-align: left;">
+   File:&nbsp; Top/tb_openjls_top_boundary_osvvm.vhd
+</h2><pre><code>     0: &nbsp; --&nbsp;Copyright&nbsp;(C)&nbsp;2026&nbsp;Vitor&nbsp;Mendes&nbsp;Camilo&nbsp;
+     1: &nbsp; --&nbsp;SPDX-License-Identifier:&nbsp;GPL-3.0-only&nbsp;
+     2: &nbsp; --&nbsp;
+     3: &nbsp; --&nbsp;This&nbsp;file&nbsp;is&nbsp;part&nbsp;of&nbsp;OpenJLS.&nbsp;Available&nbsp;under&nbsp;GPLv3&nbsp;or&nbsp;a&nbsp;
+     4: &nbsp; --&nbsp;commercial&nbsp;license.&nbsp;See&nbsp;LICENSE&nbsp;and&nbsp;README&nbsp;for&nbsp;details.&nbsp;
+     5: &nbsp; --&nbsp;
+     6: &nbsp; --&nbsp;tb_openjls_top_boundary_osvvm:&nbsp;no&nbsp;state&nbsp;may&nbsp;cross&nbsp;an&nbsp;image&nbsp;boundary,&nbsp;at&nbsp;any&nbsp;BITNESS&nbsp;
+     7: &nbsp; --&nbsp;
+     8: &nbsp; --&nbsp;Each&nbsp;image&nbsp;is&nbsp;encoded&nbsp;alone&nbsp;after&nbsp;a&nbsp;reset,&nbsp;then&nbsp;the&nbsp;same&nbsp;images&nbsp;run&nbsp;back-to-back&nbsp;with&nbsp;no&nbsp;
+     9: &nbsp; --&nbsp;reset.&nbsp;The&nbsp;streams&nbsp;must&nbsp;match:&nbsp;a&nbsp;context,&nbsp;forward&nbsp;or&nbsp;parity&nbsp;leak&nbsp;across&nbsp;the&nbsp;boundary&nbsp;changes&nbsp;
+    10: &nbsp; --&nbsp;the&nbsp;bytes.&nbsp;Noise&nbsp;and&nbsp;flood&nbsp;phases&nbsp;give&nbsp;BITNESS&nbsp;12&nbsp;and&nbsp;16&nbsp;the&nbsp;control-plane&nbsp;stress&nbsp;of&nbsp;
+    11: &nbsp; --&nbsp;tb_openjls_top_osvvm,&nbsp;whose&nbsp;references&nbsp;are&nbsp;8-bit.&nbsp;
+    12: &nbsp; --&nbsp;
+    13: &nbsp; --&nbsp;Guidelines:&nbsp;
+    14: &nbsp; --&nbsp;&nbsp;&nbsp;G1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;N/A:&nbsp;the&nbsp;reference&nbsp;is&nbsp;the&nbsp;DUT's&nbsp;own&nbsp;post-reset&nbsp;run;&nbsp;byte&nbsp;accuracy&nbsp;is&nbsp;owned&nbsp;by&nbsp;the&nbsp;golden&nbsp;suite&nbsp;
+    15: &nbsp; --&nbsp;&nbsp;&nbsp;G2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;N/A:&nbsp;owned&nbsp;by&nbsp;module&nbsp;TBs&nbsp;
+    16: &nbsp; --&nbsp;&nbsp;&nbsp;G3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;N/A:&nbsp;owned&nbsp;by&nbsp;module&nbsp;TBs&nbsp;
+    17: &nbsp; --&nbsp;&nbsp;&nbsp;G4&nbsp;other&nbsp;&nbsp;&nbsp;&nbsp;N/A:&nbsp;Edge/Run/Coding&nbsp;owned&nbsp;by&nbsp;module&nbsp;TBs&nbsp;+&nbsp;golden&nbsp;suite&nbsp;
+    18: &nbsp; --&nbsp;&nbsp;&nbsp;G5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;N/A:&nbsp;resets&nbsp;belong&nbsp;to&nbsp;tb_openjls_top_osvvm&nbsp;
+    19: &nbsp; &nbsp;
+    20: &nbsp; library&nbsp;ieee;&nbsp;
+    21: &nbsp; &nbsp;&nbsp;use&nbsp;ieee.std_logic_1164.all;&nbsp;
+    22: &nbsp; &nbsp;&nbsp;use&nbsp;ieee.numeric_std.all;&nbsp;
+    23: &nbsp; &nbsp;&nbsp;use&nbsp;work.openjls_pkg.all;&nbsp;
+    24: &nbsp; &nbsp;
+    25: &nbsp; library&nbsp;osvvm;&nbsp;
+    26: &nbsp; &nbsp;&nbsp;context&nbsp;osvvm.OsvvmContext;&nbsp;
+    27: &nbsp; &nbsp;
+    28: &nbsp; library&nbsp;tb_support;&nbsp;
+    29: &nbsp; &nbsp;&nbsp;use&nbsp;tb_support.tb_support_pkg.all;&nbsp;
+    30: &nbsp; &nbsp;
+    31: &nbsp; entity&nbsp;tb_openjls_top_boundary_osvvm&nbsp;is&nbsp;
+    32: &nbsp; &nbsp;&nbsp;generic&nbsp;(&nbsp;
+    33: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;BITNESS&nbsp;&nbsp;&nbsp;:&nbsp;positive&nbsp;range&nbsp;8&nbsp;to&nbsp;16&nbsp;:=&nbsp;8;&nbsp;
+    34: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;OUT_WIDTH&nbsp;:&nbsp;natural&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:=&nbsp;CO_OUT_WIDTH_STD&nbsp;
+    35: &nbsp; &nbsp;&nbsp;);&nbsp;
+    36: &nbsp; end&nbsp;entity&nbsp;tb_openjls_top_boundary_osvvm;&nbsp;
+    37: &nbsp; &nbsp;
+    38: &nbsp; architecture&nbsp;sim&nbsp;of&nbsp;tb_openjls_top_boundary_osvvm&nbsp;is&nbsp;
+    39: &nbsp; &nbsp;
+    40: &nbsp; &nbsp;&nbsp;constant&nbsp;CLK_PERIOD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;time&nbsp;&nbsp;&nbsp;&nbsp;:=&nbsp;CLK_PERIOD_DEFAULT;&nbsp;
+    41: &nbsp; &nbsp;&nbsp;constant&nbsp;BYTES_PER_WORD&nbsp;:&nbsp;natural&nbsp;:=&nbsp;OUT_WIDTH&nbsp;/&nbsp;8;&nbsp;
+    42: &nbsp; &nbsp;&nbsp;constant&nbsp;MAXV&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural&nbsp;:=&nbsp;2&nbsp;**&nbsp;BITNESS&nbsp;-&nbsp;1;&nbsp;
+    43: &nbsp; &nbsp;&nbsp;constant&nbsp;MAX_DIM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural&nbsp;:=&nbsp;64;&nbsp;
+    44: &nbsp; &nbsp;&nbsp;constant&nbsp;HOLD_CYCLES&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural&nbsp;:=&nbsp;1200;&nbsp;
+    45: &nbsp; &nbsp;&nbsp;constant&nbsp;NOISE_W&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural&nbsp;:=&nbsp;48;&nbsp;
+    46: &nbsp; &nbsp;&nbsp;constant&nbsp;NOISE_H&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural&nbsp;:=&nbsp;48;&nbsp;
+    47: &nbsp; &nbsp;&nbsp;constant&nbsp;FLOOD_IMAGES&nbsp;&nbsp;&nbsp;:&nbsp;natural&nbsp;:=&nbsp;8;&nbsp;
+    48: &nbsp; &nbsp;&nbsp;constant&nbsp;MAX_STREAM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural&nbsp;:=&nbsp;40;&nbsp;
+    49: &nbsp; &nbsp;
+    50: &nbsp; &nbsp;&nbsp;type&nbsp;pixel_array_t&nbsp;is&nbsp;array&nbsp;(natural&nbsp;range&nbsp;&lt;&gt;)&nbsp;of&nbsp;natural;&nbsp;
+    51: &nbsp; &nbsp;&nbsp;type&nbsp;byte_array_t&nbsp;is&nbsp;array&nbsp;(natural&nbsp;range&nbsp;&lt;&gt;)&nbsp;of&nbsp;std_logic_vector(7&nbsp;downto&nbsp;0);&nbsp;
+    52: &nbsp; &nbsp;
+    53: &nbsp; &nbsp;&nbsp;signal&nbsp;clk&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;std_logic&nbsp;:=&nbsp;'0';&nbsp;
+    54: &nbsp; &nbsp;&nbsp;signal&nbsp;rst&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;std_logic;&nbsp;
+    55: &nbsp; &nbsp;&nbsp;signal&nbsp;iValid&nbsp;&nbsp;:&nbsp;std_logic;&nbsp;
+    56: &nbsp; &nbsp;&nbsp;signal&nbsp;iPixel&nbsp;&nbsp;:&nbsp;std_logic_vector(BITNESS&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+    57: &nbsp; &nbsp;&nbsp;signal&nbsp;oReady&nbsp;&nbsp;:&nbsp;std_logic;&nbsp;
+    58: &nbsp; &nbsp;&nbsp;signal&nbsp;iWidth&nbsp;&nbsp;:&nbsp;std_logic_vector(15&nbsp;downto&nbsp;0);&nbsp;
+    59: &nbsp; &nbsp;&nbsp;signal&nbsp;iHeight&nbsp;:&nbsp;std_logic_vector(15&nbsp;downto&nbsp;0);&nbsp;
+    60: &nbsp; &nbsp;&nbsp;signal&nbsp;oData&nbsp;&nbsp;&nbsp;:&nbsp;std_logic_vector(OUT_WIDTH&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+    61: &nbsp; &nbsp;&nbsp;signal&nbsp;oValid&nbsp;&nbsp;:&nbsp;std_logic;&nbsp;
+    62: &nbsp; &nbsp;&nbsp;signal&nbsp;oKeep&nbsp;&nbsp;&nbsp;:&nbsp;std_logic_vector(OUT_WIDTH&nbsp;/&nbsp;8&nbsp;-&nbsp;1&nbsp;downto&nbsp;0);&nbsp;
+    63: &nbsp; &nbsp;&nbsp;signal&nbsp;oLast&nbsp;&nbsp;&nbsp;:&nbsp;std_logic;&nbsp;
+    64: &nbsp; &nbsp;&nbsp;signal&nbsp;iReady&nbsp;&nbsp;:&nbsp;std_logic;&nbsp;
+    65: &nbsp; &nbsp;
+    66: &nbsp; &nbsp;&nbsp;--&nbsp;Latched&nbsp;by&nbsp;the&nbsp;DUT&nbsp;during&nbsp;reset&nbsp;
+    67: &nbsp; &nbsp;&nbsp;signal&nbsp;sImgW&nbsp;:&nbsp;natural&nbsp;:=&nbsp;4;&nbsp;
+    68: &nbsp; &nbsp;&nbsp;signal&nbsp;sImgH&nbsp;:&nbsp;natural&nbsp;:=&nbsp;1;&nbsp;
+    69: &nbsp; &nbsp;
+    70: &nbsp; &nbsp;&nbsp;--&nbsp;0&nbsp;always&nbsp;ready,&nbsp;1&nbsp;random&nbsp;(~33%),&nbsp;2&nbsp;hold&nbsp;low&nbsp;for&nbsp;HOLD_CYCLES&nbsp;once&nbsp;
+    71: &nbsp; &nbsp;&nbsp;signal&nbsp;sBpMode&nbsp;:&nbsp;natural&nbsp;range&nbsp;0&nbsp;to&nbsp;2&nbsp;:=&nbsp;0;&nbsp;
+    72: &nbsp; &nbsp;
+    73: &nbsp; &nbsp;&nbsp;shared&nbsp;variable&nbsp;collected&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;byte_array_t(0&nbsp;to&nbsp;131071);&nbsp;
+    74: &nbsp; &nbsp;&nbsp;shared&nbsp;variable&nbsp;collectedCount&nbsp;:&nbsp;natural&nbsp;:=&nbsp;0;&nbsp;
+    75: &nbsp; &nbsp;&nbsp;shared&nbsp;variable&nbsp;lastCount&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural&nbsp;:=&nbsp;0;&nbsp;
+    76: &nbsp; &nbsp;&nbsp;shared&nbsp;variable&nbsp;feedStallCnt&nbsp;&nbsp;&nbsp;:&nbsp;natural&nbsp;:=&nbsp;0;&nbsp;
+    77: &nbsp; &nbsp;
+    78: &nbsp; begin&nbsp;
+    79: &nbsp; &nbsp;
+    80: &nbsp; &nbsp;&nbsp;stream_contract&nbsp;:&nbsp;monitor_stream(clk,&nbsp;rst,&nbsp;oValid,&nbsp;iReady,&nbsp;oData,&nbsp;oKeep,&nbsp;oLast);&nbsp;
+    81: &nbsp; &nbsp;
+    82: &nbsp; &nbsp;&nbsp;clk_proc&nbsp;:&nbsp;process&nbsp;is&nbsp;
+    83: &nbsp; &nbsp;&nbsp;begin&nbsp;
+    84: &nbsp; &nbsp;
+    85: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;clk&nbsp;&lt;=&nbsp;'0';&nbsp;
+    86: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;wait&nbsp;for&nbsp;CLK_PERIOD&nbsp;/&nbsp;2;&nbsp;
+    87: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;clk&nbsp;&lt;=&nbsp;'1';&nbsp;
+    88: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;wait&nbsp;for&nbsp;CLK_PERIOD&nbsp;/&nbsp;2;&nbsp;
+    89: &nbsp; &nbsp;
+    90: &nbsp; &nbsp;&nbsp;end&nbsp;process&nbsp;clk_proc;&nbsp;
+    91: &nbsp; &nbsp;
+    92: &nbsp; &nbsp;&nbsp;iWidth&nbsp;&nbsp;&lt;=&nbsp;std_logic_vector(to_unsigned(sImgW,&nbsp;iWidth'length));&nbsp;
+    93: &nbsp; &nbsp;&nbsp;iHeight&nbsp;&lt;=&nbsp;std_logic_vector(to_unsigned(sImgH,&nbsp;iHeight'length));&nbsp;
+    94: &nbsp; &nbsp;
+    95: &nbsp; &nbsp;&nbsp;dut&nbsp;:&nbsp;entity&nbsp;work.openjls_top(rtl)&nbsp;
+    96: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;generic&nbsp;map&nbsp;(&nbsp;
+    97: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BITNESS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;BITNESS,&nbsp;
+    98: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MAX_IMAGE_WIDTH&nbsp;&nbsp;=&gt;&nbsp;MAX_DIM,&nbsp;
+    99: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MAX_IMAGE_HEIGHT&nbsp;=&gt;&nbsp;MAX_DIM,&nbsp;
+   100: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OUT_WIDTH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;OUT_WIDTH&nbsp;
+   101: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;)&nbsp;
+   102: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;port&nbsp;map&nbsp;(&nbsp;
+   103: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iClk&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;clk,&nbsp;
+   104: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iRst&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;rst,&nbsp;
+   105: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iValid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;iValid,&nbsp;
+   106: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iPixel&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;iPixel,&nbsp;
+   107: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;oReady&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;oReady,&nbsp;
+   108: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iImageWidth&nbsp;&nbsp;=&gt;&nbsp;iWidth,&nbsp;
+   109: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iImageHeight&nbsp;=&gt;&nbsp;iHeight,&nbsp;
+   110: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;oData&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;oData,&nbsp;
+   111: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;oValid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;oValid,&nbsp;
+   112: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;oKeep&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;oKeep,&nbsp;
+   113: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;oLast&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;oLast,&nbsp;
+   114: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iReady&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;&nbsp;iReady&nbsp;
+   115: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;);&nbsp;
+   116: &nbsp; &nbsp;
+   117: &nbsp; &nbsp;&nbsp;collect_proc&nbsp;:&nbsp;process&nbsp;(clk)&nbsp;is&nbsp;
+   118: &nbsp; &nbsp;&nbsp;begin&nbsp;
+   119: &nbsp; &nbsp;
+   120: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;rising_edge(clk)&nbsp;then&nbsp;
+   121: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(rst&nbsp;=&nbsp;'1')&nbsp;then&nbsp;
+   122: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;collectedCount&nbsp;:=&nbsp;0;&nbsp;
+   123: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lastCount&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:=&nbsp;0;&nbsp;
+   124: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elsif&nbsp;(oValid&nbsp;=&nbsp;'1'&nbsp;and&nbsp;iReady&nbsp;=&nbsp;'1')&nbsp;then&nbsp;
+   125: &nbsp; &nbsp;
+   126: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;i&nbsp;in&nbsp;0&nbsp;to&nbsp;BYTES_PER_WORD&nbsp;-&nbsp;1&nbsp;loop&nbsp;
+   127: &nbsp; &nbsp;
+   128: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(oKeep(BYTES_PER_WORD&nbsp;-&nbsp;1&nbsp;-&nbsp;i)&nbsp;=&nbsp;'1')&nbsp;then&nbsp;
+   129: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;collected(collectedCount)&nbsp;:=&nbsp;oData(OUT_WIDTH&nbsp;-&nbsp;1&nbsp;-&nbsp;i&nbsp;*&nbsp;8&nbsp;downto&nbsp;OUT_WIDTH&nbsp;-&nbsp;(i&nbsp;+&nbsp;1)&nbsp;*&nbsp;8);&nbsp;
+   130: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;collectedCount&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:=&nbsp;collectedCount&nbsp;+&nbsp;1;&nbsp;
+   131: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;
+   132: &nbsp; &nbsp;
+   133: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   134: &nbsp; &nbsp;
+   135: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(oLast&nbsp;=&nbsp;'1')&nbsp;then&nbsp;
+   136: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lastCount&nbsp;:=&nbsp;lastCount&nbsp;+&nbsp;1;&nbsp;
+   137: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;
+   138: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;
+   139: &nbsp; &nbsp;
+   140: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(rst&nbsp;=&nbsp;'0'&nbsp;and&nbsp;iValid&nbsp;=&nbsp;'1'&nbsp;and&nbsp;oReady&nbsp;=&nbsp;'0')&nbsp;then&nbsp;
+   141: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;feedStallCnt&nbsp;:=&nbsp;feedStallCnt&nbsp;+&nbsp;1;&nbsp;
+   142: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;
+   143: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;
+   144: &nbsp; &nbsp;
+   145: &nbsp; &nbsp;&nbsp;end&nbsp;process&nbsp;collect_proc;&nbsp;
+   146: &nbsp; &nbsp;
+   147: &nbsp; &nbsp;&nbsp;ready_proc&nbsp;:&nbsp;process&nbsp;is&nbsp;
+   148: &nbsp; &nbsp;
+   149: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;rv&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;RandomPType;&nbsp;
+   150: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;holdCnt&nbsp;:&nbsp;natural&nbsp;:=&nbsp;0;&nbsp;
+   151: &nbsp; &nbsp;
+   152: &nbsp; &nbsp;&nbsp;begin&nbsp;
+   153: &nbsp; &nbsp;
+   154: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;rv.InitSeed("boundary&nbsp;ready"&nbsp;&amp;&nbsp;run_seed);&nbsp;
+   155: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;iReady&nbsp;&lt;=&nbsp;'1';&nbsp;
+   156: &nbsp; &nbsp;
+   157: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;loop&nbsp;
+   158: &nbsp; &nbsp;
+   159: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait&nbsp;until&nbsp;rising_edge(clk);&nbsp;
+   160: &nbsp; &nbsp;
+   161: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case&nbsp;sBpMode&nbsp;is&nbsp;
+   162: &nbsp; &nbsp;
+   163: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;0&nbsp;=&gt;&nbsp;
+   164: &nbsp; &nbsp;
+   165: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iReady&nbsp;&nbsp;&lt;=&nbsp;'1';&nbsp;
+   166: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;holdCnt&nbsp;:=&nbsp;0;&nbsp;
+   167: &nbsp; &nbsp;
+   168: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;1&nbsp;=&gt;&nbsp;
+   169: &nbsp; &nbsp;
+   170: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iReady&nbsp;&nbsp;&lt;=&nbsp;bool2bit(rv.DistValInt(((1,&nbsp;1),&nbsp;(0,&nbsp;2)))&nbsp;=&nbsp;1);&nbsp;
+   171: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;holdCnt&nbsp;:=&nbsp;0;&nbsp;
+   172: &nbsp; &nbsp;
+   173: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;when&nbsp;others&nbsp;=&gt;&nbsp;
+   174: &nbsp; &nbsp;
+   175: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(holdCnt&nbsp;&lt;&nbsp;HOLD_CYCLES)&nbsp;then&nbsp;
+   176: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iReady&nbsp;&nbsp;&lt;=&nbsp;'0';&nbsp;
+   177: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;holdCnt&nbsp;:=&nbsp;holdCnt&nbsp;+&nbsp;1;&nbsp;
+   178: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;
+   179: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iReady&nbsp;&lt;=&nbsp;'1';&nbsp;
+   180: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;
+   181: &nbsp; &nbsp;
+   182: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;case;&nbsp;
+   183: &nbsp; &nbsp;
+   184: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   185: &nbsp; &nbsp;
+   186: &nbsp; &nbsp;&nbsp;end&nbsp;process&nbsp;ready_proc;&nbsp;
+   187: &nbsp; &nbsp;
+   188: &nbsp; &nbsp;&nbsp;stim&nbsp;:&nbsp;process&nbsp;is&nbsp;
+   189: &nbsp; &nbsp;
+   190: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;rv&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;RandomPType;&nbsp;
+   191: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;reqStream&nbsp;:&nbsp;AlertLogIDType;&nbsp;
+   192: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;reqNoise&nbsp;&nbsp;:&nbsp;AlertLogIDType;&nbsp;
+   193: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;refBuf&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;byte_array_t(0&nbsp;to&nbsp;131071);&nbsp;
+   194: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;refEnd&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;integer_vector(0&nbsp;to&nbsp;MAX_STREAM);&nbsp;
+   195: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;snap&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural;&nbsp;
+   196: &nbsp; &nbsp;
+   197: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;procedure&nbsp;do_reset&nbsp;is&nbsp;
+   198: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;begin&nbsp;
+   199: &nbsp; &nbsp;
+   200: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sBpMode&nbsp;&lt;=&nbsp;0;&nbsp;
+   201: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rst&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;'1';&nbsp;
+   202: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iValid&nbsp;&nbsp;&lt;=&nbsp;'0';&nbsp;
+   203: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iPixel&nbsp;&nbsp;&lt;=&nbsp;(others&nbsp;=&gt;&nbsp;'0');&nbsp;
+   204: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;clk_tick(clk,&nbsp;4);&nbsp;
+   205: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rst&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;'0';&nbsp;
+   206: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait&nbsp;until&nbsp;rising_edge(clk);&nbsp;
+   207: &nbsp; &nbsp;
+   208: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(oReady&nbsp;/=&nbsp;'1')&nbsp;loop&nbsp;
+   209: &nbsp; &nbsp;
+   210: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait&nbsp;until&nbsp;rising_edge(clk);&nbsp;
+   211: &nbsp; &nbsp;
+   212: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   213: &nbsp; &nbsp;
+   214: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;procedure&nbsp;do_reset;&nbsp;
+   215: &nbsp; &nbsp;
+   216: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;procedure&nbsp;feed&nbsp;(&nbsp;
+   217: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;img&nbsp;&nbsp;&nbsp;:&nbsp;pixel_array_t;&nbsp;
+   218: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stall&nbsp;:&nbsp;boolean&nbsp;
+   219: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;)&nbsp;is&nbsp;
+   220: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;begin&nbsp;
+   221: &nbsp; &nbsp;
+   222: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;i&nbsp;in&nbsp;img'range&nbsp;loop&nbsp;
+   223: &nbsp; &nbsp;
+   224: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(stall)&nbsp;then&nbsp;
+   225: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;(rv.DistValInt(((1,&nbsp;1),&nbsp;(0,&nbsp;3)))&nbsp;=&nbsp;1)&nbsp;loop&nbsp;
+   226: &nbsp; &nbsp;
+   227: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iValid&nbsp;&lt;=&nbsp;'0';&nbsp;
+   228: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait&nbsp;until&nbsp;rising_edge(clk);&nbsp;
+   229: &nbsp; &nbsp;
+   230: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   231: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;
+   232: &nbsp; &nbsp;
+   233: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iPixel&nbsp;&lt;=&nbsp;std_logic_vector(to_unsigned(img(i),&nbsp;BITNESS));&nbsp;
+   234: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iValid&nbsp;&lt;=&nbsp;'1';&nbsp;
+   235: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait&nbsp;until&nbsp;oReady&nbsp;=&nbsp;'1'&nbsp;and&nbsp;rising_edge(clk);&nbsp;
+   236: &nbsp; &nbsp;
+   237: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   238: &nbsp; &nbsp;
+   239: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iValid&nbsp;&lt;=&nbsp;'0';&nbsp;
+   240: &nbsp; &nbsp;
+   241: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;procedure&nbsp;feed;&nbsp;
+   242: &nbsp; &nbsp;
+   243: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;procedure&nbsp;wait_images&nbsp;(&nbsp;
+   244: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;n&nbsp;:&nbsp;natural&nbsp;
+   245: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;)&nbsp;is&nbsp;
+   246: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;begin&nbsp;
+   247: &nbsp; &nbsp;
+   248: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;i&nbsp;in&nbsp;0&nbsp;to&nbsp;999999&nbsp;loop&nbsp;
+   249: &nbsp; &nbsp;
+   250: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exit&nbsp;when&nbsp;lastCount&nbsp;&gt;=&nbsp;n;&nbsp;
+   251: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait&nbsp;until&nbsp;rising_edge(clk);&nbsp;
+   252: &nbsp; &nbsp;
+   253: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   254: &nbsp; &nbsp;
+   255: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AffirmIfEqual(GetAlertLogID("ImageCompletion"),&nbsp;lastCount,&nbsp;n,&nbsp;"expected&nbsp;image&nbsp;boundaries&nbsp;before&nbsp;timeout");&nbsp;
+   256: &nbsp; &nbsp;
+   257: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;procedure&nbsp;wait_images;&nbsp;
+   258: &nbsp; &nbsp;
+   259: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;--&nbsp;Encode&nbsp;each&nbsp;image&nbsp;alone,&nbsp;then&nbsp;the&nbsp;same&nbsp;images&nbsp;with&nbsp;no&nbsp;reset&nbsp;between&nbsp;them&nbsp;
+   260: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;procedure&nbsp;check_stream&nbsp;(&nbsp;
+   261: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural;&nbsp;
+   262: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;h&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural;&nbsp;
+   263: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;imgs&nbsp;&nbsp;:&nbsp;pixel_array_t;&nbsp;
+   264: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stall&nbsp;:&nbsp;boolean;&nbsp;
+   265: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bp&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural;&nbsp;
+   266: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msg&nbsp;&nbsp;&nbsp;:&nbsp;string&nbsp;
+   267: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;)&nbsp;is&nbsp;
+   268: &nbsp; &nbsp;
+   269: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;constant&nbsp;N&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural&nbsp;:=&nbsp;imgs'length&nbsp;/&nbsp;(w&nbsp;*&nbsp;h);&nbsp;
+   270: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;total&nbsp;&nbsp;&nbsp;:&nbsp;natural&nbsp;:=&nbsp;0;&nbsp;
+   271: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;ok&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;boolean;&nbsp;
+   272: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;first&nbsp;&nbsp;&nbsp;:&nbsp;natural&nbsp;:=&nbsp;0;&nbsp;
+   273: &nbsp; &nbsp;
+   274: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;begin&nbsp;
+   275: &nbsp; &nbsp;
+   276: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sImgW&nbsp;&lt;=&nbsp;w;&nbsp;
+   277: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sImgH&nbsp;&lt;=&nbsp;h;&nbsp;
+   278: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait&nbsp;until&nbsp;rising_edge(clk);&nbsp;
+   279: &nbsp; &nbsp;
+   280: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;k&nbsp;in&nbsp;0&nbsp;to&nbsp;N&nbsp;-&nbsp;1&nbsp;loop&nbsp;
+   281: &nbsp; &nbsp;
+   282: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;do_reset;&nbsp;
+   283: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;feed(imgs(k&nbsp;*&nbsp;w&nbsp;*&nbsp;h&nbsp;to&nbsp;(k&nbsp;+&nbsp;1)&nbsp;*&nbsp;w&nbsp;*&nbsp;h&nbsp;-&nbsp;1),&nbsp;false);&nbsp;
+   284: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait_images(1);&nbsp;
+   285: &nbsp; &nbsp;
+   286: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;i&nbsp;in&nbsp;0&nbsp;to&nbsp;collectedCount&nbsp;-&nbsp;1&nbsp;loop&nbsp;
+   287: &nbsp; &nbsp;
+   288: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;refBuf(total&nbsp;+&nbsp;i)&nbsp;:=&nbsp;collected(i);&nbsp;
+   289: &nbsp; &nbsp;
+   290: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   291: &nbsp; &nbsp;
+   292: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;total&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:=&nbsp;total&nbsp;+&nbsp;collectedCount;&nbsp;
+   293: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;refEnd(k)&nbsp;&nbsp;&nbsp;:=&nbsp;total;&nbsp;
+   294: &nbsp; &nbsp;
+   295: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   296: &nbsp; &nbsp;
+   297: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;do_reset;&nbsp;
+   298: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sBpMode&nbsp;&lt;=&nbsp;bp;&nbsp;
+   299: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;feed(imgs,&nbsp;stall);&nbsp;
+   300: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait_images(N);&nbsp;
+   301: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sBpMode&nbsp;&lt;=&nbsp;0;&nbsp;
+   302: &nbsp; &nbsp;
+   303: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AffirmIfEqual(GetAlertLogID("DataChecks"),&nbsp;collectedCount,&nbsp;total,&nbsp;msg&nbsp;&amp;&nbsp;"&nbsp;byte&nbsp;count");&nbsp;
+   304: &nbsp; &nbsp;
+   305: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;k&nbsp;in&nbsp;0&nbsp;to&nbsp;N&nbsp;-&nbsp;1&nbsp;loop&nbsp;
+   306: &nbsp; &nbsp;
+   307: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ok&nbsp;:=&nbsp;collectedCount&nbsp;=&nbsp;total;&nbsp;
+   308: &nbsp; &nbsp;
+   309: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;i&nbsp;in&nbsp;first&nbsp;to&nbsp;refEnd(k)&nbsp;-&nbsp;1&nbsp;loop&nbsp;
+   310: &nbsp; &nbsp;
+   311: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ok&nbsp;:=&nbsp;ok&nbsp;and&nbsp;collected(i)&nbsp;=&nbsp;refBuf(i);&nbsp;
+   312: &nbsp; &nbsp;
+   313: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   314: &nbsp; &nbsp;
+   315: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AffirmIf(reqStream,&nbsp;ok,&nbsp;msg&nbsp;&amp;&nbsp;"&nbsp;image&nbsp;"&nbsp;&amp;&nbsp;integer'image(k)&nbsp;&amp;&nbsp;"&nbsp;matches&nbsp;its&nbsp;post-reset&nbsp;encoding");&nbsp;
+   316: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;first&nbsp;:=&nbsp;refEnd(k);&nbsp;
+   317: &nbsp; &nbsp;
+   318: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   319: &nbsp; &nbsp;
+   320: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;procedure&nbsp;check_stream;&nbsp;
+   321: &nbsp; &nbsp;
+   322: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;--&nbsp;Pixels&nbsp;from&nbsp;0&nbsp;to&nbsp;top,&nbsp;so&nbsp;contexts&nbsp;repeat&nbsp;across&nbsp;the&nbsp;boundary&nbsp;
+   323: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;procedure&nbsp;random_stream&nbsp;(&nbsp;
+   324: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural;&nbsp;
+   325: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;h&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural;&nbsp;
+   326: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;top&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural;&nbsp;
+   327: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;n&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural;&nbsp;
+   328: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stall&nbsp;&nbsp;:&nbsp;boolean;&nbsp;
+   329: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural&nbsp;
+   330: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;)&nbsp;is&nbsp;
+   331: &nbsp; &nbsp;
+   332: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;imgs&nbsp;:&nbsp;pixel_array_t(0&nbsp;to&nbsp;n&nbsp;*&nbsp;w&nbsp;*&nbsp;h&nbsp;-&nbsp;1);&nbsp;
+   333: &nbsp; &nbsp;
+   334: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;begin&nbsp;
+   335: &nbsp; &nbsp;
+   336: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;i&nbsp;in&nbsp;imgs'range&nbsp;loop&nbsp;
+   337: &nbsp; &nbsp;
+   338: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;imgs(i)&nbsp;:=&nbsp;rv.RandInt(0,&nbsp;top);&nbsp;
+   339: &nbsp; &nbsp;
+   340: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   341: &nbsp; &nbsp;
+   342: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check_stream(w,&nbsp;h,&nbsp;imgs,&nbsp;stall,&nbsp;bp,&nbsp;"random&nbsp;"&nbsp;&amp;&nbsp;to_string(w)&nbsp;&amp;&nbsp;"x"&nbsp;&amp;&nbsp;to_string(h)&nbsp;&amp;&nbsp;"&nbsp;top="&nbsp;&amp;&nbsp;to_string(top));&nbsp;
+   343: &nbsp; &nbsp;
+   344: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;procedure&nbsp;random_stream;&nbsp;
+   345: &nbsp; &nbsp;
+   346: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;procedure&nbsp;noise_stress&nbsp;is&nbsp;
+   347: &nbsp; &nbsp;
+   348: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;img&nbsp;:&nbsp;pixel_array_t(0&nbsp;to&nbsp;NOISE_W&nbsp;*&nbsp;NOISE_H&nbsp;-&nbsp;1);&nbsp;
+   349: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;ok&nbsp;&nbsp;:&nbsp;boolean;&nbsp;
+   350: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;len&nbsp;:&nbsp;natural;&nbsp;
+   351: &nbsp; &nbsp;
+   352: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;procedure&nbsp;compare&nbsp;(&nbsp;
+   353: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;images&nbsp;:&nbsp;natural;&nbsp;
+   354: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msg&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;string&nbsp;
+   355: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)&nbsp;is&nbsp;
+   356: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;begin&nbsp;
+   357: &nbsp; &nbsp;
+   358: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ok&nbsp;:=&nbsp;collectedCount&nbsp;=&nbsp;images&nbsp;*&nbsp;len;&nbsp;
+   359: &nbsp; &nbsp;
+   360: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;i&nbsp;in&nbsp;0&nbsp;to&nbsp;images&nbsp;*&nbsp;len&nbsp;-&nbsp;1&nbsp;loop&nbsp;
+   361: &nbsp; &nbsp;
+   362: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ok&nbsp;:=&nbsp;ok&nbsp;and&nbsp;i&nbsp;&lt;&nbsp;collectedCount&nbsp;and&nbsp;collected(i)&nbsp;=&nbsp;refBuf(i&nbsp;mod&nbsp;len);&nbsp;
+   363: &nbsp; &nbsp;
+   364: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   365: &nbsp; &nbsp;
+   366: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AffirmIf(reqNoise,&nbsp;ok,&nbsp;msg);&nbsp;
+   367: &nbsp; &nbsp;
+   368: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;procedure&nbsp;compare;&nbsp;
+   369: &nbsp; &nbsp;
+   370: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;begin&nbsp;
+   371: &nbsp; &nbsp;
+   372: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;i&nbsp;in&nbsp;img'range&nbsp;loop&nbsp;
+   373: &nbsp; &nbsp;
+   374: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;img(i)&nbsp;:=&nbsp;rv.RandInt(0,&nbsp;MAXV);&nbsp;
+   375: &nbsp; &nbsp;
+   376: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   377: &nbsp; &nbsp;
+   378: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sImgW&nbsp;&lt;=&nbsp;NOISE_W;&nbsp;
+   379: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sImgH&nbsp;&lt;=&nbsp;NOISE_H;&nbsp;
+   380: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait&nbsp;until&nbsp;rising_edge(clk);&nbsp;
+   381: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;do_reset;&nbsp;
+   382: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;feed(img,&nbsp;false);&nbsp;
+   383: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait_images(1);&nbsp;
+   384: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;len&nbsp;:=&nbsp;collectedCount;&nbsp;
+   385: &nbsp; &nbsp;
+   386: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;i&nbsp;in&nbsp;0&nbsp;to&nbsp;len&nbsp;-&nbsp;1&nbsp;loop&nbsp;
+   387: &nbsp; &nbsp;
+   388: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;refBuf(i)&nbsp;:=&nbsp;collected(i);&nbsp;
+   389: &nbsp; &nbsp;
+   390: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   391: &nbsp; &nbsp;
+   392: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AffirmIf(GetAlertLogID("DataChecks"),&nbsp;len&nbsp;&gt;&nbsp;1000,&nbsp;"noise&nbsp;image&nbsp;larger&nbsp;than&nbsp;the&nbsp;internal&nbsp;buffers");&nbsp;
+   393: &nbsp; &nbsp;
+   394: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&nbsp;A&nbsp;long&nbsp;downstream&nbsp;hold&nbsp;must&nbsp;reach&nbsp;oReady&nbsp;
+   395: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;do_reset;&nbsp;
+   396: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;snap&nbsp;&nbsp;&nbsp;&nbsp;:=&nbsp;feedStallCnt;&nbsp;
+   397: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sBpMode&nbsp;&lt;=&nbsp;2;&nbsp;
+   398: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;feed(img,&nbsp;false);&nbsp;
+   399: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait_images(1);&nbsp;
+   400: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sBpMode&nbsp;&lt;=&nbsp;0;&nbsp;
+   401: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AffirmIf(GetAlertLogID("FlowControl"),&nbsp;feedStallCnt&nbsp;&gt;&nbsp;snap,&nbsp;"downstream&nbsp;hold&nbsp;reached&nbsp;oReady");&nbsp;
+   402: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;compare(1,&nbsp;"noise,&nbsp;downstream&nbsp;hold");&nbsp;
+   403: &nbsp; &nbsp;
+   404: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;do_reset;&nbsp;
+   405: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sBpMode&nbsp;&lt;=&nbsp;1;&nbsp;
+   406: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;feed(img,&nbsp;true);&nbsp;
+   407: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait_images(1);&nbsp;
+   408: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;compare(1,&nbsp;"noise,&nbsp;random&nbsp;backpressure&nbsp;and&nbsp;input&nbsp;stalls");&nbsp;
+   409: &nbsp; &nbsp;
+   410: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;do_reset;&nbsp;
+   411: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sBpMode&nbsp;&lt;=&nbsp;1;&nbsp;
+   412: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;feed(img,&nbsp;true);&nbsp;
+   413: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AffirmIf(GetAlertLogID("DataChecks"),&nbsp;lastCount&nbsp;=&nbsp;0,&nbsp;"second&nbsp;image&nbsp;fed&nbsp;while&nbsp;the&nbsp;first&nbsp;drains");&nbsp;
+   414: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;feed(img,&nbsp;true);&nbsp;
+   415: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait_images(2);&nbsp;
+   416: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;compare(2,&nbsp;"noise,&nbsp;back-to-back&nbsp;under&nbsp;stress");&nbsp;
+   417: &nbsp; &nbsp;
+   418: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;procedure&nbsp;noise_stress;&nbsp;
+   419: &nbsp; &nbsp;
+   420: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;procedure&nbsp;flood&nbsp;(&nbsp;
+   421: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;held&nbsp;:&nbsp;boolean&nbsp;
+   422: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;)&nbsp;is&nbsp;
+   423: &nbsp; &nbsp;
+   424: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;img&nbsp;:&nbsp;pixel_array_t(0&nbsp;to&nbsp;FLOOD_IMAGES&nbsp;*&nbsp;4&nbsp;-&nbsp;1);&nbsp;
+   425: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;ok&nbsp;&nbsp;:&nbsp;boolean;&nbsp;
+   426: &nbsp; &nbsp;
+   427: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;begin&nbsp;
+   428: &nbsp; &nbsp;
+   429: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;i&nbsp;in&nbsp;img'range&nbsp;loop&nbsp;
+   430: &nbsp; &nbsp;
+   431: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;img(i)&nbsp;:=&nbsp;(i&nbsp;mod&nbsp;4)&nbsp;*&nbsp;MAXV&nbsp;/&nbsp;3;&nbsp;
+   432: &nbsp; &nbsp;
+   433: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   434: &nbsp; &nbsp;
+   435: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sImgW&nbsp;&lt;=&nbsp;4;&nbsp;
+   436: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sImgH&nbsp;&lt;=&nbsp;1;&nbsp;
+   437: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait&nbsp;until&nbsp;rising_edge(clk);&nbsp;
+   438: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;do_reset;&nbsp;
+   439: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;feed(img(0&nbsp;to&nbsp;3),&nbsp;false);&nbsp;
+   440: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait_images(1);&nbsp;
+   441: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;snap&nbsp;:=&nbsp;collectedCount;&nbsp;
+   442: &nbsp; &nbsp;
+   443: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;i&nbsp;in&nbsp;0&nbsp;to&nbsp;snap&nbsp;-&nbsp;1&nbsp;loop&nbsp;
+   444: &nbsp; &nbsp;
+   445: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;refBuf(i)&nbsp;:=&nbsp;collected(i);&nbsp;
+   446: &nbsp; &nbsp;
+   447: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   448: &nbsp; &nbsp;
+   449: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;do_reset;&nbsp;
+   450: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sBpMode&nbsp;&lt;=&nbsp;2&nbsp;when&nbsp;held&nbsp;else&nbsp;0;&nbsp;
+   451: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;feed(img,&nbsp;false);&nbsp;
+   452: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait_images(FLOOD_IMAGES);&nbsp;
+   453: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sBpMode&nbsp;&lt;=&nbsp;0;&nbsp;
+   454: &nbsp; &nbsp;
+   455: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ok&nbsp;:=&nbsp;collectedCount&nbsp;=&nbsp;FLOOD_IMAGES&nbsp;*&nbsp;snap;&nbsp;
+   456: &nbsp; &nbsp;
+   457: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;i&nbsp;in&nbsp;0&nbsp;to&nbsp;FLOOD_IMAGES&nbsp;*&nbsp;snap&nbsp;-&nbsp;1&nbsp;loop&nbsp;
+   458: &nbsp; &nbsp;
+   459: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ok&nbsp;:=&nbsp;ok&nbsp;and&nbsp;i&nbsp;&lt;&nbsp;collectedCount&nbsp;and&nbsp;collected(i)&nbsp;=&nbsp;refBuf(i&nbsp;mod&nbsp;snap);&nbsp;
+   460: &nbsp; &nbsp;
+   461: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   462: &nbsp; &nbsp;
+   463: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AffirmIf(reqNoise,&nbsp;ok,&nbsp;"flood&nbsp;held="&nbsp;&amp;&nbsp;boolean'image(held)&nbsp;&amp;&nbsp;"&nbsp;byte-exact");&nbsp;
+   464: &nbsp; &nbsp;
+   465: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;procedure&nbsp;flood;&nbsp;
+   466: &nbsp; &nbsp;
+   467: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;variable&nbsp;direct&nbsp;:&nbsp;pixel_array_t(0&nbsp;to&nbsp;4&nbsp;*&nbsp;3&nbsp;-&nbsp;1);&nbsp;
+   468: &nbsp; &nbsp;
+   469: &nbsp; &nbsp;&nbsp;begin&nbsp;
+   470: &nbsp; &nbsp;
+   471: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;rst&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;'1';&nbsp;
+   472: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;iValid&nbsp;&lt;=&nbsp;'0';&nbsp;
+   473: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;iPixel&nbsp;&lt;=&nbsp;(others&nbsp;=&gt;&nbsp;'0');&nbsp;
+   474: &nbsp; &nbsp;
+   475: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;SetAlertLogName("tb_openjls_top_boundary_osvvm");&nbsp;
+   476: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;SetLogEnable(PASSED,&nbsp;FALSE);&nbsp;
+   477: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;rv.InitSeed(rv'instance_name&nbsp;&amp;&nbsp;run_seed);&nbsp;
+   478: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;reqStream&nbsp;:=&nbsp;GetReqID("OJLS.ImageBoundary",&nbsp;643);&nbsp;
+   479: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;reqNoise&nbsp;&nbsp;:=&nbsp;GetReqID("OJLS.StressAllDepths",&nbsp;5);&nbsp;
+   480: &nbsp; &nbsp;
+   481: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;--&nbsp;Run&nbsp;interruption&nbsp;with&nbsp;RItype&nbsp;1&nbsp;on&nbsp;the&nbsp;last&nbsp;pixel,&nbsp;then&nbsp;on&nbsp;the&nbsp;next&nbsp;image's&nbsp;first&nbsp;pixel:&nbsp;
+   482: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;--&nbsp;the&nbsp;second&nbsp;read&nbsp;sits&nbsp;one&nbsp;stage&nbsp;behind&nbsp;the&nbsp;first's&nbsp;write-back&nbsp;and&nbsp;must&nbsp;see&nbsp;init&nbsp;values&nbsp;
+   483: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;k&nbsp;in&nbsp;0&nbsp;to&nbsp;2&nbsp;loop&nbsp;
+   484: &nbsp; &nbsp;
+   485: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;direct(4&nbsp;*&nbsp;k)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:=&nbsp;MAXV&nbsp;/&nbsp;2;&nbsp;
+   486: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;direct(4&nbsp;*&nbsp;k&nbsp;+&nbsp;1)&nbsp;:=&nbsp;0;&nbsp;
+   487: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;direct(4&nbsp;*&nbsp;k&nbsp;+&nbsp;2)&nbsp;:=&nbsp;0;&nbsp;
+   488: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;direct(4&nbsp;*&nbsp;k&nbsp;+&nbsp;3)&nbsp;:=&nbsp;MAXV&nbsp;/&nbsp;2;&nbsp;
+   489: &nbsp; &nbsp;
+   490: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   491: &nbsp; &nbsp;
+   492: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;check_stream(4,&nbsp;1,&nbsp;direct,&nbsp;false,&nbsp;0,&nbsp;"directed&nbsp;RI&nbsp;boundary");&nbsp;
+   493: &nbsp; &nbsp;
+   494: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;top&nbsp;in&nbsp;1&nbsp;to&nbsp;3&nbsp;loop&nbsp;
+   495: &nbsp; &nbsp;
+   496: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;random_stream(4,&nbsp;1,&nbsp;top,&nbsp;40,&nbsp;false,&nbsp;0);&nbsp;
+   497: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;random_stream(4,&nbsp;2,&nbsp;top,&nbsp;40,&nbsp;false,&nbsp;0);&nbsp;
+   498: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;random_stream(5,&nbsp;1,&nbsp;top,&nbsp;40,&nbsp;false,&nbsp;0);&nbsp;
+   499: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;random_stream(8,&nbsp;2,&nbsp;top,&nbsp;20,&nbsp;false,&nbsp;0);&nbsp;
+   500: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;random_stream(4,&nbsp;1,&nbsp;top,&nbsp;40,&nbsp;true,&nbsp;1);&nbsp;
+   501: &nbsp; &nbsp;
+   502: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;loop;&nbsp;
+   503: &nbsp; &nbsp;
+   504: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;random_stream(4,&nbsp;1,&nbsp;MAXV,&nbsp;40,&nbsp;false,&nbsp;0);&nbsp;
+   505: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;random_stream(4,&nbsp;3,&nbsp;MAXV,&nbsp;40,&nbsp;false,&nbsp;0);&nbsp;
+   506: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;random_stream(8,&nbsp;2,&nbsp;MAXV,&nbsp;20,&nbsp;true,&nbsp;1);&nbsp;
+   507: &nbsp; &nbsp;
+   508: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;noise_stress;&nbsp;
+   509: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;flood(false);&nbsp;
+   510: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;flood(true);&nbsp;
+   511: &nbsp; &nbsp;
+   512: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;end_of_test("tb_openjls_top_boundary_osvvm");&nbsp;
+   513: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;wait;&nbsp;
+   514: &nbsp; &nbsp;
+   515: &nbsp; &nbsp;&nbsp;end&nbsp;process&nbsp;stim;&nbsp;
+   516: &nbsp; &nbsp;
+   517: &nbsp; &nbsp;&nbsp;watchdog&nbsp;:&nbsp;process&nbsp;is&nbsp;
+   518: &nbsp; &nbsp;&nbsp;begin&nbsp;
+   519: &nbsp; &nbsp;
+   520: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;wait&nbsp;for&nbsp;400&nbsp;ms;&nbsp;
+   521: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;Alert(GetAlertLogID("Watchdog"),&nbsp;"tb_openjls_top_boundary_osvvm:&nbsp;watchdog&nbsp;timeout",&nbsp;FAILURE);&nbsp;
+   522: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;std.env.stop;&nbsp;
+   523: &nbsp; &nbsp;
+   524: &nbsp; &nbsp;&nbsp;end&nbsp;process&nbsp;watchdog;&nbsp;
+   525: &nbsp; &nbsp;
+   526: &nbsp; end&nbsp;architecture&nbsp;sim;&nbsp;
+</code></pre>

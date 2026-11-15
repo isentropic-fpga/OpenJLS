@@ -215,8 +215,8 @@ table, th, td {
     55: &nbsp; &nbsp;&nbsp;constant&nbsp;DATA_LSB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural&nbsp;:=&nbsp;1;&nbsp;
     56: &nbsp; &nbsp;&nbsp;constant&nbsp;FIFO_WIDTH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;natural&nbsp;:=&nbsp;FIFO_BITS&nbsp;+&nbsp;1;&nbsp;
     57: &nbsp; &nbsp;
-    58: &nbsp; &nbsp;&nbsp;--&nbsp;Max&nbsp;last-flag&nbsp;words&nbsp;in&nbsp;flight&nbsp;in&nbsp;the&nbsp;main&nbsp;FIFO&nbsp;
-    59: &nbsp; &nbsp;&nbsp;constant&nbsp;BYTE_VALID_QUEUE_DEPTH&nbsp;:&nbsp;natural&nbsp;:=&nbsp;3;&nbsp;
+    58: &nbsp; &nbsp;&nbsp;--&nbsp;One&nbsp;last-flag&nbsp;word&nbsp;per&nbsp;image&nbsp;in&nbsp;flight&nbsp;
+    59: &nbsp; &nbsp;&nbsp;constant&nbsp;BYTE_VALID_QUEUE_DEPTH&nbsp;:&nbsp;natural&nbsp;:=&nbsp;CO_MAX_IMAGES_IN_FLIGHT;&nbsp;
     60: &nbsp; &nbsp;
     61: &nbsp; &nbsp;&nbsp;--&nbsp;Absorbs&nbsp;the&nbsp;words&nbsp;in&nbsp;flight&nbsp;during&nbsp;the&nbsp;~4-cycle&nbsp;top-level&nbsp;stall&nbsp;latency&nbsp;
     62: &nbsp; &nbsp;&nbsp;constant&nbsp;STALL_CUSHION_ENTRIES&nbsp;&nbsp;:&nbsp;natural&nbsp;:=&nbsp;5;&nbsp;
@@ -361,8 +361,8 @@ table, th, td {
    201: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"byte_stuffer:&nbsp;FIFO&nbsp;write&nbsp;dropped&nbsp;-&nbsp;AlmFull&nbsp;cushion&nbsp;undersized&nbsp;vs&nbsp;stall&nbsp;latency"&nbsp;
    202: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;severity&nbsp;failure;&nbsp;
    203: &nbsp; &nbsp;
-   204: &nbsp; &nbsp;&nbsp;--&nbsp;Contracts&nbsp;(PSL,&nbsp;simulation&nbsp;only)&nbsp;
-   205: &nbsp; &nbsp;&nbsp;--&nbsp;psl&nbsp;default&nbsp;clock&nbsp;is&nbsp;rising_edge(iClk);&nbsp;
+   204: &nbsp; &nbsp;&nbsp;--&nbsp;psl&nbsp;default&nbsp;clock&nbsp;is&nbsp;rising_edge(iClk);&nbsp;
+   205: &nbsp; &nbsp;&nbsp;--&nbsp;psl&nbsp;assert&nbsp;always&nbsp;((iFlush&nbsp;=&nbsp;'1'&nbsp;and&nbsp;iStall&nbsp;=&nbsp;'0')&nbsp;-&gt;&nbsp;iWordValid&nbsp;=&nbsp;'1')&nbsp;report&nbsp;"byte_stuffer:&nbsp;iFlush&nbsp;must&nbsp;arrive&nbsp;with&nbsp;the&nbsp;image's&nbsp;last&nbsp;word";&nbsp;
    206: &nbsp; &nbsp;&nbsp;--&nbsp;psl&nbsp;assert&nbsp;always&nbsp;(iRst&nbsp;=&nbsp;'1'&nbsp;-&gt;&nbsp;next&nbsp;(oWordValid&nbsp;=&nbsp;'0'&nbsp;and&nbsp;oFlushDone&nbsp;=&nbsp;'0'))&nbsp;report&nbsp;"byte_stuffer:&nbsp;reset&nbsp;must&nbsp;clear&nbsp;the&nbsp;output&nbsp;beat&nbsp;and&nbsp;oFlushDone";&nbsp;
    207: &nbsp; &nbsp;&nbsp;--&nbsp;psl&nbsp;assert&nbsp;never&nbsp;(oFlushDone&nbsp;=&nbsp;'1'&nbsp;and&nbsp;oWordValid&nbsp;=&nbsp;'0')&nbsp;report&nbsp;"byte_stuffer:&nbsp;oFlushDone&nbsp;only&nbsp;fires&nbsp;on&nbsp;a&nbsp;valid&nbsp;output&nbsp;beat&nbsp;(framer&nbsp;iEoi&nbsp;contract)";&nbsp;
    208: &nbsp; &nbsp;&nbsp;--&nbsp;psl&nbsp;assert&nbsp;always&nbsp;(oFlushDone&nbsp;=&nbsp;'1'&nbsp;-&gt;&nbsp;next&nbsp;(oFlushDone&nbsp;=&nbsp;'0'))&nbsp;report&nbsp;"byte_stuffer:&nbsp;oFlushDone&nbsp;is&nbsp;a&nbsp;strict&nbsp;1-cycle&nbsp;pulse";&nbsp;

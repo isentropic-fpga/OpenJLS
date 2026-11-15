@@ -1,0 +1,165 @@
+Version: "0.1"
+Coverage: 100.00
+Settings: 
+  WritePassFail: 0
+Models: 
+  - Name: "G4.Branch sign x clipping region"
+    TestCases: 
+      - "tb_a6_a7_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1044093505, 409481309]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 6
+      TotalCovGoal: 6
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "sign"
+        - "clipping region"
+      NumBins: 6
+    Bins: 
+      - Name: "sign=0 / clipping region=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 0, Max: 0}
+        Count: 3070
+        AtLeast: 1
+        PercentCov: 307000.0000
+      - Name: "sign=0 / clipping region=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 1, Max: 1}
+        Count: 21446
+        AtLeast: 1
+        PercentCov: 2144600.0000
+      - Name: "sign=0 / clipping region=2"
+        Type: "COUNT"
+        Range: 
+          - {Min: 0, Max: 0}
+          - {Min: 2, Max: 2}
+        Count: 3054
+        AtLeast: 1
+        PercentCov: 305400.0000
+      - Name: "sign=1 / clipping region=0"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 0, Max: 0}
+        Count: 3052
+        AtLeast: 1
+        PercentCov: 305200.0000
+      - Name: "sign=1 / clipping region=1"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 1, Max: 1}
+        Count: 21537
+        AtLeast: 1
+        PercentCov: 2153700.0000
+      - Name: "sign=1 / clipping region=2"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 2, Max: 2}
+        Count: 3071
+        AtLeast: 1
+        PercentCov: 307100.0000
+
+  - Name: "G2.MinMax node x value"
+    TestCases: 
+      - "tb_a6_a7_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [1168425035, 132857010]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 2
+      TotalCovGoal: 2
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "Bin1"
+        - "Bin2"
+      NumBins: 2
+    Bins: 
+      - Name: "Errval=-32767"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: -32767, Max: -32767}
+        Count: 1020
+        AtLeast: 1
+        PercentCov: 102000.0000
+      - Name: "Errval=32767"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 32767, Max: 32767}
+        Count: 1028
+        AtLeast: 1
+        PercentCov: 102800.0000
+
+  - Name: "G3.Stim node x value"
+    TestCases: 
+      - "tb_a6_a7_osvvm"
+    Coverage: 100.00
+    Settings: 
+      CovWeight: 1
+      Goal: 100.0
+      WeightMode: "REMAIN"
+      Seeds: [101216275, 2036723784]
+      CountMode: "COUNT_FIRST"
+      IllegalMode: "ILLEGAL_ON"
+      Threshold: 45.0
+      ThresholdEnable: "FALSE"
+      IsRequirement: "FALSE"
+      TotalCovCount: 3
+      TotalCovGoal: 3
+    BinInfo: 
+      Dimensions: 2
+      FieldNames: 
+        - "Bin1"
+        - "Bin2"
+      NumBins: 3
+    Bins: 
+      - Name: "Ix MSB=16384..32767"
+        Type: "COUNT"
+        Range: 
+          - {Min: 1, Max: 1}
+          - {Min: 16384, Max: 32767}
+        Count: 25232
+        AtLeast: 1
+        PercentCov: 2523200.0000
+      - Name: "Px MSB=16384..32767"
+        Type: "COUNT"
+        Range: 
+          - {Min: 2, Max: 2}
+          - {Min: 16384, Max: 32767}
+        Count: 25284
+        AtLeast: 1
+        PercentCov: 2528400.0000
+      - Name: "C=-128"
+        Type: "COUNT"
+        Range: 
+          - {Min: 3, Max: 3}
+          - {Min: -128, Max: -128}
+        Count: 386
+        AtLeast: 1
+        PercentCov: 38600.0000
+
