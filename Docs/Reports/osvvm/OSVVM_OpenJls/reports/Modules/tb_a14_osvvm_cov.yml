@@ -31,33 +31,33 @@ Models:
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
-        Count: 738
+        Count: 756
         AtLeast: 1
-        PercentCov: 73800.0000
+        PercentCov: 75600.0000
       - Name: "runHit=0 / eol=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
-        Count: 822
+        Count: 739
         AtLeast: 1
-        PercentCov: 82200.0000
+        PercentCov: 73900.0000
       - Name: "runHit=1 / eol=0"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 738
+        Count: 787
         AtLeast: 1
-        PercentCov: 73800.0000
+        PercentCov: 78700.0000
       - Name: "runHit=1 / eol=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 709
+        Count: 725
         AtLeast: 1
-        PercentCov: 70900.0000
+        PercentCov: 72500.0000
 
   - Name: "G2.MinMax node x value"
     TestCases: 
@@ -87,25 +87,25 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 2
+        Count: 4
         AtLeast: 1
-        PercentCov: 200.0000
+        PercentCov: 400.0000
       - Name: "Ra=4095"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 4095, Max: 4095}
-        Count: 2
+        Count: 3
         AtLeast: 1
-        PercentCov: 200.0000
+        PercentCov: 300.0000
       - Name: "Ix=0"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 0, Max: 0}
-        Count: 2
+        Count: 3
         AtLeast: 1
-        PercentCov: 200.0000
+        PercentCov: 300.0000
       - Name: "Ix=4095"
         Type: "COUNT"
         Range: 
@@ -159,23 +159,23 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 2048, Max: 4095}
-        Count: 1510
+        Count: 1516
         AtLeast: 1
-        PercentCov: 151000.0000
+        PercentCov: 151600.0000
       - Name: "Ix MSB=2048..4095"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 2048, Max: 4095}
-        Count: 1478
+        Count: 1497
         AtLeast: 1
-        PercentCov: 147800.0000
+        PercentCov: 149700.0000
       - Name: "RUNcnt MSB=32768..65535"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
           - {Min: 32768, Max: 65535}
-        Count: 1575
+        Count: 1463
         AtLeast: 1
-        PercentCov: 157500.0000
+        PercentCov: 146300.0000
 

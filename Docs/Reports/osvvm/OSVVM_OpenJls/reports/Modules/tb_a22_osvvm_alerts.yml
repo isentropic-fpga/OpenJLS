@@ -1,7 +1,7 @@
 Version: "0.1"
 Name: "tb_a22_osvvm"
 Status: PASSED
-Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 41376, AffirmCount: 41376, RequirementsPassed: 1, RequirementsGoal: 1, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}, ExpectedCount: {Failure: 0, Error: 0, Warning: 0}}
+Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 41374, AffirmCount: 41374, RequirementsPassed: 1, RequirementsGoal: 1, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}, ExpectedCount: {Failure: 0, Error: 0, Warning: 0}}
 Settings: {ExternalErrors: {Failure: 0, Error: 0, Warning: 0}, FailOnDisabledErrors: "true", FailOnRequirementErrors: "true", FailOnWarning: "true"}
 Children: 
   - Name: "Default"
@@ -34,7 +34,7 @@ Children:
     Children: 
       - Name: "T87.A22"
         Status: PASSED
-        Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 40176, AffirmCount: 40176, RequirementsPassed: 40176, RequirementsGoal: 8400, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+        Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 40178, AffirmCount: 40178, RequirementsPassed: 40178, RequirementsGoal: 8400, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
         Children: []
   - Name: "KnownOutputs"
     Status: PASSED
@@ -42,11 +42,11 @@ Children:
     Children: []
   - Name: "DefensiveClamp"
     Status: PASSED
-    Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 598, AffirmCount: 598, RequirementsPassed: 0, RequirementsGoal: 0, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+    Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 596, AffirmCount: 596, RequirementsPassed: 0, RequirementsGoal: 0, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
     Children: []
   - Name: "DataChecks"
     Status: PASSED
-    Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 598, AffirmCount: 598, RequirementsPassed: 0, RequirementsGoal: 0, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+    Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 596, AffirmCount: 596, RequirementsPassed: 0, RequirementsGoal: 0, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
     Children: []
   - Name: "CoverageClosure"
     Status: PASSED

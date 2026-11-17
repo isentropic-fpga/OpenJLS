@@ -39,17 +39,17 @@ Models:
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
-        Count: 12361
+        Count: 12283
         AtLeast: 1
-        PercentCov: 1236100.0000
+        PercentCov: 1228300.0000
       - Name: "mode=0 / k=MAX_K"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 2, Max: 2}
-        Count: 12
+        Count: 18
         AtLeast: 1
-        PercentCov: 1200.0000
+        PercentCov: 1800.0000
       - Name: "mode=1 / k=0"
         Type: "COUNT"
         Range: 
@@ -63,17 +63,17 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 12347
+        Count: 12424
         AtLeast: 1
-        PercentCov: 1234700.0000
+        PercentCov: 1242400.0000
       - Name: "mode=1 / k=MAX_K"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 2, Max: 2}
-        Count: 15
+        Count: 10
         AtLeast: 1
-        PercentCov: 1500.0000
+        PercentCov: 1000.0000
 
   - Name: "G2.MinMax node x value"
     TestCases: 
@@ -103,17 +103,17 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 261
+        Count: 270
         AtLeast: 1
-        PercentCov: 26100.0000
+        PercentCov: 27000.0000
       - Name: "N=127"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 127, Max: 127}
-        Count: 185
+        Count: 193
         AtLeast: 1
-        PercentCov: 18500.0000
+        PercentCov: 19300.0000
       - Name: "A=0"
         Type: "COUNT"
         Range: 
@@ -175,23 +175,23 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 64, Max: 127}
-        Count: 12235
+        Count: 12211
         AtLeast: 1
-        PercentCov: 1223500.0000
+        PercentCov: 1221100.0000
       - Name: "A MSB=131072..262143"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 131072, Max: 262143}
-        Count: 4486
+        Count: 4505
         AtLeast: 1
-        PercentCov: 448600.0000
+        PercentCov: 450500.0000
       - Name: "TEMP MSB=131072..262143"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
           - {Min: 131072, Max: 262143}
-        Count: 4504
+        Count: 4523
         AtLeast: 1
-        PercentCov: 450400.0000
+        PercentCov: 452300.0000
 

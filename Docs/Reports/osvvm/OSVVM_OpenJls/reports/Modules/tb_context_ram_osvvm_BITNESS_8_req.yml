@@ -2,4 +2,4 @@
   TestCases: 
   - TestName: "tb_context_ram_osvvm"
     Status: PASSED
-    Results: {Goal: 9900, Passed: 11209, Errors: 0, Checked: 11209, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+    Results: {Goal: 9900, Passed: 11073, Errors: 0, Checked: 11073, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}

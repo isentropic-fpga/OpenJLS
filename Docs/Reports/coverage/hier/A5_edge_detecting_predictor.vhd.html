@@ -174,7 +174,6 @@ table, th, td {
 <p style="margin-left: 10px"><a href=tb_jls_framer_osvvm.vhd.html>tb_jls_framer_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_openjls_axis_regs_osvvm.vhd.html>tb_openjls_axis_regs_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=A9_modulo_reduction.vhd.html>A9_modulo_reduction.vhd</a></p>
-<p style="margin-left: 10px"><a href=A10_compute_k.vhd.html>A10_compute_k.vhd</a></p>
 <p style="margin-left: 10px"><a href=A11_error_mapping.vhd.html>A11_error_mapping.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_a14_osvvm.vhd.html>tb_a14_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_a18_osvvm.vhd.html>tb_a18_osvvm.vhd</a></p>
@@ -184,18 +183,19 @@ table, th, td {
 <p style="margin-left: 10px"><a href=tb_a4_2_osvvm.vhd.html>tb_a4_2_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=olo_base_ram_sdp.vhd.html>olo_base_ram_sdp.vhd</a></p>
 <p style="margin-left: 10px"><a href=AxiStreamTransmitter.vhd.html>AxiStreamTransmitter.vhd</a></p>
+<p style="margin-left: 10px"><a href=A10_compute_k.vhd.html>A10_compute_k.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_a10_osvvm.vhd.html>tb_a10_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=A6_A7_prediction_error.vhd.html>A6_A7_prediction_error.vhd</a></p>
 <p style="margin-left: 10px"><a href=line_buffer.vhd.html>line_buffer.vhd</a></p>
 <p style="margin-left: 10px"><a href=Axi4LiteManager.vhd.html>Axi4LiteManager.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_a9_osvvm.vhd.html>tb_a9_osvvm.vhd</a></p>
-<p style="margin-left: 10px"><a href=A18_run_interruption_prediction_error.vhd.html>A18_run_interruption_prediction_error.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_a11_osvvm.vhd.html>tb_a11_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=A15_A16_encode_run.vhd.html>A15_A16_encode_run.vhd</a></p>
 <p style="margin-left: 10px"><a href=A19_run_interruption_error.vhd.html>A19_run_interruption_error.vhd</a></p>
 <p style="margin-left: 10px"><a href=A22_errval_mapping.vhd.html>A22_errval_mapping.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_a3_osvvm.vhd.html>tb_a3_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=A4_quantization_gradients.vhd.html>A4_quantization_gradients.vhd</a></p>
+<p style="margin-left: 10px"><a href=A18_run_interruption_prediction_error.vhd.html>A18_run_interruption_prediction_error.vhd</a></p>
 <p style="margin-left: 10px"><a href=A11_1_golomb_encoder.vhd.html>A11_1_golomb_encoder.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_a20_1_osvvm.vhd.html>tb_a20_1_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_line_buffer_osvvm.vhd.html>tb_line_buffer_osvvm.vhd</a></p>
@@ -292,11 +292,11 @@ table, th, td {
   <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
  <h2 style="margin-top: 0px; margin-bottom: 0px">Covered statements:</h2>
   <div style="padding:0px 10px;">
-<h3>If statement on lines 30 to 32:</h3><code>30:&nbsp;&nbsp;oPx&nbsp;&lt;=&nbsp;math_min(iA,&nbsp;iB)&nbsp;when&nbsp;iC&nbsp;&gt;=&nbsp;math_max(iA,&nbsp;iB)&nbsp;else&nbsp;<br>31:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;math_max(iA,&nbsp;iB)&nbsp;when&nbsp;iC&nbsp;&lt;=&nbsp;math_min(iA,&nbsp;iB)&nbsp;else&nbsp;<br>32:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iA&nbsp;+&nbsp;iB&nbsp;-&nbsp;iC;&nbsp;</code><br><b>Count:</b> 360517<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 30:</h3><code>30:&nbsp;&nbsp;oPx&nbsp;&lt;=&nbsp;<code class="cbg">math_min(iA,&nbsp;iB)</code>&nbsp;when&nbsp;iC&nbsp;&gt;=&nbsp;math_max(iA,&nbsp;iB)&nbsp;else&nbsp;</code><br><b>Count:</b> 126903<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 31:</h3><code>31:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">math_max(iA,&nbsp;iB)</code>&nbsp;when&nbsp;iC&nbsp;&lt;=&nbsp;math_min(iA,&nbsp;iB)&nbsp;else&nbsp;</code><br><b>Count:</b> 152684<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 32:</h3><code>32:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">iA&nbsp;+&nbsp;iB&nbsp;-&nbsp;iC</code>;&nbsp;</code><br><b>Count:</b> 80930<br><b>Threshold:</b> 1<hr/>
-<h3>Assertion statement on lines 35 to 36:</h3><code>35:&nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(oPx)&nbsp;or&nbsp;(oPx&nbsp;&gt;=&nbsp;math_min(iA,&nbsp;iB)&nbsp;and&nbsp;oPx&nbsp;&lt;=&nbsp;math_max(iA,&nbsp;iB))&nbsp;<br>36:&nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"a5:&nbsp;Px&nbsp;outside&nbsp;[min(Ra,&nbsp;Rb),&nbsp;max(Ra,&nbsp;Rb)]"&nbsp;severity&nbsp;error;&nbsp;</code><br><b>Count:</b> 359806<br><b>Threshold:</b> 1  </div>
+<h3>If statement on lines 30 to 32:</h3><code>30:&nbsp;&nbsp;oPx&nbsp;&lt;=&nbsp;math_min(iA,&nbsp;iB)&nbsp;when&nbsp;iC&nbsp;&gt;=&nbsp;math_max(iA,&nbsp;iB)&nbsp;else&nbsp;<br>31:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;math_max(iA,&nbsp;iB)&nbsp;when&nbsp;iC&nbsp;&lt;=&nbsp;math_min(iA,&nbsp;iB)&nbsp;else&nbsp;<br>32:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iA&nbsp;+&nbsp;iB&nbsp;-&nbsp;iC;&nbsp;</code><br><b>Count:</b> 360024<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 30:</h3><code>30:&nbsp;&nbsp;oPx&nbsp;&lt;=&nbsp;<code class="cbg">math_min(iA,&nbsp;iB)</code>&nbsp;when&nbsp;iC&nbsp;&gt;=&nbsp;math_max(iA,&nbsp;iB)&nbsp;else&nbsp;</code><br><b>Count:</b> 126547<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 31:</h3><code>31:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">math_max(iA,&nbsp;iB)</code>&nbsp;when&nbsp;iC&nbsp;&lt;=&nbsp;math_min(iA,&nbsp;iB)&nbsp;else&nbsp;</code><br><b>Count:</b> 151328<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 32:</h3><code>32:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">iA&nbsp;+&nbsp;iB&nbsp;-&nbsp;iC</code>;&nbsp;</code><br><b>Count:</b> 82149<br><b>Threshold:</b> 1<hr/>
+<h3>Assertion statement on lines 35 to 36:</h3><code>35:&nbsp;&nbsp;postponed&nbsp;assert&nbsp;is_x(oPx)&nbsp;or&nbsp;(oPx&nbsp;&gt;=&nbsp;math_min(iA,&nbsp;iB)&nbsp;and&nbsp;oPx&nbsp;&lt;=&nbsp;math_max(iA,&nbsp;iB))&nbsp;<br>36:&nbsp;&nbsp;&nbsp;&nbsp;report&nbsp;"a5:&nbsp;Px&nbsp;outside&nbsp;[min(Ra,&nbsp;Rb),&nbsp;max(Ra,&nbsp;Rb)]"&nbsp;severity&nbsp;error;&nbsp;</code><br><b>Count:</b> 359283<br><b>Threshold:</b> 1  </div>
   </section>
 
 </div>
@@ -316,10 +316,10 @@ table, th, td {
   <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
  <h2 style="margin-top: 0px; margin-bottom: 0px">Covered branches:</h2>
   <div style="padding:0px 10px;">
-<h3>"if" / "when" / "else" condition on line 30:</h3><code>30:&nbsp;&nbsp;oPx&nbsp;&lt;=&nbsp;math_min(iA,&nbsp;iB)&nbsp;when&nbsp;<code class="cbg">iC&nbsp;&gt;=&nbsp;math_max(iA,&nbsp;iB)</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>126903</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 30:</h3><code>30:&nbsp;&nbsp;oPx&nbsp;&lt;=&nbsp;math_min(iA,&nbsp;iB)&nbsp;when&nbsp;<code class="cbg">iC&nbsp;&gt;=&nbsp;math_max(iA,&nbsp;iB)</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>24152</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 31:</h3><code>31:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;math_max(iA,&nbsp;iB)&nbsp;when&nbsp;<code class="cbg">iC&nbsp;&lt;=&nbsp;math_min(iA,&nbsp;iB)</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>152684</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 31:</h3><code>31:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;math_max(iA,&nbsp;iB)&nbsp;when&nbsp;<code class="cbg">iC&nbsp;&lt;=&nbsp;math_min(iA,&nbsp;iB)</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>11980</td><td>1</td></tr></table>  </div>
+<h3>"if" / "when" / "else" condition on line 30:</h3><code>30:&nbsp;&nbsp;oPx&nbsp;&lt;=&nbsp;math_min(iA,&nbsp;iB)&nbsp;when&nbsp;<code class="cbg">iC&nbsp;&gt;=&nbsp;math_max(iA,&nbsp;iB)</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>126547</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 30:</h3><code>30:&nbsp;&nbsp;oPx&nbsp;&lt;=&nbsp;math_min(iA,&nbsp;iB)&nbsp;when&nbsp;<code class="cbg">iC&nbsp;&gt;=&nbsp;math_max(iA,&nbsp;iB)</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>24307</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 31:</h3><code>31:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;math_max(iA,&nbsp;iB)&nbsp;when&nbsp;<code class="cbg">iC&nbsp;&lt;=&nbsp;math_min(iA,&nbsp;iB)</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>151328</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 31:</h3><code>31:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;math_max(iA,&nbsp;iB)&nbsp;when&nbsp;<code class="cbg">iC&nbsp;&lt;=&nbsp;math_min(iA,&nbsp;iB)</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>12134</td><td>1</td></tr></table>  </div>
   </section>
 
 </div>
@@ -446,7 +446,7 @@ table, th, td {
    document.getElementById("defaultOpen").click();
 </script>
 <footer>   <p> NVC version: 1.23.0 </p>
-   <p> Generated on: Sat Nov 14 22:32:43 2026
+   <p> Generated on: Tue Nov 17 12:16:24 2026
  </p>
 </footer>
 </body>

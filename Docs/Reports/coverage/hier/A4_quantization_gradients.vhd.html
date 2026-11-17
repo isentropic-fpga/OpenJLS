@@ -174,7 +174,6 @@ table, th, td {
 <p style="margin-left: 10px"><a href=tb_jls_framer_osvvm.vhd.html>tb_jls_framer_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_openjls_axis_regs_osvvm.vhd.html>tb_openjls_axis_regs_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=A9_modulo_reduction.vhd.html>A9_modulo_reduction.vhd</a></p>
-<p style="margin-left: 10px"><a href=A10_compute_k.vhd.html>A10_compute_k.vhd</a></p>
 <p style="margin-left: 10px"><a href=A11_error_mapping.vhd.html>A11_error_mapping.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_a14_osvvm.vhd.html>tb_a14_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_a18_osvvm.vhd.html>tb_a18_osvvm.vhd</a></p>
@@ -184,18 +183,19 @@ table, th, td {
 <p style="margin-left: 10px"><a href=tb_a4_2_osvvm.vhd.html>tb_a4_2_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=olo_base_ram_sdp.vhd.html>olo_base_ram_sdp.vhd</a></p>
 <p style="margin-left: 10px"><a href=AxiStreamTransmitter.vhd.html>AxiStreamTransmitter.vhd</a></p>
+<p style="margin-left: 10px"><a href=A10_compute_k.vhd.html>A10_compute_k.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_a10_osvvm.vhd.html>tb_a10_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=A6_A7_prediction_error.vhd.html>A6_A7_prediction_error.vhd</a></p>
 <p style="margin-left: 10px"><a href=line_buffer.vhd.html>line_buffer.vhd</a></p>
 <p style="margin-left: 10px"><a href=Axi4LiteManager.vhd.html>Axi4LiteManager.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_a9_osvvm.vhd.html>tb_a9_osvvm.vhd</a></p>
-<p style="margin-left: 10px"><a href=A18_run_interruption_prediction_error.vhd.html>A18_run_interruption_prediction_error.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_a11_osvvm.vhd.html>tb_a11_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=A15_A16_encode_run.vhd.html>A15_A16_encode_run.vhd</a></p>
 <p style="margin-left: 10px"><a href=A19_run_interruption_error.vhd.html>A19_run_interruption_error.vhd</a></p>
 <p style="margin-left: 10px"><a href=A22_errval_mapping.vhd.html>A22_errval_mapping.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_a3_osvvm.vhd.html>tb_a3_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=A4_quantization_gradients.vhd.html>A4_quantization_gradients.vhd</a></p>
+<p style="margin-left: 10px"><a href=A18_run_interruption_prediction_error.vhd.html>A18_run_interruption_prediction_error.vhd</a></p>
 <p style="margin-left: 10px"><a href=A11_1_golomb_encoder.vhd.html>A11_1_golomb_encoder.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_a20_1_osvvm.vhd.html>tb_a20_1_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_line_buffer_osvvm.vhd.html>tb_line_buffer_osvvm.vhd</a></p>
@@ -251,13 +251,13 @@ table, th, td {
   <tr>
     <td style="background-color:var(--table-row-color)">
 <a href="A4_quantization_gradients.vhd.html">A4_quantization_gradients.vhd</a></td>
-    <td class="percent100">100.0 % (20/20)</td>
-    <td class="percent100">100.0 % (12/12)</td>
+    <td class="percent100">100.0 % (22/22)</td>
+    <td class="percent100">100.0 % (18/18)</td>
     <td class="percentna">N.A.</td>
     <td class="percentna">N.A.</td>
     <td class="percentna">N.A.</td>
     <td class="percentna">N.A.</td>
-    <td class="percent100">100.0 % (32/32)</td>
+    <td class="percent100">100.0 % (40/40)</td>
   </tr>
 </table>
 
@@ -295,23 +295,25 @@ table, th, td {
 <h3>If statement on lines 40 to 44:</h3><code>40:&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(i&nbsp;&gt;&nbsp;maxvalue&nbsp;or&nbsp;i&nbsp;&lt;&nbsp;j)&nbsp;then&nbsp;<br>41:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;j;&nbsp;<br>42:&nbsp;&nbsp;&nbsp;&nbsp;else&nbsp;<br>43:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;i;&nbsp;<br>44:&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;</code><br><b>Count:</b> 129<br><b>Threshold:</b> 1<hr/>
 <h3>Sequential statement on line 41:</h3><code>41:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">return&nbsp;j;</code>&nbsp;</code><br><b>Count:</b> 3<br><b>Threshold:</b> 1<hr/>
 <h3>Sequential statement on line 43:</h3><code>43:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">return&nbsp;i;</code>&nbsp;</code><br><b>Count:</b> 126<br><b>Threshold:</b> 1<hr/>
-<h3>Variable assignment statement on line 61:</h3><code>61:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vAbsQi&nbsp;:=&nbsp;abs(to_integer(di));</code>&nbsp;</code><br><b>Count:</b> 2579587<br><b>Threshold:</b> 1<hr/>
-<h3>Variable assignment statement on line 62:</h3><code>62:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">vSign&nbsp;&nbsp;:=&nbsp;di(di'high);</code>&nbsp;</code><br><b>Count:</b> 2579587<br><b>Threshold:</b> 1<hr/>
-<h3>If statement on lines 64 to 74:</h3><code>64:&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(vAbsQi&nbsp;=&nbsp;0)&nbsp;then&nbsp;<br>65:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;qi&nbsp;:=&nbsp;to_signed(0,&nbsp;qi'length);&nbsp;<br>...<br>73:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;qi&nbsp;:=&nbsp;to_signed(4,&nbsp;qi'length);&nbsp;<br>74:&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;</code><br><b>Count:</b> 2579587<br><b>Threshold:</b> 1<hr/>
-<h3>Variable assignment statement on line 65:</h3><code>65:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">qi&nbsp;:=&nbsp;to_signed(0,&nbsp;qi'length);</code>&nbsp;</code><br><b>Count:</b> 562508<br><b>Threshold:</b> 1<hr/>
-<h3>Variable assignment statement on line 67:</h3><code>67:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">qi&nbsp;:=&nbsp;to_signed(1,&nbsp;qi'length);</code>&nbsp;</code><br><b>Count:</b> 68406<br><b>Threshold:</b> 1<hr/>
-<h3>Variable assignment statement on line 69:</h3><code>69:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">qi&nbsp;:=&nbsp;to_signed(2,&nbsp;qi'length);</code>&nbsp;</code><br><b>Count:</b> 30091<br><b>Threshold:</b> 1<hr/>
-<h3>Variable assignment statement on line 71:</h3><code>71:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">qi&nbsp;:=&nbsp;to_signed(3,&nbsp;qi'length);</code>&nbsp;</code><br><b>Count:</b> 73466<br><b>Threshold:</b> 1<hr/>
-<h3>Variable assignment statement on line 73:</h3><code>73:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">qi&nbsp;:=&nbsp;to_signed(4,&nbsp;qi'length);</code>&nbsp;</code><br><b>Count:</b> 1845116<br><b>Threshold:</b> 1<hr/>
-<h3>If statement on lines 76 to 78:</h3><code>76:&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(vSign&nbsp;=&nbsp;'1')&nbsp;then&nbsp;<br>77:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;qi&nbsp;:=&nbsp;-&nbsp;qi;&nbsp;<br>78:&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;</code><br><b>Count:</b> 2579587<br><b>Threshold:</b> 1<hr/>
-<h3>Variable assignment statement on line 77:</h3><code>77:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">qi&nbsp;:=&nbsp;-&nbsp;qi;</code>&nbsp;</code><br><b>Count:</b> 1025689<br><b>Threshold:</b> 1<hr/>
-<h3>Sequential statement on line 80:</h3><code>80:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">return&nbsp;qi;</code>&nbsp;</code><br><b>Count:</b> 2579587<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 94:</h3><code>94:&nbsp;&nbsp;oQ1&nbsp;&lt;=&nbsp;<code class="cbg">quantizate(iD1,&nbsp;T1,&nbsp;T2,&nbsp;T3)</code>;&nbsp;</code><br><b>Count:</b> 849120<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 95:</h3><code>95:&nbsp;&nbsp;oQ2&nbsp;&lt;=&nbsp;<code class="cbg">quantizate(iD2,&nbsp;T1,&nbsp;T2,&nbsp;T3)</code>;&nbsp;</code><br><b>Count:</b> 851367<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 96:</h3><code>96:&nbsp;&nbsp;oQ3&nbsp;&lt;=&nbsp;<code class="cbg">quantizate(iD3,&nbsp;T1,&nbsp;T2,&nbsp;T3)</code>;&nbsp;</code><br><b>Count:</b> 879100<br><b>Threshold:</b> 1<hr/>
-<h3>Assertion statement on line 98:</h3><code>98:&nbsp;&nbsp;<code class="cbg">postponed&nbsp;assert&nbsp;is_x(oQ1)&nbsp;or&nbsp;abs(to_integer(oQ1))&nbsp;&lt;=&nbsp;4&nbsp;report&nbsp;"a4:&nbsp;Q1&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;</code>&nbsp;</code><br><b>Count:</b> 768983<br><b>Threshold:</b> 1<hr/>
-<h3>Assertion statement on line 99:</h3><code>99:&nbsp;&nbsp;<code class="cbg">postponed&nbsp;assert&nbsp;is_x(oQ2)&nbsp;or&nbsp;abs(to_integer(oQ2))&nbsp;&lt;=&nbsp;4&nbsp;report&nbsp;"a4:&nbsp;Q2&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;</code>&nbsp;</code><br><b>Count:</b> 769113<br><b>Threshold:</b> 1<hr/>
-<h3>Assertion statement on line 100:</h3><code>100:&nbsp;&nbsp;<code class="cbg">postponed&nbsp;assert&nbsp;is_x(oQ3)&nbsp;or&nbsp;abs(to_integer(oQ3))&nbsp;&lt;=&nbsp;4&nbsp;report&nbsp;"a4:&nbsp;Q3&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;</code>&nbsp;</code><br><b>Count:</b> 724258<br><b>Threshold:</b> 1  </div>
+<h3>If statement on lines 61 to 83:</h3><code>61:&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(di&nbsp;=&nbsp;0)&nbsp;then&nbsp;<br>62:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;qi&nbsp;:=&nbsp;to_signed(0,&nbsp;qi'length);&nbsp;<br>...<br>82:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;<br>83:&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;</code><br><b>Count:</b> 2578925<br><b>Threshold:</b> 1<hr/>
+<h3>Variable assignment statement on line 62:</h3><code>62:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">qi&nbsp;:=&nbsp;to_signed(0,&nbsp;qi'length);</code>&nbsp;</code><br><b>Count:</b> 561989<br><b>Threshold:</b> 1<hr/>
+<h3>If statement on lines 64 to 72:</h3><code>64:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(di&nbsp;&lt;&nbsp;to_signed(t1,&nbsp;W))&nbsp;then&nbsp;<br>65:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;qi&nbsp;:=&nbsp;to_signed(1,&nbsp;qi'length);&nbsp;<br>...<br>71:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;qi&nbsp;:=&nbsp;to_signed(4,&nbsp;qi'length);&nbsp;<br>72:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;</code><br><b>Count:</b> 992167<br><b>Threshold:</b> 1<hr/>
+<h3>Variable assignment statement on line 65:</h3><code>65:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">qi&nbsp;:=&nbsp;to_signed(1,&nbsp;qi'length);</code>&nbsp;</code><br><b>Count:</b> 31407<br><b>Threshold:</b> 1<hr/>
+<h3>Variable assignment statement on line 67:</h3><code>67:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">qi&nbsp;:=&nbsp;to_signed(2,&nbsp;qi'length);</code>&nbsp;</code><br><b>Count:</b> 15102<br><b>Threshold:</b> 1<hr/>
+<h3>Variable assignment statement on line 69:</h3><code>69:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">qi&nbsp;:=&nbsp;to_signed(3,&nbsp;qi'length);</code>&nbsp;</code><br><b>Count:</b> 33668<br><b>Threshold:</b> 1<hr/>
+<h3>Variable assignment statement on line 71:</h3><code>71:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">qi&nbsp;:=&nbsp;to_signed(4,&nbsp;qi'length);</code>&nbsp;</code><br><b>Count:</b> 911990<br><b>Threshold:</b> 1<hr/>
+<h3>If statement on lines 74 to 82:</h3><code>74:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(di&nbsp;&gt;&nbsp;to_signed(-t1,&nbsp;W))&nbsp;then&nbsp;<br>75:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;qi&nbsp;:=&nbsp;to_signed(-1,&nbsp;qi'length);&nbsp;<br>...<br>81:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;qi&nbsp;:=&nbsp;to_signed(-4,&nbsp;qi'length);&nbsp;<br>82:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end&nbsp;if;&nbsp;</code><br><b>Count:</b> 1024769<br><b>Threshold:</b> 1<hr/>
+<h3>Variable assignment statement on line 75:</h3><code>75:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">qi&nbsp;:=&nbsp;to_signed(-1,&nbsp;qi'length);</code>&nbsp;</code><br><b>Count:</b> 37098<br><b>Threshold:</b> 1<hr/>
+<h3>Variable assignment statement on line 77:</h3><code>77:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">qi&nbsp;:=&nbsp;to_signed(-2,&nbsp;qi'length);</code>&nbsp;</code><br><b>Count:</b> 15108<br><b>Threshold:</b> 1<hr/>
+<h3>Variable assignment statement on line 79:</h3><code>79:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">qi&nbsp;:=&nbsp;to_signed(-3,&nbsp;qi'length);</code>&nbsp;</code><br><b>Count:</b> 38166<br><b>Threshold:</b> 1<hr/>
+<h3>Variable assignment statement on line 81:</h3><code>81:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">qi&nbsp;:=&nbsp;to_signed(-4,&nbsp;qi'length);</code>&nbsp;</code><br><b>Count:</b> 934397<br><b>Threshold:</b> 1<hr/>
+<h3>Sequential statement on line 85:</h3><code>85:&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">return&nbsp;qi;</code>&nbsp;</code><br><b>Count:</b> 2578925<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 99:</h3><code>99:&nbsp;&nbsp;oQ1&nbsp;&lt;=&nbsp;<code class="cbg">quantizate(iD1,&nbsp;T1,&nbsp;T2,&nbsp;T3)</code>;&nbsp;</code><br><b>Count:</b> 848891<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 100:</h3><code>100:&nbsp;&nbsp;oQ2&nbsp;&lt;=&nbsp;<code class="cbg">quantizate(iD2,&nbsp;T1,&nbsp;T2,&nbsp;T3)</code>;&nbsp;</code><br><b>Count:</b> 851105<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 101:</h3><code>101:&nbsp;&nbsp;oQ3&nbsp;&lt;=&nbsp;<code class="cbg">quantizate(iD3,&nbsp;T1,&nbsp;T2,&nbsp;T3)</code>;&nbsp;</code><br><b>Count:</b> 878929<br><b>Threshold:</b> 1<hr/>
+<h3>Assertion statement on line 103:</h3><code>103:&nbsp;&nbsp;<code class="cbg">postponed&nbsp;assert&nbsp;is_x(oQ1)&nbsp;or&nbsp;abs(to_integer(oQ1))&nbsp;&lt;=&nbsp;4&nbsp;report&nbsp;"a4:&nbsp;Q1&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;</code>&nbsp;</code><br><b>Count:</b> 769970<br><b>Threshold:</b> 1<hr/>
+<h3>Assertion statement on line 104:</h3><code>104:&nbsp;&nbsp;<code class="cbg">postponed&nbsp;assert&nbsp;is_x(oQ2)&nbsp;or&nbsp;abs(to_integer(oQ2))&nbsp;&lt;=&nbsp;4&nbsp;report&nbsp;"a4:&nbsp;Q2&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;</code>&nbsp;</code><br><b>Count:</b> 770040<br><b>Threshold:</b> 1<hr/>
+<h3>Assertion statement on line 105:</h3><code>105:&nbsp;&nbsp;<code class="cbg">postponed&nbsp;assert&nbsp;is_x(oQ3)&nbsp;or&nbsp;abs(to_integer(oQ3))&nbsp;&lt;=&nbsp;4&nbsp;report&nbsp;"a4:&nbsp;Q3&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;</code>&nbsp;</code><br><b>Count:</b> 727493<br><b>Threshold:</b> 1  </div>
   </section>
 
 </div>
@@ -333,16 +335,22 @@ table, th, td {
   <div style="padding:0px 10px;">
 <h3>"if" / "when" / "else" condition on line 40:</h3><code>40:&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(<code class="cbg">i&nbsp;&gt;&nbsp;maxvalue&nbsp;or&nbsp;i&nbsp;&lt;&nbsp;j</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>3</td><td>1</td></tr></table><hr/>
 <h3>"if" / "when" / "else" condition on line 40:</h3><code>40:&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(<code class="cbg">i&nbsp;&gt;&nbsp;maxvalue&nbsp;or&nbsp;i&nbsp;&lt;&nbsp;j</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>42</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 64:</h3><code>64:&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(<code class="cbg">vAbsQi&nbsp;=&nbsp;0</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>562508</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 64:</h3><code>64:&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(<code class="cbg">vAbsQi&nbsp;=&nbsp;0</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>1318401</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 66:</h3><code>66:&nbsp;&nbsp;&nbsp;&nbsp;elsif&nbsp;(<code class="cbg">vAbsQi&nbsp;&lt;&nbsp;t1</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>68406</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 66:</h3><code>66:&nbsp;&nbsp;&nbsp;&nbsp;elsif&nbsp;(<code class="cbg">vAbsQi&nbsp;&lt;&nbsp;t1</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>1316328</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 68:</h3><code>68:&nbsp;&nbsp;&nbsp;&nbsp;elsif&nbsp;(<code class="cbg">vAbsQi&nbsp;&lt;&nbsp;t2</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>30091</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 68:</h3><code>68:&nbsp;&nbsp;&nbsp;&nbsp;elsif&nbsp;(<code class="cbg">vAbsQi&nbsp;&lt;&nbsp;t2</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>1311958</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 70:</h3><code>70:&nbsp;&nbsp;&nbsp;&nbsp;elsif&nbsp;(<code class="cbg">vAbsQi&nbsp;&lt;&nbsp;t3</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>73466</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 70:</h3><code>70:&nbsp;&nbsp;&nbsp;&nbsp;elsif&nbsp;(<code class="cbg">vAbsQi&nbsp;&lt;&nbsp;t3</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>1294811</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 76:</h3><code>76:&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(<code class="cbg">vSign&nbsp;=&nbsp;'1'</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>1025689</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 76:</h3><code>76:&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(<code class="cbg">vSign&nbsp;=&nbsp;'1'</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>1182346</td><td>1</td></tr></table>  </div>
+<h3>"if" / "when" / "else" condition on line 61:</h3><code>61:&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(<code class="cbg">di&nbsp;=&nbsp;0</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>561989</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 61:</h3><code>61:&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(<code class="cbg">di&nbsp;=&nbsp;0</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>1318398</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 63:</h3><code>63:&nbsp;&nbsp;&nbsp;&nbsp;elsif&nbsp;(<code class="cbg">di(di'high)&nbsp;=&nbsp;'0'</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>992167</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 63:</h3><code>63:&nbsp;&nbsp;&nbsp;&nbsp;elsif&nbsp;(<code class="cbg">di(di'high)&nbsp;=&nbsp;'0'</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>660055</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 64:</h3><code>64:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(<code class="cbg">di&nbsp;&lt;&nbsp;to_signed(t1,&nbsp;W)</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>31407</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 64:</h3><code>64:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(<code class="cbg">di&nbsp;&lt;&nbsp;to_signed(t1,&nbsp;W)</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>657334</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 66:</h3><code>66:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elsif&nbsp;(<code class="cbg">di&nbsp;&lt;&nbsp;to_signed(t2,&nbsp;W)</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>15102</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 66:</h3><code>66:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elsif&nbsp;(<code class="cbg">di&nbsp;&lt;&nbsp;to_signed(t2,&nbsp;W)</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>655144</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 68:</h3><code>68:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elsif&nbsp;(<code class="cbg">di&nbsp;&lt;&nbsp;to_signed(t3,&nbsp;W)</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>33668</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 68:</h3><code>68:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elsif&nbsp;(<code class="cbg">di&nbsp;&lt;&nbsp;to_signed(t3,&nbsp;W)</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>646659</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 74:</h3><code>74:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(<code class="cbg">di&nbsp;&gt;&nbsp;to_signed(-t1,&nbsp;W)</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>37098</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 74:</h3><code>74:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(<code class="cbg">di&nbsp;&gt;&nbsp;to_signed(-t1,&nbsp;W)</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>659070</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 76:</h3><code>76:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elsif&nbsp;(<code class="cbg">di&nbsp;&gt;&nbsp;to_signed(-t2,&nbsp;W)</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>15108</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 76:</h3><code>76:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elsif&nbsp;(<code class="cbg">di&nbsp;&gt;&nbsp;to_signed(-t2,&nbsp;W)</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>656886</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 78:</h3><code>78:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elsif&nbsp;(<code class="cbg">di&nbsp;&gt;&nbsp;to_signed(-t3,&nbsp;W)</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>38166</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 78:</h3><code>78:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;elsif&nbsp;(<code class="cbg">di&nbsp;&gt;&nbsp;to_signed(-t3,&nbsp;W)</code>)&nbsp;then&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>648381</td><td>1</td></tr></table>  </div>
   </section>
 
 </div>
@@ -469,7 +477,7 @@ table, th, td {
    document.getElementById("defaultOpen").click();
 </script>
 <footer>   <p> NVC version: 1.23.0 </p>
-   <p> Generated on: Sat Nov 14 22:32:43 2026
+   <p> Generated on: Tue Nov 17 12:16:24 2026
  </p>
 </footer>
 </body>

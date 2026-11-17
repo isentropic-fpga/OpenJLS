@@ -29,16 +29,16 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 1504
+        Count: 1545
         AtLeast: 1
-        PercentCov: 150400.0000
+        PercentCov: 154500.0000
       - Name: "equal neighbours"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 1529
+        Count: 1488
         AtLeast: 1
-        PercentCov: 152900.0000
+        PercentCov: 148800.0000
 
   - Name: "G2.MinMax node x value"
     TestCases: 
@@ -68,17 +68,17 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 17
+        Count: 18
         AtLeast: 1
-        PercentCov: 1700.0000
+        PercentCov: 1800.0000
       - Name: "Ra=32767"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 32767, Max: 32767}
-        Count: 2
+        Count: 1
         AtLeast: 1
-        PercentCov: 200.0000
+        PercentCov: 100.0000
       - Name: "Rb=0"
         Type: "COUNT"
         Range: 
@@ -92,9 +92,9 @@ Models:
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 32767, Max: 32767}
-        Count: 3
+        Count: 2
         AtLeast: 1
-        PercentCov: 300.0000
+        PercentCov: 200.0000
 
   - Name: "G3.Stim node x value"
     TestCases: 
@@ -124,15 +124,15 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 16384, Max: 32767}
-        Count: 1488
+        Count: 1495
         AtLeast: 1
-        PercentCov: 148800.0000
+        PercentCov: 149500.0000
       - Name: "Rb MSB=16384..32767"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 16384, Max: 32767}
-        Count: 1481
+        Count: 1494
         AtLeast: 1
-        PercentCov: 148100.0000
+        PercentCov: 149400.0000
 

@@ -29,16 +29,16 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 202
+        Count: 208
         AtLeast: 1
-        PercentCov: 20200.0000
+        PercentCov: 20800.0000
       - Name: "end of line"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 213
+        Count: 207
         AtLeast: 1
-        PercentCov: 21300.0000
+        PercentCov: 20700.0000
 
   - Name: "G4.Run immediateBreak"
     TestCases: 
@@ -66,16 +66,16 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 383
+        Count: 391
         AtLeast: 1
-        PercentCov: 38300.0000
+        PercentCov: 39100.0000
       - Name: "immediate break"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 32
+        Count: 24
         AtLeast: 1
-        PercentCov: 3200.0000
+        PercentCov: 2400.0000
 
   - Name: "G4.Run eoiReset"
     TestCases: 
@@ -103,16 +103,16 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 377
+        Count: 382
         AtLeast: 1
-        PercentCov: 37700.0000
+        PercentCov: 38200.0000
       - Name: "end of image"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 38
+        Count: 33
         AtLeast: 1
-        PercentCov: 3800.0000
+        PercentCov: 3300.0000
 
   - Name: "G4.Run G2.MinMax startIdx"
     TestCases: 
@@ -140,30 +140,30 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 47
+        Count: 38
         AtLeast: 1
-        PercentCov: 4700.0000
+        PercentCov: 3800.0000
       - Name: "startIdxLo"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 3}
-        Count: 16
+        Count: 10
         AtLeast: 1
-        PercentCov: 1600.0000
+        PercentCov: 1000.0000
       - Name: "startIdxMid"
         Type: "COUNT"
         Range: 
           - {Min: 4, Max: 10}
-        Count: 60
+        Count: 81
         AtLeast: 1
-        PercentCov: 6000.0000
+        PercentCov: 8100.0000
       - Name: "startIdxHi"
         Type: "COUNT"
         Range: 
           - {Min: 11, Max: 30}
-        Count: 292
+        Count: 286
         AtLeast: 1
-        PercentCov: 29200.0000
+        PercentCov: 28600.0000
       - Name: "startIdx31"
         Type: "COUNT"
         Range: 
@@ -235,16 +235,16 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 32
+        Count: 24
         AtLeast: 1
-        PercentCov: 3200.0000
+        PercentCov: 2400.0000
       - Name: "RUNcnt=2^RC_W-1 (MSB set)"
         Type: "COUNT"
         Range: 
           - {Min: 255, Max: 255}
-        Count: 88
+        Count: 74
         AtLeast: 1
-        PercentCov: 8800.0000
+        PercentCov: 7400.0000
 
   - Name: "G5.States resetPhase"
     TestCases: 

@@ -38,11 +38,11 @@ Children:
     Children: 
       - Name: "T87.A11.1"
         Status: PASSED
-        Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 25140, AffirmCount: 25140, RequirementsPassed: 25140, RequirementsGoal: 20000, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+        Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 25167, AffirmCount: 25167, RequirementsPassed: 25167, RequirementsGoal: 20000, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
         Children: []
       - Name: "T87.A22.1"
         Status: PASSED
-        Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 25344, AffirmCount: 25344, RequirementsPassed: 25344, RequirementsGoal: 20000, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+        Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 25317, AffirmCount: 25317, RequirementsPassed: 25317, RequirementsGoal: 20000, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
         Children: []
   - Name: "KnownOutputs"
     Status: PASSED

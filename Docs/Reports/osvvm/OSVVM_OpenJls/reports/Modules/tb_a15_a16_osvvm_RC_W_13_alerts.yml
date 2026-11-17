@@ -1,7 +1,7 @@
 Version: "0.1"
 Name: "tb_a15_a16_osvvm"
 Status: PASSED
-Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 93921, AffirmCount: 93921, RequirementsPassed: 1, RequirementsGoal: 1, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}, ExpectedCount: {Failure: 0, Error: 0, Warning: 0}}
+Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 91588, AffirmCount: 91588, RequirementsPassed: 1, RequirementsGoal: 1, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}, ExpectedCount: {Failure: 0, Error: 0, Warning: 0}}
 Settings: {ExternalErrors: {Failure: 0, Error: 0, Warning: 0}, FailOnDisabledErrors: "true", FailOnRequirementErrors: "true", FailOnWarning: "true"}
 Children: 
   - Name: "Default"
@@ -46,11 +46,11 @@ Children:
     Children: 
       - Name: "T87.A15-A16"
         Status: PASSED
-        Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 2037, AffirmCount: 2037, RequirementsPassed: 2037, RequirementsGoal: 1800, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+        Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 2121, AffirmCount: 2121, RequirementsPassed: 2121, RequirementsGoal: 1800, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
         Children: []
   - Name: "DataChecks"
     Status: PASSED
-    Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 81849, AffirmCount: 81849, RequirementsPassed: 0, RequirementsGoal: 0, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+    Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 79546, AffirmCount: 79546, RequirementsPassed: 0, RequirementsGoal: 0, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
     Children: []
   - Name: "KnownOutputs"
     Status: PASSED
@@ -58,7 +58,7 @@ Children:
     Children: []
   - Name: "ClockEnable"
     Status: PASSED
-    Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 10026, AffirmCount: 10026, RequirementsPassed: 0, RequirementsGoal: 0, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+    Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 9912, AffirmCount: 9912, RequirementsPassed: 0, RequirementsGoal: 0, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
     Children: []
   - Name: "ResetRecovery"
     Status: PASSED

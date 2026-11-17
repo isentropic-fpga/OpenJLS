@@ -29,37 +29,37 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 7138
+        Count: 6987
         AtLeast: 1
-        PercentCov: 713800.0000
+        PercentCov: 698700.0000
       - Name: "stored value"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 1997
+        Count: 1915
         AtLeast: 1
-        PercentCov: 199700.0000
+        PercentCov: 191500.0000
       - Name: "forwarded write, cycle after the read"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
-        Count: 743
+        Count: 757
         AtLeast: 1
-        PercentCov: 74300.0000
+        PercentCov: 75700.0000
       - Name: "forwarded write, read cycle"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
-        Count: 663
+        Count: 672
         AtLeast: 1
-        PercentCov: 66300.0000
+        PercentCov: 67200.0000
       - Name: "forwarded write, cycle before the read"
         Type: "COUNT"
         Range: 
           - {Min: 4, Max: 4}
-        Count: 667
+        Count: 741
         AtLeast: 1
-        PercentCov: 66700.0000
+        PercentCov: 74100.0000
 
   - Name: "G4.Stream readOfPendingWrite"
     TestCases: 
@@ -87,9 +87,9 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 500
+        Count: 456
         AtLeast: 20
-        PercentCov: 2500.0000
+        PercentCov: 2280.0000
 
   - Name: "G4.Stream stall"
     TestCases: 
@@ -117,9 +117,9 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 1706
+        Count: 1763
         AtLeast: 20
-        PercentCov: 8530.0000
+        PercentCov: 8815.0000
 
   - Name: "G4.Stream readOnEoiCycle"
     TestCases: 
@@ -147,9 +147,9 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 102
+        Count: 92
         AtLeast: 1
-        PercentCov: 10200.0000
+        PercentCov: 9200.0000
       - Name: "stored on EOI"
         Type: "COUNT"
         Range: 
@@ -161,9 +161,9 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 4}
-        Count: 10
+        Count: 9
         AtLeast: 1
-        PercentCov: 1000.0000
+        PercentCov: 900.0000
 
   - Name: "G5.States resetPhase"
     TestCases: 
@@ -191,16 +191,16 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 56
+        Count: 43
         AtLeast: 1
-        PercentCov: 5600.0000
+        PercentCov: 4300.0000
       - Name: "read+write in flight"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 44
+        Count: 26
         AtLeast: 1
-        PercentCov: 4400.0000
+        PercentCov: 2600.0000
 
   - Name: "G2.MinMax field x value"
     TestCases: 
@@ -246,47 +246,47 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: -512, Max: -512}
-        Count: 1
+        Count: 9
         AtLeast: 1
-        PercentCov: 100.0000
+        PercentCov: 900.0000
       - Name: "B=511"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 511, Max: 511}
-        Count: 5
+        Count: 4
         AtLeast: 1
-        PercentCov: 500.0000
+        PercentCov: 400.0000
       - Name: "C=-128"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: -128, Max: -128}
-        Count: 10
+        Count: 14
         AtLeast: 1
-        PercentCov: 1000.0000
+        PercentCov: 1400.0000
       - Name: "C=127"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 127, Max: 127}
-        Count: 11
+        Count: 15
         AtLeast: 1
-        PercentCov: 1100.0000
+        PercentCov: 1500.0000
       - Name: "N=0"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
           - {Min: 0, Max: 0}
-        Count: 23
+        Count: 36
         AtLeast: 1
-        PercentCov: 2300.0000
+        PercentCov: 3600.0000
       - Name: "N=127"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
           - {Min: 127, Max: 127}
-        Count: 41
+        Count: 26
         AtLeast: 1
-        PercentCov: 4100.0000
+        PercentCov: 2600.0000
 

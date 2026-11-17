@@ -33,9 +33,9 @@ Models:
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
-        Count: 573
+        Count: 583
         AtLeast: 1
-        PercentCov: 57300.0000
+        PercentCov: 58300.0000
       - Name: "sign=0 / wrapNeg=0 / geHalf=1"
         Type: "COUNT"
         Range: 
@@ -51,54 +51,54 @@ Models:
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 534
+        Count: 536
         AtLeast: 1
-        PercentCov: 53400.0000
+        PercentCov: 53600.0000
       - Name: "sign=0 / wrapNeg=1 / geHalf=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 616
+        Count: 570
         AtLeast: 1
-        PercentCov: 61600.0000
+        PercentCov: 57000.0000
       - Name: "sign=1 / wrapNeg=0 / geHalf=0"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
-        Count: 977
+        Count: 916
         AtLeast: 1
-        PercentCov: 97700.0000
+        PercentCov: 91600.0000
       - Name: "sign=1 / wrapNeg=0 / geHalf=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
-        Count: 913
+        Count: 958
         AtLeast: 1
-        PercentCov: 91300.0000
+        PercentCov: 95800.0000
       - Name: "sign=1 / wrapNeg=1 / geHalf=0"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 952
+        Count: 979
         AtLeast: 1
-        PercentCov: 95200.0000
+        PercentCov: 97900.0000
       - Name: "sign=1 / wrapNeg=1 / geHalf=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 922
+        Count: 945
         AtLeast: 1
-        PercentCov: 92200.0000
+        PercentCov: 94500.0000
 
   - Name: "G2.MinMax node x value"
     TestCases: 
@@ -128,9 +128,9 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: -2047, Max: -2047}
-        Count: 2
+        Count: 3
         AtLeast: 1
-        PercentCov: 200.0000
+        PercentCov: 300.0000
       - Name: "Errval in=2047"
         Type: "COUNT"
         Range: 
@@ -184,23 +184,23 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: -2047, Max: -2047}
-        Count: 2
+        Count: 3
         AtLeast: 1
-        PercentCov: 200.0000
+        PercentCov: 300.0000
       - Name: "Ra MSB=1024..2047"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 1024, Max: 2047}
-        Count: 1551
+        Count: 1485
         AtLeast: 1
-        PercentCov: 155100.0000
+        PercentCov: 148500.0000
       - Name: "Rb MSB=1024..2047"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
           - {Min: 1024, Max: 2047}
-        Count: 1465
+        Count: 1494
         AtLeast: 1
-        PercentCov: 146500.0000
+        PercentCov: 149400.0000
 

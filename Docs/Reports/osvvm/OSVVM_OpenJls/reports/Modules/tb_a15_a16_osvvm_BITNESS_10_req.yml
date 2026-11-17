@@ -2,4 +2,4 @@
   TestCases: 
   - TestName: "tb_a15_a16_osvvm"
     Status: PASSED
-    Results: {Goal: 1800, Passed: 2099, Errors: 0, Checked: 2099, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+    Results: {Goal: 1800, Passed: 2043, Errors: 0, Checked: 2043, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}

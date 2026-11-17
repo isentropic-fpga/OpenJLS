@@ -29,16 +29,16 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 2635
+        Count: 2596
         AtLeast: 1
-        PercentCov: 263500.0000
+        PercentCov: 259600.0000
       - Name: "run"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 401
+        Count: 440
         AtLeast: 1
-        PercentCov: 40100.0000
+        PercentCov: 44000.0000
 
   - Name: "G2.MinMax node x value"
     TestCases: 
@@ -68,49 +68,49 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: -512, Max: -512}
-        Count: 6
+        Count: 3
         AtLeast: 1
-        PercentCov: 600.0000
+        PercentCov: 300.0000
       - Name: "D1=511"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 511, Max: 511}
-        Count: 3
+        Count: 2
         AtLeast: 1
-        PercentCov: 300.0000
+        PercentCov: 200.0000
       - Name: "D2=-512"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: -512, Max: -512}
-        Count: 4
+        Count: 5
         AtLeast: 1
-        PercentCov: 400.0000
+        PercentCov: 500.0000
       - Name: "D2=511"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 511, Max: 511}
-        Count: 4
+        Count: 3
         AtLeast: 1
-        PercentCov: 400.0000
+        PercentCov: 300.0000
       - Name: "D3=-512"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
           - {Min: -512, Max: -512}
-        Count: 5
+        Count: 11
         AtLeast: 1
-        PercentCov: 500.0000
+        PercentCov: 1100.0000
       - Name: "D3=511"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
           - {Min: 511, Max: 511}
-        Count: 1
+        Count: 5
         AtLeast: 1
-        PercentCov: 100.0000
+        PercentCov: 500.0000
 
   - Name: "G3.Stim node x value"
     TestCases: 
@@ -140,23 +140,23 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: -512, Max: -512}
-        Count: 6
+        Count: 3
         AtLeast: 1
-        PercentCov: 600.0000
+        PercentCov: 300.0000
       - Name: "D2=-512"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: -512, Max: -512}
-        Count: 4
+        Count: 5
         AtLeast: 1
-        PercentCov: 400.0000
+        PercentCov: 500.0000
       - Name: "D3=-512"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
           - {Min: -512, Max: -512}
-        Count: 5
+        Count: 11
         AtLeast: 1
-        PercentCov: 500.0000
+        PercentCov: 1100.0000
 

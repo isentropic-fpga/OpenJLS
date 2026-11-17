@@ -1,7 +1,7 @@
 Version: "0.1"
 Name: "tb_byte_stuffer_osvvm"
 Status: PASSED
-Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 38195, AffirmCount: 38195, RequirementsPassed: 1, RequirementsGoal: 1, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}, ExpectedCount: {Failure: 0, Error: 0, Warning: 0}}
+Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 37595, AffirmCount: 37595, RequirementsPassed: 1, RequirementsGoal: 1, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}, ExpectedCount: {Failure: 0, Error: 0, Warning: 0}}
 Settings: {ExternalErrors: {Failure: 0, Error: 0, Warning: 0}, FailOnDisabledErrors: "true", FailOnRequirementErrors: "true", FailOnWarning: "true"}
 Children: 
   - Name: "Default"
@@ -50,7 +50,7 @@ Children:
     Children: 
       - Name: "OJLS.ByteStuffer"
         Status: PASSED
-        Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 26959, AffirmCount: 26959, RequirementsPassed: 26959, RequirementsGoal: 15000, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+        Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 26487, AffirmCount: 26487, RequirementsPassed: 26487, RequirementsGoal: 15000, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
         Children: []
   - Name: "KnownOutputs"
     Status: PASSED
@@ -58,7 +58,7 @@ Children:
     Children: []
   - Name: "Protocol"
     Status: PASSED
-    Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 10822, AffirmCount: 10822, RequirementsPassed: 0, RequirementsGoal: 0, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+    Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 10694, AffirmCount: 10694, RequirementsPassed: 0, RequirementsGoal: 0, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
     Children: []
   - Name: "ImagePair"
     Status: PASSED

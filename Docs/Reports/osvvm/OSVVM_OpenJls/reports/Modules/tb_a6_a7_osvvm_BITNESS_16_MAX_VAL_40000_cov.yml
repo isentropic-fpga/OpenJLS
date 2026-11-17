@@ -31,49 +31,49 @@ Models:
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
-        Count: 3069
+        Count: 3074
         AtLeast: 1
-        PercentCov: 306900.0000
+        PercentCov: 307400.0000
       - Name: "sign=0 / clipping region=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
-        Count: 21447
+        Count: 21596
         AtLeast: 1
-        PercentCov: 2144700.0000
+        PercentCov: 2159600.0000
       - Name: "sign=0 / clipping region=2"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 2, Max: 2}
-        Count: 3054
+        Count: 3050
         AtLeast: 1
-        PercentCov: 305400.0000
+        PercentCov: 305000.0000
       - Name: "sign=1 / clipping region=0"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 3049
+        Count: 3051
         AtLeast: 1
-        PercentCov: 304900.0000
+        PercentCov: 305100.0000
       - Name: "sign=1 / clipping region=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 21542
+        Count: 21387
         AtLeast: 1
-        PercentCov: 2154200.0000
+        PercentCov: 2138700.0000
       - Name: "sign=1 / clipping region=2"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 2, Max: 2}
-        Count: 3069
+        Count: 3072
         AtLeast: 1
-        PercentCov: 306900.0000
+        PercentCov: 307200.0000
 
   - Name: "G2.MinMax node x value"
     TestCases: 
@@ -143,23 +143,23 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 32768, Max: 65535}
-        Count: 18102
+        Count: 18152
         AtLeast: 1
-        PercentCov: 1810200.0000
+        PercentCov: 1815200.0000
       - Name: "Px MSB=32768..65535"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 32768, Max: 65535}
-        Count: 18960
+        Count: 18905
         AtLeast: 1
-        PercentCov: 1896000.0000
+        PercentCov: 1890500.0000
       - Name: "C=-128"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
           - {Min: -128, Max: -128}
-        Count: 386
+        Count: 394
         AtLeast: 1
-        PercentCov: 38600.0000
+        PercentCov: 39400.0000
 

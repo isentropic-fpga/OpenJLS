@@ -31,33 +31,33 @@ Models:
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
-        Count: 1911
+        Count: 1893
         AtLeast: 100
-        PercentCov: 1911.0000
+        PercentCov: 1893.0000
       - Name: "special=0 / negative=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
-        Count: 1988
+        Count: 1931
         AtLeast: 100
-        PercentCov: 1988.0000
+        PercentCov: 1931.0000
       - Name: "special=1 / negative=0"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 2045
+        Count: 2115
         AtLeast: 100
-        PercentCov: 2045.0000
+        PercentCov: 2115.0000
       - Name: "special=1 / negative=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 2056
+        Count: 2061
         AtLeast: 100
-        PercentCov: 2056.0000
+        PercentCov: 2061.0000
 
   - Name: "G2.MinMax node x value"
     TestCases: 
@@ -87,25 +87,25 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: -512, Max: -512}
-        Count: 15
+        Count: 14
         AtLeast: 1
-        PercentCov: 1500.0000
+        PercentCov: 1400.0000
       - Name: "Errval=511"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 511, Max: 511}
-        Count: 4
+        Count: 10
         AtLeast: 1
-        PercentCov: 400.0000
+        PercentCov: 1000.0000
       - Name: "MErrval=0"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 0, Max: 0}
-        Count: 8
+        Count: 10
         AtLeast: 1
-        PercentCov: 800.0000
+        PercentCov: 1000.0000
       - Name: "MErrval=1023"
         Type: "COUNT"
         Range: 
@@ -143,23 +143,23 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: -512, Max: -512}
-        Count: 15
+        Count: 14
         AtLeast: 1
-        PercentCov: 1500.0000
+        PercentCov: 1400.0000
       - Name: "B=-512"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: -512, Max: -512}
-        Count: 18
+        Count: 15
         AtLeast: 1
-        PercentCov: 1800.0000
+        PercentCov: 1500.0000
       - Name: "N MSB=64..127"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
           - {Min: 64, Max: 127}
-        Count: 4073
+        Count: 3964
         AtLeast: 1
-        PercentCov: 407300.0000
+        PercentCov: 396400.0000
 

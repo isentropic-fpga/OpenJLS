@@ -1,7 +1,7 @@
 Version: "0.1"
 Name: "tb_openjls_top_osvvm"
 Status: PASSED
-Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 160521, AffirmCount: 160521, RequirementsPassed: 7, RequirementsGoal: 7, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}, ExpectedCount: {Failure: 0, Error: 0, Warning: 0}}
+Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 161137, AffirmCount: 161137, RequirementsPassed: 7, RequirementsGoal: 7, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}, ExpectedCount: {Failure: 0, Error: 0, Warning: 0}}
 Settings: {ExternalErrors: {Failure: 0, Error: 0, Warning: 0}, FailOnDisabledErrors: "true", FailOnRequirementErrors: "true", FailOnWarning: "true"}
 Children: 
   - Name: "Default"
@@ -54,7 +54,7 @@ Children:
         Children: []
       - Name: "OJLS.NoStallCompress"
         Status: PASSED
-        Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 7085, AffirmCount: 7085, RequirementsPassed: 7085, RequirementsGoal: 6300, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+        Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 7087, AffirmCount: 7087, RequirementsPassed: 7087, RequirementsGoal: 6300, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
         Children: []
       - Name: "OJLS.NoStallEOL"
         Status: PASSED
@@ -66,7 +66,7 @@ Children:
         Children: []
   - Name: "StreamProtocol"
     Status: PASSED
-    Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 137313, AffirmCount: 137313, RequirementsPassed: 0, RequirementsGoal: 0, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+    Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 137957, AffirmCount: 137957, RequirementsPassed: 0, RequirementsGoal: 0, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
     Children: []
   - Name: "ResetRecovery"
     Status: PASSED
@@ -78,7 +78,7 @@ Children:
     Children: []
   - Name: "DataChecks"
     Status: PASSED
-    Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 14007, AffirmCount: 14007, RequirementsPassed: 0, RequirementsGoal: 0, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+    Results: {TotalErrors: 0, AlertCount: {Failure: 0, Error: 0, Warning: 0}, PassedCount: 13977, AffirmCount: 13977, RequirementsPassed: 0, RequirementsGoal: 0, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
     Children: []
   - Name: "FlowControl"
     Status: PASSED

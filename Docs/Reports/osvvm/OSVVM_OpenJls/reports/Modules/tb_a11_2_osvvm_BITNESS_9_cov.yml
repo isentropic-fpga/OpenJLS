@@ -29,30 +29,30 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 1014
+        Count: 1004
         AtLeast: 1
-        PercentCov: 101400.0000
+        PercentCov: 100400.0000
       - Name: "raw only"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 1010
+        Count: 1031
         AtLeast: 1
-        PercentCov: 101000.0000
+        PercentCov: 103100.0000
       - Name: "Golomb only"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
-        Count: 982
+        Count: 957
         AtLeast: 1
-        PercentCov: 98200.0000
+        PercentCov: 95700.0000
       - Name: "raw and Golomb"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
-        Count: 1515
+        Count: 1529
         AtLeast: 1
-        PercentCov: 151500.0000
+        PercentCov: 152900.0000
 
   - Name: "G2.MinMax node x value"
     TestCases: 
@@ -82,25 +82,25 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 1106
+        Count: 1093
         AtLeast: 1
-        PercentCov: 110600.0000
+        PercentCov: 109300.0000
       - Name: "ValidLen=36"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 36, Max: 36}
-        Count: 263
+        Count: 264
         AtLeast: 1
-        PercentCov: 26300.0000
+        PercentCov: 26400.0000
       - Name: "Unary=0"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 0, Max: 0}
-        Count: 350
+        Count: 360
         AtLeast: 1
-        PercentCov: 35000.0000
+        PercentCov: 36000.0000
       - Name: "Unary=35"
         Type: "COUNT"
         Range: 
@@ -114,9 +114,9 @@ Models:
         Range: 
           - {Min: 3, Max: 3}
           - {Min: 0, Max: 0}
-        Count: 221
+        Count: 238
         AtLeast: 1
-        PercentCov: 22100.0000
+        PercentCov: 23800.0000
       - Name: "SuffixLen=15"
         Type: "COUNT"
         Range: 
@@ -130,9 +130,9 @@ Models:
         Range: 
           - {Min: 4, Max: 4}
           - {Min: 0, Max: 0}
-        Count: 228
+        Count: 222
         AtLeast: 1
-        PercentCov: 22800.0000
+        PercentCov: 22200.0000
       - Name: "RawLen=15"
         Type: "COUNT"
         Range: 

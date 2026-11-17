@@ -31,33 +31,33 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: -4, Max: -4}
-        Count: 10814
+        Count: 10900
         AtLeast: 1
-        PercentCov: 1081400.0000
+        PercentCov: 1090000.0000
       - Name: "lane=1 / level=-3"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: -3, Max: -3}
-        Count: 285
+        Count: 289
         AtLeast: 1
-        PercentCov: 28500.0000
+        PercentCov: 28900.0000
       - Name: "lane=1 / level=-2"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: -2, Max: -2}
-        Count: 77
+        Count: 63
         AtLeast: 1
-        PercentCov: 7700.0000
+        PercentCov: 6300.0000
       - Name: "lane=1 / level=-1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: -1, Max: -1}
-        Count: 22
+        Count: 23
         AtLeast: 1
-        PercentCov: 2200.0000
+        PercentCov: 2300.0000
       - Name: "lane=1 / level=0"
         Type: "COUNT"
         Range: 
@@ -71,65 +71,65 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 30
+        Count: 23
         AtLeast: 1
-        PercentCov: 3000.0000
+        PercentCov: 2300.0000
       - Name: "lane=1 / level=2"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 2, Max: 2}
-        Count: 68
+        Count: 67
         AtLeast: 1
-        PercentCov: 6800.0000
+        PercentCov: 6700.0000
       - Name: "lane=1 / level=3"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 3, Max: 3}
-        Count: 286
+        Count: 277
         AtLeast: 1
-        PercentCov: 28600.0000
+        PercentCov: 27700.0000
       - Name: "lane=1 / level=4"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 4, Max: 4}
-        Count: 10806
+        Count: 10746
         AtLeast: 1
-        PercentCov: 1080600.0000
+        PercentCov: 1074600.0000
       - Name: "lane=2 / level=-4"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: -4, Max: -4}
-        Count: 18805
+        Count: 18738
         AtLeast: 1
-        PercentCov: 1880500.0000
+        PercentCov: 1873800.0000
       - Name: "lane=2 / level=-3"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: -3, Max: -3}
-        Count: 495
+        Count: 498
         AtLeast: 1
-        PercentCov: 49500.0000
+        PercentCov: 49800.0000
       - Name: "lane=2 / level=-2"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: -2, Max: -2}
-        Count: 115
+        Count: 120
         AtLeast: 1
-        PercentCov: 11500.0000
+        PercentCov: 12000.0000
       - Name: "lane=2 / level=-1"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: -1, Max: -1}
-        Count: 42
+        Count: 38
         AtLeast: 1
-        PercentCov: 4200.0000
+        PercentCov: 3800.0000
       - Name: "lane=2 / level=0"
         Type: "COUNT"
         Range: 
@@ -143,65 +143,65 @@ Models:
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 1, Max: 1}
-        Count: 41
+        Count: 43
         AtLeast: 1
-        PercentCov: 4100.0000
+        PercentCov: 4300.0000
       - Name: "lane=2 / level=2"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 2, Max: 2}
-        Count: 122
+        Count: 117
         AtLeast: 1
-        PercentCov: 12200.0000
+        PercentCov: 11700.0000
       - Name: "lane=2 / level=3"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 3, Max: 3}
-        Count: 500
+        Count: 490
         AtLeast: 1
-        PercentCov: 50000.0000
+        PercentCov: 49000.0000
       - Name: "lane=2 / level=4"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 4, Max: 4}
-        Count: 18651
+        Count: 18727
         AtLeast: 1
-        PercentCov: 1865100.0000
+        PercentCov: 1872700.0000
       - Name: "lane=3 / level=-4"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
           - {Min: -4, Max: -4}
-        Count: 10865
+        Count: 10759
         AtLeast: 1
-        PercentCov: 1086500.0000
+        PercentCov: 1075900.0000
       - Name: "lane=3 / level=-3"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
           - {Min: -3, Max: -3}
-        Count: 265
+        Count: 297
         AtLeast: 1
-        PercentCov: 26500.0000
+        PercentCov: 29700.0000
       - Name: "lane=3 / level=-2"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
           - {Min: -2, Max: -2}
-        Count: 67
+        Count: 66
         AtLeast: 1
-        PercentCov: 6700.0000
+        PercentCov: 6600.0000
       - Name: "lane=3 / level=-1"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
           - {Min: -1, Max: -1}
-        Count: 24
+        Count: 28
         AtLeast: 1
-        PercentCov: 2400.0000
+        PercentCov: 2800.0000
       - Name: "lane=3 / level=0"
         Type: "COUNT"
         Range: 
@@ -215,33 +215,33 @@ Models:
         Range: 
           - {Min: 3, Max: 3}
           - {Min: 1, Max: 1}
-        Count: 25
+        Count: 29
         AtLeast: 1
-        PercentCov: 2500.0000
+        PercentCov: 2900.0000
       - Name: "lane=3 / level=2"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
           - {Min: 2, Max: 2}
-        Count: 64
+        Count: 67
         AtLeast: 1
-        PercentCov: 6400.0000
+        PercentCov: 6700.0000
       - Name: "lane=3 / level=3"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
           - {Min: 3, Max: 3}
-        Count: 286
+        Count: 290
         AtLeast: 1
-        PercentCov: 28600.0000
+        PercentCov: 29000.0000
       - Name: "lane=3 / level=4"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
           - {Min: 4, Max: 4}
-        Count: 10792
+        Count: 10852
         AtLeast: 1
-        PercentCov: 1079200.0000
+        PercentCov: 1085200.0000
 
   - Name: "G3.Stim node x value"
     TestCases: 
@@ -271,17 +271,17 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: -8192, Max: -8192}
-        Count: 1
+        Count: 3
         AtLeast: 1
-        PercentCov: 100.0000
+        PercentCov: 300.0000
       - Name: "D1 MSB=-8192..-1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: -8192, Max: -1}
-        Count: 11197
+        Count: 11272
         AtLeast: 1
-        PercentCov: 1119700.0000
+        PercentCov: 1127200.0000
       - Name: "D2=-8192"
         Type: "COUNT"
         Range: 
@@ -295,9 +295,9 @@ Models:
         Range: 
           - {Min: 2, Max: 2}
           - {Min: -8192, Max: -1}
-        Count: 19455
+        Count: 19392
         AtLeast: 1
-        PercentCov: 1945500.0000
+        PercentCov: 1939200.0000
       - Name: "D3=-8192"
         Type: "COUNT"
         Range: 
@@ -311,7 +311,7 @@ Models:
         Range: 
           - {Min: 3, Max: 3}
           - {Min: -8192, Max: -1}
-        Count: 11220
+        Count: 11149
         AtLeast: 1
-        PercentCov: 1122000.0000
+        PercentCov: 1114900.0000
 

@@ -31,33 +31,33 @@ Models:
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
-        Count: 2605
+        Count: 2576
         AtLeast: 1
-        PercentCov: 260500.0000
+        PercentCov: 257600.0000
       - Name: "ri=0 / map=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
-        Count: 2309
+        Count: 2300
         AtLeast: 1
-        PercentCov: 230900.0000
+        PercentCov: 230000.0000
       - Name: "ri=1 / map=0"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 2283
+        Count: 2276
         AtLeast: 1
-        PercentCov: 228300.0000
+        PercentCov: 227600.0000
       - Name: "ri=1 / map=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 2246
+        Count: 2302
         AtLeast: 1
-        PercentCov: 224600.0000
+        PercentCov: 230200.0000
 
   - Name: "G4.Run emZero"
     TestCases: 
@@ -85,16 +85,16 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 8857
+        Count: 8879
         AtLeast: 1
-        PercentCov: 885700.0000
+        PercentCov: 887900.0000
       - Name: "zero mapped error"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 586
+        Count: 575
         AtLeast: 1
-        PercentCov: 58600.0000
+        PercentCov: 57500.0000
 
   - Name: "G2.MinMax node x value"
     TestCases: 
@@ -132,25 +132,25 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 255, Max: 255}
-        Count: 12
+        Count: 8
         AtLeast: 1
-        PercentCov: 1200.0000
+        PercentCov: 800.0000
       - Name: "EMErrval=0"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 0, Max: 0}
-        Count: 586
+        Count: 575
         AtLeast: 1
-        PercentCov: 58600.0000
+        PercentCov: 57500.0000
       - Name: "EMErrval=512"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 512, Max: 512}
-        Count: 4
+        Count: 6
         AtLeast: 1
-        PercentCov: 400.0000
+        PercentCov: 600.0000
 
   - Name: "G3.Stim node x value"
     TestCases: 

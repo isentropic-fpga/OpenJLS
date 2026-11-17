@@ -174,7 +174,6 @@ table, th, td {
 <p style="margin-left: 10px"><a href=tb_jls_framer_osvvm.vhd.html>tb_jls_framer_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_openjls_axis_regs_osvvm.vhd.html>tb_openjls_axis_regs_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=A9_modulo_reduction.vhd.html>A9_modulo_reduction.vhd</a></p>
-<p style="margin-left: 10px"><a href=A10_compute_k.vhd.html>A10_compute_k.vhd</a></p>
 <p style="margin-left: 10px"><a href=A11_error_mapping.vhd.html>A11_error_mapping.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_a14_osvvm.vhd.html>tb_a14_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_a18_osvvm.vhd.html>tb_a18_osvvm.vhd</a></p>
@@ -184,18 +183,19 @@ table, th, td {
 <p style="margin-left: 10px"><a href=tb_a4_2_osvvm.vhd.html>tb_a4_2_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=olo_base_ram_sdp.vhd.html>olo_base_ram_sdp.vhd</a></p>
 <p style="margin-left: 10px"><a href=AxiStreamTransmitter.vhd.html>AxiStreamTransmitter.vhd</a></p>
+<p style="margin-left: 10px"><a href=A10_compute_k.vhd.html>A10_compute_k.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_a10_osvvm.vhd.html>tb_a10_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=A6_A7_prediction_error.vhd.html>A6_A7_prediction_error.vhd</a></p>
 <p style="margin-left: 10px"><a href=line_buffer.vhd.html>line_buffer.vhd</a></p>
 <p style="margin-left: 10px"><a href=Axi4LiteManager.vhd.html>Axi4LiteManager.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_a9_osvvm.vhd.html>tb_a9_osvvm.vhd</a></p>
-<p style="margin-left: 10px"><a href=A18_run_interruption_prediction_error.vhd.html>A18_run_interruption_prediction_error.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_a11_osvvm.vhd.html>tb_a11_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=A15_A16_encode_run.vhd.html>A15_A16_encode_run.vhd</a></p>
 <p style="margin-left: 10px"><a href=A19_run_interruption_error.vhd.html>A19_run_interruption_error.vhd</a></p>
 <p style="margin-left: 10px"><a href=A22_errval_mapping.vhd.html>A22_errval_mapping.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_a3_osvvm.vhd.html>tb_a3_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=A4_quantization_gradients.vhd.html>A4_quantization_gradients.vhd</a></p>
+<p style="margin-left: 10px"><a href=A18_run_interruption_prediction_error.vhd.html>A18_run_interruption_prediction_error.vhd</a></p>
 <p style="margin-left: 10px"><a href=A11_1_golomb_encoder.vhd.html>A11_1_golomb_encoder.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_a20_1_osvvm.vhd.html>tb_a20_1_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_line_buffer_osvvm.vhd.html>tb_line_buffer_osvvm.vhd</a></p>
@@ -292,11 +292,11 @@ table, th, td {
   <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
  <h2 style="margin-top: 0px; margin-bottom: 0px">Covered statements:</h2>
   <div style="padding:0px 10px;">
-<h3>If statement on lines 33 to 34:</h3><code>33:&nbsp;&nbsp;sPx&nbsp;&lt;=&nbsp;iRa&nbsp;when&nbsp;iRItype&nbsp;=&nbsp;'1'&nbsp;else&nbsp;<br>34:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iRb;&nbsp;</code><br><b>Count:</b> 359257<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 33:</h3><code>33:&nbsp;&nbsp;sPx&nbsp;&lt;=&nbsp;<code class="cbg">iRa</code>&nbsp;when&nbsp;iRItype&nbsp;=&nbsp;'1'&nbsp;else&nbsp;</code><br><b>Count:</b> 74405<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 34:</h3><code>34:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">iRb</code>;&nbsp;</code><br><b>Count:</b> 284852<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 36:</h3><code>36:&nbsp;&nbsp;oErrval&nbsp;&lt;=&nbsp;<code class="cbg">signed('0'&nbsp;&amp;&nbsp;iIx)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;sPx)</code>;&nbsp;</code><br><b>Count:</b> 654786<br><b>Threshold:</b> 1<hr/>
-<h3>Assertion statement on line 38:</h3><code>38:&nbsp;&nbsp;<code class="cbg">postponed&nbsp;assert&nbsp;is_x(oErrval)&nbsp;or&nbsp;abs(to_integer(oErrval))&nbsp;&lt;&nbsp;2&nbsp;**&nbsp;BITNESS&nbsp;report&nbsp;"a18:&nbsp;Errval&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;</code>&nbsp;</code><br><b>Count:</b> 360927<br><b>Threshold:</b> 1  </div>
+<h3>If statement on lines 33 to 34:</h3><code>33:&nbsp;&nbsp;sPx&nbsp;&lt;=&nbsp;iRa&nbsp;when&nbsp;iRItype&nbsp;=&nbsp;'1'&nbsp;else&nbsp;<br>34:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iRb;&nbsp;</code><br><b>Count:</b> 358684<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 33:</h3><code>33:&nbsp;&nbsp;sPx&nbsp;&lt;=&nbsp;<code class="cbg">iRa</code>&nbsp;when&nbsp;iRItype&nbsp;=&nbsp;'1'&nbsp;else&nbsp;</code><br><b>Count:</b> 74483<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 34:</h3><code>34:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">iRb</code>;&nbsp;</code><br><b>Count:</b> 284201<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 36:</h3><code>36:&nbsp;&nbsp;oErrval&nbsp;&lt;=&nbsp;<code class="cbg">signed('0'&nbsp;&amp;&nbsp;iIx)&nbsp;-&nbsp;signed('0'&nbsp;&amp;&nbsp;sPx)</code>;&nbsp;</code><br><b>Count:</b> 654798<br><b>Threshold:</b> 1<hr/>
+<h3>Assertion statement on line 38:</h3><code>38:&nbsp;&nbsp;<code class="cbg">postponed&nbsp;assert&nbsp;is_x(oErrval)&nbsp;or&nbsp;abs(to_integer(oErrval))&nbsp;&lt;&nbsp;2&nbsp;**&nbsp;BITNESS&nbsp;report&nbsp;"a18:&nbsp;Errval&nbsp;out&nbsp;of&nbsp;range"&nbsp;severity&nbsp;error;</code>&nbsp;</code><br><b>Count:</b> 360782<br><b>Threshold:</b> 1  </div>
   </section>
 
 </div>
@@ -316,8 +316,8 @@ table, th, td {
   <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
  <h2 style="margin-top: 0px; margin-bottom: 0px">Covered branches:</h2>
   <div style="padding:0px 10px;">
-<h3>"if" / "when" / "else" condition on line 33:</h3><code>33:&nbsp;&nbsp;sPx&nbsp;&lt;=&nbsp;iRa&nbsp;when&nbsp;<code class="cbg">iRItype&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>74405</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 33:</h3><code>33:&nbsp;&nbsp;sPx&nbsp;&lt;=&nbsp;iRa&nbsp;when&nbsp;<code class="cbg">iRItype&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>18009</td><td>1</td></tr></table>  </div>
+<h3>"if" / "when" / "else" condition on line 33:</h3><code>33:&nbsp;&nbsp;sPx&nbsp;&lt;=&nbsp;iRa&nbsp;when&nbsp;<code class="cbg">iRItype&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>74483</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 33:</h3><code>33:&nbsp;&nbsp;sPx&nbsp;&lt;=&nbsp;iRa&nbsp;when&nbsp;<code class="cbg">iRItype&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>17613</td><td>1</td></tr></table>  </div>
   </section>
 
 </div>
@@ -444,7 +444,7 @@ table, th, td {
    document.getElementById("defaultOpen").click();
 </script>
 <footer>   <p> NVC version: 1.23.0 </p>
-   <p> Generated on: Sat Nov 14 22:32:43 2026
+   <p> Generated on: Tue Nov 17 12:16:24 2026
  </p>
 </footer>
 </body>

@@ -33,72 +33,72 @@ Models:
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
-        Count: 167
+        Count: 185
         AtLeast: 1
-        PercentCov: 16700.0000
+        PercentCov: 18500.0000
       - Name: "sgnD1=0 / sgnD2=0 / sgnD3=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
-        Count: 526
+        Count: 506
         AtLeast: 1
-        PercentCov: 52600.0000
+        PercentCov: 50600.0000
       - Name: "sgnD1=0 / sgnD2=1 / sgnD3=0"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 821
+        Count: 817
         AtLeast: 1
-        PercentCov: 82100.0000
+        PercentCov: 81700.0000
       - Name: "sgnD1=0 / sgnD2=1 / sgnD3=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 530
+        Count: 478
         AtLeast: 1
-        PercentCov: 53000.0000
+        PercentCov: 47800.0000
       - Name: "sgnD1=1 / sgnD2=0 / sgnD3=0"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
-        Count: 499
+        Count: 545
         AtLeast: 1
-        PercentCov: 49900.0000
+        PercentCov: 54500.0000
       - Name: "sgnD1=1 / sgnD2=0 / sgnD3=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
-        Count: 834
+        Count: 821
         AtLeast: 1
-        PercentCov: 83400.0000
+        PercentCov: 82100.0000
       - Name: "sgnD1=1 / sgnD2=1 / sgnD3=0"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 480
+        Count: 543
         AtLeast: 1
-        PercentCov: 48000.0000
+        PercentCov: 54300.0000
       - Name: "sgnD1=1 / sgnD2=1 / sgnD3=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 207
+        Count: 169
         AtLeast: 1
-        PercentCov: 20700.0000
+        PercentCov: 16900.0000
 
   - Name: "G2.MinMax node x value"
     TestCases: 
@@ -200,31 +200,31 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 8192, Max: 16383}
-        Count: 2055
+        Count: 1974
         AtLeast: 1
-        PercentCov: 205500.0000
+        PercentCov: 197400.0000
       - Name: "Rb MSB=8192..16383"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 8192, Max: 16383}
-        Count: 2009
+        Count: 2038
         AtLeast: 1
-        PercentCov: 200900.0000
+        PercentCov: 203800.0000
       - Name: "Rc MSB=8192..16383"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
           - {Min: 8192, Max: 16383}
-        Count: 2000
+        Count: 1961
         AtLeast: 1
-        PercentCov: 200000.0000
+        PercentCov: 196100.0000
       - Name: "Rd MSB=8192..16383"
         Type: "COUNT"
         Range: 
           - {Min: 4, Max: 4}
           - {Min: 8192, Max: 16383}
-        Count: 2016
+        Count: 1939
         AtLeast: 1
-        PercentCov: 201600.0000
+        PercentCov: 193900.0000
 

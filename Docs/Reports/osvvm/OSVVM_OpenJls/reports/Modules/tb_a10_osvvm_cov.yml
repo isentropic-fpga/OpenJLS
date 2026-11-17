@@ -29,16 +29,16 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 269
+        Count: 264
         AtLeast: 1
-        PercentCov: 26900.0000
+        PercentCov: 26400.0000
       - Name: "k=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 770
+        Count: 764
         AtLeast: 1
-        PercentCov: 77000.0000
+        PercentCov: 76400.0000
       - Name: "k=2"
         Type: "COUNT"
         Range: 
@@ -50,107 +50,107 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
-        Count: 771
+        Count: 777
         AtLeast: 1
-        PercentCov: 77100.0000
+        PercentCov: 77700.0000
       - Name: "k=4"
         Type: "COUNT"
         Range: 
           - {Min: 4, Max: 4}
-        Count: 782
+        Count: 779
         AtLeast: 1
-        PercentCov: 78200.0000
+        PercentCov: 77900.0000
       - Name: "k=5"
         Type: "COUNT"
         Range: 
           - {Min: 5, Max: 5}
-        Count: 804
+        Count: 814
         AtLeast: 1
-        PercentCov: 80400.0000
+        PercentCov: 81400.0000
       - Name: "k=6"
         Type: "COUNT"
         Range: 
           - {Min: 6, Max: 6}
-        Count: 874
+        Count: 848
         AtLeast: 1
-        PercentCov: 87400.0000
+        PercentCov: 84800.0000
       - Name: "k=7"
         Type: "COUNT"
         Range: 
           - {Min: 7, Max: 7}
-        Count: 948
+        Count: 938
         AtLeast: 1
-        PercentCov: 94800.0000
+        PercentCov: 93800.0000
       - Name: "k=8"
         Type: "COUNT"
         Range: 
           - {Min: 8, Max: 8}
-        Count: 1124
+        Count: 1123
         AtLeast: 1
-        PercentCov: 112400.0000
+        PercentCov: 112300.0000
       - Name: "k=9"
         Type: "COUNT"
         Range: 
           - {Min: 9, Max: 9}
-        Count: 1442
+        Count: 1527
         AtLeast: 1
-        PercentCov: 144200.0000
+        PercentCov: 152700.0000
       - Name: "k=10"
         Type: "COUNT"
         Range: 
           - {Min: 10, Max: 10}
-        Count: 2204
+        Count: 2297
         AtLeast: 1
-        PercentCov: 220400.0000
+        PercentCov: 229700.0000
       - Name: "k=11"
         Type: "COUNT"
         Range: 
           - {Min: 11, Max: 11}
-        Count: 3844
+        Count: 3780
         AtLeast: 1
-        PercentCov: 384400.0000
+        PercentCov: 378000.0000
       - Name: "k=12"
         Type: "COUNT"
         Range: 
           - {Min: 12, Max: 12}
-        Count: 3687
+        Count: 3622
         AtLeast: 1
-        PercentCov: 368700.0000
+        PercentCov: 362200.0000
       - Name: "k=13"
         Type: "COUNT"
         Range: 
           - {Min: 13, Max: 13}
-        Count: 1823
+        Count: 1885
         AtLeast: 1
-        PercentCov: 182300.0000
+        PercentCov: 188500.0000
       - Name: "k=14"
         Type: "COUNT"
         Range: 
           - {Min: 14, Max: 14}
-        Count: 943
+        Count: 883
         AtLeast: 1
-        PercentCov: 94300.0000
+        PercentCov: 88300.0000
       - Name: "k=15"
         Type: "COUNT"
         Range: 
           - {Min: 15, Max: 15}
-        Count: 471
+        Count: 429
         AtLeast: 1
-        PercentCov: 47100.0000
+        PercentCov: 42900.0000
       - Name: "k=16"
         Type: "COUNT"
         Range: 
           - {Min: 16, Max: 16}
-        Count: 207
+        Count: 217
         AtLeast: 1
-        PercentCov: 20700.0000
+        PercentCov: 21700.0000
       - Name: "k=17"
         Type: "COUNT"
         Range: 
           - {Min: 17, Max: 17}
-        Count: 101
+        Count: 117
         AtLeast: 1
-        PercentCov: 10100.0000
+        PercentCov: 11700.0000
       - Name: "k=18"
         Type: "COUNT"
         Range: 
@@ -195,9 +195,9 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 127, Max: 127}
-        Count: 147
+        Count: 157
         AtLeast: 1
-        PercentCov: 14700.0000
+        PercentCov: 15700.0000
       - Name: "A=0"
         Type: "COUNT"
         Range: 
@@ -243,15 +243,15 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 64, Max: 127}
-        Count: 10567
+        Count: 10675
         AtLeast: 1
-        PercentCov: 1056700.0000
+        PercentCov: 1067500.0000
       - Name: "A MSB=131072..262143"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 131072, Max: 262143}
-        Count: 6704
+        Count: 6720
         AtLeast: 1
-        PercentCov: 670400.0000
+        PercentCov: 672000.0000
 

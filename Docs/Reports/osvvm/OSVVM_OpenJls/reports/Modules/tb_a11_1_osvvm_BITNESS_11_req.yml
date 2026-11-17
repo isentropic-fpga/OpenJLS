@@ -2,9 +2,9 @@
   TestCases: 
   - TestName: "tb_a11_1_osvvm"
     Status: PASSED
-    Results: {Goal: 20000, Passed: 23796, Errors: 0, Checked: 23796, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+    Results: {Goal: 20000, Passed: 23823, Errors: 0, Checked: 23823, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
 - Requirement: "T87.A22.1"
   TestCases: 
   - TestName: "tb_a11_1_osvvm"
     Status: PASSED
-    Results: {Goal: 20000, Passed: 24129, Errors: 0, Checked: 24129, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+    Results: {Goal: 20000, Passed: 24102, Errors: 0, Checked: 24102, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}

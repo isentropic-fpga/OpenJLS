@@ -29,100 +29,100 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 312
+        Count: 306
         AtLeast: 1
-        PercentCov: 31200.0000
+        PercentCov: 30600.0000
       - Name: "k=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 804
+        Count: 809
         AtLeast: 1
-        PercentCov: 80400.0000
+        PercentCov: 80900.0000
       - Name: "k=2"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
-        Count: 874
+        Count: 853
         AtLeast: 1
-        PercentCov: 87400.0000
+        PercentCov: 85300.0000
       - Name: "k=3"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
-        Count: 947
+        Count: 933
         AtLeast: 1
-        PercentCov: 94700.0000
+        PercentCov: 93300.0000
       - Name: "k=4"
         Type: "COUNT"
         Range: 
           - {Min: 4, Max: 4}
-        Count: 1125
+        Count: 1119
         AtLeast: 1
-        PercentCov: 112500.0000
+        PercentCov: 111900.0000
       - Name: "k=5"
         Type: "COUNT"
         Range: 
           - {Min: 5, Max: 5}
-        Count: 1436
+        Count: 1535
         AtLeast: 1
-        PercentCov: 143600.0000
+        PercentCov: 153500.0000
       - Name: "k=6"
         Type: "COUNT"
         Range: 
           - {Min: 6, Max: 6}
-        Count: 2211
+        Count: 2295
         AtLeast: 1
-        PercentCov: 221100.0000
+        PercentCov: 229500.0000
       - Name: "k=7"
         Type: "COUNT"
         Range: 
           - {Min: 7, Max: 7}
-        Count: 3841
+        Count: 3783
         AtLeast: 1
-        PercentCov: 384100.0000
+        PercentCov: 378300.0000
       - Name: "k=8"
         Type: "COUNT"
         Range: 
           - {Min: 8, Max: 8}
-        Count: 3687
+        Count: 3610
         AtLeast: 1
-        PercentCov: 368700.0000
+        PercentCov: 361000.0000
       - Name: "k=9"
         Type: "COUNT"
         Range: 
           - {Min: 9, Max: 9}
-        Count: 1821
+        Count: 1886
         AtLeast: 1
-        PercentCov: 182100.0000
+        PercentCov: 188600.0000
       - Name: "k=10"
         Type: "COUNT"
         Range: 
           - {Min: 10, Max: 10}
-        Count: 943
+        Count: 884
         AtLeast: 1
-        PercentCov: 94300.0000
+        PercentCov: 88400.0000
       - Name: "k=11"
         Type: "COUNT"
         Range: 
           - {Min: 11, Max: 11}
-        Count: 470
+        Count: 429
         AtLeast: 1
-        PercentCov: 47000.0000
+        PercentCov: 42900.0000
       - Name: "k=12"
         Type: "COUNT"
         Range: 
           - {Min: 12, Max: 12}
-        Count: 207
+        Count: 217
         AtLeast: 1
-        PercentCov: 20700.0000
+        PercentCov: 21700.0000
       - Name: "k=13"
         Type: "COUNT"
         Range: 
           - {Min: 13, Max: 13}
-        Count: 101
+        Count: 117
         AtLeast: 1
-        PercentCov: 10100.0000
+        PercentCov: 11700.0000
       - Name: "k=14"
         Type: "COUNT"
         Range: 
@@ -167,17 +167,17 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 127, Max: 127}
-        Count: 123
+        Count: 132
         AtLeast: 1
-        PercentCov: 12300.0000
+        PercentCov: 13200.0000
       - Name: "A=0"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 0, Max: 0}
-        Count: 6
+        Count: 4
         AtLeast: 1
-        PercentCov: 600.0000
+        PercentCov: 400.0000
       - Name: "A=16383"
         Type: "COUNT"
         Range: 
@@ -215,15 +215,15 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 64, Max: 127}
-        Count: 9022
+        Count: 9125
         AtLeast: 1
-        PercentCov: 902200.0000
+        PercentCov: 912500.0000
       - Name: "A MSB=8192..16383"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 8192, Max: 16383}
-        Count: 6691
+        Count: 6704
         AtLeast: 1
-        PercentCov: 669100.0000
+        PercentCov: 670400.0000
 

@@ -174,7 +174,6 @@ table, th, td {
 <p style="margin-left: 10px"><a href=tb_jls_framer_osvvm.vhd.html>tb_jls_framer_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_openjls_axis_regs_osvvm.vhd.html>tb_openjls_axis_regs_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=A9_modulo_reduction.vhd.html>A9_modulo_reduction.vhd</a></p>
-<p style="margin-left: 10px"><a href=A10_compute_k.vhd.html>A10_compute_k.vhd</a></p>
 <p style="margin-left: 10px"><a href=A11_error_mapping.vhd.html>A11_error_mapping.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_a14_osvvm.vhd.html>tb_a14_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_a18_osvvm.vhd.html>tb_a18_osvvm.vhd</a></p>
@@ -184,18 +183,19 @@ table, th, td {
 <p style="margin-left: 10px"><a href=tb_a4_2_osvvm.vhd.html>tb_a4_2_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=olo_base_ram_sdp.vhd.html>olo_base_ram_sdp.vhd</a></p>
 <p style="margin-left: 10px"><a href=AxiStreamTransmitter.vhd.html>AxiStreamTransmitter.vhd</a></p>
+<p style="margin-left: 10px"><a href=A10_compute_k.vhd.html>A10_compute_k.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_a10_osvvm.vhd.html>tb_a10_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=A6_A7_prediction_error.vhd.html>A6_A7_prediction_error.vhd</a></p>
 <p style="margin-left: 10px"><a href=line_buffer.vhd.html>line_buffer.vhd</a></p>
 <p style="margin-left: 10px"><a href=Axi4LiteManager.vhd.html>Axi4LiteManager.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_a9_osvvm.vhd.html>tb_a9_osvvm.vhd</a></p>
-<p style="margin-left: 10px"><a href=A18_run_interruption_prediction_error.vhd.html>A18_run_interruption_prediction_error.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_a11_osvvm.vhd.html>tb_a11_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=A15_A16_encode_run.vhd.html>A15_A16_encode_run.vhd</a></p>
 <p style="margin-left: 10px"><a href=A19_run_interruption_error.vhd.html>A19_run_interruption_error.vhd</a></p>
 <p style="margin-left: 10px"><a href=A22_errval_mapping.vhd.html>A22_errval_mapping.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_a3_osvvm.vhd.html>tb_a3_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=A4_quantization_gradients.vhd.html>A4_quantization_gradients.vhd</a></p>
+<p style="margin-left: 10px"><a href=A18_run_interruption_prediction_error.vhd.html>A18_run_interruption_prediction_error.vhd</a></p>
 <p style="margin-left: 10px"><a href=A11_1_golomb_encoder.vhd.html>A11_1_golomb_encoder.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_a20_1_osvvm.vhd.html>tb_a20_1_osvvm.vhd</a></p>
 <p style="margin-left: 10px"><a href=tb_line_buffer_osvvm.vhd.html>tb_line_buffer_osvvm.vhd</a></p>
@@ -292,14 +292,14 @@ table, th, td {
   <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
  <h2 style="margin-top: 0px; margin-bottom: 0px">Covered statements:</h2>
   <div style="padding:0px 10px;">
-<h3>If statement on lines 36 to 37:</h3><code>36:&nbsp;&nbsp;sRunHit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;'1'&nbsp;when&nbsp;iIx&nbsp;=&nbsp;iRa&nbsp;else&nbsp;<br>37:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0';&nbsp;</code><br><b>Count:</b> 356534<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 36:</h3><code>36:&nbsp;&nbsp;sRunHit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;<code class="cbg">'1'</code>&nbsp;when&nbsp;iIx&nbsp;=&nbsp;iRa&nbsp;else&nbsp;</code><br><b>Count:</b> 50859<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 37:</h3><code>37:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">'0'</code>;&nbsp;</code><br><b>Count:</b> 305675<br><b>Threshold:</b> 1<hr/>
-<h3>If statement on lines 38 to 39:</h3><code>38:&nbsp;&nbsp;oRunCnt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;iRunCnt&nbsp;+&nbsp;1&nbsp;when&nbsp;sRunHit&nbsp;=&nbsp;'1'&nbsp;else&nbsp;<br>39:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iRunCnt;&nbsp;</code><br><b>Count:</b> 139846<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 38:</h3><code>38:&nbsp;&nbsp;oRunCnt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;<code class="cbg">iRunCnt&nbsp;+&nbsp;1</code>&nbsp;when&nbsp;sRunHit&nbsp;=&nbsp;'1'&nbsp;else&nbsp;</code><br><b>Count:</b> 78575<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 39:</h3><code>39:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">iRunCnt</code>;&nbsp;</code><br><b>Count:</b> 61271<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 41:</h3><code>41:&nbsp;&nbsp;oRunHit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;<code class="cbg">sRunHit</code>;&nbsp;</code><br><b>Count:</b> 84677<br><b>Threshold:</b> 1<hr/>
-<h3>Signal assignment statement on line 42:</h3><code>42:&nbsp;&nbsp;oRunContinue&nbsp;&lt;=&nbsp;<code class="cbg">sRunHit&nbsp;and&nbsp;not&nbsp;iEol</code>;&nbsp;</code><br><b>Count:</b> 127336<br><b>Threshold:</b> 1  </div>
+<h3>If statement on lines 36 to 37:</h3><code>36:&nbsp;&nbsp;sRunHit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;'1'&nbsp;when&nbsp;iIx&nbsp;=&nbsp;iRa&nbsp;else&nbsp;<br>37:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'0';&nbsp;</code><br><b>Count:</b> 356316<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 36:</h3><code>36:&nbsp;&nbsp;sRunHit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;<code class="cbg">'1'</code>&nbsp;when&nbsp;iIx&nbsp;=&nbsp;iRa&nbsp;else&nbsp;</code><br><b>Count:</b> 51768<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 37:</h3><code>37:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">'0'</code>;&nbsp;</code><br><b>Count:</b> 304548<br><b>Threshold:</b> 1<hr/>
+<h3>If statement on lines 38 to 39:</h3><code>38:&nbsp;&nbsp;oRunCnt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;iRunCnt&nbsp;+&nbsp;1&nbsp;when&nbsp;sRunHit&nbsp;=&nbsp;'1'&nbsp;else&nbsp;<br>39:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iRunCnt;&nbsp;</code><br><b>Count:</b> 140939<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 38:</h3><code>38:&nbsp;&nbsp;oRunCnt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;<code class="cbg">iRunCnt&nbsp;+&nbsp;1</code>&nbsp;when&nbsp;sRunHit&nbsp;=&nbsp;'1'&nbsp;else&nbsp;</code><br><b>Count:</b> 79719<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 39:</h3><code>39:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="cbg">iRunCnt</code>;&nbsp;</code><br><b>Count:</b> 61220<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 41:</h3><code>41:&nbsp;&nbsp;oRunHit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;<code class="cbg">sRunHit</code>;&nbsp;</code><br><b>Count:</b> 85447<br><b>Threshold:</b> 1<hr/>
+<h3>Signal assignment statement on line 42:</h3><code>42:&nbsp;&nbsp;oRunContinue&nbsp;&lt;=&nbsp;<code class="cbg">sRunHit&nbsp;and&nbsp;not&nbsp;iEol</code>;&nbsp;</code><br><b>Count:</b> 128170<br><b>Threshold:</b> 1  </div>
   </section>
 
 </div>
@@ -319,10 +319,10 @@ table, th, td {
   <section style="padding-left:10px; padding-top: 10px; padding-bottom: 10px; padding-right:10px;background-color:#ccffcc;">
  <h2 style="margin-top: 0px; margin-bottom: 0px">Covered branches:</h2>
   <div style="padding:0px 10px;">
-<h3>"if" / "when" / "else" condition on line 36:</h3><code>36:&nbsp;&nbsp;sRunHit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;'1'&nbsp;when&nbsp;<code class="cbg">iIx&nbsp;=&nbsp;iRa</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>50859</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 36:</h3><code>36:&nbsp;&nbsp;sRunHit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;'1'&nbsp;when&nbsp;<code class="cbg">iIx&nbsp;=&nbsp;iRa</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>14045</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 38:</h3><code>38:&nbsp;&nbsp;oRunCnt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;iRunCnt&nbsp;+&nbsp;1&nbsp;when&nbsp;<code class="cbg">sRunHit&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>78575</td><td>1</td></tr></table><hr/>
-<h3>"if" / "when" / "else" condition on line 38:</h3><code>38:&nbsp;&nbsp;oRunCnt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;iRunCnt&nbsp;+&nbsp;1&nbsp;when&nbsp;<code class="cbg">sRunHit&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>20671</td><td>1</td></tr></table>  </div>
+<h3>"if" / "when" / "else" condition on line 36:</h3><code>36:&nbsp;&nbsp;sRunHit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;'1'&nbsp;when&nbsp;<code class="cbg">iIx&nbsp;=&nbsp;iRa</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>51768</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 36:</h3><code>36:&nbsp;&nbsp;sRunHit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;'1'&nbsp;when&nbsp;<code class="cbg">iIx&nbsp;=&nbsp;iRa</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>13458</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 38:</h3><code>38:&nbsp;&nbsp;oRunCnt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;iRunCnt&nbsp;+&nbsp;1&nbsp;when&nbsp;<code class="cbg">sRunHit&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>True</td><td>79719</td><td>1</td></tr></table><hr/>
+<h3>"if" / "when" / "else" condition on line 38:</h3><code>38:&nbsp;&nbsp;oRunCnt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;=&nbsp;iRunCnt&nbsp;+&nbsp;1&nbsp;when&nbsp;<code class="cbg">sRunHit&nbsp;=&nbsp;'1'</code>&nbsp;else&nbsp;</code><br><table class="cbt"><tr><th></th><th>Evaluated to</th><th>Count</th><th>Threshold</th></tr><tr><td><b>Bin</b></td><td>False</td><td>20182</td><td>1</td></tr></table>  </div>
   </section>
 
 </div>
@@ -449,7 +449,7 @@ table, th, td {
    document.getElementById("defaultOpen").click();
 </script>
 <footer>   <p> NVC version: 1.23.0 </p>
-   <p> Generated on: Sat Nov 14 22:32:43 2026
+   <p> Generated on: Tue Nov 17 12:16:24 2026
  </p>
 </footer>
 </body>

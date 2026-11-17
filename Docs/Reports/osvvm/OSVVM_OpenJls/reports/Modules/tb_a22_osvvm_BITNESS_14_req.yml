@@ -2,4 +2,4 @@
   TestCases: 
   - TestName: "tb_a22_osvvm"
     Status: PASSED
-    Results: {Goal: 8400, Passed: 138480, Errors: 0, Checked: 138480, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}
+    Results: {Goal: 8400, Passed: 138482, Errors: 0, Checked: 138482, AlertCount: {Failure: 0, Error: 0, Warning: 0}, DisabledAlertCount: {Failure: 0, Error: 0, Warning: 0}}

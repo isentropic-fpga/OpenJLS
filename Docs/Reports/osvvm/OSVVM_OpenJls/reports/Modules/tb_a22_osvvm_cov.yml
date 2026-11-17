@@ -31,33 +31,33 @@ Models:
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
-        Count: 10285
+        Count: 10256
         AtLeast: 1
-        PercentCov: 1028500.0000
+        PercentCov: 1025600.0000
       - Name: "ri=0 / map=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
-        Count: 9992
+        Count: 9981
         AtLeast: 1
-        PercentCov: 999200.0000
+        PercentCov: 998100.0000
       - Name: "ri=1 / map=0"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 9966
+        Count: 9957
         AtLeast: 1
-        PercentCov: 996600.0000
+        PercentCov: 995700.0000
       - Name: "ri=1 / map=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 9933
+        Count: 9984
         AtLeast: 1
-        PercentCov: 993300.0000
+        PercentCov: 998400.0000
 
   - Name: "G4.Run emZero"
     TestCases: 
@@ -85,16 +85,16 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 39594
+        Count: 39610
         AtLeast: 1
-        PercentCov: 3959400.0000
+        PercentCov: 3961000.0000
       - Name: "zero mapped error"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 582
+        Count: 568
         AtLeast: 1
-        PercentCov: 58200.0000
+        PercentCov: 56800.0000
 
   - Name: "G2.MinMax node x value"
     TestCases: 
@@ -124,25 +124,25 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: -4096, Max: -4096}
-        Count: 5
+        Count: 6
         AtLeast: 1
-        PercentCov: 500.0000
+        PercentCov: 600.0000
       - Name: "Errval=4095"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 4095, Max: 4095}
-        Count: 6
+        Count: 5
         AtLeast: 1
-        PercentCov: 600.0000
+        PercentCov: 500.0000
       - Name: "EMErrval=0"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 0, Max: 0}
-        Count: 582
+        Count: 568
         AtLeast: 1
-        PercentCov: 58200.0000
+        PercentCov: 56800.0000
       - Name: "EMErrval=8192"
         Type: "COUNT"
         Range: 
@@ -180,7 +180,7 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: -4096, Max: -4096}
-        Count: 5
+        Count: 6
         AtLeast: 1
-        PercentCov: 500.0000
+        PercentCov: 600.0000
 

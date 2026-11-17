@@ -31,17 +31,17 @@ Models:
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
-        Count: 1007
+        Count: 967
         AtLeast: 1
-        PercentCov: 100700.0000
+        PercentCov: 96700.0000
       - Name: "RItype=0 / errSign=1"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
-        Count: 992
+        Count: 988
         AtLeast: 1
-        PercentCov: 99200.0000
+        PercentCov: 98800.0000
       - Name: "RItype=0 / errSign=2"
         Type: "COUNT"
         Range: 
@@ -55,17 +55,17 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 985
+        Count: 1050
         AtLeast: 1
-        PercentCov: 98500.0000
+        PercentCov: 105000.0000
       - Name: "RItype=1 / errSign=1"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 1020
+        Count: 999
         AtLeast: 1
-        PercentCov: 102000.0000
+        PercentCov: 99900.0000
       - Name: "RItype=1 / errSign=2"
         Type: "COUNT"
         Range: 
@@ -143,23 +143,23 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 32768, Max: 65535}
-        Count: 2035
+        Count: 2085
         AtLeast: 1
-        PercentCov: 203500.0000
+        PercentCov: 208500.0000
       - Name: "Rb MSB=32768..65535"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 32768, Max: 65535}
-        Count: 1966
+        Count: 2032
         AtLeast: 1
-        PercentCov: 196600.0000
+        PercentCov: 203200.0000
       - Name: "Ix MSB=32768..65535"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
           - {Min: 32768, Max: 65535}
-        Count: 1993
+        Count: 2027
         AtLeast: 1
-        PercentCov: 199300.0000
+        PercentCov: 202700.0000
 

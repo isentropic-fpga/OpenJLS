@@ -87,7 +87,7 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 128, Max: 128}
-        Count: 77
+        Count: 101
         AtLeast: 1
-        PercentCov: 7700.0000
+        PercentCov: 10100.0000
 

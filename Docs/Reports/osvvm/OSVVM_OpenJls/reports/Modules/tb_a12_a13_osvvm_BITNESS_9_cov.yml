@@ -31,81 +31,81 @@ Models:
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 0, Max: 0}
-        Count: 9284
+        Count: 9290
         AtLeast: 1
-        PercentCov: 928400.0000
+        PercentCov: 929000.0000
       - Name: "rescale=0 / negative clamp"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 1, Max: 1}
-        Count: 8061
+        Count: 8100
         AtLeast: 1
-        PercentCov: 806100.0000
+        PercentCov: 810000.0000
       - Name: "rescale=0 / positive adjust"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 2, Max: 2}
-        Count: 9292
+        Count: 9259
         AtLeast: 1
-        PercentCov: 929200.0000
+        PercentCov: 925900.0000
       - Name: "rescale=0 / positive clamp"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 3, Max: 3}
-        Count: 7217
+        Count: 7201
         AtLeast: 1
-        PercentCov: 721700.0000
+        PercentCov: 720100.0000
       - Name: "rescale=0 / unchanged"
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
           - {Min: 4, Max: 4}
-        Count: 9304
+        Count: 9300
         AtLeast: 1
-        PercentCov: 930400.0000
+        PercentCov: 930000.0000
       - Name: "rescale=1 / negative adjust"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 0, Max: 0}
-        Count: 1528
+        Count: 1455
         AtLeast: 1
-        PercentCov: 152800.0000
+        PercentCov: 145500.0000
       - Name: "rescale=1 / negative clamp"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 1, Max: 1}
-        Count: 1509
+        Count: 1512
         AtLeast: 1
-        PercentCov: 150900.0000
+        PercentCov: 151200.0000
       - Name: "rescale=1 / positive adjust"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 2, Max: 2}
-        Count: 1440
+        Count: 1457
         AtLeast: 1
-        PercentCov: 144000.0000
+        PercentCov: 145700.0000
       - Name: "rescale=1 / positive clamp"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 3, Max: 3}
-        Count: 2726
+        Count: 2791
         AtLeast: 1
-        PercentCov: 272600.0000
+        PercentCov: 279100.0000
       - Name: "rescale=1 / unchanged"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 4, Max: 4}
-        Count: 1483
+        Count: 1479
         AtLeast: 1
-        PercentCov: 148300.0000
+        PercentCov: 147900.0000
 
   - Name: "G4.Coding cUpdate"
     TestCases: 
@@ -133,16 +133,16 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 0, Max: 0}
-        Count: 10787
+        Count: 10779
         AtLeast: 1
-        PercentCov: 1078700.0000
+        PercentCov: 1077900.0000
       - Name: "moved"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
-        Count: 35623
+        Count: 35632
         AtLeast: 1
-        PercentCov: 3562300.0000
+        PercentCov: 3563200.0000
       - Name: "clampMin"
         Type: "COUNT"
         Range: 
@@ -154,9 +154,9 @@ Models:
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
-        Count: 2576
+        Count: 2575
         AtLeast: 1
-        PercentCov: 257600.0000
+        PercentCov: 257500.0000
 
   - Name: "G2.MinMax node x value"
     TestCases: 
@@ -186,81 +186,81 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: -256, Max: -256}
-        Count: 10
+        Count: 24
         AtLeast: 1
-        PercentCov: 1000.0000
+        PercentCov: 2400.0000
       - Name: "Errval=256"
         Type: "COUNT"
         Range: 
           - {Min: 1, Max: 1}
           - {Min: 256, Max: 256}
-        Count: 15
+        Count: 17
         AtLeast: 1
-        PercentCov: 1500.0000
+        PercentCov: 1700.0000
       - Name: "A=0"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 0, Max: 0}
-        Count: 4
+        Count: 7
         AtLeast: 1
-        PercentCov: 400.0000
+        PercentCov: 700.0000
       - Name: "A=16128"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: 16128, Max: 16128}
-        Count: 4
+        Count: 5
         AtLeast: 1
-        PercentCov: 400.0000
+        PercentCov: 500.0000
       - Name: "B=-63"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
           - {Min: -63, Max: -63}
-        Count: 9082
+        Count: 9080
         AtLeast: 1
-        PercentCov: 908200.0000
+        PercentCov: 908000.0000
       - Name: "B=63"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
           - {Min: 63, Max: 63}
-        Count: 9092
+        Count: 9078
         AtLeast: 1
-        PercentCov: 909200.0000
+        PercentCov: 907800.0000
       - Name: "N=1"
         Type: "COUNT"
         Range: 
           - {Min: 4, Max: 4}
           - {Min: 1, Max: 1}
-        Count: 684
+        Count: 688
         AtLeast: 1
-        PercentCov: 68400.0000
+        PercentCov: 68800.0000
       - Name: "N=64"
         Type: "COUNT"
         Range: 
           - {Min: 4, Max: 4}
           - {Min: 64, Max: 64}
-        Count: 8686
+        Count: 8694
         AtLeast: 1
-        PercentCov: 868600.0000
+        PercentCov: 869400.0000
       - Name: "C out=-128"
         Type: "COUNT"
         Range: 
           - {Min: 5, Max: 5}
           - {Min: -128, Max: -128}
-        Count: 7505
+        Count: 7509
         AtLeast: 1
-        PercentCov: 750500.0000
+        PercentCov: 750900.0000
       - Name: "C out=127"
         Type: "COUNT"
         Range: 
           - {Min: 5, Max: 5}
           - {Min: 127, Max: 127}
-        Count: 6965
+        Count: 6951
         AtLeast: 1
-        PercentCov: 696500.0000
+        PercentCov: 695100.0000
 
   - Name: "G3.Stim node x value"
     TestCases: 
@@ -290,23 +290,23 @@ Models:
         Range: 
           - {Min: 1, Max: 1}
           - {Min: -256, Max: -256}
-        Count: 10
+        Count: 24
         AtLeast: 1
-        PercentCov: 1000.0000
+        PercentCov: 2400.0000
       - Name: "B=-63"
         Type: "COUNT"
         Range: 
           - {Min: 2, Max: 2}
           - {Min: -63, Max: -63}
-        Count: 9082
+        Count: 9080
         AtLeast: 1
-        PercentCov: 908200.0000
+        PercentCov: 908000.0000
       - Name: "N MSB=64..64"
         Type: "COUNT"
         Range: 
           - {Min: 3, Max: 3}
           - {Min: 64, Max: 64}
-        Count: 8686
+        Count: 8694
         AtLeast: 1
-        PercentCov: 868600.0000
+        PercentCov: 869400.0000
 
