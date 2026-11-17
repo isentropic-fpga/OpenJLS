@@ -155,7 +155,7 @@ Lossless JPEG-LS encoder for FPGAs.\\One pixel per clock, no external memory.\pa
 \vfill
 {\color{divider}\hrule height 0.4pt}\vspace{6mm}
 \noindent
-\covermetric{440\,MPx/s}{Throughput, 12-bit}\hfill
+\covermetric{430\,MPx/s}{Throughput, 12-bit}\hfill
 \covermetric{1.6:1}{Compression}\hfill
 \covermetric{8--16\,bit}{Pixel depth}\hfill
 \covermetric*{11659/11659}{Byte-exact images}
@@ -193,10 +193,10 @@ Demo projects: \url{https://github.com/isentropic-fpga/OpenJLS-Demos}
   Image size    & Up to \about64k\,×\,64k px\footnotemark[4] \\
   Throughput    & 1 pixel / clock \\
   Latency       & 15 cycles \\
-  \fmax{}       & \about440\,MHz\footnotemark[5] \\
+  \fmax{}       & \about430\,MHz\footnotemark[5] \\
   Interface     & Ready/valid stream\footnotemark[6] \\
   Memory        & On-chip only\footnotemark[7] \\
-  Resources     & 5.5--8.0k LUT, 2.2--2.8k FF\footnotemark[8] \\
+  Resources     & 5.6--8.1k LUT, 2.2--2.8k FF\footnotemark[8] \\
   Portability   & Vendor-agnostic VHDL \\
   \bottomrule
 \end{tabularx}
@@ -455,7 +455,7 @@ acknowledged (OKAY) and dropped; unmapped reads return zero.
 Characterized on Xilinx Zynq UltraScale+ \texttt{xczu7eg-fbvb900-1-e},
 Vivado 2025.2, with \texttt{OUT\_WIDTH = 64}, RTL-only with no floorplanning.
 \fmax{} is the true maximum, found by over-constraining the clock until timing fails.
-At one pixel per clock, \about440\,MHz is \about440\,Mpixel/s.
+At one pixel per clock, \about430\,MHz is \about430\,Mpixel/s.
 
 \begin{sloppypar}
 \noindent Every configuration is implemented with four strategies: the Vivado
@@ -469,9 +469,9 @@ the default strategy and near-identical across strategies.
 \subsection{Image width sweep}
 \texttt{BITNESS = 12}, \texttt{MAX\_IMAGE\_WIDTH} from 4096 to 65535. The design is
 not congestion-bound (no run reports a congested region), but the critical paths are spread across blocks, so the winning strategy shifts with image size and with netlist
-changes; the best-of band (\about405--439\,MHz) is the headline figure.
-Strategies differ by 7--74\,MHz per size, and a default run lands up to
-\about45\,MHz below it.
+changes; the best-of band (\about417--445\,MHz) is the headline figure.
+Strategies differ by 10--72\,MHz per size, and a default run lands up to
+\about72\,MHz below it.
 Logic is essentially constant with image size; only the line-buffer BRAM scales
 with width.
 
@@ -490,12 +490,12 @@ with width.
   \toprule
   \hd{MAX\_IMAGE\_WIDTH} & \hd{Default} & \hd{EPRPO} & \hd{NetDelay} & \hd{Congestion} \\
   \midrule
-  4096 & 424.1 & 404.5 & \textbf{436.3} & 430.7 \\
-  8192 & 401.0 & \textbf{432.9} & 430.5 & 398.9 \\
-  12288 & 434.6 & 436.7 & 432.1 & \textbf{438.8} \\
-  16384 & 389.9 & 414.2 & \textbf{434.8} & 409.8 \\
-  32768 & 385.5 & 341.9 & \textbf{416.0} & 401.3 \\
-  65535 & 379.4 & \textbf{404.7} & 360.5 & 393.6 \\
+  4096 & 396.0 & 434.8 & \textbf{444.6} & 413.7 \\
+  8192 & 424.6 & 428.8 & 427.5 & \textbf{435.0} \\
+  12288 & 424.6 & \textbf{432.1} & 423.7 & 395.3 \\
+  16384 & 417.5 & \textbf{438.4} & 438.2 & 419.5 \\
+  32768 & 396.4 & 402.2 & 399.8 & \textbf{417.2} \\
+  65535 & 354.1 & \textbf{426.3} & 413.1 & 368.2 \\
   \bottomrule
 \end{tabular}
 \end{table}
@@ -515,22 +515,20 @@ with width.
   \toprule
   \hd{MAX\_IMAGE\_WIDTH} & \hd{LUT} & \hd{FF} & \hd{BRAM} \\
   \midrule
-  4096 & 6540 & 2507 & 2.5 \\
-  8192 & 6564 & 2464 & 4.0 \\
-  12288 & 6609 & 2517 & 5.5 \\
-  16384 & 6632 & 2493 & 6.5 \\
-  32768 & 6621 & 2539 & 13.0 \\
-  65535 & 6644 & 2515 & 25.0 \\
+  4096 & 6613 & 2449 & 2.5 \\
+  8192 & 6706 & 2512 & 4.0 \\
+  12288 & 6662 & 2520 & 5.5 \\
+  16384 & 6675 & 2527 & 6.5 \\
+  32768 & 6650 & 2553 & 13.0 \\
+  65535 & 6728 & 2551 & 25.0 \\
   \bottomrule
 \end{tabular}
 \end{table}
 
 \subsection{Pixel depth sweep}
 \texttt{MAX\_IMAGE\_WIDTH = 12288}, \texttt{BITNESS} from 8 to 16. Best-of \fmax{}
-falls from \about450\,MHz at 8 and 10 bits to \about420\,MHz at 14 bits and
-\about375\,MHz at 16 bits. At 8 and 12 bits the worst paths of all blocks lie within
-\about0.1\,ns of each other; at 16 bits the line-buffer read through the
-gradient carry chains into the quantized-gradient register limits. Logic and line-buffer BRAM both grow with depth.
+falls from \about450\,MHz at 8 bits to \about430\,MHz at 12 and 14 bits and
+\about400\,MHz at 16 bits. At every depth the timing is balanced across the pipeline: no single block limits the clock. Logic and line-buffer BRAM both grow with depth.
 
 \begin{figure}[H]
   \centering
@@ -547,11 +545,11 @@ gradient carry chains into the quantized-gradient register limits. Logic and lin
   \toprule
   \hd{BITNESS} & \hd{Default} & \hd{EPRPO} & \hd{NetDelay} & \hd{Congestion} \\
   \midrule
-  8 & 433.3 & \textbf{449.4} & 445.4 & 440.9 \\
-  10 & 411.0 & 440.7 & \textbf{447.2} & 417.4 \\
-  12 & 434.6 & 436.7 & 432.1 & \textbf{438.8} \\
-  14 & 405.5 & 413.9 & \textbf{421.2} & 402.6 \\
-  16 & 334.1 & \textbf{377.1} & 348.3 & 338.1 \\
+  8 & 421.4 & \textbf{453.1} & 443.1 & 430.7 \\
+  10 & 428.4 & 374.7 & 434.8 & \textbf{442.5} \\
+  12 & 424.6 & \textbf{432.1} & 423.7 & 395.3 \\
+  14 & 399.7 & 410.7 & \textbf{427.0} & 411.9 \\
+  16 & \textbf{402.4} & 392.5 & 388.4 & \textbf{402.4} \\
   \bottomrule
 \end{tabular}
 \end{table}
@@ -571,11 +569,11 @@ gradient carry chains into the quantized-gradient register limits. Logic and lin
   \toprule
   \hd{BITNESS} & \hd{LUT} & \hd{FF} & \hd{BRAM} \\
   \midrule
-  8 & 5506 & 2208 & 3.5 \\
-  10 & 6123 & 2371 & 4.0 \\
-  12 & 6609 & 2517 & 5.5 \\
-  14 & 7275 & 2669 & 6.5 \\
-  16 & 8019 & 2782 & 7.5 \\
+  8 & 5586 & 2206 & 3.5 \\
+  10 & 6106 & 2368 & 4.0 \\
+  12 & 6662 & 2520 & 5.5 \\
+  14 & 7323 & 2669 & 6.5 \\
+  16 & 8090 & 2819 & 7.5 \\
   \bottomrule
 \end{tabular}
 \end{table}
