@@ -52,29 +52,34 @@ architecture behavioral of a4_quantization_gradients is
     constant t3 : natural
   ) return signed is
 
-    variable qi     : signed (3 downto 0);
-    variable vAbsQi : natural;
-    variable vSign  : std_logic;
+    constant W : natural := di'length;
+    variable qi : signed (3 downto 0);
 
   begin
 
-    vAbsQi := abs(to_integer(di));
-    vSign  := di(di'high);
-
-    if (vAbsQi = 0) then
+    -- Parallel compares against ±T; abs() put a negation in series after A.1 (16-bit wall)
+    if (di = 0) then
       qi := to_signed(0, qi'length);
-    elsif (vAbsQi < t1) then
-      qi := to_signed(1, qi'length);
-    elsif (vAbsQi < t2) then
-      qi := to_signed(2, qi'length);
-    elsif (vAbsQi < t3) then
-      qi := to_signed(3, qi'length);
+    elsif (di(di'high) = '0') then
+      if (di < to_signed(t1, W)) then
+        qi := to_signed(1, qi'length);
+      elsif (di < to_signed(t2, W)) then
+        qi := to_signed(2, qi'length);
+      elsif (di < to_signed(t3, W)) then
+        qi := to_signed(3, qi'length);
+      else
+        qi := to_signed(4, qi'length);
+      end if;
     else
-      qi := to_signed(4, qi'length);
-    end if;
-
-    if (vSign = '1') then
-      qi := - qi;
+      if (di > to_signed(-t1, W)) then
+        qi := to_signed(-1, qi'length);
+      elsif (di > to_signed(-t2, W)) then
+        qi := to_signed(-2, qi'length);
+      elsif (di > to_signed(-t3, W)) then
+        qi := to_signed(-3, qi'length);
+      else
+        qi := to_signed(-4, qi'length);
+      end if;
     end if;
 
     return qi;
