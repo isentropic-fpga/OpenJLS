@@ -6,14 +6,14 @@
   --edge:clamp(20px,5vw,88px);
   --color-bg:#e0e0e0; --color-surface:#d5d5d5; --color-text:#1c1a16;
   --color-divider:color-mix(in srgb,#1c1a16 16%,transparent);
-  --color-accent:#d97706; --color-accent-100:#faf1e3; --color-accent-700:#914f08; --color-accent-800:#6f3d0c;
+  --color-accent:#0ea5c6; --color-accent-100:#e2f5f9; --color-accent-700:#0a5f73; --color-accent-800:#0a4a5a;
   --ok:#1f6f34; --bad:#b42318;
   color-scheme:light;
 }
 html[data-theme="dark"]{
   --color-bg:#16130e; --color-surface:#1f1b14; --color-text:#e0e0e0;
   --color-divider:color-mix(in srgb,#e0e0e0 16%,transparent);
-  --color-accent:#e08b23; --color-accent-100:#2a1c0b; --color-accent-700:#eeb367; --color-accent-800:#f5d1a3;
+  --color-accent:#22b4d4; --color-accent-100:#0a2128; --color-accent-700:#7fd6ea; --color-accent-800:#b0e6f2;
   --ok:#6fcf8a; --bad:#f28b82;
   color-scheme:dark;
 }
@@ -37,7 +37,7 @@ html[data-theme="dark"] .wm-dark{display:block;}
   background:color-mix(in srgb,var(--color-bg) 88%,transparent);backdrop-filter:blur(10px);
   border-bottom:1px solid color-mix(in srgb,var(--color-text) 7%,transparent);}
 .site-nav .brand{margin-right:auto;display:flex;align-items:center;}
-.site-nav .brand img{height:38px;}
+.site-nav .brand img{height:54px;position:relative;top:11px;} /* the orbit hangs below the letters */
 .nlink{color:var(--color-text);text-decoration:none;font-family:var(--font-heading);font-size:16px;font-weight:600;letter-spacing:.01em;}
 .nlink:hover{color:var(--color-accent-700);}
 .theme-btn{display:inline-grid;place-items:center;width:34px;height:34px;padding:0;border:1px solid var(--color-divider);
@@ -96,7 +96,7 @@ footer a:hover{color:var(--color-accent-700);}
 
 @media (max-width:640px){
   .site-nav{gap:14px;}
-  .site-nav .brand img{height:30px;}
+  .site-nav .brand img{height:42px;top:8px;}
   td,th{padding-left:8px;padding-right:8px;}
 }
 

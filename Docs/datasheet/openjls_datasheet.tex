@@ -29,8 +29,8 @@
 
 % Styled after isentropic.com.br: tokens mirror ~/Repos/Site/site.css (light theme).
 \definecolor{ink}{HTML}{1C1A16}
-\definecolor{accent}{HTML}{914F08}    % accent-700: text, links, labels
-\definecolor{amber}{HTML}{D97706}     % accent-500: marks and rules
+\definecolor{accent}{HTML}{0A5F73}    % accent-700: text, links, labels
+\definecolor{mark}{HTML}{0EA5C6}     % accent-500: marks and rules
 \definecolor{muted}{HTML}{7E7362}     % neutral-600
 \definecolor{divider}{HTML}{D7CDBE}   % neutral-300
 \definecolor{surface}{HTML}{F4F0EA}   % neutral-100
@@ -57,7 +57,7 @@
 \setlength{\parskip}{5pt}
 \setlength{\emergencystretch}{1.5em}
 \setlist{nosep,leftmargin=1.4em}
-\setlist[itemize]{label={\color{amber}\textbullet}}
+\setlist[itemize]{label={\color{mark}\textbullet}}
 \newcolumntype{C}{>{\centering\arraybackslash}m{0.10\textwidth}}
 \renewcommand{\arraystretch}{1.25}
 \arrayrulecolor{divider}
@@ -119,12 +119,12 @@
 }
 
 % Wordmark PNGs carry transparent padding; trim (in px = bp) to the ink box.
-\newcommand{\isentropicmark}[1]{\includegraphics[height=#1,trim=36 60 86 108,clip]{isentropic-wordmark.png}}
+\newcommand{\isentropicmark}[1]{\includegraphics[height=#1,trim=80 80 87 80,clip]{isentropic-wordmark.png}}
 \newcommand{\openjlsmark}[1]{\includegraphics[height=#1,trim=88 60 87 118,clip]{openjls-wordmark.png}}
 
 \pagestyle{fancy}
 \fancyhf{}
-\lhead{\raisebox{-0.5pt}{\isentropicmark{3.2mm}}}
+\lhead{\raisebox{-0.5pt}{\isentropicmark{5.8mm}}}
 \rhead{{\color{muted}\kicker{OpenJLS \textperiodcentered{} Datasheet \textperiodcentered{} v1.5.1}}}
 \lfoot{{\color{muted}\small isentropic.com.br}}
 \rfoot{{\color{muted}\small\thepage}}
@@ -139,7 +139,7 @@
 \begin{titlepage}
 \newgeometry{margin=22mm}
 \color{ink}
-\isentropicmark{5.5mm}\hfill{\color{muted}\kicker{Datasheet}}\par
+\isentropicmark{10mm}\hfill{\color{muted}\kicker{Datasheet}}\par
 \vspace{0.5mm}{\color{divider}\hrule height 0.4pt}
 
 \vspace*{58mm}
@@ -150,7 +150,7 @@
 {\fontsize{15}{21}\selectfont\color{muted}
 Lossless JPEG-LS encoder for FPGAs.\\One pixel per clock, no external memory.\par}
 \vspace{8mm}
-{\color{amber}\rule{18mm}{1.2pt}}
+{\color{mark}\rule{18mm}{1.2pt}}
 
 \vfill
 {\color{divider}\hrule height 0.4pt}\vspace{6mm}

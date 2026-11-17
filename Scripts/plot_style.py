@@ -5,7 +5,7 @@
 # commercial license. See LICENSE and README for details.
 #
 
-"""Shared plot style, after isentropic.com.br: Barlow, amber accent, warm
+"""Shared plot style, after isentropic.com.br: Barlow, cyan accent, warm
 neutrals. Tokens mirror the datasheet preamble."""
 import os
 
@@ -13,9 +13,9 @@ import matplotlib.pyplot as plt
 from matplotlib import font_manager
 
 INK, MUTED, DIVIDER = "#1c1a16", "#7e7362", "#d7cdbe"
-AMBER = "#d97706"
+ACCENT = "#0ea5c6"
 # Series after the first are warm greys; dash and marker keep them separable.
-SERIES = [AMBER, "#443e34", "#7e7362", "#b0a491"]
+SERIES = [ACCENT, "#443e34", "#7e7362", "#b0a491"]
 
 _FONTS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Docs", "datasheet", "fonts")
 for _f in ("Barlow-Regular.ttf", "Barlow-SemiBold.ttf"):
