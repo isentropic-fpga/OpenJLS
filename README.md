@@ -11,7 +11,7 @@ OpenJLS is an open, openly verified JPEG-LS encoder IP core for FPGAs - the open
 
 It implements the JPEG-LS standard (ISO/IEC 14495-1 / ITU-T T.87), a low-complexity lossless image codec reaching ~1.6:1 on natural photographs. Every release is checked byte-exact against an independent reference encoder on silicon, at RTL and on a post-synthesis subset: 5659 corpus images at 8–16 bits, each encoded from reset, plus 6000 same-size images streamed with no reset between them (11659 encodes on silicon, 11575 at RTL). Formal proofs cover the control logic, the T.87 arithmetic and the bit/byte streams.
 
-OpenJLS reaches ~440 MHz with 12-bit pixels on a Xilinx UltraScale+ ZU7EG (the MPSoC family used in onboard processors such as the Xiphos Q8), processing one pixel per clock (~440 Mpixel/s) for ~6.6k LUTs and no external memory; 8-bit reaches ~450 MHz and 16-bit ~375 MHz. It handles single-component (grayscale) data, so a multi-band sensor instantiates one compressor per band - resource usage is low enough that all bands run in parallel cheaply.
+OpenJLS reaches ~430 MHz with 12-bit pixels on a Xilinx UltraScale+ ZU7EG (the MPSoC family used in onboard processors such as the Xiphos Q8), processing one pixel per clock (~430 Mpixel/s) for ~6.7k LUTs and no external memory; 8-bit reaches ~450 MHz and 16-bit ~400 MHz. It handles single-component (grayscale) data, so a multi-band sensor instantiates one compressor per band - resource usage is low enough that all bands run in parallel cheaply.
 
 The RTL is vendor-neutral by construction (plain VHDL-1993 on open-logic memory primitives, which are VHDL-2008) and builds in any synthesis tool; the figures above were characterized on Xilinx.
 
@@ -40,10 +40,10 @@ The RTL is vendor-neutral by construction (plain VHDL-1993 on open-logic memory 
 | **Image size** | Up to ~64k × 64k px<sup>4</sup> |
 | **Throughput** | 1 pixel / clock |
 | **Latency** | 15 cycles |
-| **f<sub>max</sub>** | ~440 MHz<sup>5</sup> |
+| **f<sub>max</sub>** | ~430 MHz<sup>5</sup> |
 | **Interface** | Ready/valid stream<sup>6</sup> |
 | **Memory** | On-chip only<sup>7</sup> |
-| **Resources** | 5.5–8.0k LUT, 2.2–2.8k FF<sup>8</sup> |
+| **Resources** | 5.6–8.1k LUT, 2.2–2.8k FF<sup>8</sup> |
 | **Portability** | Vendor-agnostic VHDL |
 
 <sub>
@@ -167,12 +167,12 @@ Each configuration is implemented with four Vivado strategies. fmax tables in MH
 
 | `MAX_IMAGE_WIDTH` | Default | ExplorePostRoutePhysOpt | NetDelay_high | Congestion_SpreadLogic_high |
 |------------------:|--------:|------------------------:|--------------:|----------------------------:|
-| 4096 | 424.1 | 404.5 | **436.3** | 430.7 |
-| 8192 | 401.0 | **432.9** | 430.5 | 398.9 |
-| 12288 | 434.6 | 436.7 | 432.1 | **438.8** |
-| 16384 | 389.9 | 414.2 | **434.8** | 409.8 |
-| 32768 | 385.5 | 341.9 | **416.0** | 401.3 |
-| 65535 | 379.4 | **404.7** | 360.5 | 393.6 |
+| 4096 | 396.0 | 434.8 | **444.6** | 413.7 |
+| 8192 | 424.6 | 428.8 | 427.5 | **435.0** |
+| 12288 | 424.6 | **432.1** | 423.7 | 395.3 |
+| 16384 | 417.5 | **438.4** | 438.2 | 419.5 |
+| 32768 | 396.4 | 402.2 | 399.8 | **417.2** |
+| 65535 | 354.1 | **426.3** | 413.1 | 368.2 |
 
 ### Resource usage vs `MAX_IMAGE_WIDTH`
 
@@ -181,12 +181,12 @@ Each configuration is implemented with four Vivado strategies. fmax tables in MH
 
 | `MAX_IMAGE_WIDTH` | LUTs | FFs | BRAM tiles |
 |------------------:|-----:|----:|-----------:|
-| 4096 | 6540 | 2507 | 2.5 |
-| 8192 | 6564 | 2464 | 4.0 |
-| 12288 | 6609 | 2517 | 5.5 |
-| 16384 | 6632 | 2493 | 6.5 |
-| 32768 | 6621 | 2539 | 13.0 |
-| 65535 | 6644 | 2515 | 25.0 |
+| 4096 | 6613 | 2449 | 2.5 |
+| 8192 | 6706 | 2512 | 4.0 |
+| 12288 | 6662 | 2520 | 5.5 |
+| 16384 | 6675 | 2527 | 6.5 |
+| 32768 | 6650 | 2553 | 13.0 |
+| 65535 | 6728 | 2551 | 25.0 |
 
 ### Maximum frequency vs `BITNESS`
 
@@ -195,11 +195,11 @@ Each configuration is implemented with four Vivado strategies. fmax tables in MH
 
 | `BITNESS` | Default | ExplorePostRoutePhysOpt | NetDelay_high | Congestion_SpreadLogic_high |
 |----------:|--------:|------------------------:|--------------:|----------------------------:|
-| 8 | 433.3 | **449.4** | 445.4 | 440.9 |
-| 10 | 411.0 | 440.7 | **447.2** | 417.4 |
-| 12 | 434.6 | 436.7 | 432.1 | **438.8** |
-| 14 | 405.5 | 413.9 | **421.2** | 402.6 |
-| 16 | 334.1 | **377.1** | 348.3 | 338.1 |
+| 8 | 421.4 | **453.1** | 443.1 | 430.7 |
+| 10 | 428.4 | 374.7 | 434.8 | **442.5** |
+| 12 | 424.6 | **432.1** | 423.7 | 395.3 |
+| 14 | 399.7 | 410.7 | **427.0** | 411.9 |
+| 16 | **402.4** | 392.5 | 388.4 | **402.4** |
 
 ### Resource usage vs `BITNESS`
 
@@ -208,11 +208,11 @@ Each configuration is implemented with four Vivado strategies. fmax tables in MH
 
 | `BITNESS` | LUTs | FFs | BRAM tiles |
 |----------:|-----:|----:|-----------:|
-| 8 | 5506 | 2208 | 3.5 |
-| 10 | 6123 | 2371 | 4.0 |
-| 12 | 6609 | 2517 | 5.5 |
-| 14 | 7275 | 2669 | 6.5 |
-| 16 | 8019 | 2782 | 7.5 |
+| 8 | 5586 | 2206 | 3.5 |
+| 10 | 6106 | 2368 | 4.0 |
+| 12 | 6662 | 2520 | 5.5 |
+| 14 | 7323 | 2669 | 6.5 |
+| 16 | 8090 | 2819 | 7.5 |
 
 ---
 
