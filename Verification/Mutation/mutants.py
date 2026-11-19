@@ -1,7 +1,10 @@
 # Copyright (C) 2026 Vitor Mendes Camilo
 # SPDX-License-Identifier: GPL-3.0-only
-"""Line-level VHDL mutant generators (std operators, or literals with MUT_OPS=lit). IDs are list indices."""
-import os, re
+"""Line-level VHDL mutant generators: std (operators) and lit (literals, slices, widths).
+
+A mutant ID is stem:hash of (kind, original line, mutated line, occurrence), so edits elsewhere in the file keep it.
+"""
+import hashlib, os, re
 
 SKIP = re.compile(r"^\s*(signal|constant|variable|type|subtype|function|procedure|attribute|alias|file|use|library|entity|end|architecture|generic|port|component|report|severity)\b", re.I)
 # MUT_OPS=lit: literal, slice and width operators. Result files get a _lit suffix.
@@ -11,6 +14,18 @@ SKIP_LIT = re.compile(r"^\s*(signal|variable|type|subtype|function|procedure|att
 
 def mutants(src):
     return mutants_lit(src) if OPS == "lit" else mutants_std(src)
+
+
+def all_mutants(src, stem):
+    """[{id, kind, line, from, to}] for both kinds; line is 0-based."""
+    out, seen = [], {}
+    for kind, fn in (("std", mutants_std), ("lit", mutants_lit)):
+        for m in fn(src):
+            key = f"{kind}|{m['from'].strip()}|{m['to'].strip()}"
+            k = seen[key] = seen.get(key, -1) + 1
+            h = hashlib.sha1(f"{key}|{k}".encode()).hexdigest()[:8]
+            out.append(dict(m, id=f"{stem}:{h}", kind=kind))
+    return out
 
 def mutants_lit(src):
     """'0'<->'1', integer +-1, bit-string LSB flip, slice shift by one, resize width +-1."""

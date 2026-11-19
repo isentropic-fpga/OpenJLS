@@ -14,7 +14,7 @@ import json, os, re, subprocess as sp, sys
 from pathlib import Path
 
 F = Path(__file__).resolve().parent
-sys.path.insert(0, str(F.parent / "Common"))
+sys.path.insert(0, str(F.parents[1] / "Formal/Common"))
 from prep import prep
 from flow import S, ENV, BASE, ORDER, run
 WORK = Path(os.environ.get("CE_WORK", "/tmp/top_ctx_eq"))

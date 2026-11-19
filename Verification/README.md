@@ -9,9 +9,11 @@ One folder per method. Each suite writes its own results and a `report_status.en
 | `T87 conformance/` | RTL simulation of the official T.87 test images | Output is byte-exact against the official coded streams |
 | `Post synth/` | Gate-level simulation of the Vivado netlist | Synthesis keeps the behaviour of the RTL |
 | `Formal/` | Property proofs over all input sequences | Control invariants, contracts, T.87 equivalence and stream order hold for all inputs |
+| `Mutation/` | Each RTL operator and literal changed one at a time | The suites above catch every change that can alter an output |
 
 Hardware-in-the-loop results come from the [OpenJLS-Demos](https://github.com/isentropic-fpga/OpenJLS-Demos) repository.
 
+- `run_all.sh`: runs every suite in order, then `publish_reports.sh`.
 - `publish_reports.sh`: builds the verification report in `Docs/Reports/` from the results of all suites. Its
   header lists the suite runs it reads.
 - `matrix_html.py`: renders the requirements matrix for the report landing page.

@@ -8,9 +8,7 @@ is checked exactly as the top instantiates it. Inputs are free (anyseq); `assume
 lines over the input signal names (port name + "_i").
 """
 import re
-from pathlib import Path
-
-S = Path(__file__).resolve().parents[3] / "Sources"
+from flow import S
 
 
 def entities(src):

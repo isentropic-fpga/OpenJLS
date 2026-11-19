@@ -7,13 +7,14 @@
 #
 
 # Assemble Docs/Reports/ (GitHub Pages): the OSVVM and coverage HTML plus the
-# golden, post-synth and formal suites from their report_status.env.
+# golden, post-synth, formal and mutation suites from their report_status.env.
 #
 # Typical flow:
 #   ( cd OSVVM          && ./build_run.sh )       # OSVVM regression + coverage
 #   ( cd "Golden model" && ./build_run.sh )       # golden cross-check
 #   ( cd "Post synth"   && ./build_run_osvvm.sh ) # gate-level (needs Vivado)
 #   ( cd Formal         && ./build_run.sh )       # formal proofs
+#   ( cd Mutation       && ./build_run.sh )       # RTL mutants against all of the above
 #   ./publish_reports.sh                          # -> Docs/Reports/
 #
 # Usage:  ./publish_reports.sh
@@ -35,6 +36,8 @@ PS_GOLDEN_ENV="$ROOT/Verification/Post synth/Output/report_status_golden.env"
 PS_GOLDEN_TSV="$ROOT/Verification/Post synth/Output/ps_golden_image_results.tsv"
 FORMAL_ENV="$ROOT/Verification/Formal/Results/report_status.env"
 FORMAL_TSV="$ROOT/Verification/Formal/Results/formal_results.tsv"
+MUTATION_ENV="$ROOT/Verification/Mutation/Results/report_status.env"
+MUTATION_TSV="$ROOT/Verification/Mutation/Results/mutation_results.tsv"
 
 # hil/results.csv comes from the OpenJLS-Demos sweep; keep it
 HIL_TMP=""
@@ -191,12 +194,12 @@ render_tsv_page() {
 HDR
     head -1 "$tsv" | awk -F'\t' '{for (i=1;i<=NF;i++) printf "<th>%s</th>", $i; print ""}'
     echo "</tr></thead><tbody>"
-    tail -n +2 "$tsv" | awk -F'\t' '{
+    tail -n +2 "$tsv" | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' | awk -F'\t' '{
       printf "<tr>"
       for (i=1;i<=NF;i++) {
         cls=""
-        if ($i=="PASS") cls=" class=\"r-ok\""
-        else if ($i ~ /^FAIL/) cls=" class=\"r-bad\""
+        if ($i=="PASS" || $i=="KILLED" || $i=="EQUIVALENT") cls=" class=\"r-ok\""
+        else if ($i ~ /^FAIL/ || $i=="SURVIVED") cls=" class=\"r-bad\""
         else if ($i=="SKIP" || $i=="no result") cls=" class=\"r-na\""
         printf "<td%s>%s</td>", cls, $i
       }
@@ -233,6 +236,8 @@ ps_osvvm_link=""
 [ -f "$PS_OSVVM_ENV" ] && ps_osvvm_link="$(render_log_page "$PS_OSVVM_LOG" post-synth-osvvm "Post-synth OSVVM — simulation log")"
 formal_link=""
 [ -f "$FORMAL_ENV" ] && formal_link="$(render_tsv_page "$FORMAL_TSV" formal "Formal — property proofs")"
+mutation_link=""
+[ -f "$MUTATION_ENV" ] && mutation_link="$(render_tsv_page "$MUTATION_TSV" mutation "Mutation — RTL mutants")"
 ps_golden_link=""
 [ -f "$PS_GOLDEN_ENV" ] && ps_golden_link="$(render_tsv_page "$PS_GOLDEN_TSV" post-synth-golden "Post-synth Golden Model — processed images")"
 
@@ -248,6 +253,9 @@ env_row "$PS_OSVVM_ENV"  "Post-synth OSVVM" \
 env_row "$PS_GOLDEN_ENV" "Post-synth Golden Model" \
   "8-bit corpus images up to 0.05&nbsp;MP encoded on the gate-level netlist and compared with CharLS; the cap keeps gate-level simulation time bounded." \
   "$ps_golden_link"
+env_row "$MUTATION_ENV"  "Mutation" \
+  "Each operator and literal of the RTL changed one at a time; the OSVVM, golden and formal suites must catch every change, unless analysis shows the change cannot alter any output (equivalent.tsv)." \
+  "$mutation_link"
 
 # --- hardware-in-the-loop (published out of band from OpenJLS-Demos) ------
 if [ -f "$DEST/hil/results.csv" ]; then

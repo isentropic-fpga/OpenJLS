@@ -1,0 +1,6 @@
+id	file	line	mutant	reason
+A4_quantization_gradients:a1c0abe4	Sources/A4_quantization_gradients.vhd	92	math_min(MAX_VAL, 4094)	(x + 128) / 256 is 16 for x = 4094, 4095 and 4096, so FACTOR is unchanged for every MAX_VAL
+A4_quantization_gradients:64f9d28d	Sources/A4_quantization_gradients.vhd	92	math_min(MAX_VAL, 4096)	(x + 128) / 256 is 16 for x = 4094, 4095 and 4096, so FACTOR is unchanged for every MAX_VAL
+A4_quantization_gradients:45a03a74	Sources/A4_quantization_gradients.vhd	40	i <= j	clamp: at i = j both branches return the same value
+A4_quantization_gradients:80fe2068	Sources/A4_quantization_gradients.vhd	93	T1 lower bound 0	T1 = FACTOR + 2 >= 2, so the lower bound never applies; the upper bound applies only for MAX_VAL < 2, and the top sets MAX_VAL = 2^BITNESS - 1 >= 255
+A4_quantization_gradients:c8d3983d	Sources/A4_quantization_gradients.vhd	93	T1 lower bound 2	T1 = FACTOR + 2 >= 2, so the lower bound never applies; the upper bound applies only for MAX_VAL < 2, and the top sets MAX_VAL = 2^BITNESS - 1 >= 255

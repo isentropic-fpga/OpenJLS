@@ -6,7 +6,8 @@ from pathlib import Path
 
 FORMAL = Path(__file__).resolve().parents[1]
 R = FORMAL.parents[1]
-S = R / "Sources"
+# FORMAL_SOURCES: a mutated copy of Sources/ (Verification/Mutation)
+S = Path(os.environ.get("FORMAL_SOURCES", R / "Sources"))
 RESULTS = FORMAL / "Results"
 OSS = Path(os.environ.get("OSS_CAD_SUITE", Path.home() / "Tools/oss-cad-suite"))
 ENV = dict(os.environ, PATH=f"{OSS}/bin:{OSS}/py3bin:" + os.environ["PATH"])

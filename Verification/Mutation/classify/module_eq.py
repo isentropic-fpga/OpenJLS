@@ -5,13 +5,13 @@
 
   module_eq.py STEM [STEM ...]   every std and lit mutant of STEM, BITNESS 8..16
 A formal DIFF counts only if NVC replays it on the unprepped RTL (GHDL synth bugs, see prep.py).
-Env: FEQ_GOLD_INV=1 (gold's proved asserts become assumes), FEQ_WORK (scratch), FEQ_BITS, FEQ_ONLY (LINE#ID list), FEQ_DEPTH (default 1), FEQ_THREADS (20), FEQ_OUT.
+Env: FEQ_GOLD_INV=1 (gold's proved asserts become assumes), FEQ_WORK (scratch), FEQ_BITS, FEQ_ONLY (mutant ID hashes), FEQ_DEPTH (default 1), FEQ_THREADS (20), FEQ_OUT.
 """
 import json, os, re, shutil, subprocess as sp, sys, multiprocessing as mp
 from pathlib import Path
 
 F = Path(__file__).resolve().parent
-sys.path[:0] = [str(F), str(F.parent / "Common")]
+sys.path[:0] = [str(F), str(F.parent), str(F.parents[1] / "Formal/Common")]
 from flow import R, S, OSS, ENV, BASE, RESULTS, run, tree  # noqa: F401 (re-exported)
 from prep import prep, contracts
 import gen_harness as gh
@@ -27,7 +27,7 @@ SEQ_DEPTH = int(os.environ.get("FEQ_SEQ_DEPTH", "20"))
 BMC = os.environ.get("FEQ_MODE", "prove") == "bmc"
 # RTL PSL asserts on module inputs become assumes (assume-guarantee); 0 = ignore them (non-vacuity check)
 CONTRACTS = os.environ.get("FEQ_CONTRACTS", "1") == "1"
-OUT = Path(os.environ.get("FEQ_OUT", RESULTS / "module_eq.jsonl"))
+OUT = Path(os.environ.get("FEQ_OUT", F.parent / "Results/classify/module_eq.jsonl"))
 # Gold keeps its own asserts as assumes (skip 1). Sound only where rtl_asserts.py proves them under a weaker env
 GOLD_INV = os.environ.get("FEQ_GOLD_INV") == "1"
 
@@ -85,12 +85,7 @@ def ctr(text):
 
 
 def all_mutants(stem):
-    src = (S / f"{stem}.vhd").read_text()
-    out = []
-    for kind, fn in (("std", mut.mutants_std), ("lit", mut.mutants_lit)):
-        for i, m in enumerate(fn(src)):
-            out.append((f"{stem}:{m['line'] + 1}#{kind}{i}", stem, m["line"], m["to"]))
-    return out
+    return [(m["id"], stem, m["line"], m["to"]) for m in mut.all_mutants((S / f"{stem}.vhd").read_text(), stem)]
 
 
 def rename(text, ents):
@@ -271,6 +266,7 @@ def main(stems):
     only = set(filter(None, os.environ.get("FEQ_ONLY", "").split(",")))
     jobs = [m + (l, b) for s in stems for m in all_mutants(s) for l, _ in HARNESS[s] for b in BITS
             if (m[0], l, b) not in done and (not only or m[0].split(":")[1] in only)]
+    OUT.parent.mkdir(parents=True, exist_ok=True)
     with mp.Pool(int(os.environ.get("FEQ_THREADS", "20"))) as p, open(OUT, "a") as f:
         for r in p.imap_unordered(one, jobs):
             f.write(json.dumps(r) + "\n"); f.flush()

@@ -65,3 +65,7 @@ Docs/t87.pdf
 
 # Formal flow outputs
 Verification/Formal/Results/
+Verification/Mutation/Results/
+
+# Claude local instructions
+CLAUDE.local.md

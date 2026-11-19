@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Copyright (C) 2026 Vitor Mendes Camilo
 # SPDX-License-Identifier: GPL-3.0-only
-"""Assume-guarantee obligations: prove on each producer the input assumptions module_eq.py uses.
+"""Assume-guarantee obligations: prove on each producer the input assumptions ../Mutation/classify/module_eq.py uses.
 
 Each obligation is a combinational chain wired as in openjls_top, free inputs limited only by
 their types or by an invariant this script proves elsewhere, PSL asserts on the outputs.

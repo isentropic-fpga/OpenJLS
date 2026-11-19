@@ -8,7 +8,7 @@ assert plus all candidates; candidates that fail (base or step) are dropped. End
 closes, DIFF when the main assert fails in the base case, UNKNOWN when only the main assert fails the step.
 Kept candidates are proved with the main assert, so they add no trust.
 
-  houdini.py NAME [NAME ...]   module_eq mutant names (STEM:LINE#ID), same FEQ_* env as module_eq.py
+  houdini.py NAME [NAME ...]   mutant IDs (stem:hash), same FEQ_* env as module_eq.py
 HD_GUARD="ARRAY:COUNT:DEPTH[,...]": also cnt_gold > k -> gold.ARRAY(k) = mut.ARRAY(k) per slot k (both slot orders),
 for queues whose dead slots may differ.
 HD_EXTRA=FILE: one candidate per line, a Python expression over g("reg") and m("reg") (gold / mutant register),
@@ -19,14 +19,14 @@ import json, os, re, shutil, sys, multiprocessing as mp
 from pathlib import Path
 
 F = Path(__file__).resolve().parent
-sys.path[:0] = [str(F), str(F.parent / "Common")]
+sys.path[:0] = [str(F), str(F.parent), str(F.parents[1] / "Formal/Common")]
 import module_eq as me
 from flow import RESULTS, run
 
 DEPTH = int(os.environ.get("HD_DEPTH", "4"))
 ROUNDS = int(os.environ.get("HD_ROUNDS", "40"))
 TIMEOUT = int(os.environ.get("HD_TIMEOUT", "1800"))
-OUT = Path(os.environ.get("HD_OUT", RESULTS / "houdini.jsonl"))
+OUT = Path(os.environ.get("HD_OUT", F.parent / "Results/classify/houdini.jsonl"))
 
 
 def build(name):
@@ -277,6 +277,7 @@ def houdini(name):
 
 
 if __name__ == "__main__":
+    OUT.parent.mkdir(parents=True, exist_ok=True)
     with mp.get_context("fork").Pool(min(len(sys.argv) - 1, int(os.environ.get("HD_THREADS", "20")))) as p, \
             open(OUT, "a") as f:
         for r in p.imap_unordered(houdini, sys.argv[1:]):
