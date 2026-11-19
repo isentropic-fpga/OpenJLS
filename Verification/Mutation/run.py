@@ -77,7 +77,8 @@ def files_hash(paths):
     return sha(*[p.relative_to(R).as_posix() + "\0" + norm(p) for p in sorted(paths)])
 
 
-INFRA = re.compile(r"No space left|Disk quota|Cannot allocate memory|Out of memory|Read-only file system", re.I)
+# NVC's "out of memory attempting to allocate" is the simulation heap limit, hit by a mutant that floods alerts: a catch
+INFRA = re.compile(r"No space left|Disk quota|Cannot allocate memory|Out of memory(?! attempting to allocate)|Read-only file system", re.I)
 
 
 class InfraError(Exception):
