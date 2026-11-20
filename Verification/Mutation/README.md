@@ -4,6 +4,14 @@ Checks the verification, not the RTL. Each mutant changes one line of `Sources/`
 slice or width (lit). The suite passes when the verification catches every mutant, or when `equivalent.tsv` lists
 it with the reason no output can change.
 
+`mutants.py` does not generate mutants that cannot reach an output, whatever the tests do:
+
+- package constants that the design uses only as generic defaults, which every instantiation overrides;
+- functions that only simulation asserts call;
+- the range bounds of generics, which only accept or reject a configuration at elaboration;
+- a shift by one of a declared range: the width stays the same, so the object is either used whole (no change) or
+  sliced at absolute bits (any simulation fails).
+
 ## Run
 
 `./build_run.sh` (or `../run_all.sh`, which runs it after the other suites). It needs a passing OSVVM, golden and
@@ -21,9 +29,10 @@ A mutant that does not compile is not counted. A test that times out counts as a
 `Results/mutation_results.tsv` and `Results/report_status.env`, which `../publish_reports.sh` turns into the
 Mutation row of the verification report.
 
-The cache ignores comments and layout. A caught mutant keeps its result while its own file is unchanged; a
-survivor reruns on any change to the RTL or the verification. A test bench edit therefore does not recheck the
-mutants it caught before: run with `RERUN=1` after such an edit, and before a release.
+The cache ignores comments and layout. A caught mutant, or a survivor that `equivalent.tsv` lists, keeps its result
+while its own file is unchanged; any other survivor reruns on any change to the RTL or the verification. A test
+bench edit therefore does not recheck the mutants it caught before: run with `RERUN=1` after such an edit, and
+before a release.
 Options: `RERUN=1` (ignore the cache), `MUT_ONLY=stem,...` (only these files), `MUT_THREADS` (20), `MUT_WORK`.
 
 ## Survivors

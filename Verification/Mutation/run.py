@@ -405,12 +405,15 @@ def main():
             except ValueError:  # torn last line of a killed run
                 continue
             old[r["id"]] = r
-    # A caught mutant stays caught while its own file is unchanged; RERUN=1 rechecks it after a test bench edit.
-    # A survivor reruns on any change to the RTL or the verification.
+    # A caught or registered equivalent mutant keeps its verdict while its own file is unchanged; RERUN=1 rechecks
+    # it. Any other survivor reruns on any change to the RTL or the verification.
+    reg = M / "equivalent.tsv"
+    eq = {l.split("\t")[0] for l in reg.read_text().splitlines()[1:] if l.strip()}
     def reuse(m, r):
         if r["file_hash"] != m["file_hash"]:
             return False
-        return r["result"] in ("KILLED", "INVALID") or (r["ver_hash"] == ver_hash and r["rtl_hash"] == rtl_hash)
+        return r["result"] in ("KILLED", "INVALID") or (r["result"] == "EQUIVALENT" and m["id"] in eq) \
+            or (r["ver_hash"] == ver_hash and r["rtl_hash"] == rtl_hash)
     keep = {m["id"]: old[m["id"]] for m in muts if m["id"] in old and reuse(m, old[m["id"]])}
     # MUT_ONLY runs a subset; other rows keep whatever they had
     keep.update({m["id"]: old[m["id"]] for m in muts if only and m["stem"] not in only and m["id"] in old and m["id"] not in keep})
