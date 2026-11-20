@@ -56,6 +56,7 @@ A mutant ID (`stem:hash`) stays the same when other lines of the file change. Fo
 | `classify/top_eq.py`, `classify/te_mask.py` | Two-copy top with the stateful blocks cut at proved interface lemmas (context RAM, line buffer) |
 | `classify/const_eq.py` | Evaluates a mutated constant over the legal generics; an unchanged value is equivalent |
 | `classify/branch_eq.py` | Generate mutants: the gold branch against the other branch |
+| `classify/width_eq.py` | Top width constants: each block that takes the width, gold against mutant constants, inputs in the proved ranges |
 | `classify/exhaustive.py` | Exhaustive NVC simulation of small modules |
 | `classify/miter.py`, `classify/tb_miter.vhd` | Gold and mutant tops side by side on random segments (evidence, not proof) |
 | `classify/env/`, `classify/hd/` | Hand environments for sequential modules; extra relation candidates for `houdini.py` |
