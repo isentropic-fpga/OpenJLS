@@ -200,7 +200,7 @@ def token_cands(il):
     lay, total, modes = token_layout()
     w = hd.il_widths(il)
     regs = [k[len("\\u_gold."):] for k, v in w.items() if re.fullmatch(r"\\u_gold\.sreg\d", k) and v == total
-            and "\\u_mut." + k[len("\\u_gold."):] in w]
+            and w.get("\\u_mut." + k[len("\\u_gold."):]) == total]
     ml, mw = lay["mode"]
     out = []
     for r in regs:

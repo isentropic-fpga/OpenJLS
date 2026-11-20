@@ -15,7 +15,7 @@ HD_AUTOGUARD=1: guarded equalities (gold.r = c or /= c, r of <= HD_GUARD_BITS bi
 HD_AUTOINV=1 adds gold-only implications between those guards. HD_TARGET=1: those guards only on the register
 that the mutant line assigns (far fewer candidates).
 HD_EXTRA=FILE: one candidate per line, a Python expression over g("reg") and m("reg") (gold / mutant register),
-int constants, ==, &, |, ~, imp(a, b), x.f(lo, w) (bit slice) and x.top(y, n) (top n bits equal); for relations that are not register equalities (e.g. a one-cycle shift).
+h("reg") (harness register), int constants, ==, &, |, ~, imp(a, b), x.f(lo, w) (bit slice) and x.top(y, n) (top n bits equal); for relations that are not register equalities (e.g. a one-cycle shift).
 HD_PREFIX=BUF:COUNT[,...]: g(BUF).top(m(BUF), g(COUNT)) candidates, for buffers whose bits past a fill count are stale.
 Env: HD_DEPTH (k, default 4), HD_ROUNDS (40), HD_TIMEOUT (s per round, 1800), HD_THREADS (20), HD_OUT.
 """
@@ -203,7 +203,8 @@ def expr_cells(src, widths, pre):
     """RTLIL cells for an HD_EXTRA expression; returns (text, 1-bit output wire)."""
     ctx = dict(n=0, pre=pre, cells=[])
     sig = lambda p: lambda r: _E(f"\\u_{p}.{r}", widths[f"\\u_{p}.{r}"], ctx)
-    e = eval(src, {"__builtins__": {}}, dict(g=sig("gold"), m=sig("mut"), imp=lambda a, b: (~a) | b))
+    h = lambda r: _E(f"\\{r}", widths[f"\\{r}"], ctx)
+    e = eval(src, {"__builtins__": {}}, dict(g=sig("gold"), m=sig("mut"), h=h, imp=lambda a, b: (~a) | b))
     return "".join(ctx["cells"]), e.sig
 
 
@@ -245,6 +246,10 @@ def autoguards(il, only=None):
 def extras(il):
     f = os.environ.get("HD_EXTRA")
     out = [("expr", l.strip()) for l in open(f) if l.strip() and not l.startswith("#")] if f else []
+    # Registers whose width the mutant changes: equal after zero extension ($eq extends the narrower side)
+    w = il_widths(il)
+    out += [("expr", f'g("{x}") == m("{x}")') for x in gold_regs(il)
+            if f"\\u_mut.{x}" in w and w[f"\\u_mut.{x}"] != w[f"\\u_gold.{x}"]]
     # HD_PREFIX=BUF:COUNT[,...]: gold.BUF and mut.BUF agree in their top gold.COUNT bits (bits past a fill count)
     for spec in filter(None, os.environ.get("HD_PREFIX", "").split(",")):
         b, c = spec.split(":")

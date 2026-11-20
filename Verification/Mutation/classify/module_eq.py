@@ -5,7 +5,7 @@
 
   module_eq.py STEM [STEM ...]   every std and lit mutant of STEM, BITNESS 8..16
 A formal DIFF counts only if NVC replays it on the unprepped RTL (GHDL synth bugs, see prep.py).
-Env: FEQ_GOLD_INV=1 (gold's proved asserts become assumes), FEQ_WORK (scratch), FEQ_BITS, FEQ_ONLY (mutant ID hashes), FEQ_DEPTH (default 1), FEQ_THREADS (20), FEQ_OUT.
+Env: FEQ_MUT_EDIT='{"LINE0": "text"}' (more mutant-only line edits, 0-based), FEQ_GOLD_INV=1 (gold's proved asserts become assumes), FEQ_WORK (scratch), FEQ_BITS, FEQ_ONLY (mutant ID hashes), FEQ_DEPTH (default 1), FEQ_THREADS (20), FEQ_OUT.
 """
 import json, os, re, shutil, subprocess as sp, sys, multiprocessing as mp
 from pathlib import Path
@@ -185,7 +185,10 @@ def one_(job):
     src = (S / f"{stem}.vhd").read_text()
     par = [(S / f"{p}.vhd").read_text() for p in PARENTS.get(stem, [])]
     ents = gh.entities(src) + [e for p in par for e in gh.entities(p)]
-    ls = src.splitlines(keepends=True); ls[line] = to + "\n"; msrc = "".join(ls)
+    ls = src.splitlines(keepends=True); ls[line] = to + "\n"
+    for k, v in json.loads(os.environ.get("FEQ_MUT_EDIT", "{}")).items():
+        ls[int(k)] = v + "\n"
+    msrc = "".join(ls)
     cut = CUT.get(stem, lambda s: s)
     src, msrc = cut(src), cut(msrc)
     if src == msrc:
