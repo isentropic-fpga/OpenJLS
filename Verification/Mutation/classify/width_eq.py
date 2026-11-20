@@ -9,9 +9,9 @@ output has the same integer value. The top only stores these values in registers
 them between stages; in range, both are value-preserving at either width. Jobs run only at generics where a constant
 differs (const_eq.py evaluator), so no proof is vacuous.
   width_eq.py ID [ID ...]   Env: WE_WORK, WE_OUT, WE_THREADS (20), WE_BITS ("8..16"), WE_MIW ("4096 7 65535"),
-                            WE_FAULT="NAME=expr" (fault-injection check; ID is then only a label)
+                            WE_TIMEOUT (3600 s per job), WE_FAULT="NAME=expr" (fault-injection check; ID is then only a label)
 """
-import itertools, json, os, re, shutil, sys, multiprocessing as mp
+import itertools, json, os, re, shutil, subprocess, sys, multiprocessing as mp
 from pathlib import Path
 
 F = Path(__file__).resolve().parent
@@ -339,7 +339,10 @@ memory_map; opt -full
 [files]
 lib
 """)
-    run(["sby", "-f", "p.sby"], wd, timeout=3600)
+    try:
+        run(["sby", "-f", "p.sby"], wd, timeout=int(os.environ.get("WE_TIMEOUT", "3600")))
+    except subprocess.TimeoutExpired:
+        return {**res, "res": "TIMEOUT"}
     st = (wd / "p" / "status").read_text().split()[0] if (wd / "p" / "status").exists() else "ERROR"
     if st == "PASS":
         shutil.rmtree(wd)
