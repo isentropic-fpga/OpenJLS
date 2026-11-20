@@ -38,6 +38,9 @@ MASK = {"context_ram": {"iWrAddr": "iWrEn", "iWrData": "iWrEn", **{p: "iRdEn" fo
         "line_buffer": {"iPixel": "iValid"}}
 # Outputs equal in both copies only while their enable is set (te_mask.py); otherwise each copy reads its own free value
 OWN = {"context_ram": {"oRdAlt": "oRdUseAlt"}}
+# Combinational relations of the real module kept in the shell ({c} is the free value); each is read off the RTL:
+# line_buffer comb_proc drives oValid <= iValid, and oEol/oEoi only while iValid = '1'
+PASS = {"line_buffer": {"oValid": "iValid", "oEol": "{c} and iValid", "oEoi": "{c} and iValid"}}
 CW = 1024
 PSL_ASSERT = re.compile(r"^[ \t]*--[ \t]*psl[ \t]+assert\b.*$", re.M)
 
@@ -73,7 +76,7 @@ def shell(stem):
         if d != "out":
             continue
         if t.lower() == "std_logic":
-            body.append(f"  {n} <= iCutP({off});")
+            body.append(f"  {n} <= " + PASS.get(stem, {}).get(n, "{c}").format(c=f"iCutP({off})") + ";")
             off = f"{off} + 1"
         else:
             conv = t.split("(")[0].strip()

@@ -6,8 +6,10 @@ input's enable is low, except an OWN output while that output's enable is low.
 
 Two gold copies in the module_eq env harness (same env assumptions); the second gets a free value on each MASK input
 in cycles where its enable is low. Asserts every output equal in every cycle after reset. PDR proof per BITNESS.
-  te_mask.py [STEM ...]   (default: every stem in MASK); env TM_BITS ("8 12 16"), TM_WORK, TM_TIMEOUT,
-                          TM_FAULT=1 (fault-injection check: the masked inputs are free in every cycle; must fail)
+  te_mask.py [STEM ...]   (default: every stem in MASK); env TM_BITS ("8 12 16"), TM_GEN (harness generics, as
+                          top_eq.py TE_GEN), TM_WORK, TM_TIMEOUT,
+                          TM_FAULT=1 (fault-injection check: the masked inputs are free in every cycle; must fail),
+                          TM_HOUDINI=1 (lockstep Houdini k-induction instead of PDR; HD_* of houdini.py)
 """
 import os, re, shutil, sys
 from pathlib import Path
@@ -17,6 +19,7 @@ import module_eq as me
 import top_eq as te
 
 WORK = Path(os.environ.get("TM_WORK", "/tmp/te_mask"))
+GEN = os.environ.get("TM_GEN", "").split()
 
 
 def port_map(t, label):
@@ -51,9 +54,25 @@ def harness(stem):
     return t
 
 
+def lockstep(d):
+    """Houdini k-induction on the two copies (houdini.py): register equalities, dropped when they fail."""
+    import houdini as hd
+    il = hd.base_il(d)
+    cands = hd.pairs(il) + hd.autoguards(il) + hd.extras(il)
+    for rnd in range(hd.ROUNDS):
+        st, failed, where = hd.solve(d, hd.with_cands(il, cands), rnd)
+        if st == "PASS":
+            return f"PROVED (Houdini, {len(cands)} kept, {rnd + 1} rounds)"
+        idx = {int(f[2:]) for f in failed if re.fullmatch(r"h_\d+", f)}
+        if st not in ("FAIL", "UNKNOWN") or not idx:
+            return f"{st} {where} {sorted(failed)[:5]}"
+        cands = [c for i, c in enumerate(cands) if i not in idx]
+    return "ROUNDS"
+
+
 def one(job):
     stem, bits = job
-    d = WORK / f"{stem}_b{bits}"
+    d = WORK / f"{stem}_b{bits}{'_'.join([''] + GEN)}"
     shutil.rmtree(d, ignore_errors=True); (d / "lib").mkdir(parents=True)
     src = me.CUT.get(stem, lambda s: s)((me.S / f"{stem}.vhd").read_text())
     (d / "gold.vhd").write_text(me.ctr(me.prep(src, f"{stem}.vhd")))
@@ -68,12 +87,14 @@ mode prove
 abc pdr
 [script]
 plugin -i ghdl
-ghdl --std=08 -frelaxed -fpsl --workdir=lib -gBITNESS={bits} eq
+ghdl --std=08 -frelaxed -fpsl --workdir=lib -gBITNESS={bits} {" ".join("-g" + g for g in GEN)} eq
 prep -top eq
 flatten; memory_map; opt -fast; setundef -undriven -zero; setundef -zero -init
 [files]
 lib
 """)
+    if os.environ.get("TM_HOUDINI") == "1":
+        return f"{stem} b{bits} {lockstep(d)}"
     try:
         me.run(["sby", "-f", "p.sby"], d, timeout=int(os.environ.get("TM_TIMEOUT", "3600")))
     except Exception:
