@@ -15,7 +15,7 @@ HD_AUTOGUARD=1: guarded equalities (gold.r = c or /= c, r of <= HD_GUARD_BITS bi
 HD_AUTOINV=1 adds gold-only implications between those guards. HD_TARGET=1: those guards only on the register
 that the mutant line assigns (far fewer candidates).
 HD_EXTRA=FILE: one candidate per line, a Python expression over g("reg") and m("reg") (gold / mutant register),
-int constants, ==, &, |, ~, imp(a, b) and x.top(y, n) (top n bits equal); for relations that are not register equalities (e.g. a one-cycle shift).
+int constants, ==, &, |, ~, imp(a, b), x.f(lo, w) (bit slice) and x.top(y, n) (top n bits equal); for relations that are not register equalities (e.g. a one-cycle shift).
 HD_PREFIX=BUF:COUNT[,...]: g(BUF).top(m(BUF), g(COUNT)) candidates, for buffers whose bits past a fill count are stale.
 Env: HD_DEPTH (k, default 4), HD_ROUNDS (40), HD_TIMEOUT (s per round, 1800), HD_THREADS (20), HD_OUT.
 """
@@ -187,6 +187,10 @@ class _E:
 
     def __invert__(self):
         return self._cell("logic_not", None)
+
+    def f(self, lo, w):
+        """Bits lo + w - 1 downto lo (a record field: GHDL packs the first field at bit 0)."""
+        return _E(f"{self.sig} [{lo + w - 1}:{lo}]", w, self.ctx)
 
     def top(self, o, n):
         """1 when the top n bits (MSB first; index 0 of an ascending vector) of self and o are equal."""

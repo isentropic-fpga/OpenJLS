@@ -10,6 +10,9 @@ The combinational instances stay real.
 
   top_eq.py ID [ID ...]   openjls_top mutant IDs (openjls_top:hash)
 Env: TE_BITS (8), TE_GEN ("MAX_IMAGE_WIDTH=8 MAX_IMAGE_HEIGHT=4"), TE_WORK, TE_OUT, TE_THREADS (20), and HD_* of houdini.py.
+TE_TOKEN=1: per-field candidates on the stage tokens sRegN (one flat register in RTLIL): field equal, and field equal
+while the gold token mode is c; stage side registers sRegN* equal while the gold sRegN mode is c. For CO_TOKEN_NONE
+fields, which fill the unused fields of valid tokens.
 """
 import json, os, re, shutil, sys, multiprocessing as mp
 from pathlib import Path
@@ -165,6 +168,52 @@ end architecture formal;
 """
 
 
+def token_layout():
+    """{field: (lsb, width)} of t_pipeline_token at TE_BITS and TE_GEN."""
+    import const_eq as ce
+    t = ce.code((S / "openjls_top.vhd").read_text())
+    gens = {k.lower(): int(v) for k, v in (g.split("=") for g in GEN)}
+    env = ce.evaluate(ce.top_decls(), {**ce.evaluate(ce.decls((S / "openjls_pkg.vhd").read_text()), {}),
+                                       "bitness": int(BITS), "out_width": 64, **gens})
+    modes = len(re.search(r"type t_token_mode is \((.*?)\)", t)[1].split(","))
+    lay, lo = {}, 0
+    for n, ty in re.findall(r"(\w+)\s*:\s*([^;]+);", t[t.index("type t_pipeline_token is record"):
+                                                       t.index("end record t_pipeline_token")]):
+        ty = ty.strip()
+        if ty == "t_token_mode":
+            w = max(1, (modes - 1).bit_length())
+        elif ty == "std_logic":
+            w = 1
+        else:
+            a, b = re.search(r"\((.*)\s+downto\s+(.*)\)", ty).groups()
+            w = eval(ce.pyexpr(a), {"__builtins__": {}}, {**ce.FUN, **env}) - int(b) + 1
+        lay[n], lo = (lo, w), lo + w
+    return lay, lo, modes
+
+
+def token_cands(il):
+    if os.environ.get("TE_TOKEN") != "1":
+        return []
+    lay, total, modes = token_layout()
+    w = hd.il_widths(il)
+    regs = [k[len("\\u_gold."):] for k, v in w.items() if re.fullmatch(r"\\u_gold\.sreg\d", k) and v == total
+            and "\\u_mut." + k[len("\\u_gold."):] in w]
+    ml, mw = lay["mode"]
+    out = []
+    for r in regs:
+        mode = f'g("{r}").f({ml}, {mw})'
+        out.append(("expr", f'{mode} == m("{r}").f({ml}, {mw})'))
+        for fld, (lo, fw) in lay.items():
+            if fld == "mode":
+                continue
+            eq = f'g("{r}").f({lo}, {fw}) == m("{r}").f({lo}, {fw})'
+            out += [("expr", eq)] + [("expr", f"imp({mode} == {c}, {eq})") for c in range(modes)]
+        side = [k[len("\\u_gold."):] for k in w if k.startswith(f"\\u_gold.{r}") and k != f"\\u_gold.{r}"
+                and f"\\u_mut.{k[len(chr(92) + 'u_gold.'):]}" in w]
+        out += [("expr", f'imp({mode} == {c}, g("{x}") == m("{x}"))') for x in side for c in range(modes)]
+    return out
+
+
 def build(name):
     stem, h = name.split(":")
     m = next(x for x in mut.all_mutants((S / "openjls_top.vhd").read_text(), stem) if x["id"] == name)
@@ -213,7 +262,7 @@ def one(name):
         il = hd.base_il(d)
     except Exception as e:  # noqa: BLE001
         return dict(name=name, res="ERROR", info=str(e)[-800:])
-    cands = hd.pairs(il) + hd.autoguards(il) + hd.extras(il)
+    cands = hd.pairs(il) + hd.autoguards(il) + hd.extras(il) + token_cands(il)
     n0 = len(cands)
     for rnd in range(hd.ROUNDS):
         st, failed, where = hd.solve(d, hd.with_cands(il, cands), rnd)
