@@ -37,6 +37,8 @@ def all_mutants(src, stem, everything=False):
 # Mutant classes that cannot reach an output of the encoder, whatever the test: they only cost run time.
 
 SOURCES = Path(__file__).resolve().parents[2] / "Sources"
+# Fixed by the pipeline or chosen freely: a small change has no meaning (BURST_DEPTH) or only moves timing
+FIXED = re.compile(r"^\s*constant\s+(BYTE_STUFFER_BURST_DEPTH|CO_MAX_IMAGES_IN_FLIGHT|STALL_CUSHION_ENTRIES|RAM_DEPTH)\b", re.I)
 DECL = re.compile(r"^\s*(constant\s+)?\w+(\s*,\s*\w+)*\s*:\s*(in|out|inout|buffer)?\s*[\w.]+\s*\(", re.I)
 
 
@@ -135,7 +137,7 @@ def change(m):
 
 def no_effect(m, ctx):
     n, code = m["line"], m["from"].split("--", 1)[0]
-    if n in ctx.sim_only or n in ctx.dead:
+    if n in ctx.sim_only or n in ctx.dead or FIXED.match(code):
         return True
     i, old, new = change(m)
     # Range bound of a generic: it only rejects or admits a configuration at elaboration

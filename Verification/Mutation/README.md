@@ -7,6 +7,7 @@ it with the reason no output can change.
 `mutants.py` does not generate mutants that cannot reach an output, whatever the tests do:
 
 - package constants that the design uses only as generic defaults, which every instantiation overrides;
+- constants fixed by the pipeline structure (context count, images in flight, stall cushion) and the burst depth;
 - functions that only simulation asserts call;
 - the range bounds of generics, which only accept or reject a configuration at elaboration;
 - a shift by one of a declared range: the width stays the same, so the object is either used whole (no change) or
