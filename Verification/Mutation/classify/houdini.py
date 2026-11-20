@@ -11,8 +11,12 @@ Kept candidates are proved with the main assert, so they add no trust.
   houdini.py NAME [NAME ...]   mutant IDs (stem:hash), same FEQ_* env as module_eq.py
 HD_GUARD="ARRAY:COUNT:DEPTH[,...]": also cnt_gold > k -> gold.ARRAY(k) = mut.ARRAY(k) per slot k (both slot orders),
 for queues whose dead slots may differ.
+HD_AUTOGUARD=1: guarded equalities (gold.r = c or /= c, r of <= HD_GUARD_BITS bits) -> gold.X = mut.X, for reset values;
+HD_AUTOINV=1 adds gold-only implications between those guards. HD_TARGET=1: those guards only on the register
+that the mutant line assigns (far fewer candidates).
 HD_EXTRA=FILE: one candidate per line, a Python expression over g("reg") and m("reg") (gold / mutant register),
-int constants, ==, &, |, ~ and imp(a, b); for relations that are not register equalities (e.g. a one-cycle shift).
+int constants, ==, &, |, ~, imp(a, b) and x.top(y, n) (top n bits equal); for relations that are not register equalities (e.g. a one-cycle shift).
+HD_PREFIX=BUF:COUNT[,...]: g(BUF).top(m(BUF), g(COUNT)) candidates, for buffers whose bits past a fill count are stale.
 Env: HD_DEPTH (k, default 4), HD_ROUNDS (40), HD_TIMEOUT (s per round, 1800), HD_THREADS (20), HD_OUT.
 """
 import json, os, re, shutil, sys, multiprocessing as mp
@@ -66,14 +70,29 @@ def qbits(spec, widths):
     return out
 
 
-def pairs(il):
-    """Per gold register: the FF bits that the mutant also has as FFs under the same name."""
+def ff_bits(il):
     widths = {m[2]: int(m[1] or 1) for m in re.finditer(r"^\s*wire (?:width (\d+) )?(?:\w+ \d+ )*(\S+)$", il, re.M)}
     ff = set()
     for c in re.finditer(r"^\s*cell \$\w*dff\w* \S+\n(.*?)^\s*end$", il, re.M | re.S):
         q = re.search(r"connect \\Q (.+)", c[1])
         if q:
             ff |= set(qbits(q[1], widths))
+    return ff, widths
+
+
+def gold_regs(il):
+    """Gold registers whose bits are all FFs. Includes those yosys merged with the mutant copy (same driver)."""
+    ff, w = ff_bits(il)
+    n = {}
+    for x, b in ff:
+        if x.startswith("\\u_gold."):
+            n[x] = n.get(x, 0) + 1
+    return [x[len("\\u_gold."):] for x, k in sorted(n.items()) if k == w[x]]
+
+
+def pairs(il):
+    """Per gold register: the FF bits that the mutant also has as FFs under the same name."""
+    ff, widths = ff_bits(il)
     by = {}
     for w, b in ff:
         if w.startswith("\\u_gold.") and ("\\u_mut." + w[len("\\u_gold."):], b) in ff:
@@ -149,7 +168,8 @@ class _E:
         ports = f"    parameter \\A_WIDTH {self.w}\n    connect \\A {self.sig}\n"
         if b is not None:
             ports += f"    parameter \\B_SIGNED 0\n    parameter \\B_WIDTH {b.w}\n    connect \\B {b.sig}\n"
-        c["cells"].append(f"  wire {y}\n  cell ${typ} {y}_c\n    parameter \\A_SIGNED 0\n{ports}"
+        w = f"width {yw} " if yw > 1 else ""
+        c["cells"].append(f"  wire {w}{y}\n  cell ${typ} {y}_c\n    parameter \\A_SIGNED 0\n{ports}"
                           f"    parameter \\Y_WIDTH {yw}\n    connect \\Y {y}\n  end\n")
         return _E(y, yw, c)
 
@@ -168,6 +188,12 @@ class _E:
     def __invert__(self):
         return self._cell("logic_not", None)
 
+    def top(self, o, n):
+        """1 when the top n bits (MSB first; index 0 of an ascending vector) of self and o are equal."""
+        x = self._cell("xor", self._k(o), self.w)
+        keep = _E(f"{self.w}'{'1' * self.w}", self.w, self.ctx)._cell("shr", n, self.w)._cell("not", None, self.w)
+        return x._cell("and", keep, self.w)._cell("logic_not", None)
+
 
 def expr_cells(src, widths, pre):
     """RTLIL cells for an HD_EXTRA expression; returns (text, 1-bit output wire)."""
@@ -181,9 +207,47 @@ def il_widths(il):
     return {m[2]: int(m[1] or 1) for m in re.finditer(r"^\s*wire (?:width (\d+) )?(?:\w+ \d+ )*(\S+)$", il, re.M)}
 
 
+def target(name):
+    """Register that the mutant line assigns (lower case, as in RTLIL), or None."""
+    stem, line = name.split(":")[0], next(x for x in me.all_mutants(name.split(":")[0]) if x[0] == name)[2]
+    k = re.match(r"\s*(\w+)\s*(?:\(.*?\))?\s*<=", (me.S / f"{stem}.vhd").read_text().splitlines()[line])
+    return k[1].lower() if k else None
+
+
+def autoguards(il, only=None):
+    """HD_AUTOGUARD=1: guard -> gold.X = mut.X for every full-width register pair X, where the guard is
+    gold.r = c or gold.r /= c for every register r of at most HD_GUARD_BITS (3) bits and every value c; for
+    registers that differ only while a valid bit or an FSM state says they are unused (reset values)."""
+    if os.environ.get("HD_AUTOGUARD") != "1" and only is None:
+        return []
+    w = il_widths(il)
+    full = [g[len("\\u_gold."):] for g, m, bs in pairs(il) if len(bs) == w[g]]
+    small = [x for x in gold_regs(il) if w["\\u_gold." + x] <= int(os.environ.get("HD_GUARD_BITS", "3"))]
+    atoms = []
+    for r in small:
+        n = w["\\u_gold." + r]
+        atoms += [f'g("{r}") == {c}' for c in range(2 ** n)]
+        atoms += [f'~(g("{r}") == {c})' for c in range(2 ** n)] if n > 1 else []
+    out = [("expr", f'imp({a}, g("{x}") == m("{x}"))') for x in full for a in atoms
+           if f'"{x}"' not in a and only in (None, x)]
+    # Gold-only state invariants a -> b between different small registers (e.g. preload -> first row): the
+    # guarded equalities need them to exclude unreachable states in the induction step
+    reg = lambda a: a.split('"')[1]
+    if os.environ.get("HD_AUTOINV") != "1":
+        return out
+    return out + [("expr", f"imp({a}, {b})") for a in atoms for b in atoms if reg(a) != reg(b)]
+
+
 def extras(il):
     f = os.environ.get("HD_EXTRA")
-    return [("expr", l.strip()) for l in open(f) if l.strip() and not l.startswith("#")] if f else []
+    out = [("expr", l.strip()) for l in open(f) if l.strip() and not l.startswith("#")] if f else []
+    # HD_PREFIX=BUF:COUNT[,...]: gold.BUF and mut.BUF agree in their top gold.COUNT bits (bits past a fill count)
+    for spec in filter(None, os.environ.get("HD_PREFIX", "").split(",")):
+        b, c = spec.split(":")
+        if not all(re.search(rf"^\s*wire .*\\u_(gold|mut)\.{x}$", il, re.M) for x in (b, c)):
+            continue
+        out.append(("expr", f'g("{b}").top(m("{b}"), g("{c}"))'))
+    return out
 
 
 def with_cands(il, cands):
@@ -255,7 +319,8 @@ def houdini(name):
     if r["res"] not in ("TIMEOUT",):
         return dict(name=name, res="SKIP", info=r["res"])
     il = base_il(d)
-    cands = pairs(il) + guards(il) + extras(il)
+    tgt = target(name) if os.environ.get("HD_TARGET") == "1" else None
+    cands = pairs(il) + guards(il) + (autoguards(il, tgt) if tgt else autoguards(il)) + extras(il)
     n0 = len(cands)
     for rnd in range(ROUNDS):
         st, failed, where = solve(d, with_cands(il, cands), rnd)
