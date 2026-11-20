@@ -141,7 +141,7 @@ OBL = {
         assume=["iErr_i >= -MAX_VAL and iErr_i <= MAX_VAL", "iRiType_i = '1' -> iErr_i /= 0",
                 "iNq_i >= 1 and iNq_i <= RESET", "iNn_i < iNq_i", A_OK],
         cmp=["sErr19", "sDelta", "oAq", "oNq", "oNn"]),
-    # A run count before a pixel is at most its column index (runs stop at EOL; top assert on sRunCntReg)
+    # sRunCntReg as in the top; a run count before a pixel is at most its column index (runs stop at EOL)
     "run": dict(
         clocked=True,
         # Its own asserts check its state before the first reset; only the equality asserts matter here
@@ -149,7 +149,7 @@ OBL = {
         engine="abc pdr",
         srcs=["A14_run_length_determination", "A15_A16_encode_run"],
         free={"iRst_i": "std_logic", "iCE_i": "std_logic", "iEoi_i": "std_logic", "iEol_i": "std_logic",
-              "iRunCnt_i": "unsigned(RUN_CNT_WIDTH - 1 downto 0)", "iMode_i": "std_logic",
+              "iMode_i": "std_logic",
               "iIx_i": "unsigned(BITNESS - 1 downto 0)", "iRa_i": "unsigned(BITNESS - 1 downto 0)",
               "iRb_i": "unsigned(BITNESS - 1 downto 0)"},
         copy="""  signal iRunCnt{s}, sCnt{s} : unsigned(RUN_CNT_WIDTH{s} - 1 downto 0);
@@ -157,7 +157,22 @@ OBL = {
   signal oRawLen{s}, oRiIdx{s} : unsigned(4 downto 0);
   signal oRawVal{s} : unsigned(RUN_CNT_WIDTH{s} - 1 downto 0);
   signal oRiIx{s}, oRiRa{s}, oRiRb{s} : unsigned(BITNESS - 1 downto 0);""",
-        body="""  u_a14{s} : entity work.a14_run_length_determination generic map (BITNESS => BITNESS, RUN_CNT_WIDTH => RUN_CNT_WIDTH{s})
+        body="""  -- p_run_cnt of openjls_top
+  p_run_cnt{s} : process (clk) is
+  begin
+    if rising_edge(clk) then
+      if iRst_i = '1' then
+        iRunCnt{s} <= (others => '0');
+      elsif iCE_i = '1' and iMode_i = '1' then
+        if sCont{s} = '1' then
+          iRunCnt{s} <= sCnt{s};
+        else
+          iRunCnt{s} <= (others => '0');
+        end if;
+      end if;
+    end if;
+  end process p_run_cnt{s};
+  u_a14{s} : entity work.a14_run_length_determination generic map (BITNESS => BITNESS, RUN_CNT_WIDTH => RUN_CNT_WIDTH{s})
     port map (iRa => iRa_i, iIx => iIx_i, iRunCnt => iRunCnt{s}, iEol => iEol_i, oRunCnt => sCnt{s},
               oRunHit => sHit{s}, oRunContinue => sCont{s});
   u_a15{s} : entity work.a15_a16_encode_run generic map (BITNESS => BITNESS, RUN_CNT_WIDTH => RUN_CNT_WIDTH{s})
@@ -166,8 +181,8 @@ OBL = {
               iRb => iRb_i, oRawValid => oRawV{s}, oRawSuffixLen => oRawLen{s}, oRawSuffixVal => oRawVal{s},
               oRiValid => oRiV{s}, oRiIx => oRiIx{s}, oRiRa => oRiRa{s}, oRiRb => oRiRb{s}, oRiRunIndex => oRiIdx{s},
               oInRunNext => oInRun{s});""",
-        assume=["sInit = '1' -> iRst_i = '1'", "iRunCnt_i < MAX_IMAGE_WIDTH",
-                "iEol_i = '0' -> iRunCnt_i < MAX_IMAGE_WIDTH - 1"],
+        assume=["sInit = '1' -> iRst_i = '1'", "iRunCnt < MAX_IMAGE_WIDTH",
+                "iEol_i = '0' -> iRunCnt < MAX_IMAGE_WIDTH - 1"],
         # The packer reads only the low RawLen bits of RawVal (ag.py bit_packer)
         cmp=["sCnt", "sHit", "sCont", "oRawV", "oRawLen", "shift_left(resize(oRawVal{s}, 32), 32 - to_integer(oRawLen))", "oRiV", "oRiIx", "oRiRa", "oRiRb", "oRiIdx",
              "oInRun"]),
