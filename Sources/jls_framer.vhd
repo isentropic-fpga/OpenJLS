@@ -153,109 +153,57 @@ architecture behavioral of jls_framer is
     case idx is
 
       when 0 =>
-
         return x"FF";
-
       when 1 =>
-
         return x"D8";
-
       when 2 =>
-
         return x"FF";
-
       when 3 =>
-
         return x"F7";
-
       when 4 =>
-
         return x"00";
-
       when 5 =>
-
         return x"0B";
-
       when 6 =>
-
         return std_logic_vector(to_unsigned(BITNESS, 8));
-
       when 7 =>
-
         return std_logic_vector(height(15 downto 8));
-
       when 8 =>
-
         return std_logic_vector(height(7 downto 0));
-
       when 9 =>
-
         return std_logic_vector(width(15 downto 8));
-
       when 10 =>
-
         return std_logic_vector(width(7 downto 0));
-
       when 11 =>
-
         return x"01";
-
       when 12 =>
-
         return x"01";
-
       when 13 =>
-
         return x"11";
-
       when 14 =>
-
         return x"00";
-
       when 15 =>
-
         return x"FF";
-
       when 16 =>
-
         return x"DA";
-
       when 17 =>
-
         return x"00";
-
       when 18 =>
-
         return x"08";
-
       when 19 =>
-
         return x"01";
-
       when 20 =>
-
         return x"01";
-
       when 21 =>
-
         return x"00";
-
       when 22 =>
-
         return std_logic_vector(to_unsigned(NEAR, 8));
-
       when 23 =>
-
         return x"00";
-
       when 24 =>
-
         return x"00";
-
       when others =>
-
         return x"00";
-
     end case;
 
   end function get_header_byte;
