@@ -73,7 +73,7 @@ def byte_stuffer(iw, **run):
           if iFlush_i = '1' then sGap <= 0; elsif sGap < 3 then sGap <= sGap + 1; end if;
         end if;
         sAfReg <= af; sStallDelay <= sStall; sStallLogic <= sStallDelay and sStall;
-        sFdD <= sFdD(LAT - 2 downto 0) & fd;
+        sFdD <= sFdD(LAT - 2 downto 0) & (fd and iReady_i);
         if sFdD(LAT - 1) = '1' then sFlight <= sFlight + sTake - 1; else sFlight <= sFlight + sTake; end if;
       end if;
     end if;

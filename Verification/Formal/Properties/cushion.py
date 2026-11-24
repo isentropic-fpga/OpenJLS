@@ -45,7 +45,7 @@ architecture formal of cush is
   signal nb : unsigned(2 downto 0);
   signal sFlight : natural range 0 to 7 := 0;
   signal sTake : natural range 0 to 1;
-  -- A slot frees at oFlushDone, but the next image's flush needs >= LAT cycles of pipeline after its start
+  -- A slot frees when the oFlushDone beat is taken, but the next image's flush needs >= LAT cycles of pipeline after its start
   signal sFdD : std_logic_vector(LAT - 1 downto 0) := (others => '0');
 
   function tail_zero (w : std_logic_vector; n : unsigned) return boolean is
@@ -66,7 +66,7 @@ begin
         sAfReg <= '0'; sStallDelay <= '0'; sStallLogic <= '0'; sFlight <= 0; sFdD <= (others => '0');
       else
         sAfReg <= af; sStallDelay <= sStall; sStallLogic <= sStallDelay and sStall;
-        sFdD <= sFdD(LAT - 2 downto 0) & fd;
+        sFdD <= sFdD(LAT - 2 downto 0) & (fd and iReady_i);
         if sFdD(LAT - 1) = '1' then sFlight <= sFlight + sTake - 1; else sFlight <= sFlight + sTake; end if;
       end if;
     end if;
