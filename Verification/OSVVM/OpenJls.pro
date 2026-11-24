@@ -176,8 +176,8 @@ Test Modules/tb_jls_framer_osvvm.vhd [generic OUT_WIDTH 48]
 Test Modules/tb_jls_framer_osvvm.vhd [generic OUT_WIDTH 56]
 Test Modules/tb_jls_framer_osvvm.vhd [generic OUT_WIDTH 200]
 Test Modules/tb_jls_framer_osvvm.vhd [generic OUT_WIDTH 1024]
-# Ring exactly full (31 + 1 byte of margin): a stray write past the last byte hits the head
-Test Modules/tb_jls_framer_osvvm.vhd [generic OUT_WIDTH 56] [generic STALL_MARGIN 11]
+# Depth 27 + 5 = the 32-byte ring: in fill_exact a stray write past the last byte hits the head
+Test Modules/tb_jls_framer_osvvm.vhd [generic OUT_WIDTH 176]
 Test Modules/tb_jls_framer_osvvm.vhd [generic BITNESS 8]
 Test Modules/tb_jls_framer_osvvm.vhd [generic BITNESS 16]
 

@@ -11,7 +11,8 @@
 --
 -- FIFO depth at iReady = '1' is the max of: V_IEOI (iEoi cycle), D_DRAIN * BYTES_IN (until the
 -- footer drains) and (D_DRAIN + N_H) * BYTES_IN - H_SLACK (next image during its header).
--- Under backpressure oReady drops and STALL_MARGIN_BYTES absorbs the bytes in flight.
+-- The input is valid/ready on a registered oReady that drops at that depth; one beat accepted
+-- just below it, footer included, needs BYTES_IN + 1 bytes on top.
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -27,9 +28,7 @@ entity jls_framer is
     IN_WIDTH           : natural := CO_BYTE_STUFFER_OUT_WIDTH;
     OUT_WIDTH          : natural := CO_OUT_WIDTH_STD;
     MAX_IMAGE_WIDTH    : natural := 4096;
-    MAX_IMAGE_HEIGHT   : natural := 4096;
-    -- Bytes in flight after oReady drops: 2 byte_stuffer beats + the 2-byte footer
-    STALL_MARGIN_BYTES : natural := 2 * math_ceil_div(CO_BYTE_STUFFER_OUT_WIDTH, 8) + 2
+    MAX_IMAGE_HEIGHT   : natural := 4096
   );
   port (
     iClk               : in    std_logic;
@@ -60,7 +59,7 @@ architecture behavioral of jls_framer is
   constant BYTES_OUT            : natural := OUT_WIDTH / 8;
   constant HEADER_LEN           : natural := 25;
 
-  -- Depth = worst-case occupancy at iReady = '1' (see header) + STALL_MARGIN_BYTES
+  -- Depth = worst-case occupancy at iReady = '1' (see header) + one beat and its footer
   constant V_IEOI               : natural := BYTES_OUT + BYTES_IN + 1;
   constant D_DRAIN              : natural := math_ceil_div(V_IEOI, BYTES_OUT);
   constant N_H                  : natural := math_ceil_div(HEADER_LEN, BYTES_OUT);
@@ -71,7 +70,7 @@ architecture behavioral of jls_framer is
   constant BUFFER_BYTES_NOMINAL : natural := math_max(
                                                       math_max(V_IEOI, D_DRAIN * BYTES_IN),
                                                       (D_DRAIN + N_H) * BYTES_IN - math_min(BYTES_IN, H_SLACK));
-  constant BUFFER_BYTES         : natural := BUFFER_BYTES_NOMINAL + STALL_MARGIN_BYTES;
+  constant BUFFER_BYTES         : natural := BUFFER_BYTES_NOMINAL + BYTES_IN + 1;
   -- Power-of-two ring so the pointers wrap for free; occupancy <= BUFFER_BYTES never overwrites
   constant RING_AW              : natural := log2ceil(BUFFER_BYTES);
   constant RING_BYTES           : natural := 2 ** RING_AW;
@@ -104,6 +103,7 @@ architecture behavioral of jls_framer is
   signal sWrPtr                 : unsigned(RING_AW - 1 downto 0);
   signal sFifoByteCount         : natural range 0 to BUFFER_BYTES;
   signal sReady                 : boolean := true;                 -- sFifoByteCount < BUFFER_BYTES_NOMINAL
+  signal sInTake                : std_logic;
   signal sEoiFifo               : eoi_offsets_t(0 to EOI_FIFO_DEPTH - 1);
   signal sEoiCount              : natural range 0 to EOI_FIFO_DEPTH;
   -- Head footer falls in the next data / last-header beat, registered off the emit path
@@ -277,8 +277,8 @@ begin
   oByteEnable <= sValidBytes;
   oLast       <= sOutLast;
 
-  -- Drops at the nominal level; STALL_MARGIN_BYTES absorbs what is in flight
   oReady <= bool2bit(sReady);
+  sInTake <= iValid and bool2bit(sReady);
 
   -- Push at the write pointer: payload bytes, then FF D9 on iEoi. No reset, no read-side terms.
   ring_wr_proc : process (iClk) is
@@ -288,7 +288,7 @@ begin
   begin
 
     if rising_edge(iClk) then
-      if (iValid = '1') then
+      if (sInTake = '1') then
         vLen := to_integer(iByteEnable);
 
         for j in 0 to BYTES_IN - 1 loop
@@ -517,7 +517,7 @@ begin
 
         end case;
 
-        if (iValid = '1') then
+        if (sInTake = '1') then
           -- Bytes land in the ring (ring_wr_proc); only the count, pointer and footer offset move here
           vFifoByteCount := vFifoByteCount + to_integer(iByteEnable);
           sWrPtr         <= sWrPtr + to_integer(iByteEnable);
@@ -551,7 +551,7 @@ begin
         sEoiCount      <= vEoiCount;
         -- Flags for each emit case from registers and inputs, off the FSM path; vCase selects one
         vIn := 0;
-        if (iValid = '1') then
+        if (sInTake = '1') then
           vIn := to_integer(iByteEnable);
           if (iEoi = '1') then
             vIn := vIn + 2;
@@ -578,7 +578,7 @@ begin
             vHead := sEoiFifo(1) - vE;
           elsif (not vPop and sEoiCount > 0) then
             vHead := sEoiFifo(0) - vE;
-          elsif (iValid = '1' and iEoi = '1') then
+          elsif (sInTake = '1' and iEoi = '1') then
             vHead := vBytes - 1;
           else
             vHead    := BUFFER_BYTES;

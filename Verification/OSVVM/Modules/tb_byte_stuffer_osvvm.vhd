@@ -261,7 +261,7 @@ begin
   end process merge_window_proc;
 
   -- Monitor ---
-  -- A presented beat was already granted by an earlier iReady, so it is checked unconditionally
+  -- A beat counts on oWordValid and iReady; until then it, oFlushDone included, must hold
   monitor_proc : process is
 
     variable nb      : natural;
@@ -271,7 +271,10 @@ begin
     variable hasData : integer;
     variable req     : AlertLogIDType;
     variable popped  : natural := 0;
-    variable prevRdy : std_logic := '0';
+    variable held    : boolean := false;
+    variable hWord   : std_logic_vector(oWord'range);
+    variable hBytes  : unsigned(oValidBytes'range);
+    variable hFd     : std_logic;
 
   begin
 
@@ -284,7 +287,20 @@ begin
 
       wait until rising_edge(clk);
 
-      if (oWordValid = '1' and not sIgnore) then
+      if (rst = '1') then
+        held := false;
+      elsif (held) then
+        AffirmIf(GetAlertLogID("Protocol"), oWordValid = '1', "oWordValid held until accepted");
+        AffirmIfEqual(GetAlertLogID("Protocol"), oWord, hWord, "oWord held until accepted");
+        AffirmIfEqual(GetAlertLogID("Protocol"), oValidBytes, hBytes, "oValidBytes held until accepted");
+        AffirmIfEqual(GetAlertLogID("Protocol"), oFlushDone, hFd, "oFlushDone held until accepted");
+      end if;
+      held   := rst = '0' and oWordValid = '1' and iReady = '0';
+      hWord  := oWord;
+      hBytes := oValidBytes;
+      hFd    := oFlushDone;
+
+      if (oWordValid = '1' and iReady = '1' and not sIgnore) then
         nb := checked_integer(oValidBytes);
         if (oAlmostFull = '1') then
           af := 1;
@@ -307,13 +323,10 @@ begin
         end loop;
 
         popped := popped + nb;
-        -- oWordValid is the registered grant of the previous iReady, on every beat including the last
-        AffirmIf(GetAlertLogID("Protocol"), prevRdy = '1', "beat presented without an iReady grant");
 
       end if;
-      prevRdy := iReady;
 
-      if (oFlushDone = '1' and not sIgnore) then
+      if (oFlushDone = '1' and iReady = '1' and not sIgnore) then
         AffirmIf(GetAlertLogID("Protocol"), oWordValid = '1', "oFlushDone must coincide with oWordValid");
         AffirmIfEqual(GetAlertLogID("Protocol"), popped, to_integer(unsigned(Pop(SB_END))), "oFlushDone on the last image byte");
         cnt        := cnt + 1;

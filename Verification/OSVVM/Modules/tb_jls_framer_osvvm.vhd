@@ -33,9 +33,7 @@ entity tb_jls_framer_osvvm is
     BITNESS   : natural  := CO_BITNESS_STD;
     OUT_WIDTH : natural  := CO_OUT_WIDTH_STD;
     MAX_W     : positive := 4096;
-    MAX_H     : positive := 4096;
-    -- 2 byte_stuffer beats + the footer; override to make the ring exactly full
-    STALL_MARGIN : natural := 2 * CO_BYTE_STUFFER_OUT_WIDTH / 8 + 2
+    MAX_H     : positive := 4096
   );
 end entity tb_jls_framer_osvvm;
 
@@ -60,6 +58,7 @@ architecture sim of tb_jls_framer_osvvm is
       when 48 => return 24;
       when 56 => return 21;
       when 64 => return 20;
+      when 176 => return 27;
       when 200 => return 30;
       when 1024 => return 133;
       when others => report "tb_jls_framer_osvvm: no depth pinned for this OUT_WIDTH" severity failure; return 0;
@@ -67,6 +66,8 @@ architecture sim of tb_jls_framer_osvvm is
   end function;
 
   constant NOMINAL_DEPTH_B : natural := nominal_depth;
+  -- One beat accepted one byte below the nominal depth, footer included
+  constant BUFFER_B        : natural := NOMINAL_DEPTH_B - 1 + BYTES_IN + 2;
 
   signal clk      : std_logic := '0';
   signal rst      : std_logic;
@@ -152,8 +153,7 @@ begin
       IN_WIDTH         => IN_WIDTH,
       OUT_WIDTH        => OUT_WIDTH,
       MAX_IMAGE_WIDTH  => MAX_W,
-      MAX_IMAGE_HEIGHT => MAX_H,
-      STALL_MARGIN_BYTES => STALL_MARGIN
+      MAX_IMAGE_HEIGHT => MAX_H
     )
     port map (
       iClk         => clk,
@@ -179,6 +179,8 @@ begin
     variable rv   : RandomPType;
     variable rs   : CoverageIDType;
     variable sent : natural := 0;
+
+    alias fifo_count is <<signal .tb_jls_framer_osvvm.dut.sFifoByteCount : natural>>;
 
     procedure push_word (
       wd    : std_logic_vector(IN_WIDTH - 1 downto 0);
@@ -208,7 +210,7 @@ begin
 
     end procedure push_word;
 
-    -- One beat with no oReady check: what is in flight after oReady drops
+    -- One beat driven at once, held until oReady takes it
     procedure push_now (
       wd    : std_logic_vector(IN_WIDTH - 1 downto 0);
       nbe   : natural;
@@ -223,9 +225,16 @@ begin
       iEoi    <= eoi;
       iStart  <= start;
       wait until rising_edge(clk);
+      iStart  <= '0';
+
+      while (oReady /= '1') loop
+
+        wait until rising_edge(clk);
+
+      end loop;
+
       iValid  <= '0';
       iEoi    <= '0';
-      iStart  <= '0';
 
     end procedure push_now;
 
@@ -288,13 +297,13 @@ begin
 
     end procedure set_sink;
 
-    -- Sink stalled: oReady must fall at the nominal depth, the margin then takes the in-flight beats
+    -- Sink stalled: oReady must fall at the nominal depth, then hold a pending beat off until the sink drains
     procedure fill_stalled (
       be       : natural;
-      end_mode : natural                 -- 0 last beat partial, 1 last beat carries iEoi
+      end_mode : natural                 -- 0 held beat is payload, 1 held beat carries iEoi
     ) is
 
-      variable accepted, in_beat, left, n : natural := 0;
+      variable accepted, in_beat : natural := 0;
       variable word : std_logic_vector(IN_WIDTH - 1 downto 0);
       variable flow : AlertLogIDType;
 
@@ -338,35 +347,38 @@ begin
         AffirmIf(flow, accepted - in_beat >= NOMINAL_DEPTH_B and accepted - in_beat < NOMINAL_DEPTH_B + be, "oReady drop depth");
       end if;
 
-      left := NOMINAL_DEPTH_B + STALL_MARGIN - (accepted - in_beat);
+      -- A beat offered while oReady is low must not enter the ring
+      word := rv.RandSlv(IN_WIDTH);
+      score_payload(word, BYTES_IN);
       if (end_mode = 1) then
-        left := left - 2;
+        score_footer;
       end if;
+      iValid  <= '1';
+      iWord   <= word;
+      iByteEn <= to_unsigned(BYTES_IN, BE_IN_W);
+      iEoi    <= bool2bit(end_mode = 1);
 
-      while (left > BYTES_IN) loop
+      for i in 1 to 8 loop
 
-        word := rv.RandSlv(IN_WIDTH);
-        score_payload(word, BYTES_IN);
-        wait for 1 ns;
-        AffirmIf(flow, oReady = '0', "oReady stays low in the margin");
-        push_now(word, BYTES_IN, '0', '0');
-        left := left - BYTES_IN;
+        wait until rising_edge(clk);
+        AffirmIf(flow, oReady = '0', "oReady stays low while the sink is stalled");
+        AffirmIfEqual(flow, fifo_count, accepted - in_beat, "offered beat not taken while oReady is low");
 
       end loop;
 
-      word := rv.RandSlv(IN_WIDTH);
-      score_payload(word, left);
+      sSinkMode <= 0;
 
-      if (end_mode = 1) then
-        score_footer;
-        push_now(word, left, '1', '0');
-        set_sink(0);
-      else
-        push_now(word, left, '0', '0');
-        for i in 1 to 4 loop
-          wait until rising_edge(clk);
-        end loop;
-        set_sink(0);
+      loop
+
+        wait until rising_edge(clk);
+        exit when oReady = '1';
+
+      end loop;
+
+      iValid <= '0';
+      iEoi   <= '0';
+
+      if (end_mode = 0) then
         score_footer;
         push_word(rv.RandSlv(IN_WIDTH), 0, '1', '0');
       end if;
@@ -374,6 +386,52 @@ begin
       image_done;
 
     end procedure fill_stalled;
+
+    -- Sink stalled, one byte at a time to one below the nominal depth, then a full beat with its footer:
+    -- the ring is exactly full
+    procedure fill_exact is
+
+      variable word : std_logic_vector(IN_WIDTH - 1 downto 0);
+      variable flow : AlertLogIDType;
+
+    begin
+
+      flow := GetReqID("OJLS.FramerBackpressure", 11);
+      set_sink(1);
+      score_header(32, 32);
+      iWidth  <= to_unsigned(32, WDIM);
+      iHeight <= to_unsigned(32, HDIM);
+      wait until rising_edge(clk);
+      iStart  <= '1';
+      wait until rising_edge(clk);
+      iStart  <= '0';
+
+      for i in 1 to 4 loop
+        wait until rising_edge(clk);
+      end loop;
+
+      for i in 1 to 2 * BUFFER_B loop
+
+        wait for 1 ns;
+        exit when fifo_count = NOMINAL_DEPTH_B - 1 and oValid = '1';
+        word := rv.RandSlv(IN_WIDTH);
+        score_payload(word, 1);
+        push_now(word, 1, '0', '0');
+
+      end loop;
+
+      AffirmIfEqual(flow, fifo_count, NOMINAL_DEPTH_B - 1, "one byte below the nominal depth");
+      AffirmIf(flow, oReady = '1' and oValid = '1', "oReady high, output beat pending");
+      word := rv.RandSlv(IN_WIDTH);
+      score_payload(word, BYTES_IN);
+      score_footer;
+      push_now(word, BYTES_IN, '1', '0');
+      wait for 1 ns;
+      AffirmIfEqual(flow, fifo_count, BUFFER_B, "ring exactly full");
+      set_sink(0);
+      image_done;
+
+    end procedure fill_exact;
 
     -- Three footers queued behind a stalled sink
     procedure queue_images (
@@ -451,7 +509,7 @@ begin
 
     end procedure start_queue;
 
-    -- Back-to-back images at the full input rate and iReady = '1', oReady ignored as the sizing rule assumes
+    -- Back-to-back images at the full input rate and iReady = '1'
     procedure full_rate (
       n_first  : natural;
       n_second : natural
@@ -648,11 +706,12 @@ begin
     sImagesSent <= sent;
     wait until sImagesDone = sent;
 
-    -- Exact nominal depth, then the margin with and without a footer ---
+    -- Exact nominal depth, then a beat held off with and without a footer; then a full ring ---
     fill_stalled(1, 0);
     fill_stalled(1, 1);
     fill_stalled(BYTES_IN, 0);
     fill_stalled(BYTES_IN, 1);
+    fill_exact;
 
     -- EOI FIFO full (3 of 3), starts ahead of data at the in-flight limit ---
     for be in 0 to BYTES_IN loop

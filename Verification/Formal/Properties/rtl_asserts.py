@@ -31,7 +31,9 @@ SMALL = "-gMAX_IMAGE_WIDTH=8 -gMAX_IMAGE_HEIGHT=4"
 # cycle, fixed pipeline latency)
 BS_WRAP = cushion.WRAP.replace("  signal sTake : natural range 0 to 1;", """  signal sTake : natural range 0 to 1;
   signal fGap : natural range 0 to 3 := 3;
-  signal pRdy, pFd : std_logic;""").replace("  u_bs : entity", """  p_gap : process (clk) is
+  signal pHeld, pFd, pFdTake : std_logic;
+  signal pW : std_logic_vector(31 downto 0);
+  signal pNb : unsigned(2 downto 0);""").replace("  u_bs : entity", """  p_gap : process (clk) is
   begin
     if rising_edge(clk) then
       if iRst_i = '1' then fGap <= 3;
@@ -43,10 +45,12 @@ BS_WRAP = cushion.WRAP.replace("  signal sTake : natural range 0 to 1;", """  si
 
   u_bs : entity""").replace("  -- psl assume always (sFlight + sTake <= 3);",
                          "  -- psl assume always (sFlight + sTake <= 3);\n  -- psl assume always (sTake = 1 -> fGap = 3);\n"
-                         "  pRdy <= iReady_i when rising_edge(clk);\n"
-                         "  -- psl bs_ready : assert always (sInit = '0' -> (v = '0' or pRdy = '1'));\n"
+                         "  pHeld <= v and not iReady_i and not iRst_i when rising_edge(clk);\n"
+                         "  pW <= w when rising_edge(clk);\n  pNb <= nb when rising_edge(clk);\n"
                          "  pFd <= fd when rising_edge(clk);\n"
-                         "  -- psl bs_eoi_gap : assert always ((sInit = '0' and iRst_i = '0') -> not (fd = '1' and pFd = '1'));")
+                         "  pFdTake <= fd and iReady_i when rising_edge(clk);\n"
+                         "  -- psl bs_hold : assert always ((sInit = '0' and pHeld = '1') -> (v = '1' and w = pW and nb = pNb and fd = pFd));\n"
+                         "  -- psl bs_eoi_gap : assert always ((sInit = '0' and iRst_i = '0') -> not (fd = '1' and iReady_i = '1' and pFdTake = '1'));")
 assert BS_WRAP.count("fGap = 3") == 1
 
 # Datapath modules run inside the ag.py chains: real producers plus the context ranges ag.py proves
@@ -75,23 +79,22 @@ CHECKS = {
     # Images in flight as the top counts them (p_images_in_flight). Assume: the top's cap (openjls_top check, assert
     # 1653). Assert fr_last: the framer ends only started images. Each side uses only the other's past cycles.
     "jls_framer": dict(src="jls_framer", label="u_framer", clock="iClk", reset="iRst",
-                       decl="  signal fFlight, fOpen : natural range 0 to CO_MAX_IMAGES_IN_FLIGHT + 1;\n  signal fLast, pReady, pEoi : std_logic;",
-                       body="  fLast <= oValid_i and iReady_i and oLast_i;\n  pReady <= oReady_i when rising_edge(clk);\n"
-                            "  pEoi <= iEoi_i when rising_edge(clk);\n"
+                       decl="  signal fFlight, fOpen : natural range 0 to CO_MAX_IMAGES_IN_FLIGHT + 1;\n  signal fLast, fEoi, pEoi : std_logic;",
+                       body="  fLast <= oValid_i and iReady_i and oLast_i;\n  fEoi <= iEoi_i and iValid_i and oReady_i;\n"
+                            "  pEoi <= fEoi when rising_edge(clk);\n"
                             "  p_flight : process (clk) is\n    variable v : natural range 0 to CO_MAX_IMAGES_IN_FLIGHT + 1;\n"
                             "  begin\n    if rising_edge(clk) then\n      v := fFlight;\n"
                             "      if iStart_i = '1' then v := v + 1; end if;\n"
                             "      if fLast = '1' then v := v - 1; end if;\n"
                             "      if iRst_i = '1' then v := 0; end if;\n      fFlight <= v;\n"
                             "      v := fOpen;\n      if iStart_i = '1' then v := v + 1; end if;\n"
-                            "      if iEoi_i = '1' then v := v - 1; end if;\n"
+                            "      if fEoi = '1' then v := v - 1; end if;\n"
                             "      if iRst_i = '1' then v := 0; end if;\n      fOpen <= v;\n    end if;\n  end process;",
-                       # byte_stuffer guarantees (byte_stuffer check): a beat only after a ready cycle, EOI on a beat,
-                       # no EOI beats on consecutive cycles (bs_eoi_gap; STALL_MARGIN_BYTES holds one footer)
+                       # byte_stuffer guarantees (byte_stuffer check): EOI on a beat, no accepted EOI beats on
+                       # consecutive cycles (bs_eoi_gap). The framer takes a beat only on oReady, so no ready assume
                        assume=["iStart_i = '1' -> (fFlight < CO_MAX_IMAGES_IN_FLIGHT or fLast = '1')",
-                               "sInit = '1' or pReady = '1' or iValid_i = '0'",
                                "iEoi_i = '1' -> iValid_i = '1'",
-                               "(sInit = '0' and iRst_i = '0') -> not (iEoi_i = '1' and pEoi = '1')",
+                               "(sInit = '0' and iRst_i = '0') -> not (fEoi = '1' and pEoi = '1')",
                                # Open top obligation: payload beats come only between an image's start and its EOI
                                "iValid_i = '1' -> fOpen > 0"],
                        check=["(iRst_i = '0' and fLast = '1') -> fFlight > 0"]),

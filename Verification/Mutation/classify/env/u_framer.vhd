@@ -1,8 +1,8 @@
 -- Copyright (C) 2026 Vitor Mendes Camilo
 -- SPDX-License-Identifier: GPL-3.0-only
 -- jls_framer as openjls_top drives it: dims latched in reset, at most CO_MAX_IMAGES_IN_FLIGHT images,
--- data and EOI only for a started image, byte_stuffer beat only after it saw (gold) oReady high, EOI only on a
--- beat and never on consecutive cycles (byte_stuffer check, bs_eoi_gap)
+-- data and EOI only for a started image, EOI only on a beat, accepted EOI beats never on consecutive cycles
+-- (byte_stuffer check, bs_eoi_gap)
 library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
@@ -30,7 +30,6 @@ architecture formal of @NAME@ is
   -- end free
   signal sInit : std_logic := '1';
   signal sPrevRst : std_logic := '1';
-  signal sPrevReady : std_logic := '0';
   signal sPrevEoi : std_logic := '0';
   signal sPrevW : unsigned(iWidth_i'range);
   signal sPrevH : unsigned(iHeight_i'range);
@@ -72,8 +71,7 @@ begin
     if rising_edge(clk) then
       sInit <= '0';
       sPrevRst <= iRst_i;
-      sPrevReady <= g.r;
-      sPrevEoi <= iEoi_i;
+      sPrevEoi <= iEoi_i and iValid_i and g.r;
       sPrevW <= iWidth_i; sPrevH <= iHeight_i;
       if iRst_i = '1' then
         sFlight <= 0; sOpen <= 0;
@@ -81,7 +79,7 @@ begin
         vF := sFlight; vO := sOpen;
         if iStart_i = '1' then vF := vF + 1; vO := vO + 1; end if;
         if g.v = '1' and iReady_i = '1' and g.l = '1' then vF := vF - 1; end if;
-        if iValid_i = '1' and iEoi_i = '1' then vO := vO - 1; end if;
+        if iValid_i = '1' and iEoi_i = '1' and g.r = '1' then vO := vO - 1; end if;
         sFlight <= vF; sOpen <= vO;
       end if;
     end if;
@@ -107,9 +105,9 @@ begin
   -- psl assume always ((sInit = '0' and sPrevRst = '0') -> (iWidth_i = sPrevW and iHeight_i = sPrevH));
   -- psl assume always (iRst_i = '1' -> (iStart_i = '0' and iValid_i = '0'));
   -- psl assume always (sFlight + sStartN <= CO_MAX_IMAGES_IN_FLIGHT);
-  -- psl assume always (iValid_i = '1' -> (sOpen > 0 and sPrevReady = '1' and iBe_i <= BI));
+  -- psl assume always (iValid_i = '1' -> (sOpen > 0 and iBe_i <= BI));
   -- psl assume always (iEoi_i = '1' -> iValid_i = '1');
-  -- psl assume always ((sInit = '0' and iRst_i = '0') -> not (iEoi_i = '1' and sPrevEoi = '1'));
+  -- psl assume always ((sInit = '0' and iRst_i = '0') -> not (iEoi_i = '1' and iValid_i = '1' and g.r = '1' and sPrevEoi = '1'));
   -- psl assert always (sInit = '0' -> (same(g, m)));
   -- @END@
 

@@ -165,7 +165,8 @@ def byte_stuffer(iw, **run):
     if rising_edge(clk) then
       if iRst_i = '1' then
         outImg <= 0; outBit <= 0; oPrevFF <= '0'; dBefore <= 0; lbStuffed <= '0';
-      else
+      -- A held beat is walked again each cycle; only the accepted one moves the checker
+      elsif v = '0' or iReady_i = '1' then
         outImg <= nOutImg; outBit <= nOutBit; oPrevFF <= nPrevFF; dBefore <= nDBefore; lbStuffed <= nLbStuffed;
       end if;
     end if;
