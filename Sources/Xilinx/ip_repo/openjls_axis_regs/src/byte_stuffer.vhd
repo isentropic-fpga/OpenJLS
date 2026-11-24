@@ -9,7 +9,8 @@
 -- Stage 1 packs bits into fixed FIFO_BITS words, stage 2 is a BRAM FIFO, and stage 3 stuffs up to
 -- 4 bytes per cycle by decoding all eight stuffing layouts in parallel.
 -- The 0xFF window flags are registered and shift with the buffer, so no compare sits in the loop.
--- iFlush arrives with the image's last word; oFlushDone pulses with oWordValid on the final beat.
+-- iFlush arrives with the image's last word; oFlushDone rides the final beat.
+-- The output is valid/ready: a beat, oFlushDone included, holds until iReady = '1'.
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -206,7 +207,9 @@ begin
   -- psl assert always ((iFlush = '1' and iStall = '0') -> iWordValid = '1') report "byte_stuffer: iFlush must arrive with the image's last word";
   -- psl assert always (iRst = '1' -> next (oWordValid = '0' and oFlushDone = '0')) report "byte_stuffer: reset must clear the output beat and oFlushDone";
   -- psl assert never (oFlushDone = '1' and oWordValid = '0') report "byte_stuffer: oFlushDone only fires on a valid output beat (framer iEoi contract)";
-  -- psl assert always (oFlushDone = '1' -> next (oFlushDone = '0')) report "byte_stuffer: oFlushDone is a strict 1-cycle pulse";
+  -- psl assert always ((iRst = '0' and oWordValid = '1' and iReady = '0') -> next (oWordValid = '1')) report "byte_stuffer: oWordValid must hold until the beat is accepted";
+  -- psl assert always ((iRst = '0' and oFlushDone = '1' and iReady = '0') -> next (oFlushDone = '1')) report "byte_stuffer: oFlushDone must hold until the beat is accepted";
+  -- psl assert always ((oFlushDone = '1' and iReady = '1') -> next (oFlushDone = '0')) report "byte_stuffer: oFlushDone marks one beat";
   -- psl assert always (oWordValid = '1' -> oValidBytes <= OUT_BYTES_PER_CYCLE) report "byte_stuffer: oValidBytes exceeds the per-cycle output cap";
 
   oWord       <= sOutWordReg;
@@ -568,9 +571,6 @@ begin
           sStuffBufferBits <= (others => '0');
           sSkidRoom        <= '1';
           sCountIs         <= (0 => '1', others => '0');
-        else
-          sOutValidReg <= '0';
-          sFlushDone   <= '0';
         end if;
       else
         vStuffBuffer     := sStuffBuffer;
@@ -579,7 +579,10 @@ begin
         vPrevFF          := sPrevFF;
         vEmitBytes       := 0;
         vEmitData        := (others => '0');
-        sFlushDone       <= '0';
+        -- iReady = '0' selects no lane and takes no skid word, so the beat and all state hold
+        if (iReady = '1') then
+          sFlushDone <= '0';
+        end if;
 
         -- (1) Refill from the skid; only the last word may be partial. Flags of windows that start
         -- in the old bits join the old flag with the skid prefix; the rest are the skid's own.
@@ -760,7 +763,7 @@ begin
           sOutWordReg       <= vEmitData;
           sOutBytesValidReg <= to_unsigned(vEmitBytes, sOutBytesValidReg'length);
           sOutValidReg      <= '1';
-        else
+        elsif (iReady = '1') then
           sOutValidReg <= '0';
         end if;
 
