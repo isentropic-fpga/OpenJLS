@@ -6,9 +6,6 @@
 --
 -- tb_openjls_axis_regs_osvvm: openjls_axis_regs register map and APPLY against the H.3 golden
 --
--- The write-dropped-while-BUSY branch is unreachable: BUSY lasts one cycle and
--- no AXI-Lite write can land inside it.
---
 -- Guidelines:
 --   G2.Range    N/A: register file, clamps only (no asserts)
 --   G2.Clamp    N/A: no accumulator
@@ -81,6 +78,11 @@ architecture sim of tb_openjls_axis_regs_osvvm is
 
   signal clk    : std_logic := '0';
   signal nReset : std_logic := '0';
+  -- A second reset on the DUT only, with requests held valid through it
+  signal sTbRst       : std_logic := '0';
+  signal sDutRstN     : std_logic;
+  signal sRstAwValid  : natural := 0;
+  signal sRstArValid  : natural := 0;
   signal sApplyObserved : std_logic := '0';
   signal sStreamReset : std_logic;
   -- Drives WDATA(0) high under a write with WSTRB(0) clear, which the Manager VC cannot do
@@ -146,12 +148,12 @@ begin
   stream_contract : monitor_stream(clk, sStreamReset, sJlsTValid, sJlsTReady, sJlsTData, sJlsTKeep, sJlsTLast, '1', false);
 
   -- APPLY aborts the stream; tell the monitor so a dropped pending beat is legal
-  sStreamReset <= not nReset or sApplyObserved;
+  sStreamReset <= not sDutRstN or sApplyObserved;
   observe_apply : process(clk) is
   begin
     if rising_edge(clk) then
       sApplyObserved <= '0';
-      if nReset = '1' and AxiBus.WriteAddress.Valid = '1' and AxiBus.WriteAddress.Ready = '1'
+      if sDutRstN = '1' and AxiBus.WriteAddress.Valid = '1' and AxiBus.WriteAddress.Ready = '1'
          and AxiBus.WriteData.Valid = '1' and AxiBus.WriteData.Ready = '1'
          and AxiBus.WriteAddress.Addr(7 downto 2) = A_CTRL(7 downto 2)
          and AxiBus.WriteData.Strb(0) = '1' and AxiBus.WriteData.Data(0) = '1' then
@@ -178,6 +180,23 @@ begin
 
   clk    <= not clk after CLK_PERIOD / 2;
   nReset <= '0', '1' after 8 * CLK_PERIOD;
+  sDutRstN <= nReset and not sTbRst;
+
+  -- No ready in reset: a request taken there is lost and never answered
+  ready_in_reset : process(clk) is
+    constant id : AlertLogIDType := GetAlertLogID("AxiLiteReadyInReset");
+  begin
+    if rising_edge(clk) and nReset = '1' and sDutRstN = '0' then
+      AlertIf(id, AxiBus.WriteAddress.Ready = '1' or AxiBus.WriteData.Ready = '1', "AWREADY/WREADY high in reset");
+      AlertIf(id, AxiBus.ReadAddress.Ready = '1', "ARREADY high in reset");
+      if AxiBus.WriteAddress.Valid = '1' and AxiBus.WriteData.Valid = '1' then
+        sRstAwValid <= sRstAwValid + 1;
+      end if;
+      if AxiBus.ReadAddress.Valid = '1' then
+        sRstArValid <= sRstArValid + 1;
+      end if;
+    end if;
+  end process;
 
   -- DUT and VCs ---
   u_dut : entity work.openjls_axis_regs(rtl)
@@ -189,7 +208,7 @@ begin
     )
     port map (
       aclk    => clk,
-      aresetn => nReset,
+      aresetn => sDutRstN,
       -- AXI4-Lite control
       s_axi_ctrl_awaddr  => AxiBus.WriteAddress.Addr(7 downto 0),
       s_axi_ctrl_awprot  => AxiBus.WriteAddress.Prot,
@@ -328,7 +347,7 @@ begin
 
     wait for 0 ns;
     wait for 0 ns;
-    reqReg   := GetReqID("OJLS.AxiLiteRegMap", 34);
+    reqReg   := GetReqID("OJLS.AxiLiteRegMap", 37);
     reqApply := GetReqID("OJLS.AxiApplyReconfig", H3_EXPECTED'length);
     reqAbort := GetReqID("OJLS.AxiAbortReencode", H3_EXPECTED'length);
 
@@ -527,6 +546,20 @@ begin
     ReadData(ManagerRec, rdata);
     sAlignAr <= '0';
     AffirmIfEqual(reqReg, rdata(0), '1', "STATUS BUSY high in the APPLY cycle");
+    WaitForClock(ManagerRec, 4);
+
+    -- Write and read issued in reset wait for its end, then complete
+    sTbRst <= '1';
+    WriteAsync(ManagerRec, A_WIDTH, x"00000005");
+    ReadAddressAsync(ManagerRec, A_HEIGHT);
+    WaitForClock(ManagerRec, 12);
+    sTbRst <= '0';
+    ReadData(ManagerRec, rdata);
+    AffirmIfEqual(reqReg, rdata(15 downto 0), MAX_H_SLV, "read issued in reset: HEIGHT reset default");
+    Read(ManagerRec, A_WIDTH, rdata);
+    AffirmIfEqual(reqReg, rdata(15 downto 0), x"0005", "write issued in reset lands after it");
+    AffirmIf(reqReg, sRstAwValid > 0 and sRstArValid > 0,
+             "requests valid in reset: AW/W " & to_string(sRstAwValid) & " AR " & to_string(sRstArValid) & " cycles");
     WaitForClock(ManagerRec, 4);
 
     AffirmIf(reqReg, sBCount > 0 and sBCount = sAwCount, "one write response per write: " & to_string(sBCount) & " of " & to_string(sAwCount));

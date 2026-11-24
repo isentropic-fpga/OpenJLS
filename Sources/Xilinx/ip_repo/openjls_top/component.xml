@@ -742,8 +742,8 @@
       <xilinx:definitionSource>package_project</xilinx:definitionSource>
       <xilinx:vendorDisplayName>Isentropic</xilinx:vendorDisplayName>
       <xilinx:vendorURL>https://github.com/isentropic-fpga/OpenJLS</xilinx:vendorURL>
-      <xilinx:coreRevision>26111712</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2026-11-17T15:13:07Z</xilinx:coreCreationDateTime>
+      <xilinx:coreRevision>26112401</xilinx:coreRevision>
+      <xilinx:coreCreationDateTime>2026-11-24T04:21:37Z</xilinx:coreCreationDateTime>
     </xilinx:coreExtensions>
     <xilinx:packagingInfo>
       <xilinx:xilinxVersion>2025.2</xilinx:xilinxVersion>

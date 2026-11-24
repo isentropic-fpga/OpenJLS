@@ -103,7 +103,9 @@ architecture rtl of openjls_axis_regs is
   signal sCoreRst      : std_logic;
 
   -- AXI-Lite, one outstanding transaction per channel
+  signal sWrReady      : std_logic;
   signal sWrHandshake  : std_logic;
+  signal sRdReady      : std_logic;
   signal sRdHandshake  : std_logic;
   signal sBValid       : std_logic;
   signal sRValid       : std_logic;
@@ -146,13 +148,14 @@ architecture rtl of openjls_axis_regs is
 begin
 
   -- AXI4-Lite write ---
-  -- AW and W are accepted together: ready may depend on valid, not the reverse
+  -- AW and W are accepted together: ready may depend on valid, not the reverse.
+  -- Ready stays low in reset and in the reset pulse, so no write is taken and lost
+  sWrReady <= aresetn and not sSoftRst and not sBValid and s_axi_ctrl_awvalid and s_axi_ctrl_wvalid;
 
-  sWrHandshake <= '1' when s_axi_ctrl_awvalid = '1' and s_axi_ctrl_wvalid = '1' and sBValid = '0' else
-                  '0';
+  sWrHandshake <= s_axi_ctrl_awvalid and s_axi_ctrl_wvalid and sWrReady;
 
-  s_axi_ctrl_awready <= sWrHandshake;
-  s_axi_ctrl_wready  <= sWrHandshake;
+  s_axi_ctrl_awready <= sWrReady;
+  s_axi_ctrl_wready  <= sWrReady;
   s_axi_ctrl_bresp   <= "00"; -- OKAY; RO/unmapped writes are dropped
   s_axi_ctrl_bvalid  <= sBValid;
 
@@ -180,32 +183,28 @@ begin
           sBValid   <= '1';
           vAddrWord := to_integer(unsigned(s_axi_ctrl_awaddr(7 downto 2)));
 
-          -- Dropped during the reset pulse: the core is sampling the registers
-          if (sSoftRst = '0') then
+          case vAddrWord is
 
-            case vAddrWord is
+            when REG_WIDTH =>
 
-              when REG_WIDTH =>
+              sWidth <= merge_clamp_dim(sWidth, s_axi_ctrl_wdata, s_axi_ctrl_wstrb, CO_MIN_IMAGE_WIDTH, MAX_IMAGE_WIDTH);
 
-                sWidth <= merge_clamp_dim(sWidth, s_axi_ctrl_wdata, s_axi_ctrl_wstrb, CO_MIN_IMAGE_WIDTH, MAX_IMAGE_WIDTH);
+            when REG_HEIGHT =>
 
-              when REG_HEIGHT =>
+              sHeight <= merge_clamp_dim(sHeight, s_axi_ctrl_wdata, s_axi_ctrl_wstrb, CO_MIN_IMAGE_HEIGHT, MAX_IMAGE_HEIGHT);
 
-                sHeight <= merge_clamp_dim(sHeight, s_axi_ctrl_wdata, s_axi_ctrl_wstrb, CO_MIN_IMAGE_HEIGHT, MAX_IMAGE_HEIGHT);
+            when REG_CTRL =>
 
-              when REG_CTRL =>
+              if (s_axi_ctrl_wstrb(0) = '1' and s_axi_ctrl_wdata(0) = '1') then
+                sSoftRst <= '1';
+              end if;
 
-                if (s_axi_ctrl_wstrb(0) = '1' and s_axi_ctrl_wdata(0) = '1') then
-                  sSoftRst <= '1';
-                end if;
+            when others =>
 
-              when others =>
+              null;
 
-                null;
+          end case;
 
-            end case;
-
-          end if;
         end if;
       end if;
     end if;
@@ -214,10 +213,11 @@ begin
 
   -- AXI4-Lite read ---
 
-  sRdHandshake <= '1' when s_axi_ctrl_arvalid = '1' and sRValid = '0' else
-                  '0';
+  sRdReady <= aresetn and not sRValid and s_axi_ctrl_arvalid;
 
-  s_axi_ctrl_arready <= sRdHandshake;
+  sRdHandshake <= s_axi_ctrl_arvalid and sRdReady;
+
+  s_axi_ctrl_arready <= sRdReady;
   s_axi_ctrl_rresp   <= "00"; -- OKAY; unmapped reads return zero
   s_axi_ctrl_rvalid  <= sRValid;
   s_axi_ctrl_rdata   <= sRData;
